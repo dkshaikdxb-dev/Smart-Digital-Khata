@@ -1,0 +1,27 @@
+# Optional: Nginx Proxy Manager stack
+# Usage: docker compose -f docker-compose.npm.yml up -d
+# Then open http://YOUR_VPS_IP:81 and configure domains + SSL via the UI.
+version: "3.9"
+
+networks:
+  skhata:
+    external: true
+    name: smart-digital-khata_skhata
+
+volumes:
+  npm-data:
+  npm-letsencrypt:
+
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: skhata-npm
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"   # admin UI
+    volumes:
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+    networks: [skhata]

@@ -1,0 +1,70 @@
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Nav from '../components/Nav';
+import { apiFetch } from '../lib/api';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [summary, setSummary] = useState(null);
+  const [outstanding, setOutstanding] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.localStorage.getItem('skhata_token')) {
+      router.replace('/login');
+      return;
+    }
+    Promise.all([apiFetch('/api/summaries/today'), apiFetch('/api/summaries/outstanding')])
+      .then(([s, o]) => { setSummary(s); setOutstanding(o); })
+      .catch((e) => setError(e.message));
+  }, [router]);
+
+  const fmt = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
+
+  return (
+    <div>
+      <Nav />
+      <div className="container">
+        <h1>Today</h1>
+        {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
+
+        <div className="grid">
+          <div className="card">
+            <div className="muted">Purchases today</div>
+            <div className="kpi">{summary ? fmt(summary.purchases) : '—'}</div>
+          </div>
+          <div className="card">
+            <div className="muted">Collections today</div>
+            <div className="kpi">{summary ? fmt(summary.collections) : '—'}</div>
+          </div>
+          <div className="card">
+            <div className="muted">Total outstanding</div>
+            <div className="kpi">{outstanding ? fmt(outstanding.total) : '—'}</div>
+          </div>
+          <div className="card">
+            <div className="muted">Customers with dues</div>
+            <div className="kpi">{outstanding ? outstanding.customers.length : '—'}</div>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3>Top outstanding</h3>
+          <table>
+            <thead>
+              <tr><th>Customer</th><th>Phone</th><th>Outstanding</th></tr>
+            </thead>
+            <tbody>
+              {outstanding?.customers?.slice(0, 10).map((c) => (
+                <tr key={c.id}>
+                  <td>{c.name}</td>
+                  <td>{c.phone}</td>
+                  <td>{fmt(c.balance)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
