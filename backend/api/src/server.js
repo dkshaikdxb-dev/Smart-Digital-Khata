@@ -4,6 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
+const routes = require('./routes');
+const errorMiddleware = require('./middleware/error.middleware');
+
 const app = express();
 
 app.use(cors());
@@ -15,6 +18,10 @@ app.get('/', (req, res) => {
     message: 'Smart Digital Khata API Running Successfully'
   });
 });
+
+app.use('/api', routes);
+
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
