@@ -12,6 +12,8 @@ const dueAgingRoutes = require('./due-aging.routes');
 const subscriptionRoutes = require('./subscription.routes');
 const paymentRoutes = require('./payment.routes');
 const aiInsightsRoutes = require('./ai-insights.routes');
+const auditLogRoutes = require('./audit-log.routes');
+const riskEngineRoutes = require('./risk-engine.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -24,5 +26,7 @@ router.use('/due-aging', dueAgingRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/ai-insights', aiInsightsRoutes);
+router.use('/audit-logs', auditLogRoutes);
+router.use('/risk-engine', riskEngineRoutes);
 
 module.exports = router;
