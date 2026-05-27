@@ -24,6 +24,8 @@ const merchantHealthRoutes = require('./merchant-health.routes');
 const defaulterForecastRoutes = require('./defaulter-forecast.routes');
 const portfolioRiskRoutes = require('./portfolio-risk.routes');
 const creditLimitRoutes = require('./credit-limit.routes');
+const merchantLendingRoutes = require('./merchant-lending.routes');
+const revenueForecastRoutes = require('./revenue-forecast.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -48,5 +50,7 @@ router.use('/merchant-health', merchantHealthRoutes);
 router.use('/defaulter-forecast', defaulterForecastRoutes);
 router.use('/portfolio-risk', portfolioRiskRoutes);
 router.use('/credit-limit', creditLimitRoutes);
+router.use('/merchant-lending', merchantLendingRoutes);
+router.use('/revenue-forecast', revenueForecastRoutes);
 
 module.exports = router;
