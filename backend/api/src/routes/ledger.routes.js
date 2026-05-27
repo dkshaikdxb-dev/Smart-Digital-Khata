@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  res.json({
-    message: 'Fetch ledger entries endpoint'
-  });
-});
+const authMiddleware = require('../middleware/auth.middleware');
+const ledgerController = require('../controllers/ledger.controller');
 
-router.post('/', async (req, res) => {
-  res.json({
-    message: 'Create ledger entry endpoint'
-  });
-});
+router.get('/', authMiddleware, ledgerController.getLedgerEntries);
+
+router.post('/', authMiddleware, ledgerController.createLedgerEntry);
 
 module.exports = router;
