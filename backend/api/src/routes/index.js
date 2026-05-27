@@ -28,6 +28,8 @@ const merchantLendingRoutes = require('./merchant-lending.routes');
 const revenueForecastRoutes = require('./revenue-forecast.routes');
 const fraudDetectionRoutes = require('./fraud-detection.routes');
 const cashflowIntelligenceRoutes = require('./cashflow-intelligence.routes');
+const complianceMonitorRoutes = require('./compliance-monitor.routes');
+const merchantBenchmarkRoutes = require('./merchant-benchmark.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -56,5 +58,7 @@ router.use('/merchant-lending', merchantLendingRoutes);
 router.use('/revenue-forecast', revenueForecastRoutes);
 router.use('/fraud-detection', fraudDetectionRoutes);
 router.use('/cashflow-intelligence', cashflowIntelligenceRoutes);
+router.use('/compliance-monitor', complianceMonitorRoutes);
+router.use('/merchant-benchmark', merchantBenchmarkRoutes);
 
 module.exports = router;
