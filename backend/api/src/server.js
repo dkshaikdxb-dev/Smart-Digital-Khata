@@ -6,16 +6,25 @@ const morgan = require('morgan');
 
 const routes = require('./routes');
 const errorMiddleware = require('./middleware/error.middleware');
+const rateLimitMiddleware = require('./middleware/rate-limit.middleware');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+app.use(rateLimitMiddleware);
 
 app.get('/', (req, res) => {
   res.json({
     message: 'Smart Digital Khata API Running Successfully'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    uptime: process.uptime()
   });
 });
 
