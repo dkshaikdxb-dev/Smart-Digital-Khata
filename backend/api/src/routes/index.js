@@ -20,6 +20,8 @@ const customerSegmentationRoutes = require('./customer-segmentation.routes');
 const smartNudgeRoutes = require('./smart-nudge.routes');
 const collectionTimingRoutes = require('./collection-timing.routes');
 const escalationEngineRoutes = require('./escalation-engine.routes');
+const merchantHealthRoutes = require('./merchant-health.routes');
+const defaulterForecastRoutes = require('./defaulter-forecast.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -40,5 +42,7 @@ router.use('/customer-segmentation', customerSegmentationRoutes);
 router.use('/smart-nudges', smartNudgeRoutes);
 router.use('/collection-timing', collectionTimingRoutes);
 router.use('/escalation-engine', escalationEngineRoutes);
+router.use('/merchant-health', merchantHealthRoutes);
+router.use('/defaulter-forecast', defaulterForecastRoutes);
 
 module.exports = router;
