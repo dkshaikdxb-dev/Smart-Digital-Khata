@@ -18,6 +18,8 @@ const whatsappRoutes = require('./whatsapp.routes');
 const recoveryPredictionRoutes = require('./recovery-prediction.routes');
 const customerSegmentationRoutes = require('./customer-segmentation.routes');
 const smartNudgeRoutes = require('./smart-nudge.routes');
+const collectionTimingRoutes = require('./collection-timing.routes');
+const escalationEngineRoutes = require('./escalation-engine.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -36,5 +38,7 @@ router.use('/whatsapp', whatsappRoutes);
 router.use('/recovery-prediction', recoveryPredictionRoutes);
 router.use('/customer-segmentation', customerSegmentationRoutes);
 router.use('/smart-nudges', smartNudgeRoutes);
+router.use('/collection-timing', collectionTimingRoutes);
+router.use('/escalation-engine', escalationEngineRoutes);
 
 module.exports = router;
