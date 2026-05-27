@@ -16,6 +16,8 @@ const auditLogRoutes = require('./audit-log.routes');
 const riskEngineRoutes = require('./risk-engine.routes');
 const whatsappRoutes = require('./whatsapp.routes');
 const recoveryPredictionRoutes = require('./recovery-prediction.routes');
+const customerSegmentationRoutes = require('./customer-segmentation.routes');
+const smartNudgeRoutes = require('./smart-nudge.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -32,5 +34,7 @@ router.use('/audit-logs', auditLogRoutes);
 router.use('/risk-engine', riskEngineRoutes);
 router.use('/whatsapp', whatsappRoutes);
 router.use('/recovery-prediction', recoveryPredictionRoutes);
+router.use('/customer-segmentation', customerSegmentationRoutes);
+router.use('/smart-nudges', smartNudgeRoutes);
 
 module.exports = router;
