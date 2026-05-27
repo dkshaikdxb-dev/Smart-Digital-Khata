@@ -26,6 +26,8 @@ const portfolioRiskRoutes = require('./portfolio-risk.routes');
 const creditLimitRoutes = require('./credit-limit.routes');
 const merchantLendingRoutes = require('./merchant-lending.routes');
 const revenueForecastRoutes = require('./revenue-forecast.routes');
+const fraudDetectionRoutes = require('./fraud-detection.routes');
+const cashflowIntelligenceRoutes = require('./cashflow-intelligence.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -52,5 +54,7 @@ router.use('/portfolio-risk', portfolioRiskRoutes);
 router.use('/credit-limit', creditLimitRoutes);
 router.use('/merchant-lending', merchantLendingRoutes);
 router.use('/revenue-forecast', revenueForecastRoutes);
+router.use('/fraud-detection', fraudDetectionRoutes);
+router.use('/cashflow-intelligence', cashflowIntelligenceRoutes);
 
 module.exports = router;
