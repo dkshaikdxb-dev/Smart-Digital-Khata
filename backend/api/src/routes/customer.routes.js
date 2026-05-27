@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  res.json({
-    message: 'Fetch customers endpoint'
-  });
-});
+const authMiddleware = require('../middleware/auth.middleware');
+const customerController = require('../controllers/customer.controller');
 
-router.post('/', async (req, res) => {
-  res.json({
-    message: 'Create customer endpoint'
-  });
-});
+router.get('/', authMiddleware, customerController.getCustomers);
+
+router.post('/', authMiddleware, customerController.createCustomer);
 
 module.exports = router;
