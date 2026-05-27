@@ -30,6 +30,8 @@ const fraudDetectionRoutes = require('./fraud-detection.routes');
 const cashflowIntelligenceRoutes = require('./cashflow-intelligence.routes');
 const complianceMonitorRoutes = require('./compliance-monitor.routes');
 const merchantBenchmarkRoutes = require('./merchant-benchmark.routes');
+const merchantAiCopilotRoutes = require('./merchant-ai-copilot.routes');
+const smartAutomationRoutes = require('./smart-automation.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -60,5 +62,7 @@ router.use('/fraud-detection', fraudDetectionRoutes);
 router.use('/cashflow-intelligence', cashflowIntelligenceRoutes);
 router.use('/compliance-monitor', complianceMonitorRoutes);
 router.use('/merchant-benchmark', merchantBenchmarkRoutes);
+router.use('/merchant-ai-copilot', merchantAiCopilotRoutes);
+router.use('/smart-automation', smartAutomationRoutes);
 
 module.exports = router;
