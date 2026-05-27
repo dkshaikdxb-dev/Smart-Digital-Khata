@@ -22,6 +22,8 @@ const collectionTimingRoutes = require('./collection-timing.routes');
 const escalationEngineRoutes = require('./escalation-engine.routes');
 const merchantHealthRoutes = require('./merchant-health.routes');
 const defaulterForecastRoutes = require('./defaulter-forecast.routes');
+const portfolioRiskRoutes = require('./portfolio-risk.routes');
+const creditLimitRoutes = require('./credit-limit.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -44,5 +46,7 @@ router.use('/collection-timing', collectionTimingRoutes);
 router.use('/escalation-engine', escalationEngineRoutes);
 router.use('/merchant-health', merchantHealthRoutes);
 router.use('/defaulter-forecast', defaulterForecastRoutes);
+router.use('/portfolio-risk', portfolioRiskRoutes);
+router.use('/credit-limit', creditLimitRoutes);
 
 module.exports = router;
