@@ -9,6 +9,7 @@ const dashboardRoutes = require('./dashboard.routes');
 const notificationRoutes = require('./notification.routes');
 const reportRoutes = require('./report.routes');
 const dueAgingRoutes = require('./due-aging.routes');
+const subscriptionRoutes = require('./subscription.routes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -18,5 +19,6 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/due-aging', dueAgingRoutes);
+router.use('/subscriptions', subscriptionRoutes);
 
 module.exports = router;
