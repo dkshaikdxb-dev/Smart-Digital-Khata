@@ -1,10 +1,10 @@
-const errorMiddleware = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   console.error(err);
 
-  return res.status(500).json({
-    message: 'Internal server error',
-    error: err.message
+  return res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
   });
 };
 
-module.exports = errorMiddleware;
+module.exports = errorHandler;
