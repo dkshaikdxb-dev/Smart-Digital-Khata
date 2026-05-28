@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MERCHANT
+  COLLECTION_AGENT
+  SUPPORT
+}
+
+enum CustomerStatus {
+  ACTIVE
+  BLOCKED
+  HIGH_RISK
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  shops       Shop[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  tenantId      String
+  fullName      String
+  email         String    @unique
+  passwordHash  String
+  role          UserRole
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+}
+
+model Shop {
+  id            String      @id @default(cuid())
+  tenantId      String
+  name          String
+  phone         String
+  address       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  customers     Customer[]
+}
+
+model Customer {
+  id              String          @id @default(cuid())
+  shopId          String
+  fullName        String
+  phone           String
+  creditLimit     Float           @default(0)
+  outstanding     Float           @default(0)
+  status          CustomerStatus  @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  shop            Shop            @relation(fields: [shopId], references: [id])
+  ledgers         Ledger[]
+  payments        Payment[]
+}
+
+model Ledger {
+  id              String      @id @default(cuid())
+  customerId      String
+  amount          Float
+  description     String?
+  dueDate         DateTime?
+  createdAt       DateTime    @default(now())
+
+  customer        Customer    @relation(fields: [customerId], references: [id])
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  customerId      String
+  amount          Float
+  provider        String
+  status          PaymentStatus
+  transactionRef  String?
+  createdAt       DateTime       @default(now())
+
+  customer        Customer       @relation(fields: [customerId], references: [id])
+}
