@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smart-digital-khata-ingress
+spec:
+  rules:
+    - host: smartkhata.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-digital-khata-api-service
+                port:
+                  number: 80
