@@ -1,21 +1,14 @@
-const requestCounts = {};
+const rateLimit = require('express-rate-limit');
 
-const rateLimitMiddleware = (req, res, next) => {
-  const ip = req.ip;
-
-  if (!requestCounts[ip]) {
-    requestCounts[ip] = 1;
-  } else {
-    requestCounts[ip] += 1;
+const apiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many requests. Please try again later.'
   }
+});
 
-  if (requestCounts[ip] > 100) {
-    return res.status(429).json({
-      message: 'Too many requests'
-    });
-  }
-
-  next();
-};
-
-module.exports = rateLimitMiddleware;
+module.exports = apiRateLimiter;
