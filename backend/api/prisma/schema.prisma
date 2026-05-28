@@ -50,6 +50,16 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  sessions      Session[]
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  token       String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Shop {
