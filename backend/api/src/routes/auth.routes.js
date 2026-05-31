@@ -1,16 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/auth.controller');
 
-router.post('/login', async (req, res) => {
-  res.json({
-    message: 'Login endpoint under development'
-  });
-});
-
-router.post('/register', async (req, res) => {
-  res.json({
-    message: 'Register endpoint under development'
-  });
-});
+router.post('/register', authController.register);
+router.post('/login', authController.login);
 
 module.exports = router;
