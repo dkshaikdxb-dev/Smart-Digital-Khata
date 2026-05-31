@@ -1,24 +1,28 @@
-const paymentTransactions = [];
+const prisma = require('../lib/prisma');
 
-const createPaymentLink = async ({
-  customer,
-  amount
-}) => {
-  const paymentLink = {
-    id: `PAY-${Date.now()}`,
-    customer,
-    amount,
-    paymentUrl: `https://pay.smartkhata.app/${Date.now()}`,
-    createdAt: new Date()
+const createPaymentLink = async ({ customerId, amount, provider = 'RAZORPAY' }) => {
+  const payment = await prisma.payment.create({
+    data: {
+      customerId,
+      amount: Number(amount),
+      provider,
+      status: 'PENDING',
+      transactionRef: `PAY-${Date.now()}`
+    }
+  });
+
+  return {
+    ...payment,
+    paymentUrl: `https://pay.smartkhata.app/${payment.transactionRef}`
   };
-
-  paymentTransactions.push(paymentLink);
-
-  return paymentLink;
 };
 
 const getPayments = async () => {
-  return paymentTransactions;
+  return prisma.payment.findMany({
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
 };
 
 module.exports = {
