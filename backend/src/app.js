@@ -15,7 +15,26 @@ const app = express();
 
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+
+const allowed = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin(origin, cb) {
+      // No origin (curl, mobile native, same-origin) — allow.
+      if (!origin) return cb(null, true);
+      // No allowlist configured — allow all (MVP-friendly, dev).
+      if (allowed.length === 0) return cb(null, true);
+      // Otherwise, enforce.
+      if (allowed.includes(origin)) return cb(null, true);
+      return cb(new Error('CORS not allowed'));
+    },
+    credentials: true,
+  })
+);
 app.use(compression());
 
 // Raw body needed for webhook signature verification

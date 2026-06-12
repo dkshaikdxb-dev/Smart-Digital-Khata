@@ -81,13 +81,13 @@ ssh root@YOUR_VPS_IP
 Run the bootstrap script — this installs Docker, Docker Compose, git, ufw, and clones this repo:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/smart-digital-khata/main/scripts/bootstrap-vps.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/Smart-Digital-Khata/main/scripts/bootstrap-vps.sh | bash
 ```
 
 ### 3. Configure `.env`
 
 ```bash
-cd /opt/smart-digital-khata
+cd /opt/Smart-Digital-Khata
 cp .env.example .env
 nano .env   # fill in the values (see Environment Variables section)
 ```
@@ -110,8 +110,8 @@ See [Domain + SSL](#domain--ssl).
 
 ```bash
 # 1. Clone
-git clone https://github.com/dkshaikdxb-dev/smart-digital-khata.git
-cd smart-digital-khata
+git clone https://github.com/dkshaikdxb-dev/Smart-Digital-Khata.git
+cd Smart-Digital-Khata
 
 # 2. Environment
 cp .env.example .env
@@ -145,7 +145,7 @@ TL;DR:
 
 ```bash
 ssh root@YOUR_VPS_IP
-cd /opt/smart-digital-khata
+cd /opt/Smart-Digital-Khata
 git pull
 ./scripts/deploy.sh
 ```
@@ -180,7 +180,7 @@ Every `git push` to `main` auto-deploys to your VPS.
    - `VPS_HOST` — your VPS IP
    - `VPS_USER` — usually `root`
    - `VPS_SSH_KEY` — private SSH key (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md))
-   - `VPS_PATH` — usually `/opt/smart-digital-khata`
+   - `VPS_PATH` — usually `/opt/Smart-Digital-Khata`
 
 2. Push to `main`. Done.
 

@@ -1,8 +1,18 @@
 const router = require('express').Router();
 const Joi = require('joi');
+const rateLimit = require('express-rate-limit');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/auth.controller');
+
+// Credential-stuffing guard: 5 attempts / minute / IP
+const tightLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, please try again in a minute' },
+});
 
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(80).required(),
@@ -17,8 +27,8 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-router.post('/register', validate(registerSchema), asyncHandler(ctrl.register));
-router.post('/login', validate(loginSchema), asyncHandler(ctrl.login));
+router.post('/register', tightLimiter, validate(registerSchema), asyncHandler(ctrl.register));
+router.post('/login', tightLimiter, validate(loginSchema), asyncHandler(ctrl.login));
 router.get('/me', require('../middleware/auth')(), asyncHandler(ctrl.me));
 
 module.exports = router;

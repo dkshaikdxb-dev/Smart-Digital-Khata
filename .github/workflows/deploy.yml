@@ -26,7 +26,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             set -euo pipefail
-            cd "${{ secrets.VPS_PATH || '/opt/smart-digital-khata' }}"
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
             git fetch --all
             git reset --hard origin/main
             chmod +x scripts/*.sh

@@ -19,9 +19,12 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Install
         working-directory: backend
-        run: npm install
+        run: npm ci
       - name: Test
         working-directory: backend
+        env:
+          JWT_SECRET: test_secret_test_secret_test_secret_abc
+          DATABASE_URL: postgres://user:pass@localhost:5432/db
         run: npm test --silent
 
   admin:
@@ -32,9 +35,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: admin-dashboard/package-lock.json
       - name: Install
         working-directory: admin-dashboard
-        run: npm install
+        run: npm ci
       - name: Build
         working-directory: admin-dashboard
         env:
@@ -46,5 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stub env for compose
+        run: cp .env.example .env
       - name: Build images
-        run: docker compose -f docker-compose.yml build
+        run: docker compose -f docker-compose.yml build backend admin

@@ -14,13 +14,17 @@ const whatsapp = require('./whatsapp.service');
  *   paid 500 Ramesh
  *   upi 120 9876543210 tea & sugar
  */
-async function handle(payload) {
+async function handle(payload, { alreadyProcessed } = {}) {
   const entries = payload?.entry || [];
   for (const e of entries) {
     for (const change of e.changes || []) {
       const messages = change.value?.messages || [];
       for (const m of messages) {
         if (m.type !== 'text') continue;
+        if (alreadyProcessed && (await alreadyProcessed(m.id))) {
+          logger.info({ id: m.id }, 'WA message already processed');
+          continue;
+        }
         const from = m.from; // no '+'
         const text = m.text.body.trim();
         await processMessage(from, text).catch((err) =>

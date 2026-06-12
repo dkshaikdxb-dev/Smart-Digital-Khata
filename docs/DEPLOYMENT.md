@@ -26,17 +26,17 @@ If prompted, say `yes`. Enter your root password.
 Run the one-liner — it installs Docker, firewall, clones the repo:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/smart-digital-khata/main/scripts/bootstrap-vps.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/Smart-Digital-Khata/main/scripts/bootstrap-vps.sh | bash
 ```
 
-When it finishes, you will be at `/opt/smart-digital-khata`.
+When it finishes, you will be at `/opt/Smart-Digital-Khata`.
 
 ---
 
 ## Step 3 — Fill in `.env`
 
 ```bash
-cd /opt/smart-digital-khata
+cd /opt/Smart-Digital-Khata
 nano .env
 ```
 
@@ -124,7 +124,7 @@ See [`SSL.md`](./SSL.md).
    | `VPS_USER`       | `root` (or whatever user you use)   |
    | `VPS_SSH_KEY`    | contents of `~/.ssh/gh_deploy`      |
    | `VPS_PORT`       | `22` (default)                      |
-   | `VPS_PATH`       | `/opt/smart-digital-khata`          |
+   | `VPS_PATH`       | `/opt/Smart-Digital-Khata`          |
 
 3. Push to `main`. Watch **Actions** tab — deployment happens automatically.
 
@@ -157,5 +157,5 @@ git pull && ./scripts/deploy.sh
 ```bash
 crontab -e
 # add:
-0 2 * * * cd /opt/smart-digital-khata && ./scripts/backup.sh /var/backups/skhata >> /var/log/skhata-backup.log 2>&1
+0 2 * * * cd /opt/Smart-Digital-Khata && ./scripts/backup.sh /var/backups/skhata >> /var/log/skhata-backup.log 2>&1
 ```

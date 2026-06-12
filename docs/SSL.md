@@ -7,7 +7,7 @@ Two options — pick the one that suits you.
 Already included: `scripts/setup-ssl.sh`.
 
 ```bash
-cd /opt/smart-digital-khata
+cd /opt/Smart-Digital-Khata
 ./scripts/setup-ssl.sh yourdomain.com you@example.com
 ```
 
@@ -33,7 +33,7 @@ Add a cron entry:
 ```bash
 crontab -e
 # renews cert + copies into docker/certs + reloads nginx
-0 3 * * * certbot renew --quiet --deploy-hook "cp -L /etc/letsencrypt/live/*/fullchain.pem /opt/smart-digital-khata/docker/certs/$(ls /etc/letsencrypt/live | head -1)/fullchain.pem && cp -L /etc/letsencrypt/live/*/privkey.pem /opt/smart-digital-khata/docker/certs/$(ls /etc/letsencrypt/live | head -1)/privkey.pem && cd /opt/smart-digital-khata && docker compose exec -T nginx nginx -s reload"
+0 3 * * * certbot renew --quiet --deploy-hook "cp -L /etc/letsencrypt/live/*/fullchain.pem /opt/Smart-Digital-Khata/docker/certs/$(ls /etc/letsencrypt/live | head -1)/fullchain.pem && cp -L /etc/letsencrypt/live/*/privkey.pem /opt/Smart-Digital-Khata/docker/certs/$(ls /etc/letsencrypt/live | head -1)/privkey.pem && cd /opt/Smart-Digital-Khata && docker compose exec -T nginx nginx -s reload"
 ```
 
 ---

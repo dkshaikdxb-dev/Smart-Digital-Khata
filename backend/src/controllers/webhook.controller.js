@@ -3,6 +3,18 @@ const razorpay = require('../services/razorpay.service');
 const whatsappInbound = require('../services/whatsapp-inbound.service');
 const { query, withTx } = require('../config/db');
 
+async function alreadyProcessed(id, channel) {
+  if (!id) return false;
+  const key = `${channel}:${id}`;
+  const r = await query(
+    `INSERT INTO processed_events (id, channel) VALUES ($1, $2)
+     ON CONFLICT (id) DO NOTHING
+     RETURNING id`,
+    [key, channel]
+  );
+  return r.rowCount === 0;
+}
+
 exports.razorpay = async (req, res) => {
   const raw = req.body; // Buffer (raw parser)
   const sig = req.headers['x-razorpay-signature'];
@@ -12,17 +24,27 @@ exports.razorpay = async (req, res) => {
   }
 
   const event = JSON.parse(raw.toString('utf8'));
-  logger.info({ type: event.event }, 'Razorpay webhook received');
+  logger.info({ type: event.event, id: event.id }, 'Razorpay webhook received');
 
-  if (event.event === 'payment.captured' || event.event === 'order.paid') {
+  if (await alreadyProcessed(event.id, 'razorpay')) {
+    return res.json({ ok: true, duplicate: true });
+  }
+
+  if (event.event === 'payment.captured' || event.event === 'order.paid' || event.event === 'payment_link.paid') {
     const p = event.payload.payment?.entity || {};
     const orderEntity = event.payload.order?.entity || {};
+    const linkEntity = event.payload.payment_link?.entity || {};
     const orderId = p.order_id || orderEntity.id;
-    const amount = p.amount || orderEntity.amount_paid;
+    const linkId = linkEntity.id || p.notes?.payment_link_id;
+    const amount = p.amount || orderEntity.amount_paid || linkEntity.amount_paid || linkEntity.amount;
 
     const orderRes = await query(
-      `SELECT * FROM payment_orders WHERE provider_order_id = $1`,
-      [orderId]
+      `SELECT * FROM payment_orders
+       WHERE provider_order_id = $1
+          OR provider_link_id = $2
+          OR id = $3
+       LIMIT 1`,
+      [orderId || null, linkId || null, linkEntity.reference_id || null]
     );
     if (orderRes.rowCount) {
       const order = orderRes.rows[0];
@@ -34,9 +56,9 @@ exports.razorpay = async (req, res) => {
           [p.id || null, order.id]
         );
         await client.query(
-          `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, created_by)
-           VALUES ($1,$2,'upi',$3,'razorpay',$4,NULL)`,
-          [order.shop_id, order.customer_id, amount, `Razorpay ${orderId}`]
+          `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
+           VALUES ($1,$2,'upi',$3,'razorpay',$4,'razorpay')`,
+          [order.shop_id, order.customer_id, amount, `Razorpay ${orderId || linkId}`]
         );
         await client.query(
           `UPDATE customers SET balance = balance - $1, updated_at = NOW()
@@ -44,6 +66,8 @@ exports.razorpay = async (req, res) => {
           [amount, order.customer_id, order.shop_id]
         );
       });
+    } else {
+      logger.warn({ orderId, linkId }, 'Razorpay webhook: no matching local order');
     }
   }
 
@@ -65,6 +89,8 @@ exports.whatsappInbound = async (req, res) => {
   const payload = JSON.parse(req.body.toString('utf8'));
   // Respond immediately so Meta does not retry
   res.status(200).json({ ok: true });
-  // Process async
-  whatsappInbound.handle(payload).catch((err) => logger.error({ err: err.message }, 'WA inbound failed'));
+  // Process async with dedupe at the message level
+  whatsappInbound
+    .handle(payload, { alreadyProcessed: (id) => alreadyProcessed(id, 'whatsapp') })
+    .catch((err) => logger.error({ err: err.message }, 'WA inbound failed'));
 };

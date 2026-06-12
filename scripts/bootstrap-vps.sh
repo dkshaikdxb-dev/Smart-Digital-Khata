@@ -4,19 +4,20 @@
 #
 # One-shot bootstrap for a fresh Ubuntu 22.04 / Debian 12 VPS.
 # Usage (as root or with sudo):
-#   curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/smart-digital-khata/main/scripts/bootstrap-vps.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/Smart-Digital-Khata/main/scripts/bootstrap-vps.sh | bash
 #
 # What it does:
 #   1. Updates apt
 #   2. Installs Docker, Docker Compose plugin, git, ufw, curl
 #   3. Configures firewall (22, 80, 443)
-#   4. Clones the repo to /opt/smart-digital-khata
+#   4. Clones the repo to /opt/Smart-Digital-Khata
 #   5. Prompts you to configure .env and run ./scripts/deploy.sh
 # =========================================================================
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/dkshaikdxb-dev/smart-digital-khata.git}"
-APP_DIR="${APP_DIR:-/opt/smart-digital-khata}"
+REPO_URL="${REPO_URL:-https://github.com/dkshaikdxb-dev/Smart-Digital-Khata.git}"
+APP_DIR="${APP_DIR:-/opt/Smart-Digital-Khata}"
+BRANCH="${BRANCH:-main}"
 
 log() { printf "\033[1;32m==>\033[0m %s\n" "$*"; }
 
@@ -59,12 +60,12 @@ ufw --force enable
 
 # ---- Clone repo ---------------------------------------------------------
 if [ ! -d "$APP_DIR/.git" ]; then
-  log "Cloning repo to $APP_DIR..."
+  log "Cloning repo to $APP_DIR (branch: $BRANCH)..."
   mkdir -p "$(dirname "$APP_DIR")"
-  git clone "$REPO_URL" "$APP_DIR"
+  git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
 else
   log "Repo already present at $APP_DIR — pulling"
-  (cd "$APP_DIR" && git pull --ff-only || true)
+  (cd "$APP_DIR" && git fetch origin && git checkout "$BRANCH" && git pull --ff-only origin "$BRANCH" || true)
 fi
 
 cd "$APP_DIR"

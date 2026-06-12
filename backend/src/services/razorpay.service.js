@@ -25,6 +25,26 @@ async function createOrder({ amount, receipt, notes }) {
   });
 }
 
+/**
+ * Razorpay hosted Payment Link — customer-facing URL we can share over WhatsApp.
+ * https://razorpay.com/docs/api/payments/payment-links/standard/
+ */
+async function createPaymentLink({ amount, description, customer, notes, reference_id, callback_url }) {
+  return getClient().paymentLink.create({
+    amount,
+    currency: 'INR',
+    accept_partial: false,
+    description,
+    customer,
+    notify: { sms: true, email: false },
+    reminder_enable: true,
+    notes,
+    reference_id,
+    callback_url,
+    callback_method: 'get',
+  });
+}
+
 async function createSubscription({ plan_id, customer_notify = 1, total_count = 12, notes }) {
   return getClient().subscriptions.create({ plan_id, customer_notify, total_count, notes });
 }
@@ -40,4 +60,4 @@ function verifyWebhookSignature(rawBody, signatureHeader) {
   }
 }
 
-module.exports = { createOrder, createSubscription, verifyWebhookSignature };
+module.exports = { createOrder, createPaymentLink, createSubscription, verifyWebhookSignature };

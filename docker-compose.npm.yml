@@ -6,7 +6,7 @@ version: "3.9"
 networks:
   skhata:
     external: true
-    name: smart-digital-khata_skhata
+    name: Smart-Digital-Khata_skhata
 
 volumes:
   npm-data:

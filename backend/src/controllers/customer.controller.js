@@ -25,13 +25,20 @@ exports.list = async (req, res) => {
 
 exports.create = async (req, res) => {
   const { name, phone, credit_limit = 0, notes = null } = req.body;
-  const r = await query(
-    `INSERT INTO customers (shop_id, name, phone, credit_limit, notes)
-     VALUES ($1,$2,$3,$4,$5)
-     RETURNING *`,
-    [req.user.shopId, name, phone, credit_limit, notes]
-  );
-  res.status(201).json({ customer: r.rows[0] });
+  try {
+    const r = await query(
+      `INSERT INTO customers (shop_id, name, phone, credit_limit, notes)
+       VALUES ($1,$2,$3,$4,$5)
+       RETURNING *`,
+      [req.user.shopId, name, phone, credit_limit, notes]
+    );
+    res.status(201).json({ customer: r.rows[0] });
+  } catch (err) {
+    if (err.code === '23505') {
+      throw ApiError.conflict('A customer with that phone number already exists in this shop');
+    }
+    throw err;
+  }
 };
 
 exports.get = async (req, res) => {

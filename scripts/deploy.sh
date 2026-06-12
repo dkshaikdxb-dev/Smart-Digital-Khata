@@ -65,3 +65,6 @@ fi
 
 log "Deployment complete."
 $DC ps
+echo
+log "Last 20 lines from backend:"
+$DC logs --tail=20 backend || true
