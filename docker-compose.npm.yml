@@ -1,7 +1,6 @@
 # Optional: Nginx Proxy Manager stack
 # Usage: docker compose -f docker-compose.npm.yml up -d
 # Then open http://YOUR_VPS_IP:81 and configure domains + SSL via the UI.
-version: "3.9"
 
 networks:
   skhata:

@@ -23,7 +23,12 @@ exports.razorpay = async (req, res) => {
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
-  const event = JSON.parse(raw.toString('utf8'));
+  let event;
+  try {
+    event = JSON.parse(raw.toString('utf8'));
+  } catch {
+    return res.status(400).json({ error: 'Malformed JSON' });
+  }
   logger.info({ type: event.event, id: event.id }, 'Razorpay webhook received');
 
   if (await alreadyProcessed(event.id, 'razorpay')) {
@@ -86,7 +91,12 @@ exports.whatsappVerify = (req, res) => {
 };
 
 exports.whatsappInbound = async (req, res) => {
-  const payload = JSON.parse(req.body.toString('utf8'));
+  let payload;
+  try {
+    payload = JSON.parse(req.body.toString('utf8'));
+  } catch {
+    return res.status(400).json({ error: 'Malformed JSON' });
+  }
   // Respond immediately so Meta does not retry
   res.status(200).json({ ok: true });
   // Process async with dedupe at the message level

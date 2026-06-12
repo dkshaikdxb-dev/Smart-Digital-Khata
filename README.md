@@ -98,7 +98,7 @@ nano .env   # fill in the values (see Environment Variables section)
 ./scripts/deploy.sh
 ```
 
-That's it. The API is now live at `http://YOUR_VPS_IP:4000` and the admin dashboard at `http://YOUR_VPS_IP:3000`.
+That's it. Visit `http://YOUR_VPS_IP` — nginx serves the admin dashboard at `/` and the API at `/api/`. (Direct ports 3000/4000 are bound to localhost only for security; everything public goes through nginx.)
 
 ### 5. Point Your Domain
 
@@ -236,6 +236,20 @@ docker compose logs -f backend
 ```
 
 More: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
+
+---
+
+## Documentation Index
+
+| Doc | What it covers |
+|-----|----------------|
+| [`docs/PRE_DEPLOYMENT_CHECKLIST.md`](docs/PRE_DEPLOYMENT_CHECKLIST.md) | Everything to prepare **before** deploying — accounts, DNS, env values, webhooks, smoke tests |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Step-by-step Hostinger VPS deployment |
+| [`docs/SSL.md`](docs/SSL.md) | HTTPS via Certbot or Nginx Proxy Manager |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Day-to-day manual for **platform admin**, **store owners**, and **customers** |
+| [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Diagnosis + fixes for every component |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Security posture and operator responsibilities |
+| [`docs/GAP_FIXES.md`](docs/GAP_FIXES.md) | Full audit history — what was found and how it was fixed |
 
 ---
 

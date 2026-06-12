@@ -5,7 +5,15 @@ const { pool } = require('../config/db');
 
 async function seed() {
   const email = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin1234';
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!password || password.includes('CHANGE_ME') || password.length < 10) {
+    console.error(
+      'Refusing to seed admin: set a strong ADMIN_PASSWORD (10+ chars) in .env first.'
+    );
+    await pool.end();
+    process.exit(1);
+  }
   const existing = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
   if (existing.rowCount) {
     console.log('Admin user already exists. Skipping.');

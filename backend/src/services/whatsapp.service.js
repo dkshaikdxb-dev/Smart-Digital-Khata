@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
+const { toWaFormat } = require('../utils/phone');
 
 const BASE = process.env.WHATSAPP_API_URL || 'https://graph.facebook.com/v18.0';
 const PHONE_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
@@ -15,7 +16,7 @@ async function sendText(to, body) {
     return { skipped: true };
   }
   const url = `${BASE}/${PHONE_ID}/messages`;
-  const normalized = to.startsWith('+') ? to.slice(1) : to;
+  const normalized = toWaFormat(to);
   try {
     const res = await axios.post(
       url,
@@ -38,7 +39,7 @@ async function sendText(to, body) {
 async function sendTemplate(to, name, languageCode = 'en', components = []) {
   if (!isConfigured()) return { skipped: true };
   const url = `${BASE}/${PHONE_ID}/messages`;
-  const normalized = to.startsWith('+') ? to.slice(1) : to;
+  const normalized = toWaFormat(to);
   const res = await axios.post(
     url,
     {

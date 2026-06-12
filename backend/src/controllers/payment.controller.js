@@ -2,6 +2,7 @@ const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
 const whatsapp = require('../services/whatsapp.service');
+const { toE164 } = require('../utils/phone');
 
 exports.createOrder = async (req, res) => {
   const { customer_id, amount, note } = req.body;
@@ -62,7 +63,7 @@ exports.sharePaymentLink = async (req, res) => {
       description: order.notes || `Payment to ${order.shop_name}`,
       customer: {
         name: order.customer_name,
-        contact: order.customer_phone,
+        contact: toE164(order.customer_phone),
       },
       reference_id: order.id,
       notes: { shop_id: order.shop_id, customer_id: order.customer_id, order_id: order.id },
