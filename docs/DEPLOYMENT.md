@@ -1,6 +1,9 @@
-# Deployment Guide — Hostinger VPS
+# Deployment Guide — Hostinger VPS (or any Linux VPS)
 
 This guide takes a **non-coder** from zero to a live Smart Digital Khata deployment.
+
+> Written for Hostinger, but the stack is **provider-agnostic** — see
+> [Deploying on other VPS providers](#deploying-on-other-vps-providers) at the end.
 
 ## What you need
 
@@ -159,3 +162,64 @@ crontab -e
 # add:
 0 2 * * * cd /opt/Smart-Digital-Khata && ./scripts/backup.sh /var/backups/skhata >> /var/log/skhata-backup.log 2>&1
 ```
+
+---
+
+## Deploying on other VPS providers
+
+Nothing in this stack is Hostinger-specific. Docker is the only real dependency,
+so any VPS that meets this checklist works — DigitalOcean, Vultr, Linode/Akamai,
+Hetzner, OVH, AWS Lightsail, Contabo, Algowid, or any local Indian provider.
+
+### Compatibility checklist (5-minute provider evaluation)
+
+| Requirement | Why | Minimum |
+|---|---|---|
+| ☐ Linux, **Ubuntu 22.04+ or Debian 12** image | `bootstrap-vps.sh` uses apt + Docker's Ubuntu/Debian repos | required |
+| ☐ **Root SSH access** (full, unmanaged) | Bootstrap installs Docker, configures UFW | required |
+| ☐ **KVM or dedicated virtualization** (not OpenVZ/LXC) | Docker needs a real kernel; old OpenVZ containers often can't run it | required |
+| ☐ **2 GB RAM** (4 GB comfortable) | Postgres + Redis + Node + Next.js + nginx | 2 GB + swap |
+| ☐ **1–2 vCPU**, **25 GB+ SSD** | Images + DB + logs | 25 GB |
+| ☐ **Public IPv4** address | DNS A records, webhooks from Razorpay/Meta | required |
+| ☐ Ports **22/80/443 open** (no forced provider firewall you can't edit) | SSH, HTTP, HTTPS | required |
+| ☐ No provider-blocked **outbound HTTPS** | Calls to Razorpay + Meta Graph API | required |
+
+Nice-to-haves: India/Middle East region (lower latency for Indian users and
+Razorpay), automatic VPS-level backups, DDoS protection.
+
+### What changes vs. the Hostinger guide
+
+Almost nothing:
+
+1. Buy the VPS with an **Ubuntu 22.04** image and note the IP + root credentials
+   (each provider's panel differs — that's the only "different" part).
+2. Steps 1–12 of this guide and the entire `PRE_DEPLOYMENT_CHECKLIST.md`
+   are identical from `ssh root@YOUR_VPS_IP` onward.
+3. GitHub auto-deploy secrets (`VPS_HOST`, etc.) just point at the new IP.
+
+### Migrating an existing deployment to a new provider
+
+```bash
+# Old VPS — take a backup
+cd /opt/Smart-Digital-Khata && ./scripts/backup.sh /tmp
+
+# Copy it across
+scp /tmp/skhata-*.sql.gz root@NEW_VPS_IP:/tmp/
+
+# New VPS — bootstrap, configure .env (same secrets), deploy, restore
+curl -fsSL https://raw.githubusercontent.com/dkshaikdxb-dev/Smart-Digital-Khata/main/scripts/bootstrap-vps.sh | bash
+cd /opt/Smart-Digital-Khata && cp .env.example .env && nano .env
+./scripts/deploy.sh
+gunzip -c /tmp/skhata-*.sql.gz | docker compose exec -T postgres psql -U skhata -d skhata
+
+# Finally: update your DNS A records to the new IP and update the
+# GitHub Actions secrets (VPS_HOST) for auto-deploy.
+```
+
+### Providers to avoid for this app
+
+- **Windows "algo trading" VPSes** (AlgoVPS, Algo Hosting, forex VPS plans) —
+  Windows-based, tuned for MetaTrader, premium-priced for low-latency trading.
+  This stack needs Linux; you'd pay more for features it can't use.
+- **Shared hosting / cPanel plans** — no root, no Docker.
+- **OpenVZ containers** — Docker frequently unsupported.
