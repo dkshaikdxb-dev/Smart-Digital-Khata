@@ -6,18 +6,22 @@
 #
 # The separate project name (-p smart-digital-khata-dev) gives development
 # its own containers, network, and volumes — fully isolated from a
-# production stack on the same machine. Dev defaults to offset host ports
-# (8080/8443/14000/13000/15432/16379) so both stacks can run side by side.
+# production stack on the same machine.
+#
+# Ports use DEV_-prefixed variables with offset defaults (8080/8443,
+# 14000, 13000, 15432, 16379), so the production port settings in .env
+# (HTTP_PORT, BACKEND_HOST_PORT, …) never leak into the dev stack and
+# both stacks always run side by side without collisions.
 # ============================================================================
 
 services:
   postgres:
-    ports:
-      - "127.0.0.1:${POSTGRES_HOST_PORT:-15432}:5432"
+    ports: !override
+      - "127.0.0.1:${DEV_POSTGRES_HOST_PORT:-15432}:5432"
 
   redis:
-    ports:
-      - "127.0.0.1:${REDIS_HOST_PORT:-16379}:6379"
+    ports: !override
+      - "127.0.0.1:${DEV_REDIS_HOST_PORT:-16379}:6379"
 
   backend:
     build:
@@ -34,14 +38,21 @@ services:
       - ./backend/src:/app/src:ro
       - ./backend/migrations:/app/migrations:ro
       - ./backend/package.json:/app/package.json:ro
-    ports:
-      - "127.0.0.1:${BACKEND_HOST_PORT:-14000}:4000"
+    ports: !override
+      - "127.0.0.1:${DEV_BACKEND_HOST_PORT:-14000}:4000"
 
   admin:
-    ports:
-      - "127.0.0.1:${ADMIN_HOST_PORT:-13000}:3000"
+    build:
+      args:
+        NEXT_PUBLIC_API_URL: ${DEV_NEXT_PUBLIC_API_URL:-http://localhost:14000}
+    image: smart-digital-khata-admin-dev
+    pull_policy: build
+    environment:
+      NEXT_PUBLIC_API_URL: ${DEV_NEXT_PUBLIC_API_URL:-http://localhost:14000}
+    ports: !override
+      - "127.0.0.1:${DEV_ADMIN_HOST_PORT:-13000}:3000"
 
   nginx:
-    ports:
-      - "${HTTP_PORT:-8080}:80"
-      - "${HTTPS_PORT:-8443}:443"
+    ports: !override
+      - "${DEV_HTTP_PORT:-8080}:80"
+      - "${DEV_HTTPS_PORT:-8443}:443"
