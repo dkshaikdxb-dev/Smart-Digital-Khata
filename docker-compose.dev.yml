@@ -23,6 +23,7 @@ services:
     build:
       target: dev           # full deps incl. nodemon (see backend/Dockerfile)
     image: smart-digital-khata-backend-dev
+    pull_policy: build      # local-only image — never try to pull it from a registry
     command: ["npx", "nodemon", "src/server.js"]
     working_dir: /app
     environment:
