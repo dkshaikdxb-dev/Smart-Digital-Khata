@@ -9,6 +9,7 @@
     "dev": "nodemon src/server.js",
     "migrate": "node src/utils/migrate.js",
     "seed": "node src/utils/seed.js",
+    "seed:demo": "node src/utils/seed-demo.js",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {

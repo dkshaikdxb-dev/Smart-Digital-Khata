@@ -17,6 +17,7 @@ export default function Customers() {
 
   useEffect(() => {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     load().catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -19,7 +19,8 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       window.localStorage.setItem('skhata_token', r.token);
-      router.push('/');
+      window.localStorage.setItem('skhata_role', r.user.role);
+      router.push(r.user.role === 'admin' ? '/admin' : '/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,7 +32,7 @@ export default function Login() {
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
       <form onSubmit={submit} className="card" style={{ width: 360 }}>
         <h2>Sign in</h2>
-        <p className="muted">Smart Digital Khata admin</p>
+        <p className="muted">Smart Digital Khata — shop &amp; platform sign-in</p>
         <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
           <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />

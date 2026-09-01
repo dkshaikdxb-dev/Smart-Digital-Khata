@@ -14,6 +14,10 @@ export default function Dashboard() {
       router.replace('/login');
       return;
     }
+    if (window.localStorage.getItem('skhata_role') === 'admin') {
+      router.replace('/admin');
+      return;
+    }
     Promise.all([apiFetch('/api/summaries/today'), apiFetch('/api/summaries/outstanding')])
       .then(([s, o]) => { setSummary(s); setOutstanding(o); })
       .catch((e) => setError(e.message));

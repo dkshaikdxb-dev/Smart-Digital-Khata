@@ -10,6 +10,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     apiFetch('/api/shops/me').then((r) => setShop(r.shop)).catch(console.error);
   }, [router]);
 
