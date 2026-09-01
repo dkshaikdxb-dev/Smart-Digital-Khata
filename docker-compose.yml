@@ -1,7 +1,16 @@
 # ============================================================================
-# Smart Digital Khata — docker-compose
-# One-command start: docker compose up -d
+# Smart Digital Khata — docker-compose (production/base)
+#
+# One-command start:  docker compose up -d
+# Development mode:   ./scripts/dev.sh   (adds docker-compose.dev.yml overlay)
+#
+# Isolation: the explicit project name below prefixes every container,
+# network, and volume with "smart-digital-khata", so this stack never
+# collides with other projects regardless of the folder it's cloned into.
+# All host ports are overridable via .env to avoid port clashes.
 # ============================================================================
+
+name: smart-digital-khata
 
 networks:
   skhata:
@@ -14,7 +23,6 @@ volumes:
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: skhata-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -27,7 +35,7 @@ services:
     # SECURITY: bound to localhost only — Docker published ports bypass UFW,
     # so "5432:5432" would expose the DB to the public internet.
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
     networks: [skhata]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -37,13 +45,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: skhata-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"
     networks: [skhata]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -55,21 +62,20 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: skhata-backend
     restart: unless-stopped
     env_file: .env
     environment:
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${BACKEND_PORT:-4000}
+      PORT: 4000
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     # Public traffic enters via nginx (80/443). Localhost binding keeps :4000
-    # available for on-VPS debugging and local mobile dev without exposing it.
+    # available for on-host debugging and local mobile dev without exposing it.
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-4000}:4000"
+      - "127.0.0.1:${BACKEND_HOST_PORT:-4000}:4000"
     networks: [skhata]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/health"]
@@ -83,26 +89,24 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-    container_name: skhata-admin
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
     depends_on:
       - backend
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${ADMIN_HOST_PORT:-3000}:3000"
     networks: [skhata]
 
   nginx:
     image: nginx:1.27-alpine
-    container_name: skhata-nginx
     restart: unless-stopped
     depends_on:
       - backend
       - admin
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docker/certs:/etc/nginx/certs:ro

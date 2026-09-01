@@ -70,7 +70,7 @@ Check everything is up:
 docker compose ps
 ```
 
-You should see `skhata-postgres`, `skhata-redis`, `skhata-backend`, `skhata-admin`, `skhata-nginx` all in `Up`.
+You should see the `smart-digital-khata` postgres, redis, backend, admin and nginx containers all in `Up (healthy)` state.
 
 Visit `http://YOUR_VPS_IP` — the admin dashboard should load.
 

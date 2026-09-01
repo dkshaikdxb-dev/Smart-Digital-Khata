@@ -2,10 +2,12 @@
 # Usage: docker compose -f docker-compose.npm.yml up -d
 # Then open http://YOUR_VPS_IP:81 and configure domains + SSL via the UI.
 
+name: smart-digital-khata-npm
+
 networks:
   skhata:
     external: true
-    name: Smart-Digital-Khata_skhata
+    name: smart-digital-khata_skhata
 
 volumes:
   npm-data:
@@ -14,7 +16,7 @@ volumes:
 services:
   nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:latest
-    container_name: skhata-npm
+    container_name: smart-digital-khata-npm
     restart: unless-stopped
     ports:
       - "80:80"

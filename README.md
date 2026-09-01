@@ -108,23 +108,34 @@ See [Domain + SSL](#domain--ssl).
 
 ## Local Development
 
+> Canonical dev environment: **WSL2 Ubuntu (on Windows) or any Linux/macOS shell + Docker Compose**.
+> Full guide incl. Windows/WSL2 setup: [`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md).
+
 ```bash
-# 1. Clone
+# 1. Clone (inside WSL2's ~/ on Windows, not /mnt/c)
 git clone https://github.com/dkshaikdxb-dev/Smart-Digital-Khata.git
 cd Smart-Digital-Khata
 
 # 2. Environment
 cp .env.example .env
 
-# 3. Start (hot reload via Docker bind mounts)
-docker compose up -d
+# 3a. Development mode — hot reload, isolated dev stack (ports 8080/14000/...)
+./scripts/dev.sh
+./scripts/dev.sh exec backend npm run migrate
 
-# 4. Run migrations
-docker compose exec backend npm run migrate
-
-# 5. Seed demo data (optional)
+# 3b. OR production-like mode — exactly what the VPS runs
+docker compose up -d --build
+./scripts/migrate.sh
 docker compose exec backend npm run seed
+
+# 4. Verify
+./scripts/health-check.sh
 ```
+
+Dev and prod-like stacks use separate Docker project names
+(`smart-digital-khata-dev` / `smart-digital-khata`), so they never share
+containers, volumes, networks, or ports — with each other or with any other
+project on your machine. All host ports are overridable in `.env`.
 
 Services:
 

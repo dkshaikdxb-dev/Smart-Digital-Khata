@@ -1,51 +1,59 @@
-# Local Testing Guide
+# Local Development & Testing Guide
 
-Test the full stack on your own computer before deploying to a VPS.
-Works on **Windows**, **macOS**, and **Linux** — Docker is the only requirement.
+**Canonical development environment: WSL2 Ubuntu + Docker / Docker Compose.**
+The same compose files run unchanged on macOS, native Linux, Hostinger KVM,
+any VPS, and container platforms — build once, reproduce anywhere.
 
 ---
 
-## Windows (PowerShell)
+## Windows — WSL2 Ubuntu (canonical)
 
-### 1. Install Docker Desktop
+### 1. One-time setup
 
-1. Download from https://www.docker.com/products/docker-desktop/
-2. Run the installer — keep **"Use WSL 2 instead of Hyper-V"** checked.
-3. Restart Windows when prompted.
-4. **Launch Docker Desktop** and wait for the tray whale to say "running".
-5. Verify in a fresh PowerShell window:
+1. **WSL2 + Ubuntu** (skip if already installed):
 
    ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+   Restart if prompted, then open the **Ubuntu** app and create your Linux user.
+
+2. **Docker Desktop** — install from https://www.docker.com/products/docker-desktop/
+   (x86_64 installer, keep "Use WSL 2" checked).
+
+3. **Enable WSL integration**: Docker Desktop → Settings → **Resources →
+   WSL Integration** → toggle **Ubuntu** on → Apply & Restart.
+
+4. Verify from an **Ubuntu** terminal (not PowerShell):
+
+   ```bash
    docker --version
    docker compose version
    ```
 
-### 2. Get the code
+### 2. Clone inside the WSL filesystem
 
-Fresh clone:
+> Keep the repo under `~/` in WSL (e.g. `~/projects/`), **not** under
+> `/mnt/c/...` — the Linux filesystem is dramatically faster for Docker
+> bind mounts and avoids Windows file-permission quirks.
 
-```powershell
+```bash
+mkdir -p ~/projects && cd ~/projects
 git clone https://github.com/dkshaikdxb-dev/Smart-Digital-Khata.git
 cd Smart-Digital-Khata
 ```
 
-Already have the folder? Update it instead:
+Testing a feature branch instead of main:
 
-```powershell
-cd Smart-Digital-Khata
-git fetch origin
-git checkout main          # or the feature branch you're testing
-git pull
+```bash
+git checkout <branch-name>
 ```
-
-> If `.env.example` is missing after checkout, you're on the wrong branch —
-> `git branch -a` to list, then `git checkout` the branch that has it.
 
 ### 3. Configure
 
-```powershell
-Copy-Item .env.example .env
-notepad .env
+```bash
+cp .env.example .env
+nano .env
 ```
 
 Minimum for local testing (Razorpay/WhatsApp placeholders can stay — those
@@ -60,28 +68,41 @@ ADMIN_PASSWORD=StrongAdminPass123
 
 ⚠️ The password inside `DATABASE_URL` must match `POSTGRES_PASSWORD`.
 
-### 4. Start
+### 4. Start — pick a mode
 
-```powershell
+**Development mode** (hot reload, isolated dev containers/volumes/ports):
+
+```bash
+./scripts/dev.sh              # foreground with logs; Ctrl+C to stop
+# or: ./scripts/dev.sh up -d  # detached
+./scripts/dev.sh exec backend npm run migrate
+./scripts/dev.sh exec backend npm run seed
+```
+
+Dev URLs: dashboard http://localhost:8080 · API http://localhost:14000/api/health
+
+**Production-like mode** (exactly what the VPS runs):
+
+```bash
 docker compose up -d --build
-docker compose exec backend npm run migrate
+./scripts/migrate.sh
 docker compose exec backend npm run seed
 ```
 
-> No `SEED_ADMIN=true` prefix here — that's bash syntax for the VPS
-> `deploy.sh`. `npm run seed` reads `ADMIN_PASSWORD` from `.env` directly.
+Prod-like URLs: dashboard http://localhost:80 · API http://localhost:4000/api/health
 
-First build takes 5–10 minutes; later runs are much faster.
+The two modes are fully isolated (separate project names
+`smart-digital-khata` / `smart-digital-khata-dev`, separate volumes,
+networks, and ports) and can run at the same time.
 
 ### 5. Verify
 
-```powershell
-docker compose ps                          # all services Up / healthy
-curl.exe http://localhost:4000/api/health  # {"status":"ok",...}
-start http://localhost:3000                # opens the dashboard
+```bash
+./scripts/health-check.sh                                        # prod-like stack
+PROJECT=smart-digital-khata-dev BACKEND_HOST_PORT=14000 ./scripts/health-check.sh   # dev stack
 ```
 
-Manual test flow in the browser:
+Manual browser flow:
 
 1. **Register** a shop account.
 2. **Customers** → add a customer with a credit limit (e.g. ₹500).
@@ -91,30 +112,32 @@ Manual test flow in the browser:
 
 ### 6. Stop / reset
 
-```powershell
-docker compose down          # stop (keeps data)
-docker compose down -v       # stop + wipe database (fresh start)
+```bash
+./scripts/dev.sh down         # stop dev (keeps data)
+./scripts/dev.sh down -v      # stop dev + wipe dev database
+docker compose down           # stop prod-like (keeps data)
+docker compose down -v        # stop prod-like + wipe its database
 ```
+
+Because every resource is prefixed `smart-digital-khata[-dev]`, none of
+these commands can touch any other project on your machine.
 
 ---
 
-## macOS / Linux (bash)
+## macOS / native Linux
 
-Same flow, bash syntax:
+Identical to the WSL2 steps from "Clone" onward — install Docker Desktop
+(macOS) or `curl -fsSL https://get.docker.com | sh` (Linux) first.
 
-```bash
-git clone https://github.com/dkshaikdxb-dev/Smart-Digital-Khata.git
-cd Smart-Digital-Khata
-cp .env.example .env && nano .env       # same minimum values as above
-docker compose up -d --build
-docker compose exec backend npm run migrate
-docker compose exec backend npm run seed
-curl http://localhost:4000/api/health
-open http://localhost:3000              # xdg-open on Linux
-```
+---
 
-macOS: install Docker Desktop from the same link (Apple Silicon and Intel builds).
-Linux: `curl -fsSL https://get.docker.com | sh` is the quickest path.
+## Plain PowerShell (fallback, not canonical)
+
+If you skip WSL2 and use PowerShell directly, everything works with two
+substitutions: `Copy-Item .env.example .env` instead of `cp`, and run the
+compose commands verbatim (`docker compose up -d --build`, etc.). The
+`./scripts/*.sh` helpers require a bash shell — from PowerShell invoke them
+as `wsl ./scripts/dev.sh` or use the underlying compose commands they wrap.
 
 ---
 
@@ -127,7 +150,7 @@ npx expo start
 ```
 
 - **Android emulator**: `app.json` → `expo.extra.apiUrl` is already `http://10.0.2.2:4000` (the emulator's alias for your computer's localhost).
-- **Physical phone (Expo Go)**: change `apiUrl` to your computer's LAN IP, e.g. `http://192.168.1.20:4000`, phone on the same Wi-Fi. On Windows find your IP with `ipconfig` (IPv4 Address).
+- **Physical phone (Expo Go)**: change `apiUrl` to your computer's LAN IP, e.g. `http://192.168.1.20:4000`, phone on the same Wi-Fi. On Windows find your IP with `ipconfig` (IPv4 Address); if the API runs inside WSL2, also run once in **admin PowerShell**: `netsh interface portproxy add v4tov4 listenport=4000 connectaddress=localhost` so the phone can reach it.
 - Windows Firewall may prompt to allow Node — allow on Private networks.
 
 ## What you can't test locally
@@ -140,3 +163,18 @@ npx expo start
 
 Everything else — auth, ledger, credit limits, summaries, subscriptions,
 admin, the dashboard, the mobile app — works fully offline.
+
+---
+
+## Isolation & portability guarantees
+
+| Requirement | How it's met |
+|---|---|
+| Project-specific Docker resources | Compose project name pinned to `smart-digital-khata`; every container/network/volume carries the prefix regardless of folder name |
+| No shared DBs/volumes/networks | All resources project-scoped; nothing references another project |
+| No port conflicts | Every host port overridable in `.env` (`HTTP_PORT`, `BACKEND_HOST_PORT`, …); internal ports fixed; DB/Redis/app ports localhost-bound |
+| Dev isolated from prod | `./scripts/dev.sh` runs project `smart-digital-khata-dev` — own containers, volumes, ports |
+| Safe redeploy without data loss | `deploy.sh` never removes volumes; migrations are additive and recorded in `_migrations` |
+| Reproducible from GitHub | Lockfiles committed, `npm ci` in images, pinned base images, `.env.example` documents all config |
+| Provider-independent | No provider APIs anywhere; see docs/DEPLOYMENT.md § other providers |
+| Scripts | `dev.sh`, `deploy.sh`, `health-check.sh`, `migrate.sh`, `backup.sh`, `restore.sh`, `bootstrap-vps.sh`, `setup-ssl.sh` |

@@ -66,12 +66,12 @@ crontab -e
 5. Add a **Proxy Host**:
    - Domain Names: `yourdomain.com`
    - Scheme: `http`
-   - Forward Hostname / IP: `skhata-admin`
+   - Forward Hostname / IP: `admin` (service name on the shared network)
    - Forward Port: `3000`
    - Enable "Websockets support", "Block common exploits", "Cache assets"
 
 6. Go to the **SSL** tab → "Request a new SSL certificate" (Let's Encrypt) → enable "Force SSL" + HSTS → Save.
 
-7. Repeat for `api.yourdomain.com` → forward to `skhata-backend:4000`.
+7. Repeat for `api.yourdomain.com` → forward to `backend:4000`.
 
 Done — NPM renews certs automatically.

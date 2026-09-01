@@ -9,6 +9,16 @@ RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
+# Development stage — full deps (incl. nodemon) + source; used by
+# docker-compose.dev.yml, never in production.
+FROM node:20-alpine AS dev
+WORKDIR /app
+RUN apk add --no-cache python3 make g++ wget
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+CMD ["npx", "nodemon", "src/server.js"]
+
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production

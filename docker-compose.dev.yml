@@ -1,0 +1,46 @@
+# ============================================================================
+# Development overlay — run via ./scripts/dev.sh (never by hand in prod).
+#
+#   docker compose -p smart-digital-khata-dev \
+#     -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# The separate project name (-p smart-digital-khata-dev) gives development
+# its own containers, network, and volumes — fully isolated from a
+# production stack on the same machine. Dev defaults to offset host ports
+# (8080/8443/14000/13000/15432/16379) so both stacks can run side by side.
+# ============================================================================
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-15432}:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT:-16379}:6379"
+
+  backend:
+    build:
+      target: dev           # full deps incl. nodemon (see backend/Dockerfile)
+    image: smart-digital-khata-backend-dev
+    command: ["npx", "nodemon", "src/server.js"]
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+    volumes:
+      # Hot reload: source is bind-mounted; node_modules stays in the image
+      - ./backend/src:/app/src:ro
+      - ./backend/migrations:/app/migrations:ro
+      - ./backend/package.json:/app/package.json:ro
+    ports:
+      - "127.0.0.1:${BACKEND_HOST_PORT:-14000}:4000"
+
+  admin:
+    ports:
+      - "127.0.0.1:${ADMIN_HOST_PORT:-13000}:3000"
+
+  nginx:
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
