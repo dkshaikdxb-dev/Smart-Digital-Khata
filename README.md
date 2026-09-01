@@ -254,7 +254,8 @@ More: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
 
 | Doc | What it covers |
 |-----|----------------|
-| [`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md) | Test everything on your own computer first — **Windows (PowerShell)**, macOS, Linux |
+| [`docs/PRODUCT.md`](docs/PRODUCT.md) | **Product document** — vision, personas, feature spec, journeys, pricing, roadmap, metrics |
+| [`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md) | Test everything on your own computer first — **Windows (WSL2)**, macOS, Linux |
 | [`docs/PRE_DEPLOYMENT_CHECKLIST.md`](docs/PRE_DEPLOYMENT_CHECKLIST.md) | Everything to prepare **before** deploying — accounts, DNS, env values, webhooks, smoke tests |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Step-by-step Hostinger VPS deployment |
 | [`docs/SSL.md`](docs/SSL.md) | HTTPS via Certbot or Nginx Proxy Manager |
