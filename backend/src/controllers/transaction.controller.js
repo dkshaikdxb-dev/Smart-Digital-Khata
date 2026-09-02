@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
 
   const result = await withTx(async (client) => {
     const c = await client.query(
-      'SELECT id, shop_id, name, phone, credit_limit, balance FROM customers WHERE id=$1 AND shop_id=$2 FOR UPDATE',
+      'SELECT id, shop_id, name, phone, credit_limit, balance, notifications_enabled FROM customers WHERE id=$1 AND shop_id=$2 FOR UPDATE',
       [customer_id, req.user.shopId]
     );
     if (!c.rowCount) throw ApiError.notFound('Customer not found');

@@ -10,5 +10,6 @@ router.use('/summaries', require('./summary.routes'));
 router.use('/notifications', require('./notification.routes'));
 router.use('/admin', require('./admin.routes'));
 router.use('/webhooks', require('./webhook.routes'));
+router.use('/public', require('./public.routes'));
 
 module.exports = router;

@@ -40,6 +40,31 @@ export default function Customers() {
     }
   }
 
+  async function toggleNotifications(c) {
+    setError('');
+    try {
+      await apiFetch(`/api/customers/${c.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ notifications_enabled: !(c.notifications_enabled !== false) }),
+      });
+      await load();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function shareKhata(c) {
+    setError('');
+    try {
+      const r = await apiFetch(`/api/customers/${c.id}/share-link`, {
+        method: 'POST',
+        body: JSON.stringify({ send: true }),
+      });
+      window.prompt(
+        r.sent ? 'Khata link sent on WhatsApp. Copy if needed:' : 'Khata link (copy and share):',
+        r.link
+      );
+    } catch (err) { setError(err.message); }
+  }
+
   const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
   return (
@@ -65,7 +90,7 @@ export default function Customers() {
           </div>
           <table>
             <thead>
-              <tr><th>Name</th><th>Phone</th><th>Credit limit</th><th>Balance</th><th>Status</th></tr>
+              <tr><th>Name</th><th>Phone</th><th>Credit limit</th><th>Balance</th><th>Alerts</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {items.map((c) => (
@@ -74,7 +99,20 @@ export default function Customers() {
                   <td>{c.phone}</td>
                   <td>{fmt(c.credit_limit)}</td>
                   <td>{fmt(c.balance)}</td>
-                  <td><span className="badge">{c.status}</span></td>
+                  <td>
+                    <button
+                      className="secondary"
+                      title={c.notifications_enabled !== false ? 'WhatsApp alerts on — click to mute' : 'Muted — click to enable'}
+                      onClick={() => toggleNotifications(c)}
+                    >
+                      {c.notifications_enabled !== false ? '🔔 On' : '🔕 Off'}
+                    </button>
+                  </td>
+                  <td>
+                    <button className="secondary" title="Send read-only khata link on WhatsApp" onClick={() => shareKhata(c)}>
+                      Share khata
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

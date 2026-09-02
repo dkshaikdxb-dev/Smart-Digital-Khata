@@ -45,8 +45,29 @@ async function createPaymentLink({ amount, description, customer, notes, referen
   });
 }
 
+/** Razorpay plan IDs configured in the dashboard, mapped from our plan codes. */
+function planIdFor(planCode) {
+  const map = {
+    pro: process.env.RAZORPAY_PLAN_PRO,
+    family: process.env.RAZORPAY_PLAN_FAMILY,
+  };
+  return map[planCode] || null;
+}
+
+function isSubscriptionBillingConfigured(planCode) {
+  return Boolean(
+    process.env.RAZORPAY_KEY_ID &&
+    process.env.RAZORPAY_KEY_SECRET &&
+    planIdFor(planCode)
+  );
+}
+
 async function createSubscription({ plan_id, customer_notify = 1, total_count = 12, notes }) {
   return getClient().subscriptions.create({ plan_id, customer_notify, total_count, notes });
+}
+
+async function cancelSubscription(subscriptionId, cancelAtCycleEnd = false) {
+  return getClient().subscriptions.cancel(subscriptionId, cancelAtCycleEnd);
 }
 
 function verifyWebhookSignature(rawBody, signatureHeader) {
@@ -60,4 +81,12 @@ function verifyWebhookSignature(rawBody, signatureHeader) {
   }
 }
 
-module.exports = { createOrder, createPaymentLink, createSubscription, verifyWebhookSignature };
+module.exports = {
+  createOrder,
+  createPaymentLink,
+  createSubscription,
+  cancelSubscription,
+  planIdFor,
+  isSubscriptionBillingConfigured,
+  verifyWebhookSignature,
+};

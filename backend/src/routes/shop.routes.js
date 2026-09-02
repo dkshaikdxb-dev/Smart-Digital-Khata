@@ -9,6 +9,7 @@ const updateSchema = Joi.object({
   name: Joi.string().min(2).max(120),
   notification_mode: Joi.string().valid('silent', 'smart', 'active'),
   default_credit_limit: Joi.number().min(0),
+  daily_digest: Joi.boolean(),
 });
 
 router.use(auth());

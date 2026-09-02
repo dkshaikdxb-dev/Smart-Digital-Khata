@@ -10,14 +10,15 @@ const QUEUES = {
 };
 
 async function enqueueDailyReminders() {
-  // For every "active" shop, send a reminder to each customer with a positive balance.
+  // For every "active" shop, send a reminder to each opted-in customer with dues.
   const shopRes = await query(
     `SELECT id FROM shops WHERE notification_mode = 'active'`
   );
   let queued = 0;
   for (const shop of shopRes.rows) {
     const custRes = await query(
-      `SELECT id FROM customers WHERE shop_id = $1 AND balance > 0 AND status='active'`,
+      `SELECT id FROM customers
+       WHERE shop_id = $1 AND balance > 0 AND status='active' AND notifications_enabled = true`,
       [shop.id]
     );
     for (const c of custRes.rows) {
@@ -50,14 +51,28 @@ function startWorkers() {
   new Worker(
     'summaries',
     async (job) => {
+      // Nightly tick fans out one digest job per shop; per-shop jobs send it.
+      if (job.name === 'daily-digest') return enqueueOwnerDigests();
       const { shopId } = job.data;
-      logger.info({ shopId }, 'Computing daily summary');
-      // TODO: persist summary + notify shop owner
+      await notifier.sendOwnerDigest(shopId);
     },
-    { connection }
+    { connection, concurrency: 5 }
   );
 
   scheduleRecurring().catch((e) => logger.error({ err: e.message }, 'scheduleRecurring failed'));
+}
+
+async function enqueueOwnerDigests() {
+  const shops = await query(`SELECT id FROM shops WHERE daily_digest = true`);
+  for (const s of shops.rows) {
+    await QUEUES.summaries.add('send-digest', { shopId: s.id }, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 30_000 },
+      removeOnComplete: 1000,
+      removeOnFail: 1000,
+    });
+  }
+  logger.info({ shops: shops.rowCount }, 'Owner digests enqueued');
 }
 
 async function scheduleRecurring() {
@@ -67,6 +82,16 @@ async function scheduleRecurring() {
     {
       repeat: { pattern: '0 9 * * *', tz: process.env.TZ || 'Asia/Kolkata' }, // 9am IST
       jobId: 'daily-reminders',
+      removeOnComplete: 100,
+      removeOnFail: 100,
+    }
+  );
+  await QUEUES.summaries.add(
+    'daily-digest',
+    {},
+    {
+      repeat: { pattern: '0 21 * * *', tz: process.env.TZ || 'Asia/Kolkata' }, // 9pm IST — closing time
+      jobId: 'daily-digest',
       removeOnComplete: 100,
       removeOnFail: 100,
     }

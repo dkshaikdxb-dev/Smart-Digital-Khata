@@ -76,8 +76,72 @@ exports.razorpay = async (req, res) => {
     }
   }
 
+  if (event.event && event.event.startsWith('subscription.')) {
+    await handleSubscriptionEvent(event);
+  }
+
   res.json({ ok: true });
 };
+
+/**
+ * Razorpay subscription lifecycle:
+ *   subscription.activated → mark active, flip the shop's plan
+ *   subscription.charged   → keep active (record renewal)
+ *   subscription.halted / .cancelled / .completed / .expired → downgrade shop to free
+ *   subscription.pending   → past_due (payment retrying)
+ */
+async function handleSubscriptionEvent(event) {
+  const entity = event.payload?.subscription?.entity;
+  if (!entity?.id) return;
+
+  const local = await query(
+    'SELECT * FROM subscriptions WHERE provider_subscription_id = $1',
+    [entity.id]
+  );
+  if (!local.rowCount) {
+    logger.warn({ sub: entity.id, type: event.event }, 'Subscription webhook: no local record');
+    return;
+  }
+  const sub = local.rows[0];
+
+  switch (event.event) {
+    case 'subscription.activated':
+    case 'subscription.charged':
+      await withTx(async (client) => {
+        await client.query(
+          `UPDATE subscriptions SET status='active' WHERE id = $1`,
+          [sub.id]
+        );
+        await client.query('UPDATE shops SET plan = $1 WHERE id = $2', [sub.plan, sub.shop_id]);
+      });
+      logger.info({ shop: sub.shop_id, plan: sub.plan, type: event.event }, 'Subscription active');
+      break;
+
+    case 'subscription.pending':
+      await query(`UPDATE subscriptions SET status='past_due' WHERE id = $1`, [sub.id]);
+      break;
+
+    case 'subscription.halted':
+    case 'subscription.cancelled':
+    case 'subscription.completed':
+    case 'subscription.expired':
+      await withTx(async (client) => {
+        await client.query(
+          `UPDATE subscriptions
+           SET status = CASE WHEN $2 = 'subscription.halted' THEN 'halted' ELSE 'cancelled' END,
+               cancelled_at = COALESCE(cancelled_at, NOW())
+           WHERE id = $1`,
+          [sub.id, event.event]
+        );
+        await client.query(`UPDATE shops SET plan='free' WHERE id = $1`, [sub.shop_id]);
+      });
+      logger.info({ shop: sub.shop_id, type: event.event }, 'Subscription ended — shop downgraded to free');
+      break;
+
+    default:
+      break;
+  }
+}
 
 // Meta sends GET with hub.* params during webhook subscription
 exports.whatsappVerify = (req, res) => {

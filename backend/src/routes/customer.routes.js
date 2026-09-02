@@ -18,6 +18,12 @@ const updateSchema = Joi.object({
   credit_limit: Joi.number().min(0),
   notes: Joi.string().allow('', null),
   status: Joi.string().valid('active', 'archived'),
+  notifications_enabled: Joi.boolean(),
+});
+
+const shareSchema = Joi.object({
+  send: Joi.boolean().default(false),
+  regenerate: Joi.boolean().default(false),
 });
 
 router.use(auth());
@@ -26,5 +32,6 @@ router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.get('/:id', asyncHandler(ctrl.get));
 router.patch('/:id', validate(updateSchema), asyncHandler(ctrl.update));
 router.get('/:id/ledger', asyncHandler(ctrl.ledger));
+router.post('/:id/share-link', validate(shareSchema), asyncHandler(ctrl.shareLink));
 
 module.exports = router;
