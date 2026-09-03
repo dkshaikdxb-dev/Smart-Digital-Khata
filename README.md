@@ -258,6 +258,7 @@ More: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
 | [`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md) | Test everything on your own computer first — **Windows (WSL2)**, macOS, Linux |
 | [`docs/PRE_DEPLOYMENT_CHECKLIST.md`](docs/PRE_DEPLOYMENT_CHECKLIST.md) | Everything to prepare **before** deploying — accounts, DNS, env values, webhooks, smoke tests |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Step-by-step Hostinger VPS deployment |
+| [`docs/GO_LIVE_INTEGRATIONS.md`](docs/GO_LIVE_INTEGRATIONS.md) | Turn on payments (Razorpay) + WhatsApp with real keys — deployment-specific steps |
 | [`docs/SHARED_VPS.md`](docs/SHARED_VPS.md) | Deploying alongside other apps on one VPS (subdomain + existing reverse proxy) |
 | [`docs/SSL.md`](docs/SSL.md) | HTTPS via Certbot or Nginx Proxy Manager |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Day-to-day manual for **platform admin**, **store owners**, and **customers** |
