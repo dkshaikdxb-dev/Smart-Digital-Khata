@@ -7,19 +7,47 @@
   --danger: #ef4444;
 }
 * { box-sizing: border-box; }
-html, body, #__next { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+html, body, #__next { margin: 0; padding: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; -webkit-text-size-adjust: 100%; }
 a { color: var(--accent); text-decoration: none; }
 button { cursor: pointer; padding: 8px 14px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-weight: 600; }
 button.secondary { background: #334155; color: var(--text); }
-input { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0b1220; color: var(--text); width: 100%; }
+input, select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0b1220; color: var(--text); width: 100%; font-size: 16px; }
 .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
 .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .kpi { font-size: 28px; font-weight: 700; }
 .muted { color: var(--muted); font-size: 14px; }
+
+/* Tables scroll horizontally inside their card instead of clipping the page */
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 10px 12px; border-bottom: 1px solid #334155; text-align: left; font-size: 14px; }
+.card { overflow-x: auto; }
+th, td { padding: 10px 12px; border-bottom: 1px solid #334155; text-align: left; font-size: 14px; white-space: nowrap; }
 th { color: var(--muted); font-weight: 600; }
-.nav { display: flex; gap: 14px; align-items: center; padding: 12px 24px; border-bottom: 1px solid #334155; }
+
+/* Sticky, wrapping app bar with safe-area padding for standalone PWA */
+.nav {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  padding: 12px 16px;
+  padding-top: calc(12px + env(safe-area-inset-top));
+  border-bottom: 1px solid #334155;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg);
+}
 .nav a { color: var(--text); }
-.badge { padding: 2px 8px; border-radius: 999px; background: #334155; font-size: 12px; }
+.nav strong { margin-right: 4px; }
+.badge { padding: 2px 8px; border-radius: 999px; background: #334155; font-size: 12px; white-space: nowrap; }
+
+/* Mobile: forms and containers stack cleanly */
+@media (max-width: 640px) {
+  .container { padding: 16px; }
+  .card { padding: 16px; }
+  .kpi { font-size: 24px; }
+  /* single-column any inline grid forms (customer add, transaction entry) */
+  form[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  .nav { gap: 8px 12px; font-size: 15px; }
+}
+
+/* Respect the notch/home-indicator on the sides + bottom in standalone mode */
+@supports (padding: max(0px)) {
+  .container { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+}
