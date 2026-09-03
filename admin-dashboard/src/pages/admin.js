@@ -33,20 +33,24 @@ export default function PlatformAdmin() {
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
 
         <div className="grid">
-          <div className="card"><div className="muted">Shops</div><div className="kpi">{stats ? stats.shops : '—'}</div></div>
+          <div className="card"><div className="muted">MRR</div><div className="kpi" style={{ color: 'var(--accent)' }}>{stats ? fmt(stats.mrr) : '—'}</div><div className="muted">{stats ? `${stats.plan_counts.pro} Pro · ${stats.plan_counts.family} Family` : ''}</div></div>
+          <div className="card"><div className="muted">Shops</div><div className="kpi">{stats ? stats.shops : '—'}</div><div className="muted">{stats && stats.suspended_shops ? `${stats.suspended_shops} suspended` : 'all active'}</div></div>
           <div className="card"><div className="muted">Users</div><div className="kpi">{stats ? stats.users : '—'}</div></div>
           <div className="card"><div className="muted">Transactions</div><div className="kpi">{stats ? stats.transactions : '—'}</div></div>
           <div className="card"><div className="muted">Outstanding (platform)</div><div className="kpi">{stats ? fmt(stats.outstanding_total) : '—'}</div></div>
         </div>
 
         <div className="card">
-          <h3>Shops</h3>
+          <h3>Shops <span className="muted" style={{ fontWeight: 400, fontSize: 13 }}>— tap a shop to manage</span></h3>
           <DataTable
             empty="No shops yet."
+            onRowClick={(s) => router.push(`/admin/shops/${s.id}`)}
             columns={[
               { key: 'name', label: 'Shop', render: (s) => <strong>{s.name}</strong> },
               { key: 'plan', label: 'Plan', render: (s) => <span className="badge">{s.plan}</span> },
-              { key: 'notification_mode', label: 'Notifications' },
+              { key: 'status', label: 'Status', render: (s) => (
+                <span className="badge" style={s.status === 'suspended' ? { background: 'var(--danger)', color: '#fff' } : undefined}>{s.status || 'active'}</span>
+              ) },
               { key: 'customers_count', label: 'Customers', align: 'right' },
               { key: 'created_at', label: 'Created', render: (s) => new Date(s.created_at).toLocaleDateString() },
             ]}

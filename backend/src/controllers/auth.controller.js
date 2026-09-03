@@ -60,6 +60,14 @@ exports.login = async (req, res) => {
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) throw ApiError.unauthorized('Invalid credentials');
 
+  // Block sign-in for owners whose shop has been suspended by the platform.
+  if (user.role === 'owner' && user.shop_id) {
+    const s = await query('SELECT status FROM shops WHERE id = $1', [user.shop_id]);
+    if (s.rowCount && s.rows[0].status === 'suspended') {
+      throw ApiError.forbidden('This account is suspended. Please contact support.');
+    }
+  }
+
   delete user.password_hash;
   const token = signToken(user);
   res.json({ token, user });
