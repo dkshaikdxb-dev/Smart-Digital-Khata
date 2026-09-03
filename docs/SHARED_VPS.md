@@ -33,6 +33,29 @@ dashboard, so no separate `api.` record is needed.
 
 ---
 
+## srv1567165 — confirmed topology (discovered 2026-09-03)
+
+Discovery on this server showed:
+
+- **`algomind_nginx`** (Docker) owns `0.0.0.0:80/443` — it is the shared
+  reverse proxy, serving Algomind and ZipCare. **`algomind_certbot`**
+  handles Let's Encrypt renewals (webroot pattern).
+- Host-port collisions with our defaults — set these in `.env`:
+
+  ```bash
+  POSTGRES_HOST_PORT=5433    # 5432 taken by algomind_db
+  REDIS_HOST_PORT=6380       # 6379 taken by algomind_redis
+  ADMIN_HOST_PORT=3002       # 3000 = algomind_grafana, 3001 = algomind_frontend
+  # BACKEND_HOST_PORT=4000 is fine (zipcare_backend's 4000 is container-internal)
+  # SHARED_HTTP_PORT=8090 is free
+  ```
+
+- Integration = **Path B variant** below (plain nginx container, not NPM):
+  join `algomind_nginx` to our network and proxy to the `skhata-gateway`
+  alias. Full commands in "Path B2 — plain nginx container" further down.
+
+---
+
 ## Step 0 — Discover what owns 80/443 (30 seconds)
 
 SSH in (`ssh root@187.127.148.111`) and run:
@@ -150,6 +173,72 @@ Two options; the first is cleaner:
 
 2. Or forward to the host gateway instead: hostname `172.17.0.1`, port `8090`
    (works when NPM is on the default bridge; no network join needed).
+
+### Path B2 — plain nginx container as shared proxy (srv1567165's case)
+
+The proxy is an nginx **container** (here `algomind_nginx`) with a certbot
+sidecar. Extend it like this:
+
+```bash
+# 1. Find where its config and certbot webroot live on the host
+docker inspect algomind_nginx --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'
+# Look for the mount ending in /etc/nginx/conf.d (call it CONF_DIR)
+# and the certbot webroot (usually .../certbot/www -> /var/www/certbot)
+# and certs (.../certbot/conf -> /etc/letsencrypt)
+
+# 2. Let the proxy reach our stack by name
+docker network connect smart-digital-khata_skhata algomind_nginx
+
+# 3. HTTP server block first (ACME challenge + temporary proxy)
+cat > CONF_DIR/khata.conf <<'EOF'
+server {
+    listen 80;
+    server_name khata.dadashaik.com;
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+EOF
+docker exec algomind_nginx nginx -t && docker exec algomind_nginx nginx -s reload
+
+# 4. Issue the certificate with the existing certbot container
+docker compose -f <algomind compose file> run --rm certbot \
+  certonly --webroot -w /var/www/certbot -d khata.dadashaik.com
+# (or: docker exec algomind_certbot certbot certonly --webroot -w /var/www/certbot -d khata.dadashaik.com)
+
+# 5. Add the HTTPS block
+cat >> CONF_DIR/khata.conf <<'EOF'
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name khata.dadashaik.com;
+    ssl_certificate     /etc/letsencrypt/live/khata.dadashaik.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/khata.dadashaik.com/privkey.pem;
+    location / {
+        proxy_pass http://skhata-gateway:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        client_max_body_size 5m;
+    }
+}
+EOF
+docker exec algomind_nginx nginx -t && docker exec algomind_nginx nginx -s reload
+```
+
+`skhata-gateway` is a stable DNS alias our nginx carries on the
+`smart-digital-khata_skhata` network (see docker-compose.sharedvps.yml), so
+this survives container restarts and renames.
+
+> The `docker network connect` in step 2 does not persist if the algomind
+> stack is recreated (`docker compose up` on it). To make it permanent, add
+> `smart-digital-khata_skhata` as an external network on the algomind_nginx
+> service in the algomind compose file — or simply re-run the connect
+> command after redeploying algomind. Renewal: the existing certbot renew
+> cycle picks up the new cert automatically (same webroot).
 
 ### Path C — Traefik / Caddy
 

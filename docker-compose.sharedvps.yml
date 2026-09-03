@@ -16,3 +16,9 @@ services:
   nginx:
     ports: !override
       - "127.0.0.1:${SHARED_HTTP_PORT:-8090}:80"
+    networks:
+      skhata:
+        # Stable DNS name for the host's existing reverse-proxy container
+        # after it is joined to this network via:
+        #   docker network connect smart-digital-khata_skhata <proxy-container>
+        aliases: [skhata-gateway]
