@@ -51,3 +51,21 @@ th { color: var(--muted); font-weight: 600; }
 @supports (padding: max(0px)) {
   .container { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
 }
+
+/* Responsive DataTable: table on desktop, stacked cards on phones */
+.dt-table { overflow-x: auto; }
+.dt-cards { display: none; }
+.dt-card { border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: #0b1220; }
+.dt-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid #1e293b; }
+.dt-row:last-child { border-bottom: none; }
+.dt-key { color: var(--muted); font-size: 13px; }
+.dt-val { text-align: right; font-size: 14px; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .dt-table { display: none; }
+  .dt-cards { display: block; }
+  .card { overflow-x: visible; } /* cards handle their own width now */
+}
+
+/* Row action buttons */
+.row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.row-actions button { padding: 6px 10px; font-size: 13px; }

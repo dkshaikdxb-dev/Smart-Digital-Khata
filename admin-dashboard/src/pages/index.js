@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
 
 export default function Dashboard() {
@@ -53,20 +54,18 @@ export default function Dashboard() {
 
         <div className="card">
           <h3>Top outstanding</h3>
-          <table>
-            <thead>
-              <tr><th>Customer</th><th>Phone</th><th>Outstanding</th></tr>
-            </thead>
-            <tbody>
-              {outstanding?.customers?.slice(0, 10).map((c) => (
-                <tr key={c.id}>
-                  <td>{c.name}</td>
-                  <td>{c.phone}</td>
-                  <td>{fmt(c.balance)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            empty="No dues outstanding. 🎉"
+            onRowClick={(c) => router.push(`/customers/${c.id}`)}
+            columns={[
+              { key: 'name', label: 'Customer', render: (c) => <strong>{c.name}</strong> },
+              { key: 'phone', label: 'Phone' },
+              { key: 'balance', label: 'Outstanding', align: 'right', render: (c) => (
+                <span style={{ color: 'var(--danger)' }}>{fmt(c.balance)}</span>
+              ) },
+            ]}
+            rows={(outstanding?.customers || []).slice(0, 10)}
+          />
         </div>
       </div>
     </div>

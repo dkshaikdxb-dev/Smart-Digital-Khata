@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
 
 export default function Transactions() {
@@ -9,12 +10,16 @@ export default function Transactions() {
   const [customers, setCustomers] = useState([]);
   const [form, setForm] = useState({ customer_id: '', type: 'purchase', amount: '', note: '' });
   const [request, setRequest] = useState({ customer_id: '', amount: '', note: '' });
+  const [filter, setFilter] = useState({ customer_id: '', type: '' });
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
 
   async function load() {
+    const qs = new URLSearchParams();
+    if (filter.customer_id) qs.set('customer_id', filter.customer_id);
+    if (filter.type) qs.set('type', filter.type);
     const [tx, c] = await Promise.all([
-      apiFetch('/api/transactions'),
+      apiFetch(`/api/transactions?${qs.toString()}`),
       apiFetch('/api/customers'),
     ]);
     setItems(tx.items);
@@ -112,23 +117,35 @@ export default function Transactions() {
         </div>
 
         <div className="card">
-          <h3>Recent</h3>
-          <table>
-            <thead>
-              <tr><th>When</th><th>Type</th><th>Method</th><th>Amount</th><th>Note</th></tr>
-            </thead>
-            <tbody>
-              {items.map((t) => (
-                <tr key={t.id}>
-                  <td>{new Date(t.created_at).toLocaleString()}</td>
-                  <td><span className="badge">{t.type}</span></td>
-                  <td>{t.method}</td>
-                  <td>{fmt(t.amount)}</td>
-                  <td>{t.note || ''}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <h3>History</h3>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+            <select value={filter.customer_id} onChange={(e) => setFilter({ ...filter, customer_id: e.target.value })} style={{ flex: 1, minWidth: 160 }}>
+              <option value="">All customers</option>
+              {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select value={filter.type} onChange={(e) => setFilter({ ...filter, type: e.target.value })} style={{ flex: 1, minWidth: 120 }}>
+              <option value="">All types</option>
+              <option value="purchase">Purchase</option>
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+            </select>
+            <button className="secondary" onClick={() => load()}>Apply</button>
+          </div>
+          <DataTable
+            empty="No transactions match."
+            columns={[
+              { key: 'created_at', label: 'When', render: (t) => new Date(t.created_at).toLocaleString() },
+              { key: 'type', label: 'Type', render: (t) => <span className="badge">{t.type}</span> },
+              { key: 'method', label: 'Method' },
+              { key: 'amount', label: 'Amount', align: 'right', render: (t) => (
+                <span style={{ color: t.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
+                  {t.type === 'purchase' ? '+' : '−'}{fmt(t.amount)}
+                </span>
+              ) },
+              { key: 'note', label: 'Note', render: (t) => t.note || '' },
+            ]}
+            rows={items}
+          />
         </div>
       </div>
     </div>

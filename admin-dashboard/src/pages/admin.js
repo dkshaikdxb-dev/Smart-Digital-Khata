@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
 
 const fmt = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
@@ -40,42 +41,32 @@ export default function PlatformAdmin() {
 
         <div className="card">
           <h3>Shops</h3>
-          <table>
-            <thead>
-              <tr><th>Shop</th><th>Plan</th><th>Notifications</th><th>Customers</th><th>Created</th></tr>
-            </thead>
-            <tbody>
-              {shops.map((s) => (
-                <tr key={s.id}>
-                  <td>{s.name}</td>
-                  <td><span className="badge">{s.plan}</span></td>
-                  <td>{s.notification_mode}</td>
-                  <td>{s.customers_count}</td>
-                  <td>{new Date(s.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            empty="No shops yet."
+            columns={[
+              { key: 'name', label: 'Shop', render: (s) => <strong>{s.name}</strong> },
+              { key: 'plan', label: 'Plan', render: (s) => <span className="badge">{s.plan}</span> },
+              { key: 'notification_mode', label: 'Notifications' },
+              { key: 'customers_count', label: 'Customers', align: 'right' },
+              { key: 'created_at', label: 'Created', render: (s) => new Date(s.created_at).toLocaleDateString() },
+            ]}
+            rows={shops}
+          />
         </div>
 
         <div className="card">
           <h3>Users</h3>
-          <table>
-            <thead>
-              <tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th></tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.name}</td>
-                  <td>{u.email}</td>
-                  <td>{u.phone}</td>
-                  <td><span className="badge">{u.role}</span></td>
-                  <td>{new Date(u.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            empty="No users yet."
+            columns={[
+              { key: 'name', label: 'Name', render: (u) => <strong>{u.name}</strong> },
+              { key: 'email', label: 'Email' },
+              { key: 'phone', label: 'Phone' },
+              { key: 'role', label: 'Role', render: (u) => <span className="badge">{u.role}</span> },
+              { key: 'created_at', label: 'Joined', render: (u) => new Date(u.created_at).toLocaleDateString() },
+            ]}
+            rows={users}
+          />
         </div>
       </div>
     </div>
