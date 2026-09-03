@@ -1,0 +1,18 @@
+# ============================================================================
+# Shared-VPS overlay — for a server that ALREADY runs other sites
+# (an existing reverse proxy owns ports 80/443).
+#
+# Usage: add this line to .env, then use deploy.sh / docker compose normally:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.sharedvps.yml
+#
+# Our internal nginx binds to localhost only; the VPS's existing proxy
+# (host nginx / Nginx Proxy Manager / Traefik / Caddy) terminates TLS for
+# the subdomain and forwards to it. Internal nginx still does the
+# /api-vs-dashboard routing, security headers, and rate limiting.
+# Full runbook: docs/SHARED_VPS.md
+# ============================================================================
+
+services:
+  nginx:
+    ports: !override
+      - "127.0.0.1:${SHARED_HTTP_PORT:-8090}:80"
