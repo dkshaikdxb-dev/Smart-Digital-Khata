@@ -1,0 +1,33 @@
+name: Seed demo commerce
+
+# Manual only. Seeds the DEMO shop (store01@demo.local) on the VPS with the
+# 10 demo shops/customers (idempotent) and a 50-product kirana catalog +
+# sample orders, then prints the consumer link in the run logs.
+# Never touches real shops; the seeders are guarded to demo data only.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: seed-demo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    name: Seed demo shop (50 products) on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Seed over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            # FORCE_DEMO lets the guarded seeders run against the production DB;
+            # both only ever touch the demo shop (store01@demo.local).
+            docker compose exec -T -e FORCE_DEMO=true backend npm run seed:demo
+            docker compose exec -T -e FORCE_DEMO=true backend npm run seed:commerce

@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 /**
- * Commerce demo seeder — products + sample orders for the demo shop, so the
- * new owner Catalog/Orders pages and the customer PWA are not empty on a fresh
- * install.
+ * Commerce demo seeder — a full 50-product kirana catalog + sample orders for
+ * the demo shop, so the owner Catalog/Orders pages and the customer PWA look
+ * real, and consumers have a shop to browse.
  *
  *   npm run seed:commerce
  *
  * SAFE BY DESIGN:
  *   - Only ever touches the canonical demo shop (owner store01@demo.local),
  *     never a real shop. Run `npm run seed:demo` first to create it.
- *   - Idempotent: if that shop already has products, it does nothing.
- *   - Refuses to run in production unless FORCE_DEMO=true (same guard as
- *     seed:demo), so it can never scribble demo rows onto live data by accident.
+ *   - Reseeds the demo shop's catalog (clears its old demo products/orders,
+ *     then inserts the 50 below) so re-runs converge on a clean catalog.
+ *   - Marks the demo shop LISTED with a location so it shows up in Discovery
+ *     and the consumer link works.
+ *   - Refuses to run in production unless FORCE_DEMO=true.
  *
- * Order subtotals are computed from the line items (never hard-coded), matching
- * how the real order-create endpoint derives them.
+ * On success it prints the CONSUMER LINK for the shop.
  */
 require('dotenv').config();
 const { pool } = require('../config/db');
@@ -26,34 +27,70 @@ if (process.env.NODE_ENV === 'production' && process.env.FORCE_DEMO !== 'true') 
 
 const DEMO_OWNER_EMAIL = 'store01@demo.local';
 
-// price is paise. is_active=false ones exercise the "Hidden" badge / active filter.
+// 50 everyday kirana products. price is paise (₹ = price/100). A shop can hold
+// product names in any language/script; these use common recognisable names.
 const PRODUCTS = [
-  { name: 'Aashirvaad Atta 5kg', description: 'Whole wheat flour', price: 28500, unit: 'bag', is_active: true },
-  { name: 'India Gate Basmati 1kg', description: 'Premium basmati rice', price: 14000, unit: 'kg', is_active: true },
-  { name: 'Fortune Sunflower Oil 1L', description: 'Refined cooking oil', price: 15500, unit: 'litre', is_active: true },
-  { name: 'Tata Salt 1kg', description: 'Iodised salt', price: 2800, unit: 'kg', is_active: true },
-  { name: 'Sugar 1kg (loose)', description: 'Loose sugar', price: 4500, unit: 'kg', is_active: false },
+  ['Aashirvaad Atta 5kg', 'Whole wheat flour', 28500, 'bag'],
+  ['Aashirvaad Atta 10kg', 'Whole wheat flour', 55000, 'bag'],
+  ['India Gate Basmati Rice 1kg', 'Premium basmati', 14000, 'kg'],
+  ['India Gate Basmati Rice 5kg', 'Premium basmati', 65000, 'bag'],
+  ['Sona Masoori Rice 5kg', 'Everyday rice', 32000, 'bag'],
+  ['Toor Dal (Arhar) 1kg', 'Split pigeon peas', 16000, 'kg'],
+  ['Moong Dal 1kg', 'Split green gram', 13500, 'kg'],
+  ['Chana Dal 1kg', 'Split chickpeas', 9500, 'kg'],
+  ['Urad Dal 1kg', 'Split black gram', 14500, 'kg'],
+  ['Masoor Dal 1kg', 'Red lentils', 11000, 'kg'],
+  ['Rajma 1kg', 'Kidney beans', 15000, 'kg'],
+  ['Kabuli Chana 1kg', 'White chickpeas', 12000, 'kg'],
+  ['Poha 500g', 'Flattened rice', 3500, 'packet'],
+  ['Sooji / Rava 500g', 'Semolina', 3000, 'packet'],
+  ['Maida 1kg', 'Refined flour', 5000, 'kg'],
+  ['Besan 1kg', 'Gram flour', 9000, 'kg'],
+  ['Fortune Sunflower Oil 1L', 'Refined cooking oil', 15500, 'litre'],
+  ['Fortune Soya Oil 1L', 'Refined soya oil', 14000, 'litre'],
+  ['Saffola Gold Oil 1L', 'Blended cooking oil', 19000, 'litre'],
+  ['Mustard Oil 1L', 'Kachi ghani', 16500, 'litre'],
+  ['Amul Ghee 1L', 'Pure ghee', 62000, 'tin'],
+  ['Sugar 1kg', 'Refined sugar', 4500, 'kg'],
+  ['Tata Salt 1kg', 'Iodised salt', 2800, 'kg'],
+  ['Jaggery (Gud) 1kg', 'Natural sweetener', 6000, 'kg'],
+  ['Turmeric Powder 200g', 'Haldi', 5500, 'packet'],
+  ['Red Chilli Powder 200g', 'Lal mirch', 7000, 'packet'],
+  ['Coriander Powder 200g', 'Dhania', 5000, 'packet'],
+  ['Garam Masala 100g', 'Spice blend', 6500, 'packet'],
+  ['Cumin Seeds 200g', 'Jeera', 8000, 'packet'],
+  ['Mustard Seeds 200g', 'Rai', 3500, 'packet'],
+  ['Black Pepper 100g', 'Kali mirch', 9000, 'packet'],
+  ['Tata Tea Gold 500g', 'Tea leaves', 26000, 'packet'],
+  ['Red Label Tea 250g', 'Tea leaves', 13000, 'packet'],
+  ['Bru Instant Coffee 100g', 'Instant coffee', 22000, 'jar'],
+  ['Bournvita 500g', 'Malt drink', 24500, 'jar'],
+  ['Amul Butter 500g', 'Table butter', 27500, 'packet'],
+  ['Amulya Milk Powder 500g', 'Dairy whitener', 26000, 'packet'],
+  ['Parle-G Biscuits 800g', 'Glucose biscuits', 8000, 'packet'],
+  ['Britannia Marie Gold 250g', 'Tea biscuits', 4000, 'packet'],
+  ['Good Day Biscuits 200g', 'Cookies', 3500, 'packet'],
+  ['Maggi Noodles 6-pack', 'Instant noodles', 8400, 'pack'],
+  ['Kurkure 100g', 'Namkeen snack', 2000, 'packet'],
+  ['Lifebuoy Soap 4-pack', 'Bath soap', 8000, 'pack'],
+  ['Lux Soap 3-pack', 'Bath soap', 9000, 'pack'],
+  ['Surf Excel 1kg', 'Detergent powder', 12500, 'packet'],
+  ['Vim Dishwash Bar 3-pack', 'Dishwash', 3000, 'pack'],
+  ['Colgate Toothpaste 200g', 'Toothpaste', 11000, 'tube'],
+  ['Harpic 500ml', 'Toilet cleaner', 9500, 'bottle'],
+  ['Good Knight Refill', 'Mosquito repellent', 7500, 'piece'],
+  ['Agarbatti Pack', 'Incense sticks', 3000, 'packet'],
 ];
 
-// Orders reference products by index into PRODUCTS; qty per line. One of each
-// interesting shape: prepaid/delivery/pending, credit/pickup/accepted,
-// prepaid/delivery/completed+paid.
+// A few sample orders (reference product indices) so the owner Orders page and
+// customer order history are populated too.
 const ORDERS = [
-  {
-    status: 'pending', fulfillment_type: 'delivery', payment_mode: 'prepaid', payment_status: 'pending',
-    address: '12 MG Road, Bengaluru', note: 'Ring the bell',
-    lines: [{ p: 0, qty: 1 }, { p: 2, qty: 1 }],
-  },
-  {
-    status: 'accepted', fulfillment_type: 'pickup', payment_mode: 'credit', payment_status: 'not_required',
-    address: null, note: 'Will collect by 6pm',
-    lines: [{ p: 1, qty: 1 }, { p: 3, qty: 2 }],
-  },
-  {
-    status: 'completed', fulfillment_type: 'delivery', payment_mode: 'prepaid', payment_status: 'paid',
-    address: '5 Brigade Road, Bengaluru', note: null,
-    lines: [{ p: 2, qty: 2 }],
-  },
+  { status: 'pending', fulfillment_type: 'delivery', payment_mode: 'prepaid', payment_status: 'pending',
+    address: '12 MG Road, Bengaluru', note: 'Ring the bell', lines: [{ p: 0, q: 1 }, { p: 16, q: 1 }, { p: 21, q: 2 }] },
+  { status: 'accepted', fulfillment_type: 'pickup', payment_mode: 'credit', payment_status: 'not_required',
+    address: null, note: 'Will collect by 6pm', lines: [{ p: 2, q: 1 }, { p: 5, q: 1 }] },
+  { status: 'completed', fulfillment_type: 'delivery', payment_mode: 'prepaid', payment_status: 'paid',
+    address: '5 Brigade Road, Bengaluru', note: null, lines: [{ p: 20, q: 1 }, { p: 31, q: 1 }] },
 ];
 
 async function seedCommerce() {
@@ -66,26 +103,35 @@ async function seedCommerce() {
     }
     const shopId = owner.rows[0].shop_id;
 
-    const existing = await client.query('SELECT COUNT(*)::int AS n FROM products WHERE shop_id = $1', [shopId]);
-    if (existing.rows[0].n > 0) {
-      console.log(`✓ Demo shop already has ${existing.rows[0].n} products — nothing to do.`);
-      return;
-    }
-
     await client.query('BEGIN');
 
-    // Products
+    // Make the shop discoverable so the consumer link + Discovery work.
+    await client.query(
+      `UPDATE shops
+         SET is_listed = true,
+             city = COALESCE(NULLIF(city, ''), 'Bengaluru'),
+             area = COALESCE(NULLIF(area, ''), 'MG Road'),
+             latitude = COALESCE(latitude, 12.9716),
+             longitude = COALESCE(longitude, 77.5946)
+       WHERE id = $1`,
+      [shopId]
+    );
+
+    // Clear prior demo catalog/orders for THIS demo shop, then reseed.
+    await client.query('DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE shop_id = $1)', [shopId]);
+    await client.query('DELETE FROM orders WHERE shop_id = $1', [shopId]);
+    await client.query('DELETE FROM products WHERE shop_id = $1', [shopId]);
+
     const productIds = [];
-    for (const p of PRODUCTS) {
+    for (const [name, description, price, unit] of PRODUCTS) {
       const r = await client.query(
         `INSERT INTO products (shop_id, name, description, price, unit, is_active)
-         VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
-        [shopId, p.name, p.description, p.price, p.unit, p.is_active]
+         VALUES ($1,$2,$3,$4,$5,true) RETURNING id`,
+        [shopId, name, description, price, unit]
       );
       productIds.push(r.rows[0].id);
     }
 
-    // A customer to attach the demo orders to (first demo customer of this shop).
     const cust = await client.query(
       'SELECT id FROM customers WHERE shop_id = $1 ORDER BY created_at ASC LIMIT 1',
       [shopId]
@@ -95,14 +141,8 @@ async function seedCommerce() {
       const customerId = cust.rows[0].id;
       for (const o of ORDERS) {
         const items = o.lines.map((l) => {
-          const prod = PRODUCTS[l.p];
-          return {
-            product_id: productIds[l.p],
-            name: prod.name,
-            unit_price: prod.price,
-            quantity: l.qty,
-            line_total: prod.price * l.qty,
-          };
+          const [name, , price] = PRODUCTS[l.p];
+          return { product_id: productIds[l.p], name, unit_price: price, quantity: l.q, line_total: price * l.q };
         });
         const subtotal = items.reduce((s, it) => s + it.line_total, 0);
         const ord = await client.query(
@@ -111,12 +151,11 @@ async function seedCommerce() {
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
           [shopId, customerId, o.status, o.fulfillment_type, o.payment_mode, o.payment_status, subtotal, o.address, o.note]
         );
-        const orderId = ord.rows[0].id;
         for (const it of items) {
           await client.query(
             `INSERT INTO order_items (order_id, product_id, name, unit_price, quantity, line_total)
              VALUES ($1,$2,$3,$4,$5,$6)`,
-            [orderId, it.product_id, it.name, it.unit_price, it.quantity, it.line_total]
+            [ord.rows[0].id, it.product_id, it.name, it.unit_price, it.quantity, it.line_total]
           );
         }
         orderCount++;
@@ -124,7 +163,14 @@ async function seedCommerce() {
     }
 
     await client.query('COMMIT');
-    console.log(`✓ Seeded ${PRODUCTS.length} products and ${orderCount} orders for the demo shop.`);
+
+    const domain = (process.env.APP_URL || 'https://khata.dadashaik.com').replace(/\/+$/, '');
+    console.log(`\n✓ Seeded ${PRODUCTS.length} products and ${orderCount} orders for the demo shop.`);
+    console.log('================ CONSUMER LINKS ================');
+    console.log(`Shop catalog (share with customers): ${domain}/c/shop/${shopId}`);
+    console.log(`Discover all listed shops:            ${domain}/c/shops`);
+    console.log(`Shop id: ${shopId}`);
+    console.log('================================================');
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     throw err;
