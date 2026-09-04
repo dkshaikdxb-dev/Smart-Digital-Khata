@@ -37,7 +37,8 @@ export default function CustomerShell({ title, children, tabs = true, back }) {
       <Head>
         <title>{title ? `${title} · Khata` : 'Smart Digital Khata'}</title>
         <meta name="theme-color" content="#0f172a" />
-        <link rel="manifest" href="/customer.webmanifest" />
+        {/* The /customer.webmanifest link is emitted once in _app.js for all /c
+            routes, so it is intentionally not repeated here. */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Khata" />
