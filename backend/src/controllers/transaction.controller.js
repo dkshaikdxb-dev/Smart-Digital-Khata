@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
 
   const result = await withTx(async (client) => {
     const c = await client.query(
-      'SELECT id, shop_id, name, phone, credit_limit, balance, notifications_enabled FROM customers WHERE id=$1 AND shop_id=$2 FOR UPDATE',
+      'SELECT id, shop_id, name, phone, credit_limit, balance, notifications_enabled, family_id, family_sub_limit FROM customers WHERE id=$1 AND shop_id=$2 FOR UPDATE',
       [customer_id, req.user.shopId]
     );
     if (!c.rowCount) throw ApiError.notFound('Customer not found');
@@ -26,6 +26,40 @@ exports.create = async (req, res) => {
         current_balance: customer.balance,
         attempted: amount,
       });
+    }
+
+    // Family credit enforcement (only relevant when this member is in a family
+    // and the entry increases what is owed).
+    if (type === 'purchase' && customer.family_id) {
+      // (a) Per-member sub-limit within the family.
+      if (customer.family_sub_limit != null && newBalance > Number(customer.family_sub_limit)) {
+        throw ApiError.unprocessable('Family sub-limit exceeded', {
+          family_sub_limit: customer.family_sub_limit,
+          current_balance: customer.balance,
+          attempted: amount,
+        });
+      }
+
+      // (b) Shared family credit limit against the SUM of all members' balances.
+      // Lock the family row to serialize concurrent purchases across members.
+      const fam = await client.query(
+        'SELECT id, credit_limit FROM families WHERE id=$1 AND shop_id=$2 FOR UPDATE',
+        [customer.family_id, req.user.shopId]
+      );
+      if (fam.rowCount && Number(fam.rows[0].credit_limit) > 0) {
+        const agg = await client.query(
+          'SELECT COALESCE(SUM(balance),0) AS total FROM customers WHERE family_id=$1 AND shop_id=$2',
+          [customer.family_id, req.user.shopId]
+        );
+        const combinedNew = Number(agg.rows[0].total) + delta;
+        if (combinedNew > Number(fam.rows[0].credit_limit)) {
+          throw ApiError.unprocessable('Family credit limit exceeded', {
+            family_credit_limit: fam.rows[0].credit_limit,
+            combined_balance: agg.rows[0].total,
+            attempted: amount,
+          });
+        }
+      }
     }
 
     const tx = await client.query(
