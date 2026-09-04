@@ -14,11 +14,36 @@ const paySchema = Joi.object({
   amount: Joi.number().integer().min(1).required(), // paise
 });
 
+const createOrderSchema = Joi.object({
+  shop_id: Joi.string().uuid().required(),
+  items: Joi.array()
+    .items(
+      Joi.object({
+        product_id: Joi.string().uuid().required(),
+        quantity: Joi.number().integer().min(1).required(),
+      })
+    )
+    .required(),
+  fulfillment_type: Joi.string().valid('delivery', 'pickup').required(),
+  payment_mode: Joi.string().valid('credit', 'prepaid').required(),
+  address: Joi.string().allow('', null),
+  note: Joi.string().allow('', null),
+});
+
+const orderIdSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+});
+
 // Every /my endpoint is scoped to the authenticated customer's phone.
 router.use(customerAuth());
 
 router.get('/khata', asyncHandler(ctrl.khata));
 router.get('/khata/:shopId', validate(shopParamSchema, 'params'), asyncHandler(ctrl.shopKhata));
 router.post('/pay', validate(paySchema), asyncHandler(ctrl.pay));
+
+router.post('/orders', validate(createOrderSchema), asyncHandler(ctrl.createOrder));
+router.get('/orders', asyncHandler(ctrl.listOrders));
+router.get('/orders/:id', validate(orderIdSchema, 'params'), asyncHandler(ctrl.getOrder));
+router.post('/orders/:id/cancel', validate(orderIdSchema, 'params'), asyncHandler(ctrl.cancelOrder));
 
 module.exports = router;

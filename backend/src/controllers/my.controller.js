@@ -1,4 +1,4 @@
-const { query } = require('../config/db');
+const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
 const { toE164 } = require('../utils/phone');
@@ -130,4 +130,318 @@ exports.pay = async (req, res) => {
   }
 
   res.status(201).json({ link, order_id: orderRow.id });
+};
+
+// ---------------------------------------------------------------------------
+// Orders (M5b) — a customer orders from a shop's catalog. Orders are CREDIT
+// (added to the khata) or PREPAID (paid online to the shop's own Razorpay).
+// Every /my/orders row is scoped to the authenticated customer's phone.
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve (locking FOR UPDATE) the customer's `customers` row at a shop by
+ * phone, auto-creating one if the customer has never dealt with this shop —
+ * so a customer can order from a brand-new shop. Runs inside a transaction.
+ */
+async function resolveOrCreateCustomer(client, shopId, phone) {
+  const existing = await client.query(
+    `SELECT id, shop_id, name, phone, credit_limit, balance,
+            family_id, family_sub_limit
+     FROM customers WHERE shop_id = $1 AND phone = $2 FOR UPDATE`,
+    [shopId, phone]
+  );
+  if (existing.rowCount) return existing.rows[0];
+
+  // Verify the shop exists before auto-creating (nicer than an FK error).
+  const shop = await client.query('SELECT id FROM shops WHERE id = $1', [shopId]);
+  if (!shop.rowCount) throw ApiError.notFound('Shop not found');
+
+  const nameRes = await client.query(
+    'SELECT name FROM customer_users WHERE phone = $1',
+    [phone]
+  );
+  const name = (nameRes.rows[0] && nameRes.rows[0].name) || 'Customer';
+  const created = await client.query(
+    `INSERT INTO customers (shop_id, name, phone)
+     VALUES ($1, $2, $3)
+     RETURNING id, shop_id, name, phone, credit_limit, balance,
+               family_id, family_sub_limit`,
+    [shopId, name, phone]
+  );
+  return created.rows[0];
+}
+
+/** Load & validate the ordered products; return snapshot line items + subtotal. */
+async function buildLineItems(shopId, items) {
+  const ids = items.map((i) => i.product_id);
+  const prodRes = await query(
+    `SELECT id, name, price, is_active FROM products
+     WHERE shop_id = $1 AND id = ANY($2::uuid[])`,
+    [shopId, ids]
+  );
+  const byId = Object.fromEntries(prodRes.rows.map((p) => [p.id, p]));
+
+  const lines = [];
+  let subtotal = 0;
+  for (const item of items) {
+    const p = byId[item.product_id];
+    if (!p) throw ApiError.unprocessable('Product not available at this shop', { product_id: item.product_id });
+    if (!p.is_active) throw ApiError.unprocessable('Product is not available', { product_id: item.product_id });
+    const unitPrice = Number(p.price);
+    const lineTotal = unitPrice * item.quantity;
+    subtotal += lineTotal;
+    lines.push({ product_id: p.id, name: p.name, unit_price: unitPrice, quantity: item.quantity, line_total: lineTotal });
+  }
+  return { lines, subtotal };
+}
+
+async function insertOrderItems(client, orderId, lines) {
+  const out = [];
+  for (const l of lines) {
+    const r = await client.query(
+      `INSERT INTO order_items (order_id, product_id, name, unit_price, quantity, line_total)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       RETURNING id, product_id, name, unit_price, quantity, line_total`,
+      [orderId, l.product_id, l.name, l.unit_price, l.quantity, l.line_total]
+    );
+    out.push(r.rows[0]);
+  }
+  return out;
+}
+
+/**
+ * POST /my/orders — place an order at a shop.
+ * credit  → order + items + a khata `purchase` transaction (credit-limit
+ *           enforced exactly like the owner transaction flow), all in one tx.
+ * prepaid → order + items + a payment_orders row (linked via order_id) + a
+ *           Razorpay order & hosted pay link, all in one tx (a failure — DB or
+ *           Razorpay — rolls back and creates nothing). No khata entry.
+ */
+exports.createOrder = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  const { shop_id, items, fulfillment_type, payment_mode, address, note } = req.body;
+
+  if (!items.length) throw ApiError.unprocessable('Order must have at least one item');
+  if (fulfillment_type === 'delivery' && !(address && address.trim())) {
+    throw ApiError.unprocessable('A delivery address is required for delivery orders');
+  }
+
+  const { lines, subtotal } = await buildLineItems(shop_id, items);
+
+  if (payment_mode === 'credit') {
+    const result = await withTx(async (client) => {
+      const customer = await resolveOrCreateCustomer(client, shop_id, phone);
+
+      // Enforce credit limits exactly like transaction.controller: a credit
+      // order is a `purchase` that increases what the customer owes.
+      const newBalance = Number(customer.balance) + subtotal;
+      if (Number(customer.credit_limit) > 0 && newBalance > Number(customer.credit_limit)) {
+        throw ApiError.unprocessable('Credit limit exceeded', {
+          credit_limit: customer.credit_limit,
+          current_balance: customer.balance,
+          attempted: subtotal,
+        });
+      }
+      if (customer.family_id) {
+        if (customer.family_sub_limit != null && newBalance > Number(customer.family_sub_limit)) {
+          throw ApiError.unprocessable('Family sub-limit exceeded', {
+            family_sub_limit: customer.family_sub_limit,
+            current_balance: customer.balance,
+            attempted: subtotal,
+          });
+        }
+        const fam = await client.query(
+          'SELECT id, credit_limit FROM families WHERE id=$1 AND shop_id=$2 FOR UPDATE',
+          [customer.family_id, shop_id]
+        );
+        if (fam.rowCount && Number(fam.rows[0].credit_limit) > 0) {
+          const agg = await client.query(
+            'SELECT COALESCE(SUM(balance),0) AS total FROM customers WHERE family_id=$1 AND shop_id=$2',
+            [customer.family_id, shop_id]
+          );
+          const combinedNew = Number(agg.rows[0].total) + subtotal;
+          if (combinedNew > Number(fam.rows[0].credit_limit)) {
+            throw ApiError.unprocessable('Family credit limit exceeded', {
+              family_credit_limit: fam.rows[0].credit_limit,
+              combined_balance: agg.rows[0].total,
+              attempted: subtotal,
+            });
+          }
+        }
+      }
+
+      const ord = await client.query(
+        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, address, note)
+         VALUES ($1,$2,'pending',$3,'credit','not_required',$4,$5,$6)
+         RETURNING *`,
+        [shop_id, customer.id, fulfillment_type, subtotal, address || null, note || null]
+      );
+      const order = ord.rows[0];
+      const orderItems = await insertOrderItems(client, order.id, lines);
+
+      await client.query(
+        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
+         VALUES ($1,$2,'purchase',$3,'credit',$4,'api')`,
+        [shop_id, customer.id, subtotal, `Order ${order.id}`]
+      );
+      await client.query(
+        'UPDATE customers SET balance = $1, updated_at = NOW() WHERE id = $2',
+        [newBalance, customer.id]
+      );
+
+      return { order: { ...order, items: orderItems } };
+    });
+
+    return res.status(201).json(result);
+  }
+
+  // prepaid
+  if (!(await razorpay.isConfiguredForShop(shop_id))) {
+    throw ApiError.badRequest('This shop cannot take online payments yet.');
+  }
+
+  const result = await withTx(async (client) => {
+    const customer = await resolveOrCreateCustomer(client, shop_id, phone);
+
+    const ord = await client.query(
+      `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, address, note)
+       VALUES ($1,$2,'pending',$3,'prepaid','pending',$4,$5,$6)
+       RETURNING *`,
+      [shop_id, customer.id, fulfillment_type, subtotal, address || null, note || null]
+    );
+    const order = ord.rows[0];
+    const orderItems = await insertOrderItems(client, order.id, lines);
+
+    const receipt = `o_${order.id.slice(0, 8)}_${Date.now()}`;
+    const rzpOrder = await razorpay.createOrderForShop(shop_id, {
+      amount: subtotal,
+      receipt,
+      notes: { shop_id, customer_id: customer.id, order_id: order.id },
+    });
+
+    const po = await client.query(
+      `INSERT INTO payment_orders
+         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes, order_id)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6,$7)
+       RETURNING *`,
+      [rzpOrder.receipt, shop_id, customer.id, subtotal, rzpOrder.id, `Order ${order.id}`, order.id]
+    );
+    const orderRow = po.rows[0];
+
+    const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
+      amount: orderRow.amount,
+      description: `Order at shop`,
+      customer: { name: customer.name, contact: toE164(customer.phone) },
+      reference_id: orderRow.id,
+      notes: { shop_id, customer_id: customer.id, order_id: order.id },
+      callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
+    });
+    await client.query(
+      `UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3`,
+      [paymentLink.id, paymentLink.short_url, orderRow.id]
+    );
+
+    return { order: { ...order, items: orderItems }, pay_link: paymentLink.short_url };
+  });
+
+  return res.status(201).json(result);
+};
+
+/**
+ * GET /my/orders — this customer's orders across every shop, newest first,
+ * with shop_name + item count.
+ */
+exports.listOrders = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  const r = await query(
+    `SELECT o.*, s.name AS shop_name, COUNT(oi.id)::int AS item_count
+     FROM orders o
+     JOIN customers c ON c.id = o.customer_id
+     JOIN shops s ON s.id = o.shop_id
+     LEFT JOIN order_items oi ON oi.order_id = o.id
+     WHERE c.phone = $1
+     GROUP BY o.id, s.name
+     ORDER BY o.created_at DESC`,
+    [phone]
+  );
+  res.json({ items: r.rows });
+};
+
+/**
+ * GET /my/orders/:id — order detail incl items. 404 if not this customer's.
+ */
+exports.getOrder = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  const r = await query(
+    `SELECT o.*, s.name AS shop_name
+     FROM orders o
+     JOIN customers c ON c.id = o.customer_id
+     JOIN shops s ON s.id = o.shop_id
+     WHERE o.id = $1 AND c.phone = $2`,
+    [req.params.id, phone]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Order not found');
+
+  const items = await query(
+    `SELECT id, product_id, name, unit_price, quantity, line_total
+     FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
+    [req.params.id]
+  );
+  res.json({ order: { ...r.rows[0], items: items.rows } });
+};
+
+/**
+ * POST /my/orders/:id/cancel — cancel a still-pending order (else 409).
+ * credit  → REVERSE the khata: insert a compensating `cash` (payment-in) entry
+ *           for the subtotal and decrement the balance, so the ledger stays
+ *           honest (the original purchase entry remains, netted by the reversal).
+ * prepaid unpaid → just cancel.
+ * prepaid already paid → cancel + note that a refund is manual (no auto-refund).
+ */
+exports.cancelOrder = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+
+  const result = await withTx(async (client) => {
+    const r = await client.query(
+      `SELECT o.*, c.id AS cust_id, c.balance
+       FROM orders o
+       JOIN customers c ON c.id = o.customer_id
+       WHERE o.id = $1 AND c.phone = $2
+       FOR UPDATE OF o, c`,
+      [req.params.id, phone]
+    );
+    if (!r.rowCount) throw ApiError.notFound('Order not found');
+    const order = r.rows[0];
+
+    if (order.status !== 'pending') {
+      throw ApiError.conflict('Only a pending order can be cancelled');
+    }
+
+    if (order.payment_mode === 'credit') {
+      // Compensating entry keeps the ledger honest and auditable.
+      await client.query(
+        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
+         VALUES ($1,$2,'cash',$3,'cash',$4,'api')`,
+        [order.shop_id, order.cust_id, order.subtotal, `Reversal — order ${order.id} cancelled`]
+      );
+      await client.query(
+        'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
+        [order.subtotal, order.cust_id]
+      );
+    }
+
+    const paidPrepaid = order.payment_mode === 'prepaid' && order.payment_status === 'paid';
+    const upd = await client.query(
+      `UPDATE orders
+         SET status = 'cancelled',
+             note = CASE WHEN $2 THEN COALESCE(note, '') || ' [Cancelled after payment — refund to be processed manually.]' ELSE note END,
+             updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [order.id, paidPrepaid]
+    );
+    return { order: upd.rows[0] };
+  });
+
+  res.json(result);
 };

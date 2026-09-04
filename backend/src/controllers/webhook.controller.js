@@ -19,10 +19,14 @@ async function alreadyProcessed(id, channel) {
 const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
 
 /**
- * Reconcile a Razorpay PAYMENT event against a local payment_orders row:
- * mark the order paid, insert the credit transaction, and decrement the
- * customer's balance. Shared by the platform and per-shop webhook handlers so
- * both stay DRY — behaviour is identical regardless of which account received it.
+ * Reconcile a Razorpay PAYMENT event against a local payment_orders row and
+ * mark that row paid. Then, depending on what the payment settles:
+ *   - payment_orders.order_id SET  → a PREPAID ORDER: mark the order paid (and
+ *     advance a still-pending order to 'accepted'). Never touches the khata.
+ *   - payment_orders.order_id NULL → a khata settlement (unchanged): insert the
+ *     credit transaction and decrement the customer's balance.
+ * Idempotent: an already-paid row is a no-op. Shared by the platform and
+ * per-shop webhook handlers so both stay DRY.
  * @returns {boolean} true if a matching order was found (and reconciled/duplicate).
  */
 async function reconcilePayment(event) {
@@ -53,16 +57,31 @@ async function reconcilePayment(event) {
       `UPDATE payment_orders SET status='paid', paid_at = NOW(), provider_payment_id = $1 WHERE id = $2`,
       [p.id || null, order.id]
     );
-    await client.query(
-      `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
-       VALUES ($1,$2,'upi',$3,'razorpay',$4,'razorpay')`,
-      [order.shop_id, order.customer_id, amount, `Razorpay ${orderId || linkId}`]
-    );
-    await client.query(
-      `UPDATE customers SET balance = balance - $1, updated_at = NOW()
-       WHERE id = $2 AND shop_id = $3`,
-      [amount, order.customer_id, order.shop_id]
-    );
+    if (order.order_id) {
+      // Payment is a PREPAID ORDER settlement — mark the order paid (and move a
+      // still-pending order to 'accepted'). The order was never on the khata,
+      // so we must NOT insert a credit or touch the customer's balance.
+      await client.query(
+        `UPDATE orders
+           SET payment_status = 'paid',
+               status = CASE WHEN status = 'pending' THEN 'accepted' ELSE status END,
+               updated_at = NOW()
+         WHERE id = $1`,
+        [order.order_id]
+      );
+    } else {
+      // Khata settlement (unchanged): record the payment and reduce the balance.
+      await client.query(
+        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
+         VALUES ($1,$2,'upi',$3,'razorpay',$4,'razorpay')`,
+        [order.shop_id, order.customer_id, amount, `Razorpay ${orderId || linkId}`]
+      );
+      await client.query(
+        `UPDATE customers SET balance = balance - $1, updated_at = NOW()
+         WHERE id = $2 AND shop_id = $3`,
+        [amount, order.customer_id, order.shop_id]
+      );
+    }
   });
   return true;
 }
