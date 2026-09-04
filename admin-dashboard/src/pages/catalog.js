@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ProductThumb from '../components/ProductThumb';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const emptyForm = { name: '', price: '', unit: '', description: '', image_url: '' };
 
@@ -17,6 +19,8 @@ export default function Catalog() {
   const [edit, setEdit] = useState(null); // product being edited (id + fields)
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
+  const [photoBusy, setPhotoBusy] = useState(null); // product id currently up/downloading
+  const [photoErr, setPhotoErr] = useState({}); // { [productId]: message }
 
   async function load() {
     const r = await apiFetch('/api/products');
@@ -103,12 +107,93 @@ export default function Catalog() {
     } catch (err) { setError(err.message); }
   }
 
+  // Replace one product in local state from a server response (new image_url).
+  function applyProduct(next) {
+    if (!next || !next.id) return;
+    setItems((prev) => prev.map((it) => (it.id === next.id ? { ...it, ...next } : it)));
+  }
+
+  // Photo upload is multipart, so it uses a raw fetch (NOT apiFetch): the
+  // browser must set the multipart boundary itself, so we never set
+  // Content-Type by hand.
+  async function uploadPhoto(p, file) {
+    if (!file) return;
+    setError(''); setMsg('');
+    setPhotoErr((e) => ({ ...e, [p.id]: '' }));
+    setPhotoBusy(p.id);
+    try {
+      const token = window.localStorage.getItem('skhata_token');
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch(`${API}/api/products/${p.id}/image`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      applyProduct(body.product || body);
+    } catch (err) {
+      setPhotoErr((e) => ({ ...e, [p.id]: err.message }));
+    } finally {
+      setPhotoBusy(null);
+    }
+  }
+
+  async function removePhoto(p) {
+    setError(''); setMsg('');
+    setPhotoErr((e) => ({ ...e, [p.id]: '' }));
+    setPhotoBusy(p.id);
+    try {
+      const r = await apiFetch(`/api/products/${p.id}/image`, { method: 'DELETE' });
+      applyProduct(r.product || r);
+    } catch (err) {
+      setPhotoErr((e) => ({ ...e, [p.id]: err.message }));
+    } finally {
+      setPhotoBusy(null);
+    }
+  }
+
   const q = search.trim().toLowerCase();
   const filtered = q
     ? items.filter((p) => (p.name || '').toLowerCase().includes(q) || (p.unit || '').toLowerCase().includes(q))
     : items;
 
   const columns = [
+    {
+      key: 'photo', label: t('cat.photo'), render: (p) => {
+        const busy = photoBusy === p.id;
+        const hasPhoto = !!p.image_url;
+        return (
+          <span className="cat-photo" onClick={(e) => e.stopPropagation()}>
+            <ProductThumb product={p} size={44} />
+            <span className="cat-photo-actions">
+              <label className="secondary cat-photo-btn" aria-disabled={busy}>
+                {hasPhoto ? t('cat.changePhoto') : t('cat.uploadPhoto')}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={busy}
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const f = e.target.files && e.target.files[0];
+                    e.target.value = '';
+                    uploadPhoto(p, f);
+                  }}
+                />
+              </label>
+              {hasPhoto && (
+                <button type="button" className="secondary" disabled={busy}
+                  onClick={(e) => { e.stopPropagation(); removePhoto(p); }}>
+                  {t('cat.removePhoto')}
+                </button>
+              )}
+              {photoErr[p.id] && <span className="cat-photo-err">{photoErr[p.id]}</span>}
+            </span>
+          </span>
+        );
+      },
+    },
     { key: 'name', label: t('common.product'), render: (p) => <strong>{p.name}</strong> },
     { key: 'price', label: t('common.price'), render: (p) => fmt(p.price) },
     { key: 'unit', label: t('common.unit'), render: (p) => p.unit || '—' },

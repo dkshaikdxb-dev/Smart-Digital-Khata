@@ -4,6 +4,19 @@
 const KEY = (shopId) => `ckhata_cart_${shopId}`;
 const ACTIVE_KEY = 'ckhata_active_shop';
 
+// Broadcast a same-tab signal so the cart tab badge (and any other listener)
+// can recompute its count immediately. `storage` events only fire in OTHER
+// tabs, so we dispatch our own event for the tab that made the change.
+export const CART_EVENT = 'ckhata-cart';
+function emitCartChanged() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.dispatchEvent(new Event(CART_EVENT));
+  } catch {
+    /* very old browsers — badge just won't live-update */
+  }
+}
+
 // Shape stored per shop:
 // { shop_id, shop_name, items: { [product_id]: { product_id, name, unit, price, quantity } } }
 
@@ -28,10 +41,12 @@ export function saveCart(cart) {
       window.localStorage.removeItem(KEY(cart.shop_id));
       const active = window.localStorage.getItem(ACTIVE_KEY);
       if (active === cart.shop_id) window.localStorage.removeItem(ACTIVE_KEY);
+      emitCartChanged();
       return;
     }
     window.localStorage.setItem(KEY(cart.shop_id), JSON.stringify(cart));
     window.localStorage.setItem(ACTIVE_KEY, cart.shop_id);
+    emitCartChanged();
   } catch {
     /* storage blocked */
   }
@@ -43,6 +58,7 @@ export function clearCart(shopId) {
     window.localStorage.removeItem(KEY(shopId));
     const active = window.localStorage.getItem(ACTIVE_KEY);
     if (active === shopId) window.localStorage.removeItem(ACTIVE_KEY);
+    emitCartChanged();
   } catch {
     /* ignore */
   }

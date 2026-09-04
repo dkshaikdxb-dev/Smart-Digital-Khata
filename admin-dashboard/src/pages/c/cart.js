@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell, { money } from '../../components/CustomerShell';
+import ProductThumb from '../../components/ProductThumb';
 import { customerFetch, getCustomerToken } from '../../lib/customerApi';
 import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId } from '../../lib/customerCart';
 import { useLang } from '../../lib/i18n';
@@ -107,6 +108,7 @@ export default function Cart() {
       <div className="card">
         {lines.map((l) => (
           <div key={l.product_id} className="cpwa-cart-line">
+            <ProductThumb product={l} size={40} />
             <div className="cpwa-cart-line-info">
               <div>{l.name}</div>
               <div className="muted">{money(l.price)} / {l.unit || t('c.unit')}</div>

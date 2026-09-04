@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell, { money } from '../../../components/CustomerShell';
+import ProductThumb from '../../../components/ProductThumb';
 import { publicFetch } from '../../../lib/customerApi';
 import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart } from '../../../lib/customerCart';
 import { useLang } from '../../../lib/i18n';
@@ -60,6 +61,7 @@ export default function ShopCatalog() {
       name: p.name,
       unit: p.unit,
       price: Number(p.price || 0),
+      image_url: p.image_url || '',
       quantity: existing ? existing.quantity + 1 : 1,
     };
     persist({ shop_id: shopId, shop_name: shop?.name, items });
@@ -75,6 +77,7 @@ export default function ShopCatalog() {
         name: p.name,
         unit: p.unit,
         price: Number(p.price || 0),
+        image_url: p.image_url || '',
         quantity: qty,
       };
     }
@@ -102,6 +105,7 @@ export default function ShopCatalog() {
         const inCart = cart?.items?.[p.id];
         return (
           <div key={p.id} className="card cpwa-product">
+            <ProductThumb product={p} />
             <div className="cpwa-product-info">
               <div className="cpwa-product-name">{p.name}</div>
               {p.description && <div className="muted cpwa-clamp">{p.description}</div>}
