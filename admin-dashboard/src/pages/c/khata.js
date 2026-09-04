@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import CustomerShell, { money, useCustomerGuard } from '../../components/CustomerShell';
 import { customerFetch } from '../../lib/customerApi';
+import { useLang } from '../../lib/i18n';
 
 // My khata: cross-shop outstanding balances with a per-shop "Pay" that opens
 // the Razorpay link returned by POST /api/my/pay.
 export default function Khata() {
   const ready = useCustomerGuard();
+  const { t } = useLang();
   const [total, setTotal] = useState(0);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function Khata() {
         window.location.href = link;
         return;
       }
-      throw new Error('Could not start payment.');
+      throw new Error(t('c.payStartFailed'));
     } catch (err) {
       setError(err.message);
       setPaying('');
@@ -50,19 +52,19 @@ export default function Khata() {
   if (!ready) return null;
 
   return (
-    <CustomerShell title="My khata">
+    <CustomerShell title={t('c.myKhata')}>
       {error && <div className="card cpwa-error">{error}</div>}
-      {loading && <div className="card">Loading khata…</div>}
+      {loading && <div className="card">{t('c.loadingKhata')}</div>}
 
       {!loading && !error && (
         <div className="card cpwa-hero">
-          <div className="muted">Total outstanding</div>
+          <div className="muted">{t('common.totalOutstanding')}</div>
           <div className="kpi" style={{ color: total > 0 ? 'var(--danger)' : 'var(--accent)' }}>{money(total)}</div>
         </div>
       )}
 
       {!loading && !error && shops.length === 0 && (
-        <div className="card muted">You have no khata at any shop yet. Order on credit to start one.</div>
+        <div className="card muted">{t('c.noKhata')}</div>
       )}
 
       {shops.map((s) => {
@@ -73,12 +75,12 @@ export default function Khata() {
               <div>
                 <div className="cpwa-shopcard-name">{s.shop_name}</div>
                 <div className="muted">
-                  Balance {money(s.balance)}
-                  {s.credit_limit != null && Number(s.credit_limit) > 0 ? ` · limit ${money(s.credit_limit)}` : ''}
+                  {t('common.balance')} {money(s.balance)}
+                  {s.credit_limit != null && Number(s.credit_limit) > 0 ? t('c.limitSuffix', { amt: money(s.credit_limit) }) : ''}
                 </div>
               </div>
               <button type="button" onClick={() => pay(s)} disabled={!owes || paying === s.shop_id}>
-                {paying === s.shop_id ? 'Opening…' : 'Pay'}
+                {paying === s.shop_id ? t('c.opening') : t('c.pay')}
               </button>
             </div>
           </div>

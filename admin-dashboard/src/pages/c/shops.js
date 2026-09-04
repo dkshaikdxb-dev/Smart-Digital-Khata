@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch } from '../../lib/customerApi';
+import { useLang } from '../../lib/i18n';
 
 // Public shop directory. Search by name/city; optionally sort by distance using
 // the browser geolocation. No token required — anyone can browse.
 export default function DiscoverShops() {
+  const { t } = useLang();
   const [search, setSearch] = useState('');
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ export default function DiscoverShops() {
 
   function useMyLocation() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setError('Location is not available on this device.');
+      setError(t('c.locationUnavailable'));
       return;
     }
     setLocating(true);
@@ -58,33 +60,33 @@ export default function DiscoverShops() {
       },
       (err) => {
         setLocating(false);
-        setError(err.message || 'Could not get your location.');
+        setError(err.message || t('c.locationError'));
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
     );
   }
 
   return (
-    <CustomerShell title="Discover shops">
+    <CustomerShell title={t('c.discoverShops')}>
       <form onSubmit={onSearch} className="card cpwa-search">
         <input
           type="search"
-          placeholder="Search shops by name or city"
+          placeholder={t('c.searchShopsPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="cpwa-row" style={{ marginTop: 10 }}>
-          <button type="submit" style={{ flex: 1 }}>Search</button>
+          <button type="submit" style={{ flex: 1 }}>{t('common.search')}</button>
           <button type="button" className="secondary" onClick={useMyLocation} disabled={locating}>
-            {locating ? 'Locating…' : coords ? '📍 Nearby' : '📍 Use my location'}
+            {locating ? t('c.locating') : coords ? t('c.nearby') : t('c.useMyLocation')}
           </button>
         </div>
       </form>
 
       {error && <div className="card cpwa-error">{error}</div>}
-      {loading && <div className="card">Loading shops…</div>}
+      {loading && <div className="card">{t('c.loadingShops')}</div>}
       {!loading && !error && shops.length === 0 && (
-        <div className="card muted">No shops found. Try a different search.</div>
+        <div className="card muted">{t('c.noShops')}</div>
       )}
 
       {shops.map((s) => (
@@ -92,11 +94,11 @@ export default function DiscoverShops() {
           <div className="cpwa-shopcard-body">
             <div className="cpwa-shopcard-name">{s.name}</div>
             <div className="muted">
-              {[s.area, s.city].filter(Boolean).join(', ') || 'Location not set'}
+              {[s.area, s.city].filter(Boolean).join(', ') || t('c.locationNotSet')}
             </div>
             <div className="cpwa-shopcard-meta">
-              <span className="badge">{Number(s.product_count || 0)} items</span>
-              {s.distance_km != null && <span className="badge">{s.distance_km} km away</span>}
+              <span className="badge">{Number(s.product_count || 0)} {t('c.items')}</span>
+              {s.distance_km != null && <span className="badge">{s.distance_km} {t('c.kmAway')}</span>}
             </div>
           </div>
           <span className="cpwa-chev">›</span>

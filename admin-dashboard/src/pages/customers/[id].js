@@ -3,13 +3,16 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
+import { useLang } from '../../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function CustomerDetail() {
   const router = useRouter();
+  const { t } = useLang();
   const { id } = router.query;
+  const txnLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
@@ -34,7 +37,7 @@ export default function CustomerDetail() {
   }, [id, load, router]);
 
   if (error) return <Shell><div className="card" style={{ color: 'var(--danger)' }}>{error}</div></Shell>;
-  if (!data) return <Shell><div className="card">Loading…</div></Shell>;
+  if (!data) return <Shell><div className="card">{t('common.loading')}</div></Shell>;
 
   const c = data.customer;
 
@@ -53,7 +56,7 @@ export default function CustomerDetail() {
       });
       setTx({ type: 'purchase', amount: '', note: '' });
       await load();
-      setMsg('Saved.');
+      setMsg(t('common.saved'));
     } catch (err) { setError(err.message); }
   }
 
@@ -69,7 +72,7 @@ export default function CustomerDetail() {
         }),
       });
       await load();
-      setMsg('Customer updated.');
+      setMsg(t('cust.updated'));
     } catch (err) { setError(err.message); }
   }
 
@@ -77,7 +80,7 @@ export default function CustomerDetail() {
     setMsg(''); setError('');
     try {
       await apiFetch(`/api/notifications/remind/${id}`, { method: 'POST' });
-      setMsg('Reminder sent on WhatsApp.');
+      setMsg(t('cust.reminderSent'));
     } catch (err) { setError(err.message); }
   }
 
@@ -85,7 +88,7 @@ export default function CustomerDetail() {
     setMsg(''); setError('');
     try {
       const r = await apiFetch(`/api/customers/${id}/share-link`, { method: 'POST', body: JSON.stringify({ send: true }) });
-      window.prompt(r.sent ? 'Khata link sent on WhatsApp. Copy if needed:' : 'Khata link:', r.link);
+      window.prompt(r.sent ? t('customers.khataLinkSent') : t('customers.khataLinkShort'), r.link);
     } catch (err) { setError(err.message); }
   }
 
@@ -105,7 +108,7 @@ export default function CustomerDetail() {
   }
 
   async function archive() {
-    if (!window.confirm(`Archive ${c.name}? They will be hidden from lists.`)) return;
+    if (!window.confirm(t('cust.archiveConfirm', { name: c.name }))) return;
     try {
       await apiFetch(`/api/customers/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'archived' }) });
       router.push('/customers');
@@ -114,7 +117,7 @@ export default function CustomerDetail() {
 
   return (
     <Shell>
-      <button className="secondary" onClick={() => router.push('/customers')} style={{ marginBottom: 12 }}>← Customers</button>
+      <button className="secondary" onClick={() => router.push('/customers')} style={{ marginBottom: 12 }}>← {t('nav.customers')}</button>
 
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -123,61 +126,61 @@ export default function CustomerDetail() {
             <div className="muted">{c.phone}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className="muted">Outstanding</div>
+            <div className="muted">{t('common.outstanding')}</div>
             <div className="kpi" style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--accent)' }}>{fmt(c.balance)}</div>
-            <div className="muted">Limit {Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : 'none'}</div>
+            <div className="muted">{t('common.limit')} {Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : t('common.none')}</div>
           </div>
         </div>
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 14 }}>
-          <button onClick={remind} disabled={Number(c.balance) <= 0}>Send reminder</button>
-          <button className="secondary" onClick={share}>Share khata</button>
-          <button className="secondary" onClick={downloadStatement}>Download statement CSV</button>
-          <button className="secondary" onClick={archive}>Archive</button>
+          <button onClick={remind} disabled={Number(c.balance) <= 0}>{t('cust.sendReminder')}</button>
+          <button className="secondary" onClick={share}>{t('cust.shareKhata')}</button>
+          <button className="secondary" onClick={downloadStatement}>{t('cust.downloadStatement')}</button>
+          <button className="secondary" onClick={archive}>{t('common.archive')}</button>
         </div>
         {msg && <div className="muted" style={{ marginTop: 10 }}>{msg}</div>}
         {error && <div style={{ color: 'var(--danger)', marginTop: 10 }}>{error}</div>}
       </div>
 
       <div className="card">
-        <h3>Record transaction</h3>
+        <h3>{t('tx.record')}</h3>
         <form onSubmit={recordTx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 10 }}>
           <select value={tx.type} onChange={(e) => setTx({ ...tx, type: e.target.value })}>
-            <option value="purchase">Purchase</option>
-            <option value="cash">Cash payment</option>
-            <option value="upi">UPI payment</option>
+            <option value="purchase">{t('type.purchase')}</option>
+            <option value="cash">{t('type.cashPayment')}</option>
+            <option value="upi">{t('type.upiPayment')}</option>
           </select>
-          <input type="number" placeholder="Amount (₹)" value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} required />
-          <input placeholder="Note (optional)" value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} />
-          <button>Save</button>
+          <input type="number" placeholder={t('common.amountRs')} value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} required />
+          <input placeholder={t('common.noteOptional')} value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} />
+          <button>{t('common.save')}</button>
         </form>
       </div>
 
       <div className="card">
-        <h3>Ledger</h3>
+        <h3>{t('cust.ledger')}</h3>
         <DataTable
-          empty="No transactions yet."
+          empty={t('tx.empty')}
           columns={[
-            { key: 'created_at', label: 'When', render: (t) => new Date(t.created_at).toLocaleString() },
-            { key: 'type', label: 'Type', render: (t) => <span className="badge">{t.type}</span> },
-            { key: 'method', label: 'Method' },
-            { key: 'amount', label: 'Amount', align: 'right', render: (t) => (
-              <span style={{ color: t.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
-                {t.type === 'purchase' ? '+' : '−'}{fmt(t.amount)}
+            { key: 'created_at', label: t('common.when'), render: (row) => new Date(row.created_at).toLocaleString() },
+            { key: 'type', label: t('common.type'), render: (row) => <span className="badge">{txnLabel(row.type)}</span> },
+            { key: 'method', label: t('common.method'), render: (row) => txnLabel(row.method) },
+            { key: 'amount', label: t('common.amount'), align: 'right', render: (row) => (
+              <span style={{ color: row.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
+                {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
               </span>
             ) },
-            { key: 'note', label: 'Note', render: (t) => t.note || '' },
+            { key: 'note', label: t('common.note'), render: (row) => row.note || '' },
           ]}
           rows={data.transactions}
         />
       </div>
 
       <div className="card">
-        <h3>Edit customer</h3>
+        <h3>{t('cust.editCustomer')}</h3>
         <form onSubmit={saveEdit} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: 10 }}>
           <input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} required />
           <input value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} required />
-          <input type="number" value={edit.credit_limit} onChange={(e) => setEdit({ ...edit, credit_limit: e.target.value })} placeholder="Limit ₹" />
-          <button>Save</button>
+          <input type="number" value={edit.credit_limit} onChange={(e) => setEdit({ ...edit, credit_limit: e.target.value })} placeholder={t('cust.limitRs')} />
+          <button>{t('common.save')}</button>
         </form>
       </div>
     </Shell>

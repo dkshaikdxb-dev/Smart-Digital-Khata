@@ -3,12 +3,14 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const emptyForm = { name: '', price: '', unit: '', description: '', image_url: '' };
 
 export default function Catalog() {
   const router = useRouter();
+  const { t } = useLang();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState(emptyForm);
@@ -44,7 +46,7 @@ export default function Catalog() {
       });
       setForm(emptyForm);
       await load();
-      setMsg('Product added.');
+      setMsg(t('cat.added'));
     } catch (err) { setError(err.message); }
   }
 
@@ -76,7 +78,7 @@ export default function Catalog() {
       });
       setEdit(null);
       await load();
-      setMsg('Product updated.');
+      setMsg(t('cat.updated'));
     } catch (err) { setError(err.message); }
   }
 
@@ -92,7 +94,7 @@ export default function Catalog() {
   }
 
   async function remove(p) {
-    if (!window.confirm(`Delete “${p.name}”? This cannot be undone.`)) return;
+    if (!window.confirm(t('cat.deleteConfirm', { name: p.name }))) return;
     setError(''); setMsg('');
     try {
       await apiFetch(`/api/products/${p.id}`, { method: 'DELETE' });
@@ -107,22 +109,22 @@ export default function Catalog() {
     : items;
 
   const columns = [
-    { key: 'name', label: 'Product', render: (p) => <strong>{p.name}</strong> },
-    { key: 'price', label: 'Price', render: (p) => fmt(p.price) },
-    { key: 'unit', label: 'Unit', render: (p) => p.unit || '—' },
+    { key: 'name', label: t('common.product'), render: (p) => <strong>{p.name}</strong> },
+    { key: 'price', label: t('common.price'), render: (p) => fmt(p.price) },
+    { key: 'unit', label: t('common.unit'), render: (p) => p.unit || '—' },
     {
-      key: 'is_active', label: 'Status', render: (p) => (
+      key: 'is_active', label: t('common.status'), render: (p) => (
         <button className="secondary" onClick={(e) => { e.stopPropagation(); toggleActive(p); }}
-          title={p.is_active !== false ? 'Active — tap to hide from customers' : 'Hidden — tap to activate'}>
-          {p.is_active !== false ? '✓ Active' : '✕ Hidden'}
+          title={p.is_active !== false ? t('cat.activeTitle') : t('cat.hiddenTitle')}>
+          {p.is_active !== false ? t('cat.active') : t('cat.hidden')}
         </button>
       ),
     },
     {
-      key: 'actions', label: 'Actions', align: 'right', render: (p) => (
+      key: 'actions', label: t('common.actions'), align: 'right', render: (p) => (
         <span className="row-actions">
-          <button className="secondary" onClick={(e) => { e.stopPropagation(); startEdit(p); }}>Edit</button>
-          <button className="secondary" onClick={(e) => { e.stopPropagation(); remove(p); }}>Delete</button>
+          <button className="secondary" onClick={(e) => { e.stopPropagation(); startEdit(p); }}>{t('common.edit')}</button>
+          <button className="secondary" onClick={(e) => { e.stopPropagation(); remove(p); }}>{t('common.delete')}</button>
         </span>
       ),
     },
@@ -132,48 +134,48 @@ export default function Catalog() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Catalog</h1>
+        <h1>{t('nav.catalog')}</h1>
 
         <div className="card">
-          <h3>Add product</h3>
+          <h3>{t('cat.addProduct')}</h3>
           <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10 }}>
-            <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input placeholder="Price ₹" type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-            <input placeholder="Unit (kg, pc…)" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-            <button>Add</button>
+            <input placeholder={t('common.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input placeholder={t('cat.priceRs')} type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            <input placeholder={t('cat.unitPlaceholder')} value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+            <button>{t('common.add')}</button>
           </form>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-            <input placeholder="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            <input placeholder="Image URL (optional)" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            <input placeholder={t('cat.descOptional')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <input placeholder={t('cat.imageOptional')} value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
           </div>
         </div>
 
         {edit && (
           <div className="card">
-            <h3>Edit product</h3>
+            <h3>{t('cat.editProduct')}</h3>
             <form onSubmit={saveEdit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10 }}>
-              <input placeholder="Name" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} required />
-              <input placeholder="Price ₹" type="number" min="0" step="0.01" value={edit.price} onChange={(e) => setEdit({ ...edit, price: e.target.value })} required />
-              <input placeholder="Unit" value={edit.unit} onChange={(e) => setEdit({ ...edit, unit: e.target.value })} />
-              <button>Save</button>
+              <input placeholder={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} required />
+              <input placeholder={t('cat.priceRs')} type="number" min="0" step="0.01" value={edit.price} onChange={(e) => setEdit({ ...edit, price: e.target.value })} required />
+              <input placeholder={t('common.unit')} value={edit.unit} onChange={(e) => setEdit({ ...edit, unit: e.target.value })} />
+              <button>{t('common.save')}</button>
             </form>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-              <input placeholder="Description" value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
-              <input placeholder="Image URL" value={edit.image_url} onChange={(e) => setEdit({ ...edit, image_url: e.target.value })} />
+              <input placeholder={t('cat.desc')} value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
+              <input placeholder={t('cat.image')} value={edit.image_url} onChange={(e) => setEdit({ ...edit, image_url: e.target.value })} />
             </div>
             <div style={{ marginTop: 12 }}>
-              <button className="secondary" onClick={() => setEdit(null)}>Cancel</button>
+              <button className="secondary" onClick={() => setEdit(null)}>{t('common.cancel')}</button>
             </div>
           </div>
         )}
 
         <div className="card">
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-            <input placeholder="Search products…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
+            <input placeholder={t('cat.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
           </div>
           {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={filtered} empty="No products yet. Add your first above." />
+          <DataTable columns={columns} rows={filtered} empty={t('cat.empty')} />
         </div>
       </div>
     </div>

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch, setCustomerToken, getCustomerToken } from '../../lib/customerApi';
+import { useLang } from '../../lib/i18n';
 
 // WhatsApp OTP login. Step 1: enter phone → request-otp (dev_code shown in
 // non-production). Step 2: enter the 6-digit code → verify-otp → store token.
 export default function CustomerLogin() {
   const router = useRouter();
+  const { t } = useLang();
   const [step, setStep] = useState('phone'); // 'phone' | 'code'
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -44,7 +46,7 @@ export default function CustomerLogin() {
         method: 'POST',
         body: JSON.stringify({ phone: phone.trim(), code: code.trim() }),
       });
-      if (!r || !r.token) throw new Error('Login failed, please try again');
+      if (!r || !r.token) throw new Error(t('c.loginFailed'));
       setCustomerToken(r.token, phone.trim());
       router.replace(next.startsWith('/c') ? next : '/c/shops');
     } catch (err) {
@@ -60,16 +62,16 @@ export default function CustomerLogin() {
   }
 
   return (
-    <CustomerShell title="Sign in" tabs={false}>
+    <CustomerShell title={t('log.signIn')} tabs={false}>
       <div className="card cpwa-hero">
         <div className="cpwa-hero-ico">🛍️</div>
         <h2>Smart Digital Khata</h2>
-        <p className="muted">Log in with your WhatsApp number to order from nearby shops and view your khata.</p>
+        <p className="muted">{t('c.loginBlurb')}</p>
       </div>
 
       {step === 'phone' ? (
         <form onSubmit={requestOtp} className="card">
-          <label className="cpwa-label" htmlFor="phone">Mobile number</label>
+          <label className="cpwa-label" htmlFor="phone">{t('c.mobileNumber')}</label>
           <input
             id="phone"
             type="tel"
@@ -79,41 +81,41 @@ export default function CustomerLogin() {
             onChange={(e) => setPhone(e.target.value)}
             required
           />
-          <p className="muted" style={{ marginTop: 8 }}>We&rsquo;ll send a 6-digit code over WhatsApp.</p>
+          <p className="muted" style={{ marginTop: 8 }}>{t('c.otpHint')}</p>
           {error && <div className="cpwa-error">{error}</div>}
           <button disabled={loading} style={{ width: '100%', marginTop: 12 }}>
-            {loading ? 'Sending…' : 'Send code'}
+            {loading ? t('c.sending') : t('c.sendCode')}
           </button>
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="card">
-          <label className="cpwa-label" htmlFor="code">Enter the code sent to {phone}</label>
+          <label className="cpwa-label" htmlFor="code">{t('c.enterCodeSentTo', { phone })}</label>
           <input
             id="code"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={6}
-            placeholder="6-digit code"
+            placeholder={t('c.codePlaceholder')}
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             required
           />
           {devCode && (
             <div className="cpwa-devhint">
-              Dev code: <strong>{devCode}</strong> (shown only in non-production)
+              {t('c.devCode')} <strong>{devCode}</strong> {t('c.devCodeNote')}
             </div>
           )}
           {error && <div className="cpwa-error">{error}</div>}
           <button disabled={loading || code.length !== 6} style={{ width: '100%', marginTop: 12 }}>
-            {loading ? 'Verifying…' : 'Verify & continue'}
+            {loading ? t('c.verifying') : t('c.verifyContinue')}
           </button>
           <div className="cpwa-row-between" style={{ marginTop: 12 }}>
             <button type="button" className="secondary" onClick={() => { setStep('phone'); setCode(''); setError(''); }}>
-              Change number
+              {t('c.changeNumber')}
             </button>
             <button type="button" className="secondary" onClick={() => requestOtp()} disabled={loading}>
-              Resend code
+              {t('c.resendCode')}
             </button>
           </div>
         </form>

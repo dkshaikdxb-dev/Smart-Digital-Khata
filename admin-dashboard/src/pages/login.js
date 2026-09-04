@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 export default function Login() {
   const router = useRouter();
+  const { t } = useLang();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,15 +33,15 @@ export default function Login() {
   return (
     <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
       <form onSubmit={submit} className="card" style={{ width: 360 }}>
-        <h2>Sign in</h2>
-        <p className="muted">Smart Digital Khata — shop &amp; platform sign-in</p>
+        <h2>{t('log.signIn')}</h2>
+        <p className="muted">{t('log.tagline')}</p>
         <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <input type="email" placeholder={t('log.email')} value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input type="password" placeholder={t('log.password')} value={password} onChange={(e) => setPassword(e.target.value)} required />
           {error && <div style={{ color: 'var(--danger)' }}>{error}</div>}
-          <button disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
+          <button disabled={loading}>{loading ? t('log.signingIn') : t('log.signIn')}</button>
           <div className="muted">
-            New here? <a href="/register">Create an account</a>
+            {t('log.newHere')}<a href="/register">{t('log.createAccount')}</a>
           </div>
         </div>
       </form>

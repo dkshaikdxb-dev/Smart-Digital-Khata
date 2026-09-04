@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Settings() {
   const router = useRouter();
+  const { t } = useLang();
   const [shop, setShop] = useState(null);
   const [msg, setMsg] = useState('');
   const [plans, setPlans] = useState([]);
@@ -38,7 +40,7 @@ export default function Settings() {
     loadPayment();
   }, [router]);
 
-  if (!shop) return (<div><Nav /><div className="container">Loading…</div></div>);
+  if (!shop) return (<div><Nav /><div className="container">{t('common.loading')}</div></div>);
 
   async function save() {
     setMsg('');
@@ -52,7 +54,7 @@ export default function Settings() {
         }),
       });
       setShop(r.shop);
-      setMsg('Saved.');
+      setMsg(t('common.saved'));
     } catch (e) { setMsg(e.message); }
   }
 
@@ -64,10 +66,10 @@ export default function Settings() {
         body: JSON.stringify({ plan: code }),
       });
       if (r.authorization_url) {
-        setBillingMsg('Complete the payment authorization in the new tab to activate your plan.');
+        setBillingMsg(t('set.planAuth'));
         window.open(r.authorization_url, '_blank', 'noopener');
       } else {
-        setBillingMsg(`Plan updated to ${code}.`);
+        setBillingMsg(t('set.planUpdated', { code }));
       }
       const [s, m] = await Promise.all([apiFetch('/api/shops/me'), apiFetch('/api/subscriptions/me')]);
       setShop(s.shop); setSub(m.subscription);
@@ -83,7 +85,7 @@ export default function Settings() {
       await apiFetch('/api/shops/me/payment', { method: 'PATCH', body: JSON.stringify(body) });
       setPayForm((f) => ({ ...f, razorpay_key_secret: '', razorpay_webhook_secret: '' }));
       loadPayment();
-      setPayMsg('Payment settings saved.');
+      setPayMsg(t('set.paymentSaved'));
     } catch (e) { setPayMsg(e.message); }
   }
 
@@ -91,8 +93,8 @@ export default function Settings() {
     setPayMsg('');
     try {
       const r = await apiFetch('/api/shops/me/payment/test', { method: 'POST' });
-      setPayMsg(r.ok === false ? `Connection failed: ${r.error || 'check your keys'}` : 'Connection OK — your Razorpay keys work.');
-    } catch (e) { setPayMsg(`Connection failed: ${e.message}`); }
+      setPayMsg(r.ok === false ? t('set.connFailed', { err: r.error || t('set.connFailedKeys') }) : t('set.connOk'));
+    } catch (e) { setPayMsg(t('set.connFailed', { err: e.message })); }
   }
 
   async function saveDiscovery() {
@@ -109,7 +111,7 @@ export default function Settings() {
         }),
       });
       setShop(r.shop);
-      setDiscoveryMsg('Saved.');
+      setDiscoveryMsg(t('common.saved'));
     } catch (e) { setDiscoveryMsg(e.message); }
   }
 
@@ -117,18 +119,18 @@ export default function Settings() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Settings</h1>
+        <h1>{t('nav.settings')}</h1>
 
         <div className="card" style={{ maxWidth: 520 }}>
-          <h3>Shop</h3>
-          <label className="muted">Shop name</label>
+          <h3>{t('set.shop')}</h3>
+          <label className="muted">{t('set.shopName')}</label>
           <input value={shop.name} onChange={(e) => setShop({ ...shop, name: e.target.value })} />
           <div style={{ height: 12 }} />
-          <label className="muted">Customer notifications</label>
+          <label className="muted">{t('set.customerNotifications')}</label>
           <select value={shop.notification_mode} onChange={(e) => setShop({ ...shop, notification_mode: e.target.value })}>
-            <option value="silent">Silent — never auto-notify</option>
-            <option value="smart">Smart — only significant events</option>
-            <option value="active">Active — every transaction + daily reminders</option>
+            <option value="silent">{t('set.silent')}</option>
+            <option value="smart">{t('set.smart')}</option>
+            <option value="active">{t('set.active')}</option>
           </select>
           <div style={{ height: 12 }} />
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
@@ -138,34 +140,34 @@ export default function Settings() {
               checked={shop.daily_digest !== false}
               onChange={(e) => setShop({ ...shop, daily_digest: e.target.checked })}
             />
-            <span>Send me &ldquo;Aaj ka hisaab&rdquo; on WhatsApp every evening (9pm)</span>
+            <span>{t('set.dailyDigest')}</span>
           </label>
           <div style={{ height: 16 }} />
-          <button onClick={save}>Save</button>
+          <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>
-          <h3>Billing</h3>
+          <h3>{t('set.billing')}</h3>
           <p className="muted">
-            Current plan: <span className="badge">{shop.plan}</span>
-            {sub?.status === 'pending' && ' — payment authorization pending'}
+            {t('set.currentPlan')} <span className="badge">{shop.plan}</span>
+            {sub?.status === 'pending' && t('set.authPending')}
           </p>
           {sub?.status === 'pending' && sub.authorization_url && (
-            <p><a href={sub.authorization_url} target="_blank" rel="noreferrer">Finish payment authorization →</a></p>
+            <p><a href={sub.authorization_url} target="_blank" rel="noreferrer">{t('set.finishAuth')}</a></p>
           )}
           <div style={{ display: 'grid', gap: 10 }}>
             {plans.map((p) => (
               <div key={p.code} style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #334155', paddingBottom: 10 }}>
                 <div style={{ flex: 1 }}>
                   <strong>{p.name}</strong>{' '}
-                  <span className="muted">{p.price === 0 ? 'Free' : `${fmt(p.price)}/month`} · up to {p.limits.customers} customers</span>
+                  <span className="muted">{p.price === 0 ? t('set.free') : `${fmt(p.price)}${t('set.perMonth')}`}{t('set.upTo', { n: p.limits.customers })}</span>
                 </div>
                 {shop.plan === p.code ? (
-                  <span className="badge">current</span>
+                  <span className="badge">{t('set.current')}</span>
                 ) : (
                   <button className="secondary" onClick={() => choosePlan(p.code)}>
-                    {p.price === 0 ? 'Downgrade' : 'Choose'}
+                    {p.price === 0 ? t('set.downgrade') : t('set.choose')}
                   </button>
                 )}
               </div>
@@ -175,28 +177,28 @@ export default function Settings() {
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>
-          <h3>Payments (your Razorpay)</h3>
+          <h3>{t('set.payments')}</h3>
           <p className="muted">
-            Mode: <span className="badge">{pay?.mode || '—'}</span>{' '}
-            <span className="badge">{pay?.key_secret_set ? 'Key secret set' : 'No key secret'}</span>{' '}
-            <span className="badge">{pay?.webhook_secret_set ? 'Webhook secret set' : 'No webhook secret'}</span>
+            {t('set.mode')} <span className="badge">{pay?.mode || '—'}</span>{' '}
+            <span className="badge">{pay?.key_secret_set ? t('set.keySecretSet') : t('set.noKeySecret')}</span>{' '}
+            <span className="badge">{pay?.webhook_secret_set ? t('set.webhookSecretSet') : t('set.noWebhookSecret')}</span>
           </p>
-          <label className="muted">Razorpay Key ID</label>
+          <label className="muted">{t('set.razorpayKeyId')}</label>
           <input value={payForm.razorpay_key_id} onChange={(e) => setPayForm({ ...payForm, razorpay_key_id: e.target.value })} placeholder="rzp_live_… / rzp_test_…" />
           <div style={{ height: 12 }} />
-          <label className="muted">Key Secret</label>
-          <input type="password" value={payForm.razorpay_key_secret} onChange={(e) => setPayForm({ ...payForm, razorpay_key_secret: e.target.value })} placeholder="Leave blank to keep current" autoComplete="new-password" />
+          <label className="muted">{t('set.keySecret')}</label>
+          <input type="password" value={payForm.razorpay_key_secret} onChange={(e) => setPayForm({ ...payForm, razorpay_key_secret: e.target.value })} placeholder={t('set.leaveBlank')} autoComplete="new-password" />
           <div style={{ height: 12 }} />
-          <label className="muted">Webhook Secret</label>
-          <input type="password" value={payForm.razorpay_webhook_secret} onChange={(e) => setPayForm({ ...payForm, razorpay_webhook_secret: e.target.value })} placeholder="Leave blank to keep current" autoComplete="new-password" />
+          <label className="muted">{t('set.webhookSecret')}</label>
+          <input type="password" value={payForm.razorpay_webhook_secret} onChange={(e) => setPayForm({ ...payForm, razorpay_webhook_secret: e.target.value })} placeholder={t('set.leaveBlank')} autoComplete="new-password" />
           <div style={{ height: 16 }} />
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-            <button onClick={savePayment}>Save payment settings</button>
-            <button className="secondary" onClick={testPayment}>Test connection</button>
+            <button onClick={savePayment}>{t('set.savePayment')}</button>
+            <button className="secondary" onClick={testPayment}>{t('set.testConnection')}</button>
           </div>
           {pay?.webhook_url && (
             <div style={{ marginTop: 14 }}>
-              <div className="muted">Add this as a webhook in YOUR Razorpay dashboard:</div>
+              <div className="muted">{t('set.webhookHint')}</div>
               <code style={{ display: 'block', wordBreak: 'break-all', marginTop: 4, padding: '8px 10px', borderRadius: 8, background: '#0b1220', border: '1px solid #334155' }}>{pay.webhook_url}</code>
             </div>
           )}
@@ -204,31 +206,31 @@ export default function Settings() {
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>
-          <h3>Discovery (list your shop)</h3>
-          <p className="muted">Let nearby customers find and order from your shop.</p>
-          <label className="muted">City</label>
-          <input value={shop.city || ''} onChange={(e) => setShop({ ...shop, city: e.target.value })} placeholder="City" />
+          <h3>{t('set.discovery')}</h3>
+          <p className="muted">{t('set.discoveryDesc')}</p>
+          <label className="muted">{t('set.city')}</label>
+          <input value={shop.city || ''} onChange={(e) => setShop({ ...shop, city: e.target.value })} placeholder={t('set.city')} />
           <div style={{ height: 12 }} />
-          <label className="muted">Area / locality</label>
-          <input value={shop.area || ''} onChange={(e) => setShop({ ...shop, area: e.target.value })} placeholder="Area" />
+          <label className="muted">{t('set.areaLocality')}</label>
+          <input value={shop.area || ''} onChange={(e) => setShop({ ...shop, area: e.target.value })} placeholder={t('set.areaPlaceholder')} />
           <div style={{ height: 12 }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="muted">Latitude</label>
+              <label className="muted">{t('set.latitude')}</label>
               <input type="number" step="any" value={shop.latitude ?? ''} onChange={(e) => setShop({ ...shop, latitude: e.target.value })} placeholder="e.g. 19.0760" />
             </div>
             <div>
-              <label className="muted">Longitude</label>
+              <label className="muted">{t('set.longitude')}</label>
               <input type="number" step="any" value={shop.longitude ?? ''} onChange={(e) => setShop({ ...shop, longitude: e.target.value })} placeholder="e.g. 72.8777" />
             </div>
           </div>
           <div style={{ height: 12 }} />
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
             <input type="checkbox" style={{ width: 'auto' }} checked={!!shop.is_listed} onChange={(e) => setShop({ ...shop, is_listed: e.target.checked })} />
-            <span>List my shop so nearby customers can find and order</span>
+            <span>{t('set.listShop')}</span>
           </label>
           <div style={{ height: 16 }} />
-          <button onClick={saveDiscovery}>Save</button>
+          <button onClick={saveDiscovery}>{t('common.save')}</button>
           {discoveryMsg && <div className="muted" style={{ marginTop: 8 }}>{discoveryMsg}</div>}
         </div>
       </div>

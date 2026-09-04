@@ -3,11 +3,13 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Customers() {
   const router = useRouter();
+  const { t } = useLang();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', credit_limit: 0 });
@@ -54,39 +56,39 @@ export default function Customers() {
     setError('');
     try {
       const r = await apiFetch(`/api/customers/${c.id}/share-link`, { method: 'POST', body: JSON.stringify({ send: true }) });
-      window.prompt(r.sent ? 'Khata link sent on WhatsApp. Copy if needed:' : 'Khata link (copy and share):', r.link);
+      window.prompt(r.sent ? t('customers.khataLinkSent') : t('customers.khataLinkCopy'), r.link);
     } catch (err) { setError(err.message); }
   }
 
   async function remindAll() {
     setError(''); setMsg('');
-    if (!window.confirm('Send a WhatsApp reminder to every customer who owes money?')) return;
+    if (!window.confirm(t('customers.remindAllConfirm'))) return;
     try {
       const r = await apiFetch('/api/notifications/broadcast', { method: 'POST', body: JSON.stringify({ mode: 'outstanding' }) });
-      setMsg(`Reminders sent to ${r.sent} customer${r.sent === 1 ? '' : 's'}.`);
+      setMsg(t('customers.remindersSent', { n: r.sent, s: r.sent === 1 ? '' : 's' }));
     } catch (err) { setError(err.message); }
   }
 
   const open = (c) => router.push(`/customers/${c.id}`);
 
   const columns = [
-    { key: 'name', label: 'Name', render: (c) => <strong>{c.name}</strong> },
-    { key: 'phone', label: 'Phone' },
-    { key: 'credit_limit', label: 'Credit limit', render: (c) => (Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : '—') },
-    { key: 'balance', label: 'Balance', render: (c) => <span style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(c.balance)}</span> },
+    { key: 'name', label: t('common.name'), render: (c) => <strong>{c.name}</strong> },
+    { key: 'phone', label: t('common.phone') },
+    { key: 'credit_limit', label: t('common.creditLimit'), render: (c) => (Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : '—') },
+    { key: 'balance', label: t('common.balance'), render: (c) => <span style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(c.balance)}</span> },
     {
-      key: 'alerts', label: 'Alerts', render: (c) => (
+      key: 'alerts', label: t('customers.alerts'), render: (c) => (
         <button className="secondary" onClick={(e) => { e.stopPropagation(); toggleNotifications(c); }}
-          title={c.notifications_enabled !== false ? 'Alerts on — tap to mute' : 'Muted — tap to enable'}>
-          {c.notifications_enabled !== false ? '🔔 On' : '🔕 Off'}
+          title={c.notifications_enabled !== false ? t('customers.alertOnTitle') : t('customers.alertOffTitle')}>
+          {c.notifications_enabled !== false ? t('customers.alertOn') : t('customers.alertOff')}
         </button>
       ),
     },
     {
-      key: 'actions', label: 'Actions', align: 'right', render: (c) => (
+      key: 'actions', label: t('common.actions'), align: 'right', render: (c) => (
         <span className="row-actions">
-          <button className="secondary" onClick={(e) => { e.stopPropagation(); open(c); }}>Open</button>
-          <button className="secondary" onClick={(e) => { e.stopPropagation(); shareKhata(c); }}>Share</button>
+          <button className="secondary" onClick={(e) => { e.stopPropagation(); open(c); }}>{t('common.open')}</button>
+          <button className="secondary" onClick={(e) => { e.stopPropagation(); shareKhata(c); }}>{t('common.share')}</button>
         </span>
       ),
     },
@@ -96,28 +98,28 @@ export default function Customers() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Customers</h1>
+        <h1>{t('nav.customers')}</h1>
 
         <div className="card">
-          <h3>Add customer</h3>
+          <h3>{t('customers.add')}</h3>
           <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: 10 }}>
-            <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input placeholder="Phone (+91…)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
-            <input placeholder="Credit limit ₹" type="number" min="0" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
-            <button>Add</button>
+            <input placeholder={t('common.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input placeholder={t('customers.phonePlaceholder')} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+            <input placeholder={t('customers.creditLimitPlaceholder')} type="number" min="0" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
+            <button>{t('common.add')}</button>
           </form>
         </div>
 
         <div className="card">
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-            <input placeholder="Search by name or phone…" value={search} onChange={(e) => setSearch(e.target.value)}
+            <input placeholder={t('customers.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') load(); }} style={{ flex: 1, minWidth: 180 }} />
-            <button className="secondary" onClick={() => load()}>Search</button>
-            <button onClick={remindAll} title="WhatsApp reminder to all customers with dues">Remind all dues</button>
+            <button className="secondary" onClick={() => load()}>{t('common.search')}</button>
+            <button onClick={remindAll} title={t('customers.remindAllTitle')}>{t('customers.remindAll')}</button>
           </div>
           {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={items} onRowClick={open} empty="No customers yet. Add your first above." />
+          <DataTable columns={columns} rows={items} onRowClick={open} empty={t('customers.empty')} />
         </div>
       </div>
     </div>
