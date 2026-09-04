@@ -34,7 +34,7 @@ exports.list = async (req, res) => {
   const r = await query(
     `SELECT id, name, description, price, unit, is_active, image_url, created_at, updated_at
      FROM products WHERE ${where}
-     ORDER BY created_at DESC`,
+     ORDER BY created_at DESC, id DESC`,
     params
   );
   res.json({ items: r.rows });
@@ -103,7 +103,7 @@ exports.publicCatalog = async (req, res) => {
   const r = await query(
     `SELECT id, name, description, price, unit, image_url
      FROM products WHERE shop_id = $1 AND is_active = true
-     ORDER BY created_at DESC`,
+     ORDER BY created_at DESC, id DESC`,
     [shopId]
   );
   res.json({ shop_name: shop.rows[0].name, products: r.rows });
@@ -180,6 +180,12 @@ exports.serveImage = async (req, res) => {
 
   res.set('Cache-Control', 'public, max-age=31536000, immutable');
   res.set('ETag', etag);
+  // These are PUBLIC product photos meant to be embedded as <img> anywhere
+  // (the storefront may be served from a different origin than the API, e.g.
+  // a CDN or subdomain). Helmet's default CORP is same-origin, which would
+  // block a cross-origin <img> even though fetch() still works — so relax CORP
+  // for this one public, non-sensitive image response.
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
   if (req.headers['if-none-match'] === etag) {
     return res.status(304).end();
   }

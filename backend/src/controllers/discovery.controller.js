@@ -95,7 +95,7 @@ exports.getShop = async (req, res) => {
   const products = await query(
     `SELECT id, name, description, price, unit, image_url
        FROM products WHERE shop_id = $1 AND is_active = true
-      ORDER BY created_at DESC`,
+      ORDER BY created_at DESC, id DESC`,
     [shopId]
   );
 
