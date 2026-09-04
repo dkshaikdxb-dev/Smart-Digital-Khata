@@ -1,0 +1,31 @@
+name: Import master catalog
+
+# Manual only. Loads the committed BASE catalog dataset
+# (backend/src/data/catalog-seed.json, ~1615 SKUs) into `catalog_items` on the
+# VPS. This is REAL base data, not demo data, so NO FORCE_DEMO is needed. The
+# importer is idempotent (UPSERT by sku) and only touches global seed rows —
+# it never deletes shop-owned custom items.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: import-catalog-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import:
+    name: Import master catalog on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            docker compose exec -T backend npm run import:catalog

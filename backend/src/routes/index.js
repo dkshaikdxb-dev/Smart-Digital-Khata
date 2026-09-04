@@ -7,6 +7,7 @@ router.use('/shops', require('./shop.routes'));
 router.use('/shops', require('./shop-payment.routes'));
 router.use('/customers', require('./customer.routes'));
 router.use('/products', require('./product.routes'));
+router.use('/catalog', require('./catalog.routes'));
 router.use('/orders', require('./order.routes'));
 router.use('/families', require('./family.routes'));
 router.use('/transactions', require('./transaction.routes'));
