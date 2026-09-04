@@ -12,7 +12,7 @@ const updateSchema = Joi.object({
   daily_digest: Joi.boolean(),
 });
 
-router.use(auth());
+router.use(auth(['owner', 'staff']));
 router.get('/me', asyncHandler(ctrl.getMine));
 router.patch('/me', validate(updateSchema), asyncHandler(ctrl.updateMine));
 

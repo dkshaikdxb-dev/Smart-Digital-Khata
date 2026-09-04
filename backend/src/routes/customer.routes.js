@@ -26,7 +26,7 @@ const shareSchema = Joi.object({
   regenerate: Joi.boolean().default(false),
 });
 
-router.use(auth());
+router.use(auth(['owner', 'staff']));
 router.get('/', asyncHandler(ctrl.list));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.get('/:id', asyncHandler(ctrl.get));

@@ -9,7 +9,7 @@ const upgradeSchema = Joi.object({
   plan: Joi.string().valid('free', 'pro', 'family').required(),
 });
 
-router.use(auth());
+router.use(auth(['owner', 'staff']));
 router.get('/plans', asyncHandler(ctrl.listPlans));
 router.get('/me', asyncHandler(ctrl.getMine));
 router.post('/upgrade', validate(upgradeSchema), asyncHandler(ctrl.upgrade));

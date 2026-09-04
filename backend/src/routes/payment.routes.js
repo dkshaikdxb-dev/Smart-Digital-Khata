@@ -14,7 +14,7 @@ const createOrderSchema = Joi.object({
 // Public — used by the post-payment redirect / "thank you" page
 router.get('/orders/:id/public', asyncHandler(ctrl.getOrderPublic));
 
-router.use(auth());
+router.use(auth(['owner', 'staff']));
 router.post('/orders', validate(createOrderSchema), asyncHandler(ctrl.createOrder));
 router.get('/orders/:id', asyncHandler(ctrl.getOrder));
 router.post('/orders/:id/share', asyncHandler(ctrl.sharePaymentLink));
