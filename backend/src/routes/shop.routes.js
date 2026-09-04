@@ -10,11 +10,12 @@ const updateSchema = Joi.object({
   notification_mode: Joi.string().valid('silent', 'smart', 'active'),
   default_credit_limit: Joi.number().min(0),
   daily_digest: Joi.boolean(),
-  // Shop Discovery (M6): public directory opt-in + location.
-  city: Joi.string().allow('').max(120),
-  area: Joi.string().allow('').max(120),
-  latitude: Joi.number().min(-90).max(90),
-  longitude: Joi.number().min(-180).max(180),
+  // Shop Discovery (M6): public directory opt-in + location. null clears a
+  // field so an owner can wipe their location / opt out of the geo directory.
+  city: Joi.string().allow('', null).max(120),
+  area: Joi.string().allow('', null).max(120),
+  latitude: Joi.number().min(-90).max(90).allow(null),
+  longitude: Joi.number().min(-180).max(180).allow(null),
   is_listed: Joi.boolean(),
 });
 

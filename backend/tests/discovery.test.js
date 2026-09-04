@@ -103,6 +103,28 @@ describe('owner discovery settings (PATCH /shops/me)', () => {
       .send({ latitude: 999 });
     expect(bad.status).toBe(400);
   });
+
+  // The owner Settings page sends null for blank location fields to clear them
+  // and opt out of the geo directory — the schema must accept null, not 400.
+  it('accepts null to clear location + opt out of discovery', async () => {
+    await withToken(request(app).patch('/api/shops/me'), tokenU).send({
+      city: 'Tempcity', area: 'Tempsector', latitude: 10.1, longitude: 20.2, is_listed: true,
+    });
+    const patch = await withToken(request(app).patch('/api/shops/me'), tokenU).send({
+      city: null, area: null, latitude: null, longitude: null, is_listed: false,
+    });
+    expect(patch.status).toBe(200);
+    expect(patch.body.shop.city).toBeNull();
+    expect(patch.body.shop.latitude).toBeNull();
+    expect(patch.body.shop.longitude).toBeNull();
+    expect(patch.body.shop.is_listed).toBe(false);
+
+    // Restore the unlisted-with-CITY state the rest of this suite relies on.
+    await pool.query(
+      `UPDATE shops SET city = $1, latitude = NULL, longitude = NULL, is_listed = false WHERE id = $2`,
+      [CITY, unlisted.id]
+    );
+  });
 });
 
 describe('GET /public/shops', () => {
