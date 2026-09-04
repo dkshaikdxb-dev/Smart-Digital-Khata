@@ -22,6 +22,7 @@ export default function Nav() {
       {role === 'admin' ? (
         <>
           <Link href="/admin">Platform</Link>
+          <Link href="/admin/settings">Settings</Link>
           <span className="badge">Platform Admin</span>
         </>
       ) : (

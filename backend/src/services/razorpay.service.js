@@ -1,18 +1,23 @@
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
+const settings = require('../config/settings');
 
-let client = null;
+// Build a fresh client from current settings each call (cheap — no network).
 function getClient() {
-  if (!client) {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      throw new Error('Razorpay keys are not configured');
-    }
-    client = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
+  const key_id = settings.get('RAZORPAY_KEY_ID');
+  const key_secret = settings.get('RAZORPAY_KEY_SECRET');
+  if (!key_id || !key_secret) {
+    throw new Error('Razorpay keys are not configured');
   }
-  return client;
+  return new Razorpay({ key_id, key_secret });
+}
+
+function keyId() {
+  return settings.get('RAZORPAY_KEY_ID');
+}
+
+function isConfigured() {
+  return Boolean(settings.get('RAZORPAY_KEY_ID') && settings.get('RAZORPAY_KEY_SECRET'));
 }
 
 async function createOrder({ amount, receipt, notes }) {
@@ -45,21 +50,17 @@ async function createPaymentLink({ amount, description, customer, notes, referen
   });
 }
 
-/** Razorpay plan IDs configured in the dashboard, mapped from our plan codes. */
+/** Razorpay plan IDs (from settings), mapped from our plan codes. */
 function planIdFor(planCode) {
   const map = {
-    pro: process.env.RAZORPAY_PLAN_PRO,
-    family: process.env.RAZORPAY_PLAN_FAMILY,
+    pro: settings.get('RAZORPAY_PLAN_PRO'),
+    family: settings.get('RAZORPAY_PLAN_FAMILY'),
   };
   return map[planCode] || null;
 }
 
 function isSubscriptionBillingConfigured(planCode) {
-  return Boolean(
-    process.env.RAZORPAY_KEY_ID &&
-    process.env.RAZORPAY_KEY_SECRET &&
-    planIdFor(planCode)
-  );
+  return Boolean(isConfigured() && planIdFor(planCode));
 }
 
 async function createSubscription({ plan_id, customer_notify = 1, total_count = 12, notes }) {
@@ -71,7 +72,7 @@ async function cancelSubscription(subscriptionId, cancelAtCycleEnd = false) {
 }
 
 function verifyWebhookSignature(rawBody, signatureHeader) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const secret = settings.get('RAZORPAY_WEBHOOK_SECRET');
   if (!secret) return false;
   const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
   try {
@@ -81,12 +82,21 @@ function verifyWebhookSignature(rawBody, signatureHeader) {
   }
 }
 
+/** Lightweight auth check for the "Test connection" button. */
+async function testConnection() {
+  await getClient().orders.all({ count: 1 });
+  return true;
+}
+
 module.exports = {
   createOrder,
   createPaymentLink,
   createSubscription,
   cancelSubscription,
   planIdFor,
+  keyId,
+  isConfigured,
   isSubscriptionBillingConfigured,
   verifyWebhookSignature,
+  testConnection,
 };

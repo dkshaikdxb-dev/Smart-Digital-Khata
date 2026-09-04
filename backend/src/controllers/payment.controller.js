@@ -27,7 +27,7 @@ exports.createOrder = async (req, res) => {
     [order.receipt, req.user.shopId, customer_id, amount, order.id, note || null]
   );
 
-  res.status(201).json({ order: r.rows[0], provider: { id: order.id, key_id: process.env.RAZORPAY_KEY_ID } });
+  res.status(201).json({ order: r.rows[0], provider: { id: order.id, key_id: razorpay.keyId() } });
 };
 
 exports.getOrder = async (req, res) => {

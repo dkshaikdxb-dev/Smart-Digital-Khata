@@ -1,6 +1,7 @@
 const logger = require('../utils/logger');
 const razorpay = require('../services/razorpay.service');
 const whatsappInbound = require('../services/whatsapp-inbound.service');
+const settings = require('../config/settings');
 const { query, withTx } = require('../config/db');
 
 async function alreadyProcessed(id, channel) {
@@ -148,7 +149,7 @@ exports.whatsappVerify = (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-  if (mode === 'subscribe' && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+  if (mode === 'subscribe' && token === settings.get('WHATSAPP_VERIFY_TOKEN')) {
     return res.status(200).send(challenge);
   }
   return res.sendStatus(403);

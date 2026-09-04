@@ -1,5 +1,6 @@
 const { query } = require('../config/db');
 const whatsapp = require('./whatsapp.service');
+const settings = require('../config/settings');
 const logger = require('../utils/logger');
 
 /**
@@ -66,12 +67,12 @@ async function sendReminder(shopId, customer) {
     const { name: shopName } = shopRes.rows[0];
     const balance = fmtRs(customer.balance);
 
-    const templateName = process.env.WHATSAPP_TEMPLATE_REMINDER;
+    const templateName = settings.get('WHATSAPP_TEMPLATE_REMINDER');
     if (templateName && whatsapp.isConfigured()) {
       await whatsapp.sendTemplate(
         customer.phone,
         templateName,
-        process.env.WHATSAPP_TEMPLATE_LANG || 'en',
+        settings.get('WHATSAPP_TEMPLATE_LANG') || 'en',
         [
           {
             type: 'body',

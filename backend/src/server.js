@@ -4,6 +4,7 @@ validateEnv();
 const app = require('./app');
 const logger = require('./utils/logger');
 const { pool } = require('./config/db');
+const settings = require('./config/settings');
 const { startWorkers } = require('./jobs');
 
 const PORT = process.env.PORT || 4000;
@@ -12,6 +13,8 @@ async function start() {
   try {
     await pool.query('SELECT 1');
     logger.info('Postgres connection OK');
+
+    await settings.load();
 
     if (process.env.RUN_WORKERS !== 'false') {
       startWorkers();
