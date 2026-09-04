@@ -201,4 +201,14 @@ Rationale: Free tier is a genuinely useful ledger (adoption wedge). The paid tri
 
 ---
 
+## 12. Monetization decision log
+
+| Date | Decision | Rationale |
+|---|---|---|
+| 2026-09 | **Commerce (catalog / online orders / discovery) monetization: DEFER — subscription only.** Commerce ships free to all paid tiers; pricing is unchanged. | Payments settle to each shop's **own** Razorpay, so the platform can't take a payment-time cut without a metering + invoicing system. Rather than build that speculatively, ship the features, watch real adoption, and revisit with usage data. Options kept on the table for later: (a) gate commerce behind Pro/Family, (b) metered commission on prepaid GMV, (c) hybrid. |
+
+Revenue today therefore remains the **Pro/Family subscription** (`₹299` / `₹599` per month), billed on the platform Razorpay account (see `docs/GO_LIVE_INTEGRATIONS.md` §B). Per-shop Razorpay is used **only** to route customers' payments to the shop, never to bill the platform.
+
+---
+
 *Companion docs: `README.md` (index) · `docs/LOCAL_TESTING.md` · `docs/PRE_DEPLOYMENT_CHECKLIST.md` · `docs/DEPLOYMENT.md` · `docs/OPERATIONS.md` · `docs/SECURITY.md` · `docs/TROUBLESHOOTING.md` · `docs/GAP_FIXES.md`*

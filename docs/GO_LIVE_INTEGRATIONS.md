@@ -102,6 +102,55 @@ plain text without a template.
 
 ---
 
+## E. Phase 2 — keys via the UI (no `.env` edit)
+
+Phase 2 added in-app settings screens, so most keys can now be entered in the
+browser instead of `.env`. `.env` still works and remains the fallback.
+
+**Platform keys (WhatsApp + subscription-billing Razorpay)** — Admin →
+`/admin/settings`:
+- Razorpay (subscription billing) Key ID / Key Secret / Webhook Secret + the
+  two plan IDs, with a **Test connection** button. This is the same platform
+  account as §A/§B; the DB value overrides `.env` once set.
+- WhatsApp phone-number-id / business-account-id / verify token / reminder
+  template, with a **Send test message** button.
+
+**Per-shop Razorpay (each shop collects to their OWN account)** — Shop owner →
+`/settings` → *Payments (your Razorpay)*:
+- Each shop pastes their own Key ID / Key Secret / Webhook Secret. Customer
+  order/payment money then settles directly to that shop.
+- The page shows that shop's **own webhook URL**
+  (`…/api/webhooks/razorpay/shop/<token>`) — the owner adds *that* URL, with
+  events `payment.captured`, `order.paid`, `payment_link.paid`, in **their**
+  Razorpay dashboard. The platform webhook (§A) stays for subscription events
+  only.
+
+**Discovery** — same `/settings` page → *Discovery*: set city/area/lat/lng and
+tick "list my shop" to appear in the customer PWA's shop finder.
+
+> Monetization note: per-shop Razorpay means customer payments never touch the
+> platform account, so the platform is **not** taking a commission on orders —
+> revenue is the Pro/Family subscription only. See `docs/PRODUCT.md` §12.
+
+## F. Seed demo commerce (optional, for a populated demo)
+
+To make the new owner Catalog/Orders pages and the customer PWA non-empty for a
+**demo**, seed products + sample orders onto the canonical demo shop
+(`store01@demo.local`). Safe: it only touches that demo shop, is idempotent, and
+refuses to run against production data unless you explicitly force it.
+
+```bash
+# on the VPS, inside the backend container
+docker compose exec backend npm run seed:demo      # creates store01..store10 demo shops (skips existing)
+docker compose exec backend npm run seed:commerce  # products + orders for store01's shop
+```
+
+Do **not** seed demo data into a database that holds real shops unless you mean
+to — the guard requires `FORCE_DEMO=true` in production for exactly this reason.
+Real shops start with an empty catalog by design and add their own products.
+
+---
+
 ## Go-live checklist
 
 - ☐ A — one-time payments: keys + webhook + test a real paid link
@@ -109,5 +158,6 @@ plain text without a template.
 - ☐ C — WhatsApp: token/phone-id/verify + webhook green + test a message
 - ☐ C — move the WhatsApp number to Production (App Review) to reach any customer
 - ☐ D — submit the `dues_reminder` template; set env after approval
+- ☐ E — each live shop connects their **own** Razorpay in `/settings` + adds their per-shop webhook URL
 - ☐ Razorpay live keys (not test) once the loop is rehearsed
 - ☐ Re-run `./scripts/backup.sh` and confirm the nightly cron after go-live
