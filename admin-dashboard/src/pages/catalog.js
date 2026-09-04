@@ -8,19 +8,41 @@ import { useLang } from '../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
-const emptyForm = { name: '', price: '', unit: '', description: '', image_url: '' };
+// Paise → a plain rupee string for editable inputs (e.g. 4550 → "45.5").
+const rupeeStr = (p) => String(Number(p || 0) / 100);
+const CATALOG_PAGE = 30;
+const emptyCustom = { product: '', brand: '', pack: '', category: '', subcategory: '', unit: '', price: '' };
 
 export default function Catalog() {
   const router = useRouter();
   const { t } = useLang();
-  const [items, setItems] = useState([]);
-  const [search, setSearch] = useState('');
-  const [form, setForm] = useState(emptyForm);
-  const [edit, setEdit] = useState(null); // product being edited (id + fields)
+
+  const [tab, setTab] = useState('range'); // 'range' | 'browse' | 'custom'
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
+
+  // --- My range -----------------------------------------------------------
+  const [items, setItems] = useState([]);
+  const [search, setSearch] = useState('');
+  const [priceDraft, setPriceDraft] = useState({}); // { [productId]: rupees string }
   const [photoBusy, setPhotoBusy] = useState(null); // product id currently up/downloading
   const [photoErr, setPhotoErr] = useState({}); // { [productId]: message }
+
+  // --- Add from catalogue (base) -----------------------------------------
+  const [categories, setCategories] = useState([]);
+  const [catSearch, setCatSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [catCategory, setCatCategory] = useState('');
+  const [catSubcategory, setCatSubcategory] = useState('');
+  const [catItems, setCatItems] = useState([]);
+  const [catCursor, setCatCursor] = useState(null);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catPriceDraft, setCatPriceDraft] = useState({}); // { [catalogItemId]: rupees string }
+  const [selectBusy, setSelectBusy] = useState(null); // catalog item id being added
+
+  // --- Add custom item ----------------------------------------------------
+  const [customForm, setCustomForm] = useState(emptyCustom);
+  const [customBusy, setCustomBusy] = useState(false);
 
   async function load() {
     const r = await apiFetch('/api/products');
@@ -31,61 +53,62 @@ export default function Catalog() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     load().catch((e) => setError(e.message));
+    apiFetch('/api/catalog/categories')
+      .then((r) => setCategories(r.categories || []))
+      .catch(() => { /* categories are optional chrome; ignore */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function create(e) {
-    e.preventDefault();
-    setError(''); setMsg('');
+  // Debounce the catalogue search box so a long base list isn't queried per keystroke.
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(catSearch), 300);
+    return () => clearTimeout(id);
+  }, [catSearch]);
+
+  // Fetch a fresh page of base items whenever the browse filters change (and the
+  // browse tab is open). Load-more is handled separately via next_cursor.
+  useEffect(() => {
+    if (tab !== 'browse') return;
+    loadCatalog(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, debouncedSearch, catCategory, catSubcategory]);
+
+  async function loadCatalog(reset) {
+    setError('');
+    setCatLoading(true);
     try {
-      await apiFetch('/api/products', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: form.name,
-          price: Math.round(Number(form.price) * 100),
-          unit: form.unit || null,
-          description: form.description || null,
-          image_url: form.image_url || null,
-        }),
-      });
-      setForm(emptyForm);
-      await load();
-      setMsg(t('cat.added'));
-    } catch (err) { setError(err.message); }
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+      if (catCategory) params.set('category', catCategory);
+      if (catSubcategory) params.set('subcategory', catSubcategory);
+      params.set('limit', String(CATALOG_PAGE));
+      if (!reset && catCursor) params.set('cursor', catCursor);
+      const r = await apiFetch(`/api/catalog?${params.toString()}`);
+      const next = r.items || [];
+      setCatItems((prev) => (reset ? next : [...prev, ...next]));
+      setCatCursor(r.next_cursor || null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCatLoading(false);
+    }
   }
 
-  function startEdit(p) {
+  // ---- My range mutations -----------------------------------------------
+  async function savePrice(p) {
     setError(''); setMsg('');
-    setEdit({
-      id: p.id,
-      name: p.name || '',
-      price: (Number(p.price || 0) / 100).toString(),
-      unit: p.unit || '',
-      description: p.description || '',
-      image_url: p.image_url || '',
-    });
-  }
-
-  async function saveEdit(e) {
-    e.preventDefault();
-    setError(''); setMsg('');
+    const raw = priceDraft[p.id] != null ? priceDraft[p.id] : rupeeStr(p.price);
     try {
-      await apiFetch(`/api/products/${edit.id}`, {
+      await apiFetch(`/api/products/${p.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          name: edit.name,
-          price: Math.round(Number(edit.price) * 100),
-          unit: edit.unit || null,
-          description: edit.description || null,
-          image_url: edit.image_url || null,
-        }),
+        body: JSON.stringify({ price: Math.round(Number(raw) * 100) }),
       });
-      setEdit(null);
       await load();
-      setMsg(t('cat.updated'));
+      setMsg(t('cat.priceSaved'));
     } catch (err) { setError(err.message); }
   }
 
+  // Toggle is_active — this is the "list / deselect" control for a range item.
   async function toggleActive(p) {
     setError(''); setMsg('');
     try {
@@ -102,7 +125,6 @@ export default function Catalog() {
     setError(''); setMsg('');
     try {
       await apiFetch(`/api/products/${p.id}`, { method: 'DELETE' });
-      if (edit && edit.id === p.id) setEdit(null);
       await load();
     } catch (err) { setError(err.message); }
   }
@@ -113,9 +135,8 @@ export default function Catalog() {
     setItems((prev) => prev.map((it) => (it.id === next.id ? { ...it, ...next } : it)));
   }
 
-  // Photo upload is multipart, so it uses a raw fetch (NOT apiFetch): the
-  // browser must set the multipart boundary itself, so we never set
-  // Content-Type by hand.
+  // Photo upload is multipart, so it uses a raw fetch (NOT apiFetch): the browser
+  // must set the multipart boundary itself, so we never set Content-Type by hand.
   async function uploadPhoto(p, file) {
     if (!file) return;
     setError(''); setMsg('');
@@ -154,10 +175,62 @@ export default function Catalog() {
     }
   }
 
+  // ---- Add from catalogue: select a base item ---------------------------
+  async function selectItem(it) {
+    setError(''); setMsg('');
+    const raw = catPriceDraft[it.id] != null ? catPriceDraft[it.id] : rupeeStr(it.indicative_price);
+    const price = Math.round(Number(raw) * 100);
+    setSelectBusy(it.id);
+    try {
+      const r = await apiFetch('/api/catalog/select', {
+        method: 'POST',
+        body: JSON.stringify({ catalog_item_id: it.id, price }),
+      });
+      const product = r.product || {};
+      setCatItems((prev) => prev.map((x) => (x.id === it.id
+        ? { ...x, carried: true, product_id: product.id, shop_price: price }
+        : x)));
+      await load();
+      setMsg(t('cat.addedToRange'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSelectBusy(null);
+    }
+  }
+
+  // ---- Add custom item ---------------------------------------------------
+  async function createCustom(e) {
+    e.preventDefault();
+    setError(''); setMsg('');
+    setCustomBusy(true);
+    try {
+      const body = { product: customForm.product, price: Math.round(Number(customForm.price) * 100) };
+      if (customForm.brand.trim()) body.brand = customForm.brand.trim();
+      if (customForm.pack.trim()) body.pack = customForm.pack.trim();
+      if (customForm.category.trim()) body.category = customForm.category.trim();
+      if (customForm.subcategory.trim()) body.subcategory = customForm.subcategory.trim();
+      if (customForm.unit.trim()) body.unit = customForm.unit.trim();
+      await apiFetch('/api/catalog/custom', { method: 'POST', body: JSON.stringify(body) });
+      setCustomForm(emptyCustom);
+      await load();
+      setTab('range');
+      setMsg(t('cat.customAdded'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCustomBusy(false);
+    }
+  }
+
+  // ---- Derived -----------------------------------------------------------
   const q = search.trim().toLowerCase();
   const filtered = q
     ? items.filter((p) => (p.name || '').toLowerCase().includes(q) || (p.unit || '').toLowerCase().includes(q))
     : items;
+
+  const activeCat = categories.find((c) => c.category === catCategory);
+  const subOptions = (activeCat && activeCat.subcategories) || [];
 
   const columns = [
     {
@@ -194,9 +267,27 @@ export default function Catalog() {
         );
       },
     },
-    { key: 'name', label: t('common.product'), render: (p) => <strong>{p.name}</strong> },
-    { key: 'price', label: t('common.price'), render: (p) => fmt(p.price) },
-    { key: 'unit', label: t('common.unit'), render: (p) => p.unit || '—' },
+    {
+      key: 'name', label: t('common.product'), render: (p) => (
+        <span>
+          <strong>{p.name}</strong>
+          {p.unit ? <span className="muted"> · {p.unit}</span> : null}
+        </span>
+      ),
+    },
+    {
+      key: 'price', label: t('cat.yourPrice'), render: (p) => (
+        <span className="cat-price-cell" onClick={(e) => e.stopPropagation()}>
+          <input
+            className="cat-price-input"
+            type="number" min="0" step="0.01"
+            value={priceDraft[p.id] != null ? priceDraft[p.id] : rupeeStr(p.price)}
+            onChange={(e) => setPriceDraft((d) => ({ ...d, [p.id]: e.target.value }))}
+          />
+          <button className="secondary" onClick={() => savePrice(p)}>{t('common.save')}</button>
+        </span>
+      ),
+    },
     {
       key: 'is_active', label: t('common.status'), render: (p) => (
         <button className="secondary" onClick={(e) => { e.stopPropagation(); toggleActive(p); }}
@@ -208,7 +299,6 @@ export default function Catalog() {
     {
       key: 'actions', label: t('common.actions'), align: 'right', render: (p) => (
         <span className="row-actions">
-          <button className="secondary" onClick={(e) => { e.stopPropagation(); startEdit(p); }}>{t('common.edit')}</button>
           <button className="secondary" onClick={(e) => { e.stopPropagation(); remove(p); }}>{t('common.delete')}</button>
         </span>
       ),
@@ -221,47 +311,149 @@ export default function Catalog() {
       <div className="container">
         <h1>{t('nav.catalog')}</h1>
 
-        <div className="card">
-          <h3>{t('cat.addProduct')}</h3>
-          <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10 }}>
-            <input placeholder={t('common.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input placeholder={t('cat.priceRs')} type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-            <input placeholder={t('cat.unitPlaceholder')} value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-            <button>{t('common.add')}</button>
-          </form>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-            <input placeholder={t('cat.descOptional')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-            <input placeholder={t('cat.imageOptional')} value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
-          </div>
+        <div className="cat-tabs">
+          <button className={`cat-tab${tab === 'range' ? ' active' : ''}`} onClick={() => setTab('range')}>{t('cat.myRange')}</button>
+          <button className={`cat-tab${tab === 'browse' ? ' active' : ''}`} onClick={() => setTab('browse')}>{t('cat.addFromCatalogue')}</button>
+          <button className={`cat-tab${tab === 'custom' ? ' active' : ''}`} onClick={() => setTab('custom')}>{t('cat.addCustom')}</button>
         </div>
 
-        {edit && (
+        {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
+        {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
+
+        {/* 1. My range ---------------------------------------------------- */}
+        {tab === 'range' && (
           <div className="card">
-            <h3>{t('cat.editProduct')}</h3>
-            <form onSubmit={saveEdit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 10 }}>
-              <input placeholder={t('common.name')} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} required />
-              <input placeholder={t('cat.priceRs')} type="number" min="0" step="0.01" value={edit.price} onChange={(e) => setEdit({ ...edit, price: e.target.value })} required />
-              <input placeholder={t('common.unit')} value={edit.unit} onChange={(e) => setEdit({ ...edit, unit: e.target.value })} />
-              <button>{t('common.save')}</button>
-            </form>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-              <input placeholder={t('cat.desc')} value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
-              <input placeholder={t('cat.image')} value={edit.image_url} onChange={(e) => setEdit({ ...edit, image_url: e.target.value })} />
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+              <input placeholder={t('cat.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
             </div>
-            <div style={{ marginTop: 12 }}>
-              <button className="secondary" onClick={() => setEdit(null)}>{t('common.cancel')}</button>
-            </div>
+            {items.length === 0 ? (
+              <p className="muted" style={{ padding: '8px 2px' }}>{t('cat.rangeEmpty')}</p>
+            ) : (
+              <DataTable columns={columns} rows={filtered} empty={t('cat.noResults')} />
+            )}
           </div>
         )}
 
-        <div className="card">
-          <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-            <input placeholder={t('cat.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
+        {/* 2. Add from catalogue ----------------------------------------- */}
+        {tab === 'browse' && (
+          <div className="card">
+            <div className="cat-browse-filters">
+              <input
+                placeholder={t('cat.catalogueSearchPlaceholder')}
+                value={catSearch}
+                onChange={(e) => setCatSearch(e.target.value)}
+              />
+              <select
+                value={catCategory}
+                onChange={(e) => { setCatCategory(e.target.value); setCatSubcategory(''); }}
+              >
+                <option value="">{t('cat.allCategories')}</option>
+                {categories.map((c) => (
+                  <option key={c.category} value={c.category}>{c.category} ({c.count})</option>
+                ))}
+              </select>
+              <select
+                value={catSubcategory}
+                onChange={(e) => setCatSubcategory(e.target.value)}
+                disabled={!catCategory || subOptions.length === 0}
+              >
+                <option value="">{t('cat.allSubcategories')}</option>
+                {subOptions.map((s) => (
+                  <option key={s.name} value={s.name}>{s.name} ({s.count})</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="cat-list">
+              {catItems.map((it) => {
+                const carried = !!it.carried;
+                const busy = selectBusy === it.id;
+                const meta = [it.brand, it.pack].filter(Boolean).join(' · ');
+                return (
+                  <div key={it.id} className="cat-item">
+                    <div className="cat-item-body">
+                      <strong>{it.display_name || it.product}</strong>
+                      {meta ? <div className="muted">{meta}</div> : null}
+                      <div className="muted">
+                        {[it.category, it.subcategory].filter(Boolean).join(' › ')}
+                        {it.category && it.indicative_price != null ? ' · ' : ''}
+                        {it.indicative_price != null ? `${t('cat.indicativePrice')}: ${fmt(it.indicative_price)}` : ''}
+                      </div>
+                    </div>
+                    <div className="cat-item-action">
+                      {carried ? (
+                        <span className="badge">{t('cat.inYourShop')}</span>
+                      ) : (
+                        <>
+                          <input
+                            className="cat-price-input"
+                            type="number" min="0" step="0.01"
+                            aria-label={t('cat.yourPrice')}
+                            value={catPriceDraft[it.id] != null ? catPriceDraft[it.id] : rupeeStr(it.indicative_price)}
+                            onChange={(e) => setCatPriceDraft((d) => ({ ...d, [it.id]: e.target.value }))}
+                          />
+                          <button disabled={busy} onClick={() => selectItem(it)}>{t('cat.addBtn')}</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {!catLoading && catItems.length === 0 && (
+                <p className="muted" style={{ padding: '8px 2px' }}>{t('cat.noResults')}</p>
+              )}
+              {catLoading && <p className="muted" style={{ padding: '8px 2px' }}>{t('common.loading')}</p>}
+            </div>
+
+            {catCursor && (
+              <div style={{ marginTop: 12 }}>
+                <button className="secondary" disabled={catLoading} onClick={() => loadCatalog(false)}>{t('cat.loadMore')}</button>
+              </div>
+            )}
           </div>
-          {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
-          {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={filtered} empty={t('cat.empty')} />
-        </div>
+        )}
+
+        {/* 3. Add custom item -------------------------------------------- */}
+        {tab === 'custom' && (
+          <div className="card">
+            <p className="muted" style={{ marginTop: 0 }}>{t('cat.customHint')}</p>
+            <form onSubmit={createCustom}>
+              <div className="grid">
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.productName')}</span>
+                  <input value={customForm.product} onChange={(e) => setCustomForm({ ...customForm, product: e.target.value })} required />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.brand')}</span>
+                  <input value={customForm.brand} onChange={(e) => setCustomForm({ ...customForm, brand: e.target.value })} />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.pack')}</span>
+                  <input value={customForm.pack} onChange={(e) => setCustomForm({ ...customForm, pack: e.target.value })} />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.category')}</span>
+                  <input value={customForm.category} onChange={(e) => setCustomForm({ ...customForm, category: e.target.value })} />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.subcategory')}</span>
+                  <input value={customForm.subcategory} onChange={(e) => setCustomForm({ ...customForm, subcategory: e.target.value })} />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('common.unit')}</span>
+                  <input placeholder={t('cat.unitPlaceholder')} value={customForm.unit} onChange={(e) => setCustomForm({ ...customForm, unit: e.target.value })} />
+                </label>
+                <label className="cat-field">
+                  <span className="cat-field-label">{t('cat.priceRs')}</span>
+                  <input type="number" min="0" step="0.01" value={customForm.price} onChange={(e) => setCustomForm({ ...customForm, price: e.target.value })} required />
+                </label>
+              </div>
+              <div style={{ marginTop: 14 }}>
+                <button disabled={customBusy}>{t('cat.addCustom')}</button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
