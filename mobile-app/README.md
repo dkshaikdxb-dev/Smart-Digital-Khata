@@ -1,6 +1,40 @@
 # Smart Digital Khata — Mobile App
 
-Expo (React Native) app for shop owners.
+Expo (React Native) app for shop owners. Native owner app at Phase-2 parity with
+the web owner dashboard.
+
+## Screens & navigation
+
+After login the app shows a **bottom-tab navigator** (owner role only — an
+`admin` login gets a short "use the web admin console" notice). Each tab wraps
+its own native-stack for detail screens:
+
+- **Home** — Dashboard (today + outstanding KPIs, quick actions) → Add transaction
+- **Orders** — order list with status filter → Order detail (items, totals,
+  address/note, status-advance + cancel buttons)
+- **Catalog** — product list; add product, per-item active toggle and delete
+- **Customers** — customer list/search → Customer detail (balance, credit limit,
+  transactions, record payment/purchase) → Add transaction
+- **More** — a menu → Families → Family detail (combined outstanding, members
+  with add-picker/remove, combined statement, WhatsApp reminder); Insights
+  (analytics overview with 7/30/90-day selector + aging breakdown); Settings
+  (shop basics, per-shop Razorpay payments with test connection, discovery
+  listing, and logout)
+
+Money is integer paise everywhere; the auth token lives in Expo SecureStore
+(`skhata_token`). The API base URL comes from `app.json` → `expo.extra.apiUrl`.
+
+## Follow-ups (not done here)
+
+- **Expo SDK 51 → current bump before store submission.** This branch
+  deliberately stays on Expo SDK 51 / React Native 0.74; an SDK upgrade can't be
+  device-tested in this environment and should be a separate, verified change.
+- **On-device / EAS verification still required.** The JS bundle builds cleanly
+  (`expo export`), but native gestures, the bottom-tab bar, keyboard behavior,
+  and iOS-only `Alert.prompt` (used for inline catalog price edits) have not been
+  run on a device or emulator.
+- **CSV report export is not implemented on native.** Use the web dashboard for
+  CSV downloads; the Insights screen links to it in a footnote.
 
 ## Quick start
 

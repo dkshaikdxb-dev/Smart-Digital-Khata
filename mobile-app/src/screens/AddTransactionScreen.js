@@ -2,16 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
 import { customers, transactions } from '../services/api';
 
-export default function AddTransactionScreen({ navigation }) {
+export default function AddTransactionScreen({ navigation, route }) {
+  const preId = route?.params?.customerId || '';
+  const preName = route?.params?.customerName || '';
   const [list, setList] = useState([]);
-  const [customerId, setCustomerId] = useState('');
+  const [customerId, setCustomerId] = useState(preId);
   const [type, setType] = useState('purchase');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
+    if (preId) return; // customer already chosen from their detail screen
     customers.list().then((r) => setList(r.items)).catch(() => {});
-  }, []);
+  }, [preId]);
 
   async function save() {
     if (!customerId || !amount) return Alert.alert('Missing', 'Pick a customer and amount');
@@ -41,13 +44,19 @@ export default function AddTransactionScreen({ navigation }) {
       </View>
 
       <Text style={s.label}>Customer</Text>
-      <View style={{ gap: 6 }}>
-        {list.map((c) => (
-          <Pressable key={c.id} onPress={() => setCustomerId(c.id)} style={[s.cust, customerId === c.id && s.custActive]}>
-            <Text style={{ color: '#e2e8f0' }}>{c.name} — {c.phone}</Text>
-          </Pressable>
-        ))}
-      </View>
+      {preId ? (
+        <View style={[s.cust, s.custActive]}>
+          <Text style={{ color: '#e2e8f0' }}>{preName || 'Selected customer'}</Text>
+        </View>
+      ) : (
+        <View style={{ gap: 6 }}>
+          {list.map((c) => (
+            <Pressable key={c.id} onPress={() => setCustomerId(c.id)} style={[s.cust, customerId === c.id && s.custActive]}>
+              <Text style={{ color: '#e2e8f0' }}>{c.name} — {c.phone}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <Text style={s.label}>Amount (₹)</Text>
       <TextInput style={s.input} placeholder="0" placeholderTextColor="#64748b" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />

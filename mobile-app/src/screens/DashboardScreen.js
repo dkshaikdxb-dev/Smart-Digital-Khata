@@ -35,7 +35,7 @@ export default function DashboardScreen({ navigation }) {
       <Pressable style={s.primary} onPress={() => navigation.navigate('AddTransaction')}>
         <Text style={s.primaryText}>+ New transaction</Text>
       </Pressable>
-      <Pressable style={s.secondary} onPress={() => navigation.navigate('Customers')}>
+      <Pressable style={s.secondary} onPress={() => navigation.navigate('CustomersTab')}>
         <Text style={s.secondaryText}>View customers</Text>
       </Pressable>
     </ScrollView>

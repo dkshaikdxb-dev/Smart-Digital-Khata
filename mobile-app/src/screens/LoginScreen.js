@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { auth } from '../services/api';
+import { AuthContext } from '../AuthContext';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
+  const { signIn } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -10,8 +12,8 @@ export default function LoginScreen({ navigation }) {
   async function submit() {
     setLoading(true);
     try {
-      await auth.login(email, password);
-      navigation.replace('Dashboard');
+      const data = await auth.login(email, password);
+      signIn(data.user?.role || 'owner');
     } catch (e) {
       Alert.alert('Login failed', e.response?.data?.error || e.message);
     } finally {
@@ -20,7 +22,7 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <View style={s.container}>
+    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Text style={s.title}>Smart Digital Khata</Text>
       <Text style={s.subtitle}>Sign in to manage your shop</Text>
       <TextInput style={s.input} placeholder="Email" placeholderTextColor="#64748b" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
@@ -28,7 +30,7 @@ export default function LoginScreen({ navigation }) {
       <Pressable style={s.button} onPress={submit} disabled={loading}>
         <Text style={s.buttonText}>{loading ? 'Signing in…' : 'Sign in'}</Text>
       </Pressable>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
