@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
-import { useLang, isRtl } from '../lib/i18n';
+import { useLang, isRtl, hasChosenLang } from '../lib/i18n';
+import CustomerLangGate from '../components/CustomerLangGate';
 
 export default function App({ Component, pageProps }) {
   const { pathname } = useRouter();
@@ -30,6 +31,15 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
+  // First-open language prompt, customer app only. SSR renders nothing (so
+  // hydration matches); on mount we show the gate if the viewer is on a /c page
+  // and has never picked a language. It's a fixed full-screen overlay, so it
+  // covers whatever page loaded behind it.
+  const [showLangGate, setShowLangGate] = useState(false);
+  useEffect(() => {
+    if (isCustomer && !hasChosenLang()) setShowLangGate(true);
+  }, [isCustomer]);
+
   return (
     <>
       <Head>
@@ -37,6 +47,7 @@ export default function App({ Component, pageProps }) {
         <link rel="manifest" href={manifest} />
       </Head>
       <Component {...pageProps} />
+      {showLangGate && <CustomerLangGate onDone={() => setShowLangGate(false)} />}
     </>
   );
 }

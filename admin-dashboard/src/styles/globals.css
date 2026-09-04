@@ -221,3 +221,25 @@ th { color: var(--muted); font-weight: 600; }
   cursor: pointer; white-space: nowrap;
 }
 .cat-photo-err { color: var(--danger); font-size: 12px; }
+
+/* First-open language chooser (customer app). Full-screen overlay with large
+   tap targets, each language in its own script. */
+.cpwa-langgate {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.cpwa-langgate-card { width: 100%; max-width: 420px; text-align: center; }
+.cpwa-langgate-ico { font-size: 48px; line-height: 1; }
+.cpwa-langgate-title { font-size: 22px; margin: 12px 0 20px; line-height: 1.35; }
+.cpwa-langgate-title span { display: block; font-size: 15px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.cpwa-langgate-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cpwa-langgate-btn {
+  background: var(--card); color: var(--text);
+  border: 1px solid #334155; border-radius: 12px;
+  padding: 18px 12px; font-size: 20px; font-weight: 700; min-height: 64px;
+}
+.cpwa-langgate-btn:active { border-color: var(--accent); }

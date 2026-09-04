@@ -2426,6 +2426,7 @@ for (const code of Object.keys(DICT)) {
 }
 
 const KEY = 'skhata_lang';
+const CHOSEN_KEY = 'skhata_lang_set';
 const EVENT = 'skhata-lang';
 
 export function getLang() {
@@ -2438,10 +2439,25 @@ export function getLang() {
   }
 }
 
+// Whether the viewer has EXPLICITLY picked a language (via the first-open gate
+// or the switcher) — distinct from the 'en' default. Drives the one-time
+// language prompt on the customer app.
+export function hasChosenLang() {
+  if (typeof window === 'undefined') return true; // never gate during SSR
+  try {
+    return window.localStorage.getItem(CHOSEN_KEY) === '1';
+  } catch {
+    return true;
+  }
+}
+
 export function setLang(code) {
   const next = DICT[code] ? code : 'en';
   try {
     window.localStorage.setItem(KEY, next);
+    // Any deliberate selection (gate tap or switcher) counts as a choice, so the
+    // first-open prompt never appears again.
+    window.localStorage.setItem(CHOSEN_KEY, '1');
   } catch {
     /* storage blocked */
   }
