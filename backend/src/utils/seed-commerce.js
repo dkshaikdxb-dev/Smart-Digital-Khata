@@ -18,7 +18,31 @@
  * On success it prints the CONSUMER LINK for the shop.
  */
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const { pool } = require('../config/db');
+
+// Pre-generated product image tiles committed under seed-images/. Attach one to
+// any product whose (English) name contains the keyword. Real shops replace
+// these by uploading a photo; products with no match keep the emoji fallback.
+const IMAGE_DIR = path.join(__dirname, 'seed-images');
+const IMAGE_MATCH = [
+  ['atta', 'atta'], ['basmati', 'basmati'], ['toor', 'toor-dal'],
+  ['sunflower oil', 'sunflower-oil'], ['ghee', 'ghee'], ['sugar', 'sugar'],
+  ['salt', 'salt'], ['turmeric', 'turmeric'], ['tea', 'tea'], ['parle', 'parle-g'],
+  ['butter', 'butter'], ['lux', 'lux-soap'], ['surf', 'surf-excel'],
+  ['colgate', 'colgate'], ['harpic', 'harpic'], ['agarbatti', 'agarbatti'],
+];
+function imageFileFor(name) {
+  const n = String(name).toLowerCase();
+  for (const [kw, slug] of IMAGE_MATCH) {
+    if (n.includes(kw)) {
+      const f = path.join(IMAGE_DIR, `${slug}.webp`);
+      if (fs.existsSync(f)) return f;
+    }
+  }
+  return null;
+}
 
 if (process.env.NODE_ENV === 'production' && process.env.FORCE_DEMO !== 'true') {
   console.error('Refusing to seed demo commerce in production. Set FORCE_DEMO=true to override.');
@@ -127,13 +151,31 @@ async function seedCommerce() {
     await client.query('DELETE FROM products WHERE shop_id = $1', [shopId]);
 
     const productIds = [];
+    let imagedCount = 0;
     for (const [name, description, price, unit] of PRODUCTS) {
       const r = await client.query(
         `INSERT INTO products (shop_id, name, description, price, unit, is_active)
          VALUES ($1,$2,$3,$4,$5,true) RETURNING id`,
         [shopId, name, description, price, unit]
       );
-      productIds.push(r.rows[0].id);
+      const id = r.rows[0].id;
+      productIds.push(id);
+
+      // Attach a pre-generated image tile if one matches this product.
+      const imgFile = imageFileFor(name);
+      if (imgFile) {
+        const bytes = fs.readFileSync(imgFile);
+        await client.query(
+          `UPDATE products
+             SET image_data = $1,
+                 image_mime = 'image/webp',
+                 image_updated_at = NOW(),
+                 image_url = '/api/products/' || id || '/image?v=' || EXTRACT(EPOCH FROM NOW())::bigint
+           WHERE id = $2`,
+          [bytes, id]
+        );
+        imagedCount += 1;
+      }
     }
 
     const cust = await client.query(
@@ -169,7 +211,7 @@ async function seedCommerce() {
     await client.query('COMMIT');
 
     const domain = (process.env.APP_URL || 'https://khata.dadashaik.com').replace(/\/+$/, '');
-    console.log(`\n✓ Seeded ${PRODUCTS.length} products and ${orderCount} orders for the demo shop.`);
+    console.log(`\n✓ Seeded ${PRODUCTS.length} products (${imagedCount} with images) and ${orderCount} orders for the demo shop.`);
     console.log('================ CONSUMER LINKS ================');
     console.log(`Shop catalog (share with customers): ${domain}/c/shop/${shopId}`);
     console.log(`Discover all listed shops:            ${domain}/c/shops`);
