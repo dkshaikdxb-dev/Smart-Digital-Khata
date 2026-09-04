@@ -10,6 +10,23 @@ jobs:
   backend:
     name: Backend tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U user -d db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://user:pass@localhost:5432/db
+      JWT_SECRET: test_secret_test_secret_test_secret_abc
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,12 +37,13 @@ jobs:
       - name: Install
         working-directory: backend
         run: npm ci
+      - name: Migrate
+        working-directory: backend
+        run: npm run migrate
+      # Integration tests share one Postgres, so run serially to avoid cross-suite races.
       - name: Test
         working-directory: backend
-        env:
-          JWT_SECRET: test_secret_test_secret_test_secret_abc
-          DATABASE_URL: postgres://user:pass@localhost:5432/db
-        run: npm test --silent
+        run: npm test -- --runInBand
 
   admin:
     name: Admin build
