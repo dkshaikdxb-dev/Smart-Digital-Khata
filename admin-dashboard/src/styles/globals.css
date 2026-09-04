@@ -182,13 +182,18 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tl-step.current { font-weight: 700; }
 .cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--danger); }
 
-/* Language switch (navigation chrome i18n) — a compact segmented toggle used in
-   the owner nav (.langswitch) and the customer PWA topbar (.cpwa-lang). */
-.langswitch, .cpwa-lang { display: inline-flex; gap: 0; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
-.langswitch button, .cpwa-lang button {
-  padding: 5px 10px; font-size: 13px; font-weight: 600; line-height: 1.2;
-  background: transparent; color: var(--muted); border: none; border-radius: 0;
+/* Language switch (navigation chrome i18n) — a compact dropdown used in the
+   owner nav (.langswitch) and the customer PWA topbar (.cpwa-lang). A <select>
+   scales to many languages cleanly. */
+.langswitch, .cpwa-lang {
+  appearance: none; -webkit-appearance: none;
+  background: var(--card); color: var(--text);
+  border: 1px solid #334155; border-radius: 8px;
+  padding: 6px 26px 6px 10px; font-size: 13px; font-weight: 600; line-height: 1.2;
+  cursor: pointer; max-width: 9.5rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat; background-position: right 8px center;
 }
-.langswitch button + button, .cpwa-lang button + button { border-left: 1px solid #334155; }
-.langswitch button.active, .cpwa-lang button.active { background: var(--accent); color: #000; }
-.cpwa-lang button { padding: 4px 9px; }
+.langswitch:focus, .cpwa-lang:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.langswitch option, .cpwa-lang option { color: #000; }
+.cpwa-lang { padding: 5px 24px 5px 9px; font-size: 12px; }

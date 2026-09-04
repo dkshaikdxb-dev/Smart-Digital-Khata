@@ -1,25 +1,24 @@
 import { LANGS, useLang } from '../lib/i18n';
 
-// Compact language toggle for the nav chrome. `variant="cpwa"` scopes it to the
-// customer PWA styling; default is the owner nav. Only switches the language of
-// navigation labels for now (see lib/i18n.js).
+// Compact language dropdown for the nav chrome. A <select> scales cleanly to
+// many languages (unlike a button row) and shows each language in its own
+// script. `variant="cpwa"` scopes it to the customer PWA styling; default is
+// the owner nav. Switches navigation labels only (see lib/i18n.js).
 export default function LangSwitch({ variant = 'owner' }) {
   const { lang, setLang } = useLang();
   const cls = variant === 'cpwa' ? 'cpwa-lang' : 'langswitch';
   return (
-    <div className={cls} role="group" aria-label="Language">
+    <select
+      className={cls}
+      aria-label="Language"
+      value={lang}
+      onChange={(e) => setLang(e.target.value)}
+    >
       {LANGS.map((l) => (
-        <button
-          key={l.code}
-          type="button"
-          className={lang === l.code ? 'active' : ''}
-          aria-pressed={lang === l.code}
-          title={l.name}
-          onClick={() => setLang(l.code)}
-        >
-          {l.label}
-        </button>
+        <option key={l.code} value={l.code}>
+          {l.name}
+        </option>
       ))}
-    </div>
+    </select>
   );
 }

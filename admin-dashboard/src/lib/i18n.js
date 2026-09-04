@@ -6,10 +6,17 @@ import { useEffect, useState } from 'react';
 // row in LANGS; every nav label and the language switch pick it up
 // automatically.
 
+// English + Hindi + the four major South Indian (Dravidian) languages. Each
+// language is one row here plus one block in DICT below; the nav labels and the
+// language switch pick it up automatically. Nav-label translations are standard
+// UI terms — worth a native-speaker QA pass before a wide regional rollout.
 export const LANGS = [
   { code: 'en', label: 'EN', name: 'English' },
   { code: 'hi', label: 'हिं', name: 'हिन्दी' },
-  // To add e.g. Marathi: { code: 'mr', label: 'मरा', name: 'मराठी' } + a `mr` block below.
+  { code: 'ta', label: 'த', name: 'தமிழ்' },
+  { code: 'te', label: 'తె', name: 'తెలుగు' },
+  { code: 'kn', label: 'ಕ', name: 'ಕನ್ನಡ' },
+  { code: 'ml', label: 'മ', name: 'മലയാളം' },
 ];
 
 const DICT = {
@@ -44,6 +51,70 @@ const DICT = {
     'ctab.orders': 'ऑर्डर',
     'ctab.khata': 'खाता',
     'ctab.logout': 'लॉग आउट',
+  },
+  ta: {
+    'nav.dashboard': 'டாஷ்போர்டு',
+    'nav.catalog': 'பட்டியல்',
+    'nav.orders': 'ஆர்டர்கள்',
+    'nav.customers': 'வாடிக்கையாளர்கள்',
+    'nav.families': 'குடும்பங்கள்',
+    'nav.transactions': 'பரிவர்த்தனைகள்',
+    'nav.insights': 'பகுப்பாய்வு',
+    'nav.settings': 'அமைப்புகள்',
+    'nav.platform': 'தளம்',
+    'nav.logout': 'வெளியேறு',
+    'ctab.shops': 'கடைகள்',
+    'ctab.orders': 'ஆர்டர்கள்',
+    'ctab.khata': 'கணக்கு',
+    'ctab.logout': 'வெளியேறு',
+  },
+  te: {
+    'nav.dashboard': 'డాష్‌బోర్డ్',
+    'nav.catalog': 'జాబితా',
+    'nav.orders': 'ఆర్డర్‌లు',
+    'nav.customers': 'వినియోగదారులు',
+    'nav.families': 'కుటుంబాలు',
+    'nav.transactions': 'లావాదేవీలు',
+    'nav.insights': 'విశ్లేషణ',
+    'nav.settings': 'సెట్టింగ్‌లు',
+    'nav.platform': 'ప్లాట్‌ఫారమ్',
+    'nav.logout': 'లాగ్ అవుట్',
+    'ctab.shops': 'దుకాణాలు',
+    'ctab.orders': 'ఆర్డర్‌లు',
+    'ctab.khata': 'ఖాతా',
+    'ctab.logout': 'లాగ్ అవుట్',
+  },
+  kn: {
+    'nav.dashboard': 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
+    'nav.catalog': 'ಪಟ್ಟಿ',
+    'nav.orders': 'ಆರ್ಡರ್‌ಗಳು',
+    'nav.customers': 'ಗ್ರಾಹಕರು',
+    'nav.families': 'ಕುಟುಂಬಗಳು',
+    'nav.transactions': 'ವ್ಯವಹಾರಗಳು',
+    'nav.insights': 'ವಿಶ್ಲೇಷಣೆ',
+    'nav.settings': 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+    'nav.platform': 'ವೇದಿಕೆ',
+    'nav.logout': 'ಲಾಗ್ ಔಟ್',
+    'ctab.shops': 'ಅಂಗಡಿಗಳು',
+    'ctab.orders': 'ಆರ್ಡರ್‌ಗಳು',
+    'ctab.khata': 'ಖಾತೆ',
+    'ctab.logout': 'ಲಾಗ್ ಔಟ್',
+  },
+  ml: {
+    'nav.dashboard': 'ഡാഷ്‌ബോർഡ്',
+    'nav.catalog': 'പട്ടിക',
+    'nav.orders': 'ഓർഡറുകൾ',
+    'nav.customers': 'ഉപഭോക്താക്കൾ',
+    'nav.families': 'കുടുംബങ്ങൾ',
+    'nav.transactions': 'ഇടപാടുകൾ',
+    'nav.insights': 'വിശകലനം',
+    'nav.settings': 'ക്രമീകരണങ്ങൾ',
+    'nav.platform': 'പ്ലാറ്റ്‌ഫോം',
+    'nav.logout': 'ലോഗ് ഔട്ട്',
+    'ctab.shops': 'കടകൾ',
+    'ctab.orders': 'ഓർഡറുകൾ',
+    'ctab.khata': 'കണക്ക്',
+    'ctab.logout': 'ലോഗ് ഔട്ട്',
   },
 };
 
