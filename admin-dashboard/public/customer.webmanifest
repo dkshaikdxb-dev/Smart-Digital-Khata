@@ -1,0 +1,23 @@
+{
+  "name": "Smart Digital Khata",
+  "short_name": "Khata",
+  "description": "Order from nearby shops and manage your khata credit balance.",
+  "start_url": "/c",
+  "scope": "/c",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "en-IN",
+  "categories": ["shopping", "business", "finance"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Shops", "url": "/c/shops" },
+    { "name": "My Orders", "url": "/c/orders" },
+    { "name": "My Khata", "url": "/c/khata" }
+  ]
+}
