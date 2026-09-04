@@ -228,18 +228,55 @@ exports.createOrder = async (req, res) => {
 
   const { lines, subtotal } = await buildLineItems(shop_id, items);
 
+  // Fulfillment settings gate the order and decide the delivery fee (MONEY).
+  const shopRes = await query(
+    `SELECT id, offers_pickup, offers_delivery, delivery_fee, free_delivery_min, delivery_min_order
+       FROM shops WHERE id = $1`,
+    [shop_id]
+  );
+  if (!shopRes.rowCount) throw ApiError.notFound('Shop not found');
+  const shop = shopRes.rows[0];
+
+  // Mode availability.
+  if (fulfillment_type === 'delivery' && !shop.offers_delivery) {
+    throw ApiError.badRequest('This shop does not offer delivery.');
+  }
+  if (fulfillment_type === 'pickup' && !shop.offers_pickup) {
+    throw ApiError.badRequest('This shop does not offer pickup.');
+  }
+
+  // Delivery-only minimum-order gate.
+  const deliveryMinOrder = Number(shop.delivery_min_order) || 0;
+  if (fulfillment_type === 'delivery' && subtotal < deliveryMinOrder) {
+    throw ApiError.unprocessable(
+      `Minimum order for delivery is ₹${(deliveryMinOrder / 100).toFixed(2)}`,
+      { delivery_min_order: deliveryMinOrder, subtotal }
+    );
+  }
+
+  // Delivery fee: pickup is always free; for delivery the flat fee applies
+  // unless a free-delivery threshold is met. All integer paise.
+  const freeMin = shop.free_delivery_min == null ? null : Number(shop.free_delivery_min);
+  const fee =
+    fulfillment_type === 'delivery' && !(freeMin != null && subtotal >= freeMin)
+      ? Number(shop.delivery_fee) || 0
+      : 0;
+  const total = subtotal + fee;
+
   if (payment_mode === 'credit') {
     const result = await withTx(async (client) => {
       const customer = await resolveOrCreateCustomer(client, shop_id, phone);
 
       // Enforce credit limits exactly like transaction.controller: a credit
-      // order is a `purchase` that increases what the customer owes.
-      const newBalance = Number(customer.balance) + subtotal;
+      // order is a `purchase` that increases what the customer owes. The khata
+      // is credited with the ORDER TOTAL (subtotal + delivery fee), so limits
+      // are enforced against `total`, not the bare subtotal.
+      const newBalance = Number(customer.balance) + total;
       if (Number(customer.credit_limit) > 0 && newBalance > Number(customer.credit_limit)) {
         throw ApiError.unprocessable('Credit limit exceeded', {
           credit_limit: customer.credit_limit,
           current_balance: customer.balance,
-          attempted: subtotal,
+          attempted: total,
         });
       }
       if (customer.family_id) {
@@ -247,7 +284,7 @@ exports.createOrder = async (req, res) => {
           throw ApiError.unprocessable('Family sub-limit exceeded', {
             family_sub_limit: customer.family_sub_limit,
             current_balance: customer.balance,
-            attempted: subtotal,
+            attempted: total,
           });
         }
         const fam = await client.query(
@@ -259,22 +296,22 @@ exports.createOrder = async (req, res) => {
             'SELECT COALESCE(SUM(balance),0) AS total FROM customers WHERE family_id=$1 AND shop_id=$2',
             [customer.family_id, shop_id]
           );
-          const combinedNew = Number(agg.rows[0].total) + subtotal;
+          const combinedNew = Number(agg.rows[0].total) + total;
           if (combinedNew > Number(fam.rows[0].credit_limit)) {
             throw ApiError.unprocessable('Family credit limit exceeded', {
               family_credit_limit: fam.rows[0].credit_limit,
               combined_balance: agg.rows[0].total,
-              attempted: subtotal,
+              attempted: total,
             });
           }
         }
       }
 
       const ord = await client.query(
-        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, address, note)
-         VALUES ($1,$2,'pending',$3,'credit','not_required',$4,$5,$6)
+        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
+         VALUES ($1,$2,'pending',$3,'credit','not_required',$4,$5,$6,$7)
          RETURNING *`,
-        [shop_id, customer.id, fulfillment_type, subtotal, address || null, note || null]
+        [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
       );
       const order = ord.rows[0];
       const orderItems = await insertOrderItems(client, order.id, lines);
@@ -282,14 +319,14 @@ exports.createOrder = async (req, res) => {
       await client.query(
         `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
          VALUES ($1,$2,'purchase',$3,'credit',$4,'api')`,
-        [shop_id, customer.id, subtotal, `Order ${order.id}`]
+        [shop_id, customer.id, total, `Order ${order.id}`]
       );
       await client.query(
         'UPDATE customers SET balance = $1, updated_at = NOW() WHERE id = $2',
         [newBalance, customer.id]
       );
 
-      return { order: { ...order, items: orderItems } };
+      return { order: { ...order, items: orderItems, total } };
     });
 
     return res.status(201).json(result);
@@ -304,17 +341,18 @@ exports.createOrder = async (req, res) => {
     const customer = await resolveOrCreateCustomer(client, shop_id, phone);
 
     const ord = await client.query(
-      `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, address, note)
-       VALUES ($1,$2,'pending',$3,'prepaid','pending',$4,$5,$6)
+      `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
+       VALUES ($1,$2,'pending',$3,'prepaid','pending',$4,$5,$6,$7)
        RETURNING *`,
-      [shop_id, customer.id, fulfillment_type, subtotal, address || null, note || null]
+      [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
     );
     const order = ord.rows[0];
     const orderItems = await insertOrderItems(client, order.id, lines);
 
+    // The customer pays the ORDER TOTAL (subtotal + delivery fee) online.
     const receipt = `o_${order.id.slice(0, 8)}_${Date.now()}`;
     const rzpOrder = await razorpay.createOrderForShop(shop_id, {
-      amount: subtotal,
+      amount: total,
       receipt,
       notes: { shop_id, customer_id: customer.id, order_id: order.id },
     });
@@ -324,7 +362,7 @@ exports.createOrder = async (req, res) => {
          (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes, order_id)
        VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6,$7)
        RETURNING *`,
-      [rzpOrder.receipt, shop_id, customer.id, subtotal, rzpOrder.id, `Order ${order.id}`, order.id]
+      [rzpOrder.receipt, shop_id, customer.id, total, rzpOrder.id, `Order ${order.id}`, order.id]
     );
     const orderRow = po.rows[0];
 
@@ -341,7 +379,7 @@ exports.createOrder = async (req, res) => {
       [paymentLink.id, paymentLink.short_url, orderRow.id]
     );
 
-    return { order: { ...order, items: orderItems }, pay_link: paymentLink.short_url };
+    return { order: { ...order, items: orderItems, total }, pay_link: paymentLink.short_url };
   });
 
   return res.status(201).json(result);
@@ -354,7 +392,8 @@ exports.createOrder = async (req, res) => {
 exports.listOrders = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
   const r = await query(
-    `SELECT o.*, s.name AS shop_name, COUNT(oi.id)::int AS item_count
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total,
+            s.name AS shop_name, COUNT(oi.id)::int AS item_count
      FROM orders o
      JOIN customers c ON c.id = o.customer_id
      JOIN shops s ON s.id = o.shop_id
@@ -373,7 +412,7 @@ exports.listOrders = async (req, res) => {
 exports.getOrder = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
   const r = await query(
-    `SELECT o.*, s.name AS shop_name
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total, s.name AS shop_name
      FROM orders o
      JOIN customers c ON c.id = o.customer_id
      JOIN shops s ON s.id = o.shop_id
@@ -418,15 +457,17 @@ exports.cancelOrder = async (req, res) => {
     }
 
     if (order.payment_mode === 'credit') {
-      // Compensating entry keeps the ledger honest and auditable.
+      // Compensating entry keeps the ledger honest and auditable. Reverse the
+      // full amount that was added to the khata: subtotal + delivery fee.
+      const reversal = Number(order.subtotal) + Number(order.delivery_fee);
       await client.query(
         `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
          VALUES ($1,$2,'cash',$3,'cash',$4,'api')`,
-        [order.shop_id, order.cust_id, order.subtotal, `Reversal — order ${order.id} cancelled`]
+        [order.shop_id, order.cust_id, reversal, `Reversal — order ${order.id} cancelled`]
       );
       await client.query(
         'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
-        [order.subtotal, order.cust_id]
+        [reversal, order.cust_id]
       );
     }
 

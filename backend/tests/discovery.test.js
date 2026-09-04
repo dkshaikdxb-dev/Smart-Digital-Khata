@@ -139,7 +139,12 @@ describe('GET /public/shops', () => {
     const a = res.body.shops.find((s) => s.id === listedA.id);
     expect(a.product_count).toBe(2);
     // Minimal, non-sensitive fields only; no distance without lat/lng.
-    expect(Object.keys(a).sort()).toEqual(['area', 'city', 'id', 'name', 'product_count']);
+    // Fulfillment badge fields (M7) added: offers_delivery + delivery_fee.
+    expect(Object.keys(a).sort()).toEqual(
+      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'product_count']
+    );
+    expect(a.offers_delivery).toBe(false);
+    expect(a.delivery_fee).toBe(0);
   });
 
   it('filters by search (name ILIKE)', async () => {
@@ -187,11 +192,18 @@ describe('GET /public/shops/:shopId', () => {
     expect(res.body.shop.products).toHaveLength(2);
     const names = res.body.shop.products.map((p) => p.name).sort();
     expect(names).toEqual(['Atta', 'Rice']);
-    // Minimal product fields only.
+    // Product fields now include category/subcategory from the base catalog
+    // (null for these hand-entered, unlinked products).
     expect(Object.keys(res.body.shop.products[0]).sort())
-      .toEqual(['description', 'id', 'image_url', 'name', 'price', 'unit']);
-    // No owner/sensitive fields leaked on the shop.
-    expect(Object.keys(res.body.shop).sort()).toEqual(['area', 'city', 'id', 'name', 'products']);
+      .toEqual(['category', 'description', 'id', 'image_url', 'name', 'price', 'subcategory', 'unit']);
+    expect(res.body.shop.products[0].category).toBeNull();
+    expect(res.body.shop.products[0].subcategory).toBeNull();
+    // No owner/sensitive fields leaked; fulfillment fields (M7) are exposed.
+    expect(Object.keys(res.body.shop).sort()).toEqual([
+      'area', 'city', 'delivery_fee', 'delivery_hours', 'delivery_min_order',
+      'delivery_radius_km', 'free_delivery_min', 'id', 'name',
+      'offers_delivery', 'offers_pickup', 'products',
+    ]);
   });
 
   it('404s for an unlisted shop', async () => {

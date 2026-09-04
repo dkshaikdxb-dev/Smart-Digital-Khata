@@ -51,6 +51,7 @@ exports.listShops = async (req, res) => {
 
   const r = await query(
     `SELECT s.id, s.name, s.city, s.area,
+            s.offers_delivery, s.delivery_fee,
             (SELECT COUNT(*) FROM products p
               WHERE p.shop_id = s.id AND p.is_active = true)::int AS product_count,
             ${distanceSelect}
@@ -69,6 +70,9 @@ exports.listShops = async (req, res) => {
       city: row.city,
       area: row.area,
       product_count: row.product_count,
+      // Delivery badge for the directory (delivery_fee in paise).
+      offers_delivery: row.offers_delivery,
+      delivery_fee: Number(row.delivery_fee),
     };
     if (useDistance && row.distance_km !== null) shop.distance_km = row.distance_km;
     return shop;
@@ -87,15 +91,23 @@ exports.getShop = async (req, res) => {
   if (!/^[0-9a-f-]{36}$/i.test(shopId)) throw ApiError.notFound('Shop not found');
 
   const shop = await query(
-    'SELECT id, name, city, area FROM shops WHERE id = $1 AND is_listed = true',
+    `SELECT id, name, city, area,
+            offers_pickup, offers_delivery, delivery_fee, free_delivery_min,
+            delivery_min_order, delivery_radius_km, delivery_hours
+       FROM shops WHERE id = $1 AND is_listed = true`,
     [shopId]
   );
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
+  // category/subcategory come from the linked base catalog item (LEFT JOIN, so
+  // custom / unlinked products get null for both). Keep the existing fields.
   const products = await query(
-    `SELECT id, name, description, price, unit, image_url
-       FROM products WHERE shop_id = $1 AND is_active = true
-      ORDER BY created_at DESC, id DESC`,
+    `SELECT p.id, p.name, p.description, p.price, p.unit, p.image_url,
+            ci.category, ci.subcategory
+       FROM products p
+       LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
+      WHERE p.shop_id = $1 AND p.is_active = true
+      ORDER BY p.created_at DESC, p.id DESC`,
     [shopId]
   );
 

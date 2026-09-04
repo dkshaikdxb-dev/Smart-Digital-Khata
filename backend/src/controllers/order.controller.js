@@ -30,7 +30,8 @@ exports.list = async (req, res) => {
     where += ` AND o.status = $${params.length}`;
   }
   const r = await query(
-    `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone,
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total,
+            c.name AS customer_name, c.phone AS customer_phone,
             COUNT(oi.id)::int AS item_count
      FROM orders o
      JOIN customers c ON c.id = o.customer_id
@@ -48,7 +49,8 @@ exports.list = async (req, res) => {
  */
 exports.get = async (req, res) => {
   const r = await query(
-    `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total,
+            c.name AS customer_name, c.phone AS customer_phone
      FROM orders o
      JOIN customers c ON c.id = o.customer_id
      WHERE o.id = $1 AND o.shop_id = $2`,

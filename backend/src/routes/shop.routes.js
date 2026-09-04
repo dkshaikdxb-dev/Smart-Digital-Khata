@@ -17,6 +17,17 @@ const updateSchema = Joi.object({
   latitude: Joi.number().min(-90).max(90).allow(null),
   longitude: Joi.number().min(-180).max(180).allow(null),
   is_listed: Joi.boolean(),
+  // Fulfillment (M7): pickup/delivery availability, flat delivery fee, an
+  // optional free-delivery threshold, a delivery minimum-order gate, plus
+  // informational radius/hours. All money is integer paise. null clears the
+  // nullable fields (free_delivery_min, radius, hours).
+  offers_pickup: Joi.boolean(),
+  offers_delivery: Joi.boolean(),
+  delivery_fee: Joi.number().integer().min(0),
+  free_delivery_min: Joi.number().integer().min(0).allow(null),
+  delivery_min_order: Joi.number().integer().min(0),
+  delivery_radius_km: Joi.number().min(0).max(100).allow(null),
+  delivery_hours: Joi.string().allow('', null).max(120),
 });
 
 router.use(auth(['owner', 'staff']));
