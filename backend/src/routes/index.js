@@ -20,4 +20,8 @@ router.use('/admin', require('./admin.routes'));
 router.use('/webhooks', require('./webhook.routes'));
 router.use('/public', require('./public.routes'));
 
+const i18n = require('./i18n.routes');
+router.use('/i18n', i18n.router); // PUBLIC: GET /api/i18n/overrides
+router.use('/admin/i18n', i18n.adminRouter); // ADMIN: PATCH /api/admin/i18n
+
 module.exports = router;

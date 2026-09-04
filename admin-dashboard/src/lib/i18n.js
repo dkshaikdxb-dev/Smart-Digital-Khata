@@ -41,6 +41,7 @@ const DICT = {
     'nav.insights': 'Insights',
     'nav.settings': 'Settings',
     'nav.platform': 'Platform',
+    'nav.translations': 'Translations',
     'nav.logout': 'Log out',
     'ctab.shops': 'Shops',
     'ctab.cart': 'Cart',
@@ -58,6 +59,7 @@ const DICT = {
     'nav.insights': 'विश्लेषण',
     'nav.settings': 'सेटिंग्स',
     'nav.platform': 'प्लेटफ़ॉर्म',
+    'nav.translations': 'अनुवाद',
     'nav.logout': 'लॉग आउट',
     'ctab.shops': 'दुकानें',
     'ctab.cart': 'कार्ट',
@@ -75,6 +77,7 @@ const DICT = {
     'nav.insights': 'பகுப்பாய்வு',
     'nav.settings': 'அமைப்புகள்',
     'nav.platform': 'தளம்',
+    'nav.translations': 'மொழிபெயர்ப்புகள்',
     'nav.logout': 'வெளியேறு',
     'ctab.shops': 'கடைகள்',
     'ctab.cart': 'கார்ட்',
@@ -92,6 +95,7 @@ const DICT = {
     'nav.insights': 'విశ్లేషణ',
     'nav.settings': 'సెట్టింగ్‌లు',
     'nav.platform': 'ప్లాట్‌ఫారమ్',
+    'nav.translations': 'అనువాదాలు',
     'nav.logout': 'లాగ్ అవుట్',
     'ctab.shops': 'దుకాణాలు',
     'ctab.cart': 'కార్ట్',
@@ -109,6 +113,7 @@ const DICT = {
     'nav.insights': 'ವಿಶ್ಲೇಷಣೆ',
     'nav.settings': 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
     'nav.platform': 'ವೇದಿಕೆ',
+    'nav.translations': 'ಅನುವಾದಗಳು',
     'nav.logout': 'ಲಾಗ್ ಔಟ್',
     'ctab.shops': 'ಅಂಗಡಿಗಳು',
     'ctab.cart': 'ಕಾರ್ಟ್',
@@ -126,6 +131,7 @@ const DICT = {
     'nav.insights': 'വിശകലനം',
     'nav.settings': 'ക്രമീകരണങ്ങൾ',
     'nav.platform': 'പ്ലാറ്റ്‌ഫോം',
+    'nav.translations': 'വിവർത്തനങ്ങൾ',
     'nav.logout': 'ലോഗ് ഔട്ട്',
     'ctab.shops': 'കടകൾ',
     'ctab.cart': 'കാർട്ട്',
@@ -143,6 +149,7 @@ const DICT = {
     'nav.insights': 'تجزیہ',
     'nav.settings': 'ترتیبات',
     'nav.platform': 'پلیٹ فارم',
+    'nav.translations': 'ترجمے',
     'nav.logout': 'لاگ آؤٹ',
     'ctab.shops': 'دکانیں',
     'ctab.cart': 'ٹوکری',
@@ -2428,6 +2435,41 @@ for (const code of Object.keys(DICT)) {
 const KEY = 'skhata_lang';
 const CHOSEN_KEY = 'skhata_lang_set';
 const EVENT = 'skhata-lang';
+const OVERRIDE_EVENT = 'skhata-i18n';
+
+// Live translation overrides fetched from the backend at runtime, shaped as
+// { lang: { key: value, ... }, ... }. Layered on top of the static DICT below.
+// Starts EMPTY so SSR and the first client render are identical (hydration-safe);
+// loadOverrides() fills it after mount, then dispatches OVERRIDE_EVENT so mounted
+// useLang() consumers re-render with the corrected strings.
+let OVERRIDES = {};
+
+// Fetch the current overrides from the public endpoint and apply them app-wide.
+// Errors are swallowed (offline / API down → just use the static dict).
+export async function loadOverrides() {
+  try {
+    const base = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) || '';
+    const res = await fetch(`${base}/api/i18n/overrides`);
+    if (!res.ok) return;
+    const data = await res.json();
+    OVERRIDES = (data && data.overrides) || {};
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(OVERRIDE_EVENT));
+  } catch {
+    /* offline / fetch blocked — keep static dict */
+  }
+}
+
+// Helpers for the admin review UI. The key CATALOG and built-in text live in the
+// frontend DICT; these read straight from it (plus the live overrides).
+export function getAllKeys() {
+  return Object.keys(DICT.en).sort();
+}
+export function staticValue(lang, key) {
+  return (DICT[lang] && DICT[lang][key]) || '';
+}
+export function getOverrideValue(lang, key) {
+  return (OVERRIDES[lang] && OVERRIDES[lang][key]) || '';
+}
 
 export function getLang() {
   if (typeof window === 'undefined') return 'en';
@@ -2473,7 +2515,10 @@ function interpolate(str, vars) {
 }
 
 export function translate(lang, key, vars) {
-  const s = (DICT[lang] && DICT[lang][key]) || DICT.en[key] || key;
+  // Live override wins, then the language's built-in text, then the English
+  // fallback, then the raw key. OVERRIDES is empty until loadOverrides() runs,
+  // so with no overrides this resolves exactly as before.
+  const s = OVERRIDES[lang]?.[key] ?? DICT[lang]?.[key] ?? DICT.en[key] ?? key;
   return interpolate(s, vars);
 }
 
@@ -2485,14 +2530,20 @@ export function translate(lang, key, vars) {
  */
 export function useLang() {
   const [lang, setLangState] = useState('en');
+  // Bumped whenever overrides load/change: the lang is unchanged but the
+  // resolved strings are, so a distinct state value forces a re-render.
+  const [, setTick] = useState(0);
   useEffect(() => {
     setLangState(getLang());
     const on = () => setLangState(getLang());
+    const onOverride = () => setTick((n) => n + 1);
     window.addEventListener(EVENT, on);
     window.addEventListener('storage', on);
+    window.addEventListener(OVERRIDE_EVENT, onOverride);
     return () => {
       window.removeEventListener(EVENT, on);
       window.removeEventListener('storage', on);
+      window.removeEventListener(OVERRIDE_EVENT, onOverride);
     };
   }, []);
   const change = (code) => {

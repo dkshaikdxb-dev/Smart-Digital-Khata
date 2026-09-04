@@ -26,6 +26,7 @@ export default function Nav() {
         <>
           <Link href="/admin">{t('nav.platform')}</Link>
           <Link href="/admin/settings">{t('nav.settings')}</Link>
+          <Link href="/admin/i18n">{t('nav.translations')}</Link>
           <span className="badge">Platform Admin</span>
         </>
       ) : (

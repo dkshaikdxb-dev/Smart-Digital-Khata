@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
-import { useLang, isRtl, hasChosenLang } from '../lib/i18n';
+import { useLang, isRtl, hasChosenLang, loadOverrides } from '../lib/i18n';
 import CustomerLangGate from '../components/CustomerLangGate';
 
 export default function App({ Component, pageProps }) {
@@ -30,6 +30,11 @@ export default function App({ Component, pageProps }) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
   }, []);
+
+  // Load live translation overrides once on the client. SSR renders the static
+  // dict (OVERRIDES empty), so the first client render matches the server;
+  // overrides apply right after mount (a brief, acceptable swap).
+  useEffect(() => { loadOverrides(); }, []);
 
   // First-open language prompt, customer app only. SSR renders nothing (so
   // hydration matches); on mount we show the gate if the viewer is on a /c page
