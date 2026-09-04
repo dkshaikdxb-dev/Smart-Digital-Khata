@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import LangSwitch from './LangSwitch';
+import { useLang } from '../lib/i18n';
 
 export default function Nav() {
   const router = useRouter();
+  const { t } = useLang();
   const [role, setRole] = useState(null);
 
   useEffect(() => {
@@ -21,24 +24,25 @@ export default function Nav() {
       <strong>Smart Digital Khata</strong>
       {role === 'admin' ? (
         <>
-          <Link href="/admin">Platform</Link>
-          <Link href="/admin/settings">Settings</Link>
+          <Link href="/admin">{t('nav.platform')}</Link>
+          <Link href="/admin/settings">{t('nav.settings')}</Link>
           <span className="badge">Platform Admin</span>
         </>
       ) : (
         <>
-          <Link href="/">Dashboard</Link>
-          <Link href="/catalog">Catalog</Link>
-          <Link href="/orders">Orders</Link>
-          <Link href="/customers">Customers</Link>
-          <Link href="/families">Families</Link>
-          <Link href="/transactions">Transactions</Link>
-          <Link href="/insights">Insights</Link>
-          <Link href="/settings">Settings</Link>
+          <Link href="/">{t('nav.dashboard')}</Link>
+          <Link href="/catalog">{t('nav.catalog')}</Link>
+          <Link href="/orders">{t('nav.orders')}</Link>
+          <Link href="/customers">{t('nav.customers')}</Link>
+          <Link href="/families">{t('nav.families')}</Link>
+          <Link href="/transactions">{t('nav.transactions')}</Link>
+          <Link href="/insights">{t('nav.insights')}</Link>
+          <Link href="/settings">{t('nav.settings')}</Link>
         </>
       )}
       <span style={{ flex: 1 }} />
-      <button className="secondary" onClick={logout}>Log out</button>
+      <LangSwitch />
+      <button className="secondary" onClick={logout}>{t('nav.logout')}</button>
     </div>
   );
 }

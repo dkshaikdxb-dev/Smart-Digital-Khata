@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import CustomerTabBar from './CustomerTabBar';
+import LangSwitch from './LangSwitch';
 import { getCustomerToken } from '../lib/customerApi';
 
 const fmtRs = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
@@ -45,16 +46,16 @@ export default function CustomerShell({ title, children, tabs = true, back }) {
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </Head>
       <div className="cpwa-shell">
-        {(title || back) && (
-          <header className="cpwa-topbar">
-            {back && (
-              <button type="button" className="secondary cpwa-back" onClick={() => router.push(back)} aria-label="Back">
-                ‹
-              </button>
-            )}
-            {title && <h1>{title}</h1>}
-          </header>
-        )}
+        <header className="cpwa-topbar">
+          {back && (
+            <button type="button" className="secondary cpwa-back" onClick={() => router.push(back)} aria-label="Back">
+              ‹
+            </button>
+          )}
+          {title && <h1>{title}</h1>}
+          <span style={{ flex: 1 }} />
+          <LangSwitch variant="cpwa" />
+        </header>
         <main className={tabs ? 'cpwa-main has-tabs' : 'cpwa-main'}>{children}</main>
         {tabs && <CustomerTabBar />}
       </div>

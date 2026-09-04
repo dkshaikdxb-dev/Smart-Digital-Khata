@@ -181,3 +181,14 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tl-step.done .cpwa-tl-dot { background: var(--accent); }
 .cpwa-tl-step.current { font-weight: 700; }
 .cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--danger); }
+
+/* Language switch (navigation chrome i18n) — a compact segmented toggle used in
+   the owner nav (.langswitch) and the customer PWA topbar (.cpwa-lang). */
+.langswitch, .cpwa-lang { display: inline-flex; gap: 0; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+.langswitch button, .cpwa-lang button {
+  padding: 5px 10px; font-size: 13px; font-weight: 600; line-height: 1.2;
+  background: transparent; color: var(--muted); border: none; border-radius: 0;
+}
+.langswitch button + button, .cpwa-lang button + button { border-left: 1px solid #334155; }
+.langswitch button.active, .cpwa-lang button.active { background: var(--accent); color: #000; }
+.cpwa-lang button { padding: 4px 9px; }
