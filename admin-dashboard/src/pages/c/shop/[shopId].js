@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell, { money } from '../../../components/CustomerShell';
@@ -18,6 +18,8 @@ export default function ShopCatalog() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [activeCat, setActiveCat] = useState(''); // '' = all categories
 
   useEffect(() => {
     if (!shopId) return;
@@ -86,6 +88,43 @@ export default function ShopCatalog() {
 
   const { count, subtotal } = cartTotals(cart);
 
+  // Distinct catalog categories present in THIS shop's products (ignore null).
+  const categories = useMemo(() => {
+    const seen = [];
+    for (const p of products) {
+      const c = p.category;
+      if (c && !seen.includes(c)) seen.push(c);
+    }
+    return seen;
+  }, [products]);
+
+  // Client-side filter: bounded list, so search + category are cheap.
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (activeCat && p.category !== activeCat) return false;
+      if (q && !String(p.name || '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, search, activeCat]);
+
+  // Compact fulfillment summary derived from the shop's settings.
+  function fulfillmentSummary(s) {
+    const lines = [];
+    if (s.offers_delivery) {
+      let d = `🛵 ${t('c.delivery')} ${money(s.delivery_fee)}`;
+      if (s.free_delivery_min != null) d += ` · ${t('c.freeAboveAmt', { amt: money(s.free_delivery_min) })}`;
+      if (s.offers_pickup) d += ` · 🏬 ${t('c.pickup')}`;
+      lines.push(d);
+    } else if (s.offers_pickup) {
+      lines.push(`🏬 ${t('c.pickupOnly')}`);
+    }
+    if (s.offers_delivery && s.delivery_hours) {
+      lines.push(t('c.deliveryHoursLabel', { hours: s.delivery_hours }));
+    }
+    return lines;
+  }
+
   return (
     <CustomerShell title={shop ? shop.name : t('c.shop')} back="/c/shops">
       {error && <div className="card cpwa-error">{error}</div>}
@@ -94,6 +133,35 @@ export default function ShopCatalog() {
       {shop && (
         <div className="card">
           <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || t('c.locationNotSet')}</div>
+          {fulfillmentSummary(shop).map((line, i) => (
+            <div key={i} className="cpwa-ful-summary">{line}</div>
+          ))}
+        </div>
+      )}
+
+      {shop && products.length > 0 && (
+        <div className="card">
+          <div className="cpwa-search">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('c.searchProducts')}
+              aria-label={t('c.searchProducts')}
+            />
+          </div>
+          {categories.length > 0 && (
+            <div className="cpwa-chips" role="group" aria-label={t('c.category')}>
+              <button type="button" className={`cpwa-chip ${activeCat === '' ? 'active' : ''}`} onClick={() => setActiveCat('')}>
+                {t('c.allCategories')}
+              </button>
+              {categories.map((c) => (
+                <button key={c} type="button" className={`cpwa-chip ${activeCat === c ? 'active' : ''}`} onClick={() => setActiveCat(c)}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -101,7 +169,11 @@ export default function ShopCatalog() {
         <div className="card muted">{t('c.noItems')}</div>
       )}
 
-      {products.map((p) => {
+      {!loading && products.length > 0 && visible.length === 0 && (
+        <div className="card muted">{t('cat.noResults')}</div>
+      )}
+
+      {visible.map((p) => {
         const inCart = cart?.items?.[p.id];
         return (
           <div key={p.id} className="card cpwa-product">

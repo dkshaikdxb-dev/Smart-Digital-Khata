@@ -6,6 +6,26 @@ import { useLang } from '../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
+// Money is paise everywhere; the fulfillment form edits in rupees. These helpers
+// convert a paise value to a rupee string for an input, and back to paise ints on
+// save. Blank optionals (free above / radius / hours) are sent as null.
+const paiseToRs = (p) => (p == null || p === '' ? '' : String(Number(p) / 100));
+const rsToPaise = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) && v !== '' ? Math.round(n * 100) : 0;
+};
+function fulFromShop(s) {
+  return {
+    offers_pickup: !!s.offers_pickup,
+    offers_delivery: !!s.offers_delivery,
+    delivery_fee: paiseToRs(s.delivery_fee),
+    free_delivery_min: paiseToRs(s.free_delivery_min),
+    delivery_min_order: paiseToRs(s.delivery_min_order),
+    delivery_radius_km: s.delivery_radius_km == null ? '' : String(s.delivery_radius_km),
+    delivery_hours: s.delivery_hours || '',
+  };
+}
+
 export default function Settings() {
   const router = useRouter();
   const { t } = useLang();
@@ -23,6 +43,10 @@ export default function Settings() {
   // Discovery
   const [discoveryMsg, setDiscoveryMsg] = useState('');
 
+  // Delivery & pickup (per-shop fulfillment). Edited in rupees; saved in paise.
+  const [ful, setFul] = useState(null);
+  const [fulMsg, setFulMsg] = useState('');
+
   function loadPayment() {
     apiFetch('/api/shops/me/payment').then((r) => {
       const p = r.payment || r;
@@ -34,7 +58,7 @@ export default function Settings() {
   useEffect(() => {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
-    apiFetch('/api/shops/me').then((r) => setShop(r.shop)).catch(console.error);
+    apiFetch('/api/shops/me').then((r) => { setShop(r.shop); setFul(fulFromShop(r.shop)); }).catch(console.error);
     apiFetch('/api/subscriptions/plans').then((r) => setPlans(r.plans)).catch(console.error);
     apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
     loadPayment();
@@ -113,6 +137,27 @@ export default function Settings() {
       setShop(r.shop);
       setDiscoveryMsg(t('common.saved'));
     } catch (e) { setDiscoveryMsg(e.message); }
+  }
+
+  async function saveFulfillment() {
+    setFulMsg('');
+    try {
+      const r = await apiFetch('/api/shops/me', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          offers_pickup: !!ful.offers_pickup,
+          offers_delivery: !!ful.offers_delivery,
+          delivery_fee: rsToPaise(ful.delivery_fee),
+          free_delivery_min: ful.free_delivery_min === '' || ful.free_delivery_min == null ? null : rsToPaise(ful.free_delivery_min),
+          delivery_min_order: rsToPaise(ful.delivery_min_order),
+          delivery_radius_km: ful.delivery_radius_km === '' || ful.delivery_radius_km == null ? null : Number(ful.delivery_radius_km),
+          delivery_hours: ful.delivery_hours && ful.delivery_hours.trim() ? ful.delivery_hours.trim() : null,
+        }),
+      });
+      setShop(r.shop);
+      setFul(fulFromShop(r.shop));
+      setFulMsg(t('common.saved'));
+    } catch (e) { setFulMsg(e.message); }
   }
 
   return (
@@ -233,6 +278,44 @@ export default function Settings() {
           <button onClick={saveDiscovery}>{t('common.save')}</button>
           {discoveryMsg && <div className="muted" style={{ marginTop: 8 }}>{discoveryMsg}</div>}
         </div>
+
+        {ful && (
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('set.deliveryPickup')}</h3>
+          <p className="muted">{t('set.deliveryPickupDesc')}</p>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={!!ful.offers_pickup} onChange={(e) => setFul({ ...ful, offers_pickup: e.target.checked })} />
+            <span>{t('set.offerPickup')}</span>
+          </label>
+          <div style={{ height: 10 }} />
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+            <input type="checkbox" style={{ width: 'auto' }} checked={!!ful.offers_delivery} onChange={(e) => setFul({ ...ful, offers_delivery: e.target.checked })} />
+            <span>{t('set.offerDelivery')}</span>
+          </label>
+
+          {ful.offers_delivery && (
+            <div style={{ marginTop: 14 }}>
+              <label className="muted">{t('set.deliveryFee')}</label>
+              <input type="number" min="0" step="any" value={ful.delivery_fee} onChange={(e) => setFul({ ...ful, delivery_fee: e.target.value })} placeholder="0" />
+              <div style={{ height: 12 }} />
+              <label className="muted">{t('set.freeDeliveryAbove')}</label>
+              <input type="number" min="0" step="any" value={ful.free_delivery_min} onChange={(e) => setFul({ ...ful, free_delivery_min: e.target.value })} placeholder={t('set.freeDeliveryHint')} />
+              <div style={{ height: 12 }} />
+              <label className="muted">{t('set.minOrderDelivery')}</label>
+              <input type="number" min="0" step="any" value={ful.delivery_min_order} onChange={(e) => setFul({ ...ful, delivery_min_order: e.target.value })} placeholder="0" />
+              <div style={{ height: 12 }} />
+              <label className="muted">{t('set.deliveryRadius')}</label>
+              <input type="number" min="0" step="any" value={ful.delivery_radius_km} onChange={(e) => setFul({ ...ful, delivery_radius_km: e.target.value })} placeholder={t('set.deliveryRadiusHint')} />
+              <div style={{ height: 12 }} />
+              <label className="muted">{t('set.deliveryHours')}</label>
+              <input value={ful.delivery_hours} onChange={(e) => setFul({ ...ful, delivery_hours: e.target.value })} placeholder={t('set.deliveryHoursPlaceholder')} />
+            </div>
+          )}
+          <div style={{ height: 16 }} />
+          <button onClick={saveFulfillment}>{t('common.save')}</button>
+          {fulMsg && <div className="muted" style={{ marginTop: 8 }}>{fulMsg}</div>}
+        </div>
+        )}
       </div>
     </div>
   );

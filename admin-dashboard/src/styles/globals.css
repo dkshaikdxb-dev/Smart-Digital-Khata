@@ -267,3 +267,17 @@ th { color: var(--muted); font-weight: 600; }
 
 .cat-field { display: flex; flex-direction: column; gap: 6px; }
 .cat-field-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+/* Fulfillment summary (customer shop header) */
+.cpwa-ful-summary { margin-top: 6px; font-size: 13px; font-weight: 600; }
+
+/* Category filter chips (customer shop page) */
+.cpwa-chips { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+.cpwa-chip {
+  flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  background: #334155; color: var(--text); border: 1px solid #334155; cursor: pointer; white-space: nowrap;
+}
+.cpwa-chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+/* Order/cart grand total line */
+.cpwa-total { margin-top: 8px; padding-top: 10px; border-top: 1px solid #334155; font-size: 16px; }
