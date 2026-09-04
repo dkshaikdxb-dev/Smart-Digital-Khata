@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function CustomerDetail() {
   const router = useRouter();
@@ -88,6 +89,21 @@ export default function CustomerDetail() {
     } catch (err) { setError(err.message); }
   }
 
+  async function downloadStatement() {
+    setMsg(''); setError('');
+    try {
+      const token = window.localStorage.getItem('skhata_token');
+      const res = await fetch(`${API}/api/reports/customer/${id}/statement.csv`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `statement-${id}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) { setError(err.message); }
+  }
+
   async function archive() {
     if (!window.confirm(`Archive ${c.name}? They will be hidden from lists.`)) return;
     try {
@@ -115,6 +131,7 @@ export default function CustomerDetail() {
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 14 }}>
           <button onClick={remind} disabled={Number(c.balance) <= 0}>Send reminder</button>
           <button className="secondary" onClick={share}>Share khata</button>
+          <button className="secondary" onClick={downloadStatement}>Download statement CSV</button>
           <button className="secondary" onClick={archive}>Archive</button>
         </div>
         {msg && <div className="muted" style={{ marginTop: 10 }}>{msg}</div>}

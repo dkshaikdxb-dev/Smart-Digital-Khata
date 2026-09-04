@@ -31,7 +31,9 @@ export default function Nav() {
           <Link href="/catalog">Catalog</Link>
           <Link href="/orders">Orders</Link>
           <Link href="/customers">Customers</Link>
+          <Link href="/families">Families</Link>
           <Link href="/transactions">Transactions</Link>
+          <Link href="/insights">Insights</Link>
           <Link href="/settings">Settings</Link>
         </>
       )}
