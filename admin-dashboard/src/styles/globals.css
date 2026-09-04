@@ -243,3 +243,27 @@ th { color: var(--muted); font-weight: 600; }
   padding: 18px 12px; font-size: 20px; font-weight: 700; min-height: 64px;
 }
 .cpwa-langgate-btn:active { border-color: var(--accent); }
+
+/* Owner catalog range-management: section tabs, browse list, inline price.
+   Scoped under .cat-* so it never affects other pages. */
+.cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.cat-tab { background: #334155; color: var(--text); }
+.cat-tab.active { background: var(--accent); color: #000; }
+
+.cat-price-cell { display: inline-flex; align-items: center; gap: 8px; }
+.cat-price-input { width: 96px; min-width: 96px; }
+
+.cat-browse-filters { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+@media (max-width: 640px) { .cat-browse-filters { grid-template-columns: 1fr; } }
+
+.cat-list { display: flex; flex-direction: column; gap: 10px; }
+.cat-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; background: #0b1220;
+}
+.cat-item-body { min-width: 0; }
+.cat-item-body strong { overflow-wrap: anywhere; }
+.cat-item-action { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+
+.cat-field { display: flex; flex-direction: column; gap: 6px; }
+.cat-field-label { font-size: 13px; color: var(--muted); font-weight: 600; }
