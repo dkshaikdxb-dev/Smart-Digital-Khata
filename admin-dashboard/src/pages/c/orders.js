@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import CustomerShell, { money, useCustomerGuard } from '../../components/CustomerShell';
 import { customerFetch } from '../../lib/customerApi';
+import { useLang } from '../../lib/i18n';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -21,6 +22,9 @@ export function statusBadgeClass(status) {
 
 export default function Orders() {
   const ready = useCustomerGuard();
+  const { t } = useLang();
+  const ostatusLabel = (s) => { const v = t(`ostatus.${s}`); return v === `ostatus.${s}` ? (STATUS_LABELS[s] || s) : v; };
+  const fulLabel = (s) => { const v = t(`ful.${s}`); return v === `ful.${s}` ? s : v; };
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,14 +46,14 @@ export default function Orders() {
   if (!ready) return null;
 
   return (
-    <CustomerShell title="My orders">
+    <CustomerShell title={t('c.myOrders')}>
       {error && <div className="card cpwa-error">{error}</div>}
-      {loading && <div className="card">Loading orders…</div>}
+      {loading && <div className="card">{t('c.loadingOrders')}</div>}
       {!loading && !error && items.length === 0 && (
         <div className="card cpwa-empty">
           <div className="cpwa-empty-ico">📦</div>
-          <p className="muted">No orders yet.</p>
-          <Link href="/c/shops"><button>Browse shops</button></Link>
+          <p className="muted">{t('c.noOrders')}</p>
+          <Link href="/c/shops"><button>{t('c.browseShops')}</button></Link>
         </div>
       )}
 
@@ -57,16 +61,16 @@ export default function Orders() {
         <Link key={o.id} href={`/c/orders/${o.id}`} className="card cpwa-shopcard">
           <div className="cpwa-shopcard-body">
             <div className="cpwa-row-between">
-              <span className="cpwa-shopcard-name">{o.shop_name || 'Shop'}</span>
-              <span className={`badge ${statusBadgeClass(o.status)}`}>{STATUS_LABELS[o.status] || o.status}</span>
+              <span className="cpwa-shopcard-name">{o.shop_name || t('c.shop')}</span>
+              <span className={`badge ${statusBadgeClass(o.status)}`}>{ostatusLabel(o.status)}</span>
             </div>
             <div className="muted">
-              {new Date(o.created_at).toLocaleString()} · {o.item_count != null ? `${o.item_count} item${o.item_count > 1 ? 's' : ''}` : ''}
+              {new Date(o.created_at).toLocaleString()} · {o.item_count != null ? t('common.itemCount', { n: o.item_count, s: o.item_count > 1 ? 's' : '' }) : ''}
             </div>
             <div className="cpwa-shopcard-meta">
               <span>{money(o.subtotal)}</span>
-              <span className="badge">{o.fulfillment_type}</span>
-              <span className="badge">{o.payment_mode === 'prepaid' ? 'Prepaid' : 'Credit'}</span>
+              <span className="badge">{fulLabel(o.fulfillment_type)}</span>
+              <span className="badge">{o.payment_mode === 'prepaid' ? t('c.prepaid') : t('c.credit')}</span>
             </div>
           </div>
           <span className="cpwa-chev">›</span>

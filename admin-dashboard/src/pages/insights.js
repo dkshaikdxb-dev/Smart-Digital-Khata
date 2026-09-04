@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -33,6 +34,7 @@ async function downloadCsv(path, filename) {
 
 export default function Insights() {
   const router = useRouter();
+  const { t } = useLang();
   const [days, setDays] = useState(30);
   const [overview, setOverview] = useState(null);
   const [aging, setAging] = useState(null);
@@ -64,7 +66,7 @@ export default function Insights() {
     setError(''); setMsg('');
     try {
       await downloadCsv(path, filename);
-      setMsg(`Downloaded ${filename}.`);
+      setMsg(t('ins.downloaded', { file: filename }));
     } catch (err) { setError(err.message); }
   }
 
@@ -74,35 +76,35 @@ export default function Insights() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Insights</h1>
+        <h1>{t('nav.insights')}</h1>
 
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
-            <h3 style={{ margin: 0 }}>Overview</h3>
+            <h3 style={{ margin: 0 }}>{t('ins.overview')}</h3>
             <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
               {[7, 30, 90].map((d) => (
-                <button key={d} className={d === days ? '' : 'secondary'} onClick={() => changeDays(d)}>Last {d} days</button>
+                <button key={d} className={d === days ? '' : 'secondary'} onClick={() => changeDays(d)}>{t('ins.lastDays', { d })}</button>
               ))}
             </div>
           </div>
-          {!overview ? <div className="muted">Loading…</div> : (
+          {!overview ? <div className="muted">{t('common.loading')}</div> : (
             <div className="grid">
-              <Kpi label={`Purchases (${overview.period_days}d)`} value={fmt(overview.purchases)} />
-              <Kpi label={`Collections (${overview.period_days}d)`} value={fmt(overview.collections)} color="var(--accent)" />
-              <Kpi label="Collection rate" value={pct(overview.collection_rate)} />
-              <Kpi label="Total outstanding" value={fmt(overview.total_outstanding)} color="var(--danger)" />
-              <Kpi label="Active customers" value={overview.active_customers} />
-              <Kpi label="Customers with dues" value={overview.customers_with_dues} />
-              <Kpi label={`New customers (${overview.period_days}d)`} value={overview.new_customers} />
+              <Kpi label={t('ins.purchases', { d: overview.period_days })} value={fmt(overview.purchases)} />
+              <Kpi label={t('ins.collections', { d: overview.period_days })} value={fmt(overview.collections)} color="var(--accent)" />
+              <Kpi label={t('ins.collectionRate')} value={pct(overview.collection_rate)} />
+              <Kpi label={t('common.totalOutstanding')} value={fmt(overview.total_outstanding)} color="var(--danger)" />
+              <Kpi label={t('ins.activeCustomers')} value={overview.active_customers} />
+              <Kpi label={t('ins.customersWithDues')} value={overview.customers_with_dues} />
+              <Kpi label={t('ins.newCustomers', { d: overview.period_days })} value={overview.new_customers} />
             </div>
           )}
           {error && <div style={{ color: 'var(--danger)', marginTop: 10 }}>{error}</div>}
         </div>
 
         <div className="card">
-          <h3>Outstanding by age</h3>
-          {!aging ? <div className="muted">Loading…</div> : agingTotal === 0 ? (
-            <p className="muted" style={{ padding: '8px 2px' }}>No outstanding balances.</p>
+          <h3>{t('ins.outstandingByAge')}</h3>
+          {!aging ? <div className="muted">{t('common.loading')}</div> : agingTotal === 0 ? (
+            <p className="muted" style={{ padding: '8px 2px' }}>{t('ins.noOutstanding')}</p>
           ) : (
             <div>
               {AGING.map((b) => {
@@ -111,7 +113,7 @@ export default function Insights() {
                 return (
                   <div key={b.key} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span className="muted">{b.label}</span>
+                      <span className="muted">{t(`ins.age_${b.key}`)}</span>
                       <span>{fmt(v)}</span>
                     </div>
                     <div style={{ background: '#0b1220', borderRadius: 8, height: 14, overflow: 'hidden' }}>
@@ -121,7 +123,7 @@ export default function Insights() {
                 );
               })}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, borderTop: '1px solid #334155', paddingTop: 8 }}>
-                <strong>Total</strong>
+                <strong>{t('common.total')}</strong>
                 <strong>{fmt(agingTotal)}</strong>
               </div>
             </div>
@@ -129,11 +131,11 @@ export default function Insights() {
         </div>
 
         <div className="card">
-          <h3>Reports</h3>
+          <h3>{t('ins.reports')}</h3>
           <div className="row-actions" style={{ justifyContent: 'flex-start', marginBottom: 14 }}>
-            <button className="secondary" onClick={() => download('/api/reports/customers.csv', 'customers.csv')}>Download customers CSV</button>
+            <button className="secondary" onClick={() => download('/api/reports/customers.csv', 'customers.csv')}>{t('ins.downloadCustomersCsv')}</button>
           </div>
-          <div className="muted" style={{ marginBottom: 6 }}>Transactions (optional date range)</div>
+          <div className="muted" style={{ marginBottom: 6 }}>{t('ins.txRange')}</div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <input type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} style={{ maxWidth: 200 }} />
             <input type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} style={{ maxWidth: 200 }} />
@@ -143,7 +145,7 @@ export default function Insights() {
               if (range.to) params.push(`to=${encodeURIComponent(range.to)}`);
               const qs = params.length ? `?${params.join('&')}` : '';
               download(`/api/reports/transactions.csv${qs}`, 'transactions.csv');
-            }}>Download transactions CSV</button>
+            }}>{t('ins.downloadTxCsv')}</button>
           </div>
           {msg && <div className="muted" style={{ marginTop: 10 }}>{msg}</div>}
         </div>

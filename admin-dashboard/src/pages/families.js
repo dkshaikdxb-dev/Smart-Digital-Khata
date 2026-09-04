@@ -3,11 +3,13 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Families() {
   const router = useRouter();
+  const { t } = useLang();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({ name: '', credit_limit: '' });
@@ -39,7 +41,7 @@ export default function Families() {
       });
       setForm({ name: '', credit_limit: '' });
       await load();
-      setMsg('Family created.');
+      setMsg(t('fam.created'));
     } catch (err) { setError(err.message); }
   }
 
@@ -49,15 +51,15 @@ export default function Families() {
   const filtered = q ? items.filter((f) => (f.name || '').toLowerCase().includes(q)) : items;
 
   const columns = [
-    { key: 'name', label: 'Family', render: (f) => <strong>{f.name}</strong> },
-    { key: 'member_count', label: 'Members', render: (f) => Number(f.member_count || 0) },
-    { key: 'combined_balance', label: 'Combined outstanding', render: (f) => (
+    { key: 'name', label: t('fam.family'), render: (f) => <strong>{f.name}</strong> },
+    { key: 'member_count', label: t('common.members'), render: (f) => Number(f.member_count || 0) },
+    { key: 'combined_balance', label: t('fam.combinedOutstanding'), render: (f) => (
       <span style={{ color: Number(f.combined_balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(f.combined_balance)}</span>
     ) },
-    { key: 'credit_limit', label: 'Limit', render: (f) => (Number(f.credit_limit) > 0 ? fmt(f.credit_limit) : '—') },
-    { key: 'actions', label: 'Actions', align: 'right', render: (f) => (
+    { key: 'credit_limit', label: t('common.limit'), render: (f) => (Number(f.credit_limit) > 0 ? fmt(f.credit_limit) : '—') },
+    { key: 'actions', label: t('common.actions'), align: 'right', render: (f) => (
       <span className="row-actions">
-        <button className="secondary" onClick={(e) => { e.stopPropagation(); open(f); }}>Open</button>
+        <button className="secondary" onClick={(e) => { e.stopPropagation(); open(f); }}>{t('common.open')}</button>
       </span>
     ) },
   ];
@@ -66,25 +68,25 @@ export default function Families() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Families</h1>
+        <h1>{t('nav.families')}</h1>
 
         <div className="card">
-          <h3>Create family</h3>
+          <h3>{t('fam.create')}</h3>
           <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 10 }}>
-            <input placeholder="Family name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input placeholder="Credit limit ₹ (optional)" type="number" min="0" step="0.01" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
-            <button>Create</button>
+            <input placeholder={t('fam.namePlaceholder')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <input placeholder={t('fam.creditLimitPlaceholder')} type="number" min="0" step="0.01" value={form.credit_limit} onChange={(e) => setForm({ ...form, credit_limit: e.target.value })} />
+            <button>{t('common.create')}</button>
           </form>
-          <div className="muted" style={{ marginTop: 8 }}>Add members and set a payer from the family detail page.</div>
+          <div className="muted" style={{ marginTop: 8 }}>{t('fam.addHint')}</div>
         </div>
 
         <div className="card">
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-            <input placeholder="Search families…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
+            <input placeholder={t('fam.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
           </div>
           {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={filtered} onRowClick={open} empty="No families yet. Create your first above." />
+          <DataTable columns={columns} rows={filtered} onRowClick={open} empty={t('fam.empty')} />
         </div>
       </div>
     </div>

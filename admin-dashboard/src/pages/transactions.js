@@ -3,9 +3,12 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 export default function Transactions() {
   const router = useRouter();
+  const { t } = useLang();
+  const txnLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
   const [items, setItems] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [form, setForm] = useState({ customer_id: '', type: 'purchase', amount: '', note: '' });
@@ -67,7 +70,7 @@ export default function Transactions() {
         }),
       });
       const shared = await apiFetch(`/api/payments/orders/${order.order.id}/share`, { method: 'POST' });
-      setInfo(`Payment link sent on WhatsApp: ${shared.link}`);
+      setInfo(t('tx.paymentLinkSent', { link: shared.link }));
       setRequest({ customer_id: request.customer_id, amount: '', note: '' });
     } catch (err) {
       setError(err.message);
@@ -80,69 +83,69 @@ export default function Transactions() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Transactions</h1>
+        <h1>{t('nav.transactions')}</h1>
 
         <div className="card">
-          <h3>Record transaction</h3>
+          <h3>{t('tx.record')}</h3>
           <form onSubmit={create} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 2fr auto', gap: 10 }}>
             <select value={form.customer_id} onChange={(e) => setForm({ ...form, customer_id: e.target.value })} required>
-              <option value="">Select customer</option>
+              <option value="">{t('tx.selectCustomer')}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.phone}</option>)}
             </select>
             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-              <option value="purchase">Purchase</option>
-              <option value="cash">Cash payment</option>
-              <option value="upi">UPI payment</option>
+              <option value="purchase">{t('type.purchase')}</option>
+              <option value="cash">{t('type.cashPayment')}</option>
+              <option value="upi">{t('type.upiPayment')}</option>
             </select>
-            <input type="number" placeholder="Amount (₹)" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
-            <input placeholder="Note (optional)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
-            <button>Save</button>
+            <input type="number" placeholder={t('common.amountRs')} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+            <input placeholder={t('common.noteOptional')} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+            <button>{t('common.save')}</button>
           </form>
         </div>
 
         <div className="card">
-          <h3>Request payment via WhatsApp</h3>
-          <p className="muted">Creates a Razorpay-hosted payment link and sends it to the customer.</p>
+          <h3>{t('tx.requestPayment')}</h3>
+          <p className="muted">{t('tx.requestPaymentDesc')}</p>
           <form onSubmit={requestPayment} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 2fr auto', gap: 10 }}>
             <select value={request.customer_id} onChange={(e) => setRequest({ ...request, customer_id: e.target.value })} required>
-              <option value="">Select customer</option>
+              <option value="">{t('tx.selectCustomer')}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.phone}</option>)}
             </select>
-            <input type="number" placeholder="Amount (₹)" value={request.amount} onChange={(e) => setRequest({ ...request, amount: e.target.value })} required />
-            <input placeholder="Note (e.g. 'July dues')" value={request.note} onChange={(e) => setRequest({ ...request, note: e.target.value })} />
-            <button>Send link</button>
+            <input type="number" placeholder={t('common.amountRs')} value={request.amount} onChange={(e) => setRequest({ ...request, amount: e.target.value })} required />
+            <input placeholder={t('tx.notePlaceholderJuly')} value={request.note} onChange={(e) => setRequest({ ...request, note: e.target.value })} />
+            <button>{t('tx.sendLink')}</button>
           </form>
           {info && <div className="muted" style={{ marginTop: 8 }}>{info}</div>}
           {error && <div style={{ color: 'var(--danger)', marginTop: 8 }}>{error}</div>}
         </div>
 
         <div className="card">
-          <h3>History</h3>
+          <h3>{t('tx.history')}</h3>
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
             <select value={filter.customer_id} onChange={(e) => setFilter({ ...filter, customer_id: e.target.value })} style={{ flex: 1, minWidth: 160 }}>
-              <option value="">All customers</option>
+              <option value="">{t('filter.allCustomers')}</option>
               {customers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <select value={filter.type} onChange={(e) => setFilter({ ...filter, type: e.target.value })} style={{ flex: 1, minWidth: 120 }}>
-              <option value="">All types</option>
-              <option value="purchase">Purchase</option>
-              <option value="cash">Cash</option>
-              <option value="upi">UPI</option>
+              <option value="">{t('filter.allTypes')}</option>
+              <option value="purchase">{t('type.purchase')}</option>
+              <option value="cash">{t('type.cash')}</option>
+              <option value="upi">{t('type.upi')}</option>
             </select>
-            <button className="secondary" onClick={() => load()}>Apply</button>
+            <button className="secondary" onClick={() => load()}>{t('common.apply')}</button>
           </div>
           <DataTable
-            empty="No transactions match."
+            empty={t('tx.historyEmpty')}
             columns={[
-              { key: 'created_at', label: 'When', render: (t) => new Date(t.created_at).toLocaleString() },
-              { key: 'type', label: 'Type', render: (t) => <span className="badge">{t.type}</span> },
-              { key: 'method', label: 'Method' },
-              { key: 'amount', label: 'Amount', align: 'right', render: (t) => (
-                <span style={{ color: t.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
-                  {t.type === 'purchase' ? '+' : '−'}{fmt(t.amount)}
+              { key: 'created_at', label: t('common.when'), render: (row) => new Date(row.created_at).toLocaleString() },
+              { key: 'type', label: t('common.type'), render: (row) => <span className="badge">{txnLabel(row.type)}</span> },
+              { key: 'method', label: t('common.method'), render: (row) => txnLabel(row.method) },
+              { key: 'amount', label: t('common.amount'), align: 'right', render: (row) => (
+                <span style={{ color: row.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
+                  {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
                 </span>
               ) },
-              { key: 'note', label: 'Note', render: (t) => t.note || '' },
+              { key: 'note', label: t('common.note'), render: (row) => row.note || '' },
             ]}
             rows={items}
           />

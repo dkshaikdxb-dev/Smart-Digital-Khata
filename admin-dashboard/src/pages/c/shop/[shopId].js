@@ -4,11 +4,13 @@ import Link from 'next/link';
 import CustomerShell, { money } from '../../../components/CustomerShell';
 import { publicFetch } from '../../../lib/customerApi';
 import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart } from '../../../lib/customerCart';
+import { useLang } from '../../../lib/i18n';
 
 // Shop catalog + per-shop cart. Adding items persists to localStorage keyed by
 // shop. A customer can only build a cart for ONE shop at a time.
 export default function ShopCatalog() {
   const router = useRouter();
+  const { t } = useLang();
   const { shopId } = router.query;
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
@@ -47,9 +49,7 @@ export default function ShopCatalog() {
     // A cart is per-shop: warn if another shop already holds items.
     const other = otherActiveCartShopId(shopId);
     if (other) {
-      const ok = window.confirm(
-        'You have an unfinished cart at another shop. Clear it and start a cart here?'
-      );
+      const ok = window.confirm(t('c.switchCartConfirm'));
       if (!ok) return;
       clearCart(other);
     }
@@ -84,18 +84,18 @@ export default function ShopCatalog() {
   const { count, subtotal } = cartTotals(cart);
 
   return (
-    <CustomerShell title={shop ? shop.name : 'Shop'} back="/c/shops">
+    <CustomerShell title={shop ? shop.name : t('c.shop')} back="/c/shops">
       {error && <div className="card cpwa-error">{error}</div>}
-      {loading && <div className="card">Loading catalog…</div>}
+      {loading && <div className="card">{t('c.loadingCatalog')}</div>}
 
       {shop && (
         <div className="card">
-          <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || 'Location not set'}</div>
+          <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || t('c.locationNotSet')}</div>
         </div>
       )}
 
       {!loading && products.length === 0 && !error && (
-        <div className="card muted">This shop has no items listed yet.</div>
+        <div className="card muted">{t('c.noItems')}</div>
       )}
 
       {products.map((p) => {
@@ -106,7 +106,7 @@ export default function ShopCatalog() {
               <div className="cpwa-product-name">{p.name}</div>
               {p.description && <div className="muted cpwa-clamp">{p.description}</div>}
               <div className="cpwa-product-price">
-                {money(p.price)} <span className="muted">/ {p.unit || 'unit'}</span>
+                {money(p.price)} <span className="muted">/ {p.unit || t('c.unit')}</span>
               </div>
             </div>
             <div className="cpwa-product-action">
@@ -117,7 +117,7 @@ export default function ShopCatalog() {
                   <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity + 1)} aria-label="Increase">+</button>
                 </div>
               ) : (
-                <button type="button" onClick={() => addItem(p)}>Add</button>
+                <button type="button" onClick={() => addItem(p)}>{t('common.add')}</button>
               )}
             </div>
           </div>
@@ -127,10 +127,10 @@ export default function ShopCatalog() {
       {count > 0 && (
         <div className="cpwa-cartbar">
           <div>
-            <div className="cpwa-cartbar-count">{count} item{count > 1 ? 's' : ''}</div>
+            <div className="cpwa-cartbar-count">{t('common.itemCount', { n: count, s: count > 1 ? 's' : '' })}</div>
             <div className="cpwa-cartbar-total">{money(subtotal)}</div>
           </div>
-          <Link href={`/c/cart?shop=${shopId}`} className="cpwa-cartbar-btn">Review order ›</Link>
+          <Link href={`/c/cart?shop=${shopId}`} className="cpwa-cartbar-btn">{t('c.reviewOrder')}</Link>
         </div>
       )}
     </CustomerShell>

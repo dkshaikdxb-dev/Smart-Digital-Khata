@@ -3,9 +3,11 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { useLang } from '../lib/i18n';
 
 export default function Dashboard() {
   const router = useRouter();
+  const { t } = useLang();
   const [summary, setSummary] = useState(null);
   const [outstanding, setOutstanding] = useState(null);
   const [error, setError] = useState('');
@@ -30,37 +32,37 @@ export default function Dashboard() {
     <div>
       <Nav />
       <div className="container">
-        <h1>Today</h1>
+        <h1>{t('dash.today')}</h1>
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
 
         <div className="grid">
           <div className="card">
-            <div className="muted">Purchases today</div>
+            <div className="muted">{t('dash.purchasesToday')}</div>
             <div className="kpi">{summary ? fmt(summary.purchases) : '—'}</div>
           </div>
           <div className="card">
-            <div className="muted">Collections today</div>
+            <div className="muted">{t('dash.collectionsToday')}</div>
             <div className="kpi">{summary ? fmt(summary.collections) : '—'}</div>
           </div>
           <div className="card">
-            <div className="muted">Total outstanding</div>
+            <div className="muted">{t('common.totalOutstanding')}</div>
             <div className="kpi">{outstanding ? fmt(outstanding.total) : '—'}</div>
           </div>
           <div className="card">
-            <div className="muted">Customers with dues</div>
+            <div className="muted">{t('dash.customersWithDues')}</div>
             <div className="kpi">{outstanding ? outstanding.customers.length : '—'}</div>
           </div>
         </div>
 
         <div className="card">
-          <h3>Top outstanding</h3>
+          <h3>{t('dash.topOutstanding')}</h3>
           <DataTable
-            empty="No dues outstanding. 🎉"
+            empty={t('dash.noDues')}
             onRowClick={(c) => router.push(`/customers/${c.id}`)}
             columns={[
-              { key: 'name', label: 'Customer', render: (c) => <strong>{c.name}</strong> },
-              { key: 'phone', label: 'Phone' },
-              { key: 'balance', label: 'Outstanding', align: 'right', render: (c) => (
+              { key: 'name', label: t('common.customer'), render: (c) => <strong>{c.name}</strong> },
+              { key: 'phone', label: t('common.phone') },
+              { key: 'balance', label: t('common.outstanding'), align: 'right', render: (c) => (
                 <span style={{ color: 'var(--danger)' }}>{fmt(c.balance)}</span>
               ) },
             ]}
