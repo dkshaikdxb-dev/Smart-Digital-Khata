@@ -1,6 +1,18 @@
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const settings = require('../config/settings');
+const shopSettings = require('../config/shopSettings');
+
+/** Constant-time HMAC-SHA256 hex compare used by both webhook verifiers. */
+function verifyHmac(rawBody, signatureHeader, secret) {
+  if (!secret) return false;
+  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader || ''));
+  } catch {
+    return false;
+  }
+}
 
 // Build a fresh client from current settings each call (cheap — no network).
 function getClient() {
@@ -72,20 +84,79 @@ async function cancelSubscription(subscriptionId, cancelAtCycleEnd = false) {
 }
 
 function verifyWebhookSignature(rawBody, signatureHeader) {
-  const secret = settings.get('RAZORPAY_WEBHOOK_SECRET');
-  if (!secret) return false;
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-  try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader || ''));
-  } catch {
-    return false;
-  }
+  return verifyHmac(rawBody, signatureHeader, settings.get('RAZORPAY_WEBHOOK_SECRET'));
 }
 
 /** Lightweight auth check for the "Test connection" button. */
 async function testConnection() {
   await getClient().orders.all({ count: 1 });
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// Per-shop Razorpay — each shop connects THEIR OWN account so customer payments
+// settle directly to that shop. The platform functions above remain ONLY for
+// subscription billing (Pro/Family).
+// ---------------------------------------------------------------------------
+
+/** Build a fresh client from this shop's stored keys (cheap — no network). */
+async function clientForShop(shopId) {
+  const { key_id, key_secret } = await shopSettings.getRazorpay(shopId);
+  if (!key_id || !key_secret) {
+    throw new Error('Shop Razorpay not configured');
+  }
+  return new Razorpay({ key_id, key_secret });
+}
+
+async function isConfiguredForShop(shopId) {
+  const { key_id, key_secret } = await shopSettings.getRazorpay(shopId);
+  return Boolean(key_id && key_secret);
+}
+
+async function keyIdForShop(shopId) {
+  const { key_id } = await shopSettings.getRazorpay(shopId);
+  return key_id;
+}
+
+async function createOrderForShop(shopId, { amount, receipt, notes }) {
+  const client = await clientForShop(shopId);
+  return client.orders.create({
+    amount,
+    currency: 'INR',
+    receipt,
+    notes,
+    payment_capture: 1,
+  });
+}
+
+async function createPaymentLinkForShop(shopId, { amount, description, customer, notes, reference_id, callback_url }) {
+  const client = await clientForShop(shopId);
+  return client.paymentLink.create({
+    amount,
+    currency: 'INR',
+    accept_partial: false,
+    description,
+    customer,
+    notify: { sms: true, email: false },
+    reminder_enable: true,
+    notes,
+    reference_id,
+    callback_url,
+    callback_method: 'get',
+  });
+}
+
+/** "Test connection" for a shop's own keys. */
+async function testConnectionForShop(shopId) {
+  const client = await clientForShop(shopId);
+  await client.orders.all({ count: 1 });
+  return true;
+}
+
+/** Verify a webhook body against THIS shop's own webhook secret. */
+async function verifyShopWebhook(shopId, rawBody, signatureHeader) {
+  const { webhook_secret } = await shopSettings.getRazorpay(shopId);
+  return verifyHmac(rawBody, signatureHeader, webhook_secret);
 }
 
 module.exports = {
@@ -99,4 +170,12 @@ module.exports = {
   isSubscriptionBillingConfigured,
   verifyWebhookSignature,
   testConnection,
+  // per-shop
+  clientForShop,
+  isConfiguredForShop,
+  keyIdForShop,
+  createOrderForShop,
+  createPaymentLinkForShop,
+  testConnectionForShop,
+  verifyShopWebhook,
 };

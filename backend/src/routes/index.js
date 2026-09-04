@@ -4,6 +4,7 @@ router.use('/auth', require('./auth.routes'));
 router.use('/customer-auth', require('./customer-auth.routes'));
 router.use('/my', require('./my.routes'));
 router.use('/shops', require('./shop.routes'));
+router.use('/shops', require('./shop-payment.routes'));
 router.use('/customers', require('./customer.routes'));
 router.use('/families', require('./family.routes'));
 router.use('/transactions', require('./transaction.routes'));

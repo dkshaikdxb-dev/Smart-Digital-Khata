@@ -16,6 +16,63 @@ async function alreadyProcessed(id, channel) {
   return r.rowCount === 0;
 }
 
+const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
+
+/**
+ * Reconcile a Razorpay PAYMENT event against a local payment_orders row:
+ * mark the order paid, insert the credit transaction, and decrement the
+ * customer's balance. Shared by the platform and per-shop webhook handlers so
+ * both stay DRY — behaviour is identical regardless of which account received it.
+ * @returns {boolean} true if a matching order was found (and reconciled/duplicate).
+ */
+async function reconcilePayment(event) {
+  const p = event.payload.payment?.entity || {};
+  const orderEntity = event.payload.order?.entity || {};
+  const linkEntity = event.payload.payment_link?.entity || {};
+  const orderId = p.order_id || orderEntity.id;
+  const linkId = linkEntity.id || p.notes?.payment_link_id;
+  const amount = p.amount || orderEntity.amount_paid || linkEntity.amount_paid || linkEntity.amount;
+
+  const orderRes = await query(
+    `SELECT * FROM payment_orders
+     WHERE provider_order_id = $1
+        OR provider_link_id = $2
+        OR id = $3
+     LIMIT 1`,
+    [orderId || null, linkId || null, linkEntity.reference_id || null]
+  );
+  if (!orderRes.rowCount) {
+    logger.warn({ orderId, linkId }, 'Razorpay webhook: no matching local order');
+    return false;
+  }
+  const order = orderRes.rows[0];
+  if (order.status === 'paid') return true;
+
+  await withTx(async (client) => {
+    await client.query(
+      `UPDATE payment_orders SET status='paid', paid_at = NOW(), provider_payment_id = $1 WHERE id = $2`,
+      [p.id || null, order.id]
+    );
+    await client.query(
+      `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
+       VALUES ($1,$2,'upi',$3,'razorpay',$4,'razorpay')`,
+      [order.shop_id, order.customer_id, amount, `Razorpay ${orderId || linkId}`]
+    );
+    await client.query(
+      `UPDATE customers SET balance = balance - $1, updated_at = NOW()
+       WHERE id = $2 AND shop_id = $3`,
+      [amount, order.customer_id, order.shop_id]
+    );
+  });
+  return true;
+}
+
+/**
+ * PLATFORM webhook — POST /api/webhooks/razorpay.
+ * Verified with the PLATFORM secret; handles ONLY subscription.* events now
+ * (subscription billing stays on the platform Razorpay account). Per-shop
+ * customer PAYMENT events arrive on the per-shop route below.
+ */
 exports.razorpay = async (req, res) => {
   const raw = req.body; // Buffer (raw parser)
   const sig = req.headers['x-razorpay-signature'];
@@ -30,55 +87,60 @@ exports.razorpay = async (req, res) => {
   } catch {
     return res.status(400).json({ error: 'Malformed JSON' });
   }
-  logger.info({ type: event.event, id: event.id }, 'Razorpay webhook received');
+  logger.info({ type: event.event, id: event.id }, 'Razorpay platform webhook received');
 
   if (await alreadyProcessed(event.id, 'razorpay')) {
     return res.json({ ok: true, duplicate: true });
   }
 
-  if (event.event === 'payment.captured' || event.event === 'order.paid' || event.event === 'payment_link.paid') {
-    const p = event.payload.payment?.entity || {};
-    const orderEntity = event.payload.order?.entity || {};
-    const linkEntity = event.payload.payment_link?.entity || {};
-    const orderId = p.order_id || orderEntity.id;
-    const linkId = linkEntity.id || p.notes?.payment_link_id;
-    const amount = p.amount || orderEntity.amount_paid || linkEntity.amount_paid || linkEntity.amount;
-
-    const orderRes = await query(
-      `SELECT * FROM payment_orders
-       WHERE provider_order_id = $1
-          OR provider_link_id = $2
-          OR id = $3
-       LIMIT 1`,
-      [orderId || null, linkId || null, linkEntity.reference_id || null]
-    );
-    if (orderRes.rowCount) {
-      const order = orderRes.rows[0];
-      if (order.status === 'paid') return res.json({ ok: true, duplicate: true });
-
-      await withTx(async (client) => {
-        await client.query(
-          `UPDATE payment_orders SET status='paid', paid_at = NOW(), provider_payment_id = $1 WHERE id = $2`,
-          [p.id || null, order.id]
-        );
-        await client.query(
-          `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
-           VALUES ($1,$2,'upi',$3,'razorpay',$4,'razorpay')`,
-          [order.shop_id, order.customer_id, amount, `Razorpay ${orderId || linkId}`]
-        );
-        await client.query(
-          `UPDATE customers SET balance = balance - $1, updated_at = NOW()
-           WHERE id = $2 AND shop_id = $3`,
-          [amount, order.customer_id, order.shop_id]
-        );
-      });
-    } else {
-      logger.warn({ orderId, linkId }, 'Razorpay webhook: no matching local order');
-    }
-  }
-
   if (event.event && event.event.startsWith('subscription.')) {
     await handleSubscriptionEvent(event);
+  }
+
+  res.json({ ok: true });
+};
+
+/**
+ * PER-SHOP webhook — POST /api/webhooks/razorpay/shop/:token.
+ * Resolves the shop from its RZP_WEBHOOK_TOKEN, verifies the body with THAT
+ * shop's own webhook secret, then runs the shared payment reconciliation.
+ * Dedupe is keyed per-token so two shops can't collide on Razorpay event ids.
+ */
+exports.razorpayShop = async (req, res) => {
+  const { token } = req.params;
+  const raw = req.body; // Buffer (raw parser)
+
+  const shopRes = await query(
+    `SELECT shop_id FROM shop_settings WHERE key = 'RZP_WEBHOOK_TOKEN' AND value = $1 LIMIT 1`,
+    [token]
+  );
+  if (!shopRes.rowCount) {
+    logger.warn({ token }, 'Razorpay shop webhook: unknown token');
+    return res.status(404).json({ error: 'Unknown webhook token' });
+  }
+  const shopId = shopRes.rows[0].shop_id;
+
+  const sig = req.headers['x-razorpay-signature'];
+  if (!(await razorpay.verifyShopWebhook(shopId, raw, sig))) {
+    logger.warn({ shopId }, 'Razorpay shop webhook: bad signature');
+    return res.status(400).json({ error: 'Invalid signature' });
+  }
+
+  let event;
+  try {
+    event = JSON.parse(raw.toString('utf8'));
+  } catch {
+    return res.status(400).json({ error: 'Malformed JSON' });
+  }
+  logger.info({ type: event.event, id: event.id, shopId }, 'Razorpay shop webhook received');
+
+  // Dedupe keyed by token so the same event id from two shops stays distinct.
+  if (await alreadyProcessed(event.id, `razorpay:${token}`)) {
+    return res.json({ ok: true, duplicate: true });
+  }
+
+  if (PAYMENT_EVENTS.includes(event.event)) {
+    await reconcilePayment(event);
   }
 
   res.json({ ok: true });

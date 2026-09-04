@@ -163,13 +163,13 @@ describe('customer /my cross-shop khata', () => {
     expect(res.status).toBe(422);
   });
 
-  it('POST /my/pay returns a clean 400 when Razorpay is not configured', async () => {
+  it('POST /my/pay returns a clean 400 when the target shop has not connected Razorpay', async () => {
     const res = await request(app)
       .post('/api/my/pay')
       .set('Authorization', `Bearer ${token()}`)
       .send({ shop_id: shop1Id, amount: 5000 }); // <= 15000 owed
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('Online payment is not available right now');
+    expect(res.body.error).toBe('This shop has not connected Razorpay yet.');
   });
 
   it('POST /my/pay returns 404 for a shop where this customer has no record', async () => {

@@ -12,8 +12,12 @@ exports.createOrder = async (req, res) => {
   );
   if (!c.rowCount) throw ApiError.notFound('Customer not found');
 
+  if (!(await razorpay.isConfiguredForShop(req.user.shopId))) {
+    throw ApiError.badRequest('This shop has not connected Razorpay yet.');
+  }
+
   const receipt = `c_${customer_id.slice(0, 8)}_${Date.now()}`;
-  const order = await razorpay.createOrder({
+  const order = await razorpay.createOrderForShop(req.user.shopId, {
     amount,
     receipt,
     notes: { shop_id: req.user.shopId, customer_id, note: note || '' },
@@ -27,7 +31,8 @@ exports.createOrder = async (req, res) => {
     [order.receipt, req.user.shopId, customer_id, amount, order.id, note || null]
   );
 
-  res.status(201).json({ order: r.rows[0], provider: { id: order.id, key_id: razorpay.keyId() } });
+  const key_id = await razorpay.keyIdForShop(req.user.shopId);
+  res.status(201).json({ order: r.rows[0], provider: { id: order.id, key_id } });
 };
 
 exports.getOrder = async (req, res) => {
@@ -55,10 +60,14 @@ exports.sharePaymentLink = async (req, res) => {
   if (!r.rowCount) throw ApiError.notFound('Order not found');
   const order = r.rows[0];
 
+  if (!(await razorpay.isConfiguredForShop(req.user.shopId))) {
+    throw ApiError.badRequest('This shop has not connected Razorpay yet.');
+  }
+
   let shortUrl;
   let providerLinkId = null;
   try {
-    const link = await razorpay.createPaymentLink({
+    const link = await razorpay.createPaymentLinkForShop(req.user.shopId, {
       amount: order.amount,
       description: order.notes || `Payment to ${order.shop_name}`,
       customer: {

@@ -87,12 +87,12 @@ exports.pay = async (req, res) => {
     throw ApiError.unprocessable('Amount exceeds your outstanding balance at this shop');
   }
 
-  if (!razorpay.isConfigured()) {
-    throw ApiError.badRequest('Online payment is not available right now');
+  if (!(await razorpay.isConfiguredForShop(shop_id))) {
+    throw ApiError.badRequest('This shop has not connected Razorpay yet.');
   }
 
   const receipt = `c_${customer.id.slice(0, 8)}_${Date.now()}`;
-  const order = await razorpay.createOrder({
+  const order = await razorpay.createOrderForShop(shop_id, {
     amount,
     receipt,
     notes: { shop_id, customer_id: customer.id, note: 'Customer self-pay' },
@@ -109,7 +109,7 @@ exports.pay = async (req, res) => {
 
   let link;
   try {
-    const paymentLink = await razorpay.createPaymentLink({
+    const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
       amount: orderRow.amount,
       description: `Payment to ${customer.shop_name}`,
       customer: {
