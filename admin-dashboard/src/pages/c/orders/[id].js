@@ -125,8 +125,18 @@ export default function OrderDetail() {
               </div>
             ))}
             <div className="cpwa-row-between cpwa-subtotal">
-              <strong>{t('common.total')}</strong>
-              <strong>{money(order.subtotal)}</strong>
+              <span>{t('common.subtotal')}</span>
+              <span>{money(order.subtotal)}</span>
+            </div>
+            {order.delivery_fee != null && order.fulfillment_type === 'delivery' && (
+              <div className="cpwa-row-between" style={{ marginTop: 8 }}>
+                <span>{t('c.deliveryFee')}</span>
+                <span>{Number(order.delivery_fee) === 0 ? t('c.freeDelivery') : money(order.delivery_fee)}</span>
+              </div>
+            )}
+            <div className="cpwa-row-between cpwa-total">
+              <strong>{t('c.total')}</strong>
+              <strong>{money(order.total != null ? order.total : order.subtotal)}</strong>
             </div>
           </div>
 

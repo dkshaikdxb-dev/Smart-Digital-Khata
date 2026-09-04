@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
-import { customerFetch, getCustomerToken } from '../../lib/customerApi';
+import { customerFetch, getCustomerToken, publicFetch } from '../../lib/customerApi';
 import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId } from '../../lib/customerCart';
 import { useLang } from '../../lib/i18n';
 
@@ -16,6 +16,7 @@ export default function Cart() {
   const shopId = typeof router.query.shop === 'string' ? router.query.shop : null;
   const [cart, setCart] = useState(null);
   const [ready, setReady] = useState(false);
+  const [shop, setShop] = useState(null); // fulfillment settings for this cart's shop
   const [fulfillment, setFulfillment] = useState('pickup');
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
@@ -33,6 +34,53 @@ export default function Cart() {
   const activeShopId = cart?.shop_id || shopId;
   const { count, subtotal, lines } = cartTotals(cart);
 
+  // Fetch the shop's fulfillment settings so the checkout offers only what the
+  // shop supports and previews the same delivery fee the server will charge.
+  useEffect(() => {
+    if (!activeShopId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await publicFetch(`/api/public/shops/${activeShopId}`);
+        if (!cancelled) setShop(r.shop || r);
+      } catch {
+        // No live shop info (offline / not listed) — fall back to both options,
+        // no fee, no minimum. The server stays authoritative at submit time.
+        if (!cancelled) setShop(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeShopId]);
+
+  // Which fulfillment options this shop offers. If the shop specifies at least
+  // one, honor it exactly; otherwise (unknown shop or none set) allow both.
+  let offersPickup = true;
+  let offersDelivery = true;
+  if (shop && (shop.offers_pickup || shop.offers_delivery)) {
+    offersPickup = !!shop.offers_pickup;
+    offersDelivery = !!shop.offers_delivery;
+  }
+
+  // Keep the selected option valid for what the shop offers.
+  useEffect(() => {
+    if (!offersDelivery && fulfillment === 'delivery') setFulfillment('pickup');
+    else if (!offersPickup && fulfillment === 'pickup') setFulfillment('delivery');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offersPickup, offersDelivery]);
+
+  // Delivery fee preview — mirrors the server: free when free_delivery_min is set
+  // and the subtotal reaches it, otherwise the flat delivery_fee. Pickup = no fee.
+  const deliveryFeeBase = Number(shop?.delivery_fee || 0);
+  const freeMin = shop && shop.free_delivery_min != null ? Number(shop.free_delivery_min) : null;
+  const minOrder = Number(shop?.delivery_min_order || 0);
+  const isDelivery = fulfillment === 'delivery';
+  const isFree = freeMin != null && subtotal >= freeMin;
+  const fee = isDelivery ? (isFree ? 0 : deliveryFeeBase) : 0;
+  const total = subtotal + fee;
+  const belowMin = isDelivery && minOrder > 0 && subtotal < minOrder;
+  const freeGap = isDelivery && freeMin != null && subtotal < freeMin ? freeMin - subtotal : 0;
+  const canPlace = !placing && !belowMin;
+
   function persist(nextCart) {
     setCart(nextCart);
     saveCart(nextCart);
@@ -47,6 +95,7 @@ export default function Cart() {
 
   async function placeOrder() {
     setError('');
+    if (belowMin) return; // guarded by disabled button; belt-and-braces
     // Gate at submit — preserve the intent to return here.
     if (!getCustomerToken()) {
       const next = encodeURIComponent(`/c/cart?shop=${activeShopId}`);
@@ -82,6 +131,7 @@ export default function Cart() {
       const orderId = order?.id || r.order_id;
       router.replace(orderId ? `/c/orders/${orderId}` : '/c/orders');
     } catch (err) {
+      // Surface the server's message (e.g. a rejected minimum order).
       setError(err.message);
       setPlacing(false);
     }
@@ -122,18 +172,41 @@ export default function Cart() {
           </div>
         ))}
         <div className="cpwa-row-between cpwa-subtotal">
-          <strong>{t('common.subtotal')}</strong>
-          <strong>{money(subtotal)}</strong>
+          <span>{t('common.subtotal')}</span>
+          <span>{money(subtotal)}</span>
+        </div>
+        {isDelivery && offersDelivery && (
+          <div className="cpwa-row-between" style={{ marginTop: 8 }}>
+            <span>{t('c.deliveryFee')}</span>
+            <span>{isFree ? t('c.freeDelivery') : money(fee)}</span>
+          </div>
+        )}
+        <div className="cpwa-row-between cpwa-total">
+          <strong>{t('c.total')}</strong>
+          <strong>{money(total)}</strong>
         </div>
       </div>
 
       <div className="card">
         <div className="cpwa-label">{t('c.fulfillment')}</div>
         <div className="cpwa-seg">
-          <button type="button" className={fulfillment === 'pickup' ? 'active' : ''} onClick={() => setFulfillment('pickup')}>{t('c.pickup')}</button>
-          <button type="button" className={fulfillment === 'delivery' ? 'active' : ''} onClick={() => setFulfillment('delivery')}>{t('c.delivery')}</button>
+          {offersPickup && (
+            <button type="button" className={fulfillment === 'pickup' ? 'active' : ''} onClick={() => setFulfillment('pickup')}>{t('c.pickup')}</button>
+          )}
+          {offersDelivery && (
+            <button type="button" className={fulfillment === 'delivery' ? 'active' : ''} onClick={() => setFulfillment('delivery')}>{t('c.delivery')}</button>
+          )}
         </div>
-        {fulfillment === 'delivery' && (
+        {isDelivery && shop && shop.delivery_hours && (
+          <p className="muted" style={{ marginTop: 8 }}>{t('c.deliveryHoursLabel', { hours: shop.delivery_hours })}</p>
+        )}
+        {isDelivery && freeGap > 0 && (
+          <p className="muted" style={{ marginTop: 8 }}>{t('c.addForFree', { amt: money(freeGap) })}</p>
+        )}
+        {belowMin && (
+          <p className="cpwa-error" style={{ marginTop: 8 }}>{t('c.minOrder', { amt: money(minOrder) })}</p>
+        )}
+        {isDelivery && (
           <div style={{ marginTop: 12 }}>
             <label className="cpwa-label" htmlFor="addr">{t('c.deliveryAddress')}</label>
             <textarea
@@ -170,9 +243,9 @@ export default function Cart() {
       <div className="cpwa-cartbar">
         <div>
           <div className="cpwa-cartbar-count">{t('common.itemCount', { n: count, s: count > 1 ? 's' : '' })}</div>
-          <div className="cpwa-cartbar-total">{money(subtotal)}</div>
+          <div className="cpwa-cartbar-total">{money(total)}</div>
         </div>
-        <button type="button" className="cpwa-cartbar-btn" onClick={placeOrder} disabled={placing}>
+        <button type="button" className="cpwa-cartbar-btn" onClick={placeOrder} disabled={!canPlace}>
           {placing ? t('c.placing') : t('c.placeOrder')}
         </button>
       </div>
