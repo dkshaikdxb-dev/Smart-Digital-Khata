@@ -17,7 +17,14 @@ export const LANGS = [
   { code: 'te', label: 'తె', name: 'తెలుగు' },
   { code: 'kn', label: 'ಕ', name: 'ಕನ್ನಡ' },
   { code: 'ml', label: 'മ', name: 'മലയാളം' },
+  { code: 'ur', label: 'اردو', name: 'اردو', rtl: true },
 ];
+
+// Languages that read right-to-left. The app sets dir="rtl" on <html> for these.
+export const RTL_LANGS = new Set(LANGS.filter((l) => l.rtl).map((l) => l.code));
+export function isRtl(lang) {
+  return RTL_LANGS.has(lang);
+}
 
 const DICT = {
   en: {
@@ -115,6 +122,22 @@ const DICT = {
     'ctab.orders': 'ഓർഡറുകൾ',
     'ctab.khata': 'കണക്ക്',
     'ctab.logout': 'ലോഗ് ഔട്ട്',
+  },
+  ur: {
+    'nav.dashboard': 'ڈیش بورڈ',
+    'nav.catalog': 'فہرست',
+    'nav.orders': 'آرڈرز',
+    'nav.customers': 'گاہک',
+    'nav.families': 'خاندان',
+    'nav.transactions': 'لین دین',
+    'nav.insights': 'تجزیہ',
+    'nav.settings': 'ترتیبات',
+    'nav.platform': 'پلیٹ فارم',
+    'nav.logout': 'لاگ آؤٹ',
+    'ctab.shops': 'دکانیں',
+    'ctab.orders': 'آرڈرز',
+    'ctab.khata': 'کھاتہ',
+    'ctab.logout': 'لاگ آؤٹ',
   },
 };
 
