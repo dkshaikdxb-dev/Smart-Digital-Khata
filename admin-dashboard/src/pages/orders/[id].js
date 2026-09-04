@@ -131,7 +131,7 @@ export default function OrderDetail() {
 
       {(order.address || order.note) && (
         <div className="card">
-          <h3>{t('ord.delivery')}</h3>
+          <h3>{enumLabel('ful', order.fulfillment_type)}</h3>
           {order.address && (<><div className="muted">{t('ord.address')}</div><div style={{ marginBottom: 10 }}>{order.address}</div></>)}
           {order.note && (<><div className="muted">{t('common.note')}</div><div>{order.note}</div></>)}
         </div>
