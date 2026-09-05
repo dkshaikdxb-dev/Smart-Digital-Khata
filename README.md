@@ -26,22 +26,42 @@ A production-ready SaaS platform that helps kirana (local) store owners manage c
 
 ## Features
 
-### Phase 1 (Included in this MVP)
+### Phase 1 — Khata & collections (shipped)
 
-- **WhatsApp transaction system** — record purchases & payments via WhatsApp inbound webhook; auto-send ledger updates.
-- **Ledger** — purchase / cash / UPI tracking per customer per shop.
-- **Notification modes** — `silent` (no reminders) / `smart` (weekly, respectful) / `active` (daily).
-- **Payment integration** — Razorpay order + webhook verification.
+- **WhatsApp transaction system** — record purchases & payments via WhatsApp inbound webhook; auto-send ledger updates and reminders.
+- **Ledger** — purchase / cash / UPI tracking per customer per shop; money stored as integer paise everywhere.
+- **Notification modes** — `silent` (no reminders) / `smart` (weekly, respectful) / `active` (daily), plus the owner's daily "Aaj ka hisaab" digest.
+- **Payment integration** — Razorpay payment links + HMAC-verified webhooks; recurring Pro/Family subscriptions.
 - **Credit limit system** — per-customer credit limit with soft & hard blocks.
+- **Families** — shared family credit line with per-member sub-limits.
 - **Summary engine** — end-of-day, weekly & monthly summaries per shop.
-- **Subscription system** — Free / Pro / Family plans with Razorpay subscriptions.
-- **Admin dashboard** — Next.js dashboard for shop owners.
+- **Subscription system** — Free / Pro ₹299 / Family ₹599 per month with Razorpay subscriptions.
+- **Admin dashboard** — Next.js dashboard for shop owners; platform Admin console.
 - **Mobile app** — Expo React Native app for shopkeepers on Android/iOS.
 
-### Phase 2 (Scaffolded, ready to extend)
+### Phase 2 — Local commerce (shipped)
 
-- Family payment sharing
-- Local commerce (customer ↔ kirana discovery, orders, delivery)
+- **Shop discovery** — public directory of opted-in shops with city/search filters and nearest-first ranking (lat/lng). Consumers need no app — they browse at `/c/shop/<id>`, build a cart, order, and view their own khata.
+- **Orders & fulfillment** — item-snapshot orders with pickup-only / free-delivery / charged-delivery rules (min-order, distance radius, delivery hours); order total = subtotal + delivery fee. The owner gets an alert on every new order.
+- **Payment modes per order** — **on khata** (credit) / **pay online** (Razorpay link) / **pay cash** (settled on hand-over; marked paid when the owner completes the order).
+- **Master catalogue** — 1,615 shared base SKUs (category / subcategory / product / brand / pack / unit / indicative price). Owners "Add from catalogue" at their own price; custom items join the base.
+- **Variants** — base SKUs group by product into brand × pack variants; variant cards for consumers, and a bulk "Add selected" with per-size price inputs for owners.
+- **Local-language catalogue** — the grocery vocabulary is translated into Hindi, Tamil, Telugu, Kannada, Malayalam & Urdu; catalogue browse and multilingual search match the local name, English, or a romanized alias (English keys stay the filter values).
+- **Loose / weighed selling** — per-KG pricing with a 250 g / 500 g / 1 kg + custom weight picker; weighed lines are recomputed server-side (client price never trusted).
+- **Product images** — upload with an emoji-tile fallback.
+- **Shop-QR sharing** — a "Share your shop" card with a QR to the consumer link plus Copy / Print.
+
+### Staff & access
+
+- **Staff accounts** — owner-managed additional logins scoped to the shop, with an active/inactive gate. Login is phone-or-email + password for owner / staff / admin.
+
+### Offline, 2G & accessibility
+
+- **Offline / 2G resilience** — khata writes carry a client request id and replay idempotently (no double-debit); an IndexedDB outbox queues entries while offline and syncs on reconnect, with an app-wide offline banner and pending count.
+- **PWA** — service-worker app-shell cache + API read-cache, offline page, and separate customer / owner manifests.
+- **Voice** — Web Speech voice search on catalogues, read-aloud customer balance, and voice-to-amount on khata entry (hidden where unsupported).
+- **Data-saver mode** — a per-device toggle that suppresses product image fetches to save 2G bytes.
+- **UI languages** — en, hi, ta, te, kn, ml, ur (Urdu is RTL), with a first-visit language gate on the consumer app and admin-editable translation overrides.
 
 ---
 
@@ -131,6 +151,19 @@ docker compose exec backend npm run seed
 # 4. Verify
 ./scripts/health-check.sh
 ```
+
+**Database migrations** live in `backend/migrations/` (`0001` … `0020`) and are applied by
+`npm run migrate` (or `./scripts/migrate.sh`); each is additive and idempotent, so re-running
+is safe.
+
+**Seeding & catalogue import** (run inside the backend container / directory):
+
+| Script | What it loads |
+| ------ | ------------- |
+| `npm run seed` / `npm run seed:demo` | Base demo shop, customers and transactions |
+| `npm run import:catalog` | 1,615 shared master-catalogue base SKUs |
+| `npm run import:catalog-i18n` | ~1,042 local-language catalogue translations (hi/ta/te/kn/ml/ur) |
+| `npm run seed:commerce` | ~50 bilingual demo products + variants, lists a demo shop, prints a consumer link |
 
 Dev and prod-like stacks use separate Docker project names
 (`smart-digital-khata-dev` / `smart-digital-khata`), so they never share
@@ -255,6 +288,9 @@ More: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
 | Doc | What it covers |
 |-----|----------------|
 | [`docs/PRODUCT.md`](docs/PRODUCT.md) | **Product document** — vision, personas, feature spec, journeys, pricing, roadmap, metrics |
+| [`docs/USER_MANUAL.md`](docs/USER_MANUAL.md) | **How to use the product** — day-to-day guide for owners, staff, and consumers |
+| [`docs/FAQ.md`](docs/FAQ.md) | Frequently asked questions across setup, khata, commerce, payments, and offline use |
+| [`docs/SAMPLE_DATA_AND_TESTING.md`](docs/SAMPLE_DATA_AND_TESTING.md) | Seed the demo data (catalogue, translations, commerce) and walk through end-to-end test flows |
 | [`docs/LOCAL_TESTING.md`](docs/LOCAL_TESTING.md) | Test everything on your own computer first — **Windows (WSL2)**, macOS, Linux |
 | [`docs/PRE_DEPLOYMENT_CHECKLIST.md`](docs/PRE_DEPLOYMENT_CHECKLIST.md) | Everything to prepare **before** deploying — accounts, DNS, env values, webhooks, smoke tests |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Step-by-step Hostinger VPS deployment |
