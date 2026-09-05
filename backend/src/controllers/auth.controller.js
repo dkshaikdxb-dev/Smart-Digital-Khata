@@ -7,7 +7,15 @@ const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
 function signToken(user) {
   return jwt.sign(
-    { sub: user.id, role: user.role, email: user.email, shopId: user.shop_id || null },
+    {
+      sub: user.id,
+      role: user.role,
+      email: user.email,
+      shopId: user.shop_id || null,
+      // Carried for convenience only; requirePerm always re-reads admin_role from
+      // the DB so a role change is honoured without re-issuing the token.
+      adminRole: user.admin_role || null,
+    },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '30d' }
   );
@@ -55,7 +63,7 @@ exports.login = async (req, res) => {
   //  1) exact email match (lowercased) — the unchanged owner/admin path;
   //  2) otherwise, an active login user whose phone matches the raw identifier.
   const identifier = (email || '').trim();
-  const cols = 'id, name, email, phone, password_hash, role, shop_id, is_active';
+  const cols = 'id, name, email, phone, password_hash, role, shop_id, is_active, status, admin_role';
 
   // Case-insensitive email match: any identifier that previously matched
   // `email = $1` exactly still matches here, so no existing login regresses.
@@ -92,6 +100,12 @@ exports.login = async (req, res) => {
     throw ApiError.forbidden('This account has been disabled.');
   }
 
+  // A platform-blocked login (owner/staff/admin) cannot sign in. Distinct from
+  // is_active (owner-driven staff deactivation) and from shop suspension below.
+  if (user.status === 'blocked') {
+    throw ApiError.forbidden('This account has been blocked. Contact support.');
+  }
+
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) throw ApiError.unauthorized('Invalid credentials');
 
@@ -111,6 +125,7 @@ exports.login = async (req, res) => {
 exports.me = async (req, res) => {
   const r = await query(
     `SELECT u.id, u.name, u.email, u.phone, u.role, u.shop_id, u.is_active,
+            u.status, u.admin_role,
             s.name AS shop_name, s.plan, s.notification_mode
      FROM users u LEFT JOIN shops s ON s.id = u.shop_id
      WHERE u.id = $1`,

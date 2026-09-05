@@ -91,10 +91,18 @@ exports.verifyOtp = async (req, res) => {
      ON CONFLICT (phone) DO UPDATE
        SET last_login_at = NOW(),
            name = COALESCE(customer_users.name, EXCLUDED.name)
-     RETURNING id, phone, name, created_at, last_login_at`,
+     RETURNING id, phone, name, status, created_at, last_login_at`,
     [phone, seedName]
   );
   const customerUser = upsert.rows[0];
+
+  // A platform-blocked consumer cannot complete login even with a valid code.
+  // The OTP is still consumed above via the upsert path below, so a blocked
+  // account can't accumulate live codes.
+  if (customerUser.status === 'blocked') {
+    await query('DELETE FROM customer_otps WHERE phone = $1', [phone]);
+    throw ApiError.forbidden('This account has been blocked. Contact support.');
+  }
 
   await query('DELETE FROM customer_otps WHERE phone = $1', [phone]);
 
@@ -104,12 +112,17 @@ exports.verifyOtp = async (req, res) => {
 
 exports.me = async (req, res) => {
   const r = await query(
-    `SELECT id, phone, name, email, gender, date_of_birth, created_at, last_login_at
+    `SELECT id, phone, name, email, gender, date_of_birth, status, created_at, last_login_at
      FROM customer_users WHERE id = $1`,
     [req.customerUser.id]
   );
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
   const customerUser = r.rows[0];
+
+  // A consumer blocked after their token was issued is locked out of acting.
+  if (customerUser.status === 'blocked') {
+    throw ApiError.forbidden('This account has been blocked. Contact support.');
+  }
 
   // Every distinct shop where a customers row shares this phone, with that
   // shop's name and the customer's balance there. Foundation for cross-shop
