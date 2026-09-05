@@ -1,23 +1,20 @@
 const router = require('express').Router();
 const Joi = require('joi');
-const rateLimit = require('express-rate-limit');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const customerAuth = require('../middleware/customerAuth');
 const ctrl = require('../controllers/customer-auth.controller');
 const referralCtrl = require('../controllers/referral.controller');
+const { makeCustomerAuthLimiter } = require('../config/authRateLimit');
 
-// OTP-flooding guard: 5 requests / minute / IP (mirrors auth.routes). Disabled
-// under the test runner (NODE_ENV=test), where many rapid auth calls from one IP
-// are expected; production behaviour is unchanged.
-const tightLimiter = rateLimit({
-  windowMs: 60_000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many attempts, please try again in a minute' },
-  skip: () => process.env.NODE_ENV === 'test',
-});
+// Consumer OTP-flooding guard, now env-tunable (AUTH_RATE_WINDOW_MS /
+// AUTH_RATE_MAX) with defaults suited to shared/NAT'd village IPs — 20/min/IP,
+// up from the old 5 — because many legitimate users share one public IP. Raising
+// the per-IP cap is safe: the real brute-force defenses are per-ACCOUNT (OTP
+// consumed + attempt cap; PIN account-lock) and are unchanged. See
+// config/authRateLimit for the full rationale. Owner/admin login (auth.routes)
+// keeps its own separate limiter and is untouched. Disabled under NODE_ENV=test.
+const tightLimiter = makeCustomerAuthLimiter();
 
 const phoneField = Joi.string().pattern(/^\+?[0-9]{10,15}$/).required();
 

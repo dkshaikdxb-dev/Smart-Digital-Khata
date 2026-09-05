@@ -27,6 +27,16 @@ const schema = Joi.object({
   RATE_LIMIT_WINDOW_MS: Joi.number().default(60_000),
   RATE_LIMIT_MAX: Joi.number().default(120),
 
+  // Consumer (customer-auth) per-IP limiter — generous by default for shared
+  // village IPs. Account-level caps (OTP consume + attempt cap, PIN lock) are
+  // the real brute-force defense; see config/authRateLimit.
+  AUTH_RATE_WINDOW_MS: Joi.number().default(60_000),
+  AUTH_RATE_MAX: Joi.number().default(20),
+
+  // Comma-separated E164 allowlist whose OTP is echoed in the API response even
+  // in production (demo/testing only). Empty/unset = off. See customer-auth.controller.
+  DEMO_OTP_PHONES: Joi.string().allow('').default(''),
+
   TZ: Joi.string().default('Asia/Kolkata'),
 }).unknown(true);
 
