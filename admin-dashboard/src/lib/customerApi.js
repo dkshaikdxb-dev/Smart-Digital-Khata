@@ -69,3 +69,12 @@ export function clearCustomerToken() {
     /* ignore */
   }
 }
+
+// Swap in a token returned by the server after a successful number change, PIN
+// login, or a long-session refresh. Stores the new token (+phone) so every
+// subsequent request authenticates as the resulting identity. Identical to
+// setCustomerToken but named for that intent at the call sites.
+export function swapCustomerToken(token, phone) {
+  if (!token) return;
+  setCustomerToken(token, phone);
+}

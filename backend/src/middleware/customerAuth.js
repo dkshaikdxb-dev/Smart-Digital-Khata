@@ -14,7 +14,9 @@ module.exports = function customerAuth() {
       if (payload.role !== 'customer') {
         return next(ApiError.unauthorized('Invalid or expired token'));
       }
-      req.customerUser = { id: payload.sub, phone: payload.phone };
+      // iat (issued-at, seconds) drives the long-session refresh-on-use in the
+      // controller: an old-but-valid token is silently reissued on /me.
+      req.customerUser = { id: payload.sub, phone: payload.phone, iat: payload.iat };
       return next();
     } catch (_e) {
       return next(ApiError.unauthorized('Invalid or expired token'));

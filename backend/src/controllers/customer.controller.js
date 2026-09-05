@@ -1,7 +1,9 @@
 const crypto = require('crypto');
-const { query } = require('../config/db');
+const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
+const { toE164 } = require('../utils/phone');
+const { relinkCustomerPhone } = require('../utils/customer-merge');
 const {
   buildStatement,
   defaultRange,
@@ -76,6 +78,64 @@ exports.update = async (req, res) => {
   );
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
   res.json({ customer: r.rows[0] });
+};
+
+/**
+ * POST /customers/:id/change-phone — the explicit, merge-aware way for an
+ * owner/staff to move one of THIS shop's customers to a new number. Normalizes to
+ * E.164, then:
+ *   - new number is free in this shop → rename in place;
+ *   - new number already belongs to ANOTHER customer here → 409 (merge_required)
+ *     unless merge:true, in which case the two ledgers are combined money-exactly
+ *     via relinkCustomerPhone (source = :id → target = the existing new-phone row).
+ * Every change is audited in phone_changes (changed_by='owner'). The existing
+ * PATCH still works for plain edits; this is the safe path the UI calls.
+ */
+exports.changePhone = async (req, res) => {
+  const phone = toE164(req.body.phone);
+  const merge = req.body.merge === true;
+
+  const own = await query(
+    'SELECT id, phone FROM customers WHERE id = $1 AND shop_id = $2',
+    [req.params.id, req.user.shopId]
+  );
+  if (!own.rowCount) throw ApiError.notFound('Customer not found');
+  const source = own.rows[0];
+
+  if (source.phone === phone) {
+    const same = await query('SELECT * FROM customers WHERE id = $1', [source.id]);
+    return res.json({ customer: same.rows[0], merged: false });
+  }
+
+  // Does another customer in this shop already hold the new number?
+  const coll = await query(
+    'SELECT id FROM customers WHERE shop_id = $1 AND phone = $2',
+    [req.user.shopId, phone]
+  );
+  const collision = coll.rowCount && coll.rows[0].id !== source.id;
+  if (collision && !merge) {
+    throw ApiError.conflict('A customer already has this number in this shop — merge?', {
+      code: 'merge_required',
+      target_customer_id: coll.rows[0].id,
+    });
+  }
+
+  const result = await withTx(async (client) => {
+    const outcome = await relinkCustomerPhone(client, {
+      shopId: req.user.shopId,
+      fromPhone: source.phone,
+      toPhone: phone,
+    });
+    await client.query(
+      `INSERT INTO phone_changes (customer_user_id, from_phone, to_phone, changed_by, actor_id, shops_relinked)
+       VALUES (NULL,$1,$2,'owner',$3,$4)`,
+      [source.phone, phone, req.user.sub, outcome.relinked ? 1 : 0]
+    );
+    const cust = await client.query('SELECT * FROM customers WHERE id = $1', [outcome.customerId]);
+    return { customer: cust.rows[0], merged: outcome.merged };
+  });
+
+  res.json({ customer: result.customer, merged: result.merged });
 };
 
 /**
