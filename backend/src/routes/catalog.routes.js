@@ -23,6 +23,24 @@ const selectBulkSchema = Joi.object({
     .required(),
 });
 
+// Query validation for the browse endpoints. Everything is optional so the
+// default (no query) behaves exactly as before; `lang` is validated against the
+// 7 known languages (default handled in the controller = 'en' = base behaviour).
+// unknown(true) keeps any other query keys untouched.
+const KNOWN_LANGS = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
+const listQuerySchema = Joi.object({
+  lang: Joi.string().valid(...KNOWN_LANGS),
+  search: Joi.string().allow(''),
+  category: Joi.string().allow(''),
+  subcategory: Joi.string().allow(''),
+  limit: Joi.number().integer(),
+  cursor: Joi.string().allow(''),
+}).unknown(true);
+
+const categoriesQuerySchema = Joi.object({
+  lang: Joi.string().valid(...KNOWN_LANGS),
+}).unknown(true);
+
 const customSchema = Joi.object({
   product: Joi.string().min(1).max(200).required(),
   brand: Joi.string().max(120).allow('', null),
@@ -36,8 +54,8 @@ const customSchema = Joi.object({
 // All catalog routes are owner/staff, shop-scoped.
 router.use(auth(['owner', 'staff']));
 
-router.get('/', asyncHandler(ctrl.list));
-router.get('/categories', asyncHandler(ctrl.categories));
+router.get('/', validate(listQuerySchema, 'query'), asyncHandler(ctrl.list));
+router.get('/categories', validate(categoriesQuerySchema, 'query'), asyncHandler(ctrl.categories));
 router.post('/select', validate(selectSchema), asyncHandler(ctrl.select));
 router.post('/select-bulk', validate(selectBulkSchema), asyncHandler(ctrl.selectBulk));
 router.post('/custom', validate(customSchema), asyncHandler(ctrl.custom));

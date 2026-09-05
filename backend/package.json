@@ -12,6 +12,7 @@
     "seed:demo": "node src/utils/seed-demo.js",
     "seed:commerce": "node src/utils/seed-commerce.js",
     "import:catalog": "node src/utils/import-catalog.js",
+    "import:catalog-i18n": "node src/utils/import-catalog-i18n.js",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {

@@ -4,7 +4,7 @@ import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import ProductThumb from '../components/ProductThumb';
 import { apiFetch } from '../lib/api';
-import { useLang } from '../lib/i18n';
+import { useLang, LANGS } from '../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 // Paise → a plain rupee string for editable inputs (e.g. 4550 → "45.5").
@@ -14,7 +14,9 @@ const emptyCustom = { product: '', brand: '', pack: '', category: '', subcategor
 
 export default function Catalog() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const localized = lang && lang !== 'en';
+  const langName = (LANGS.find((l) => l.code === lang) || {}).name || '';
 
   const [tab, setTab] = useState('range'); // 'range' | 'browse' | 'custom'
   const [error, setError] = useState('');
@@ -53,11 +55,18 @@ export default function Catalog() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     load().catch((e) => setError(e.message));
-    apiFetch('/api/catalog/categories')
-      .then((r) => setCategories(r.categories || []))
-      .catch(() => { /* categories are optional chrome; ignore */ });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // (Re)load the category tree in the owner's language. Localized labels are
+  // shown in the filter dropdowns, but the English key is still sent as the
+  // filter value (the DB stores categories/subcategories in English).
+  useEffect(() => {
+    const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
+    apiFetch(`/api/catalog/categories${qs}`)
+      .then((r) => setCategories(r.categories || []))
+      .catch(() => { /* categories are optional chrome; ignore */ });
+  }, [lang, localized]);
 
   // Debounce the catalogue search box so a long base list isn't queried per keystroke.
   useEffect(() => {
@@ -71,7 +80,7 @@ export default function Catalog() {
     if (tab !== 'browse') return;
     loadCatalog(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, debouncedSearch, catCategory, catSubcategory]);
+  }, [tab, debouncedSearch, catCategory, catSubcategory, lang]);
 
   async function loadCatalog(reset) {
     setError('');
@@ -81,6 +90,7 @@ export default function Catalog() {
       if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
       if (catCategory) params.set('category', catCategory);
       if (catSubcategory) params.set('subcategory', catSubcategory);
+      if (localized) params.set('lang', lang);
       params.set('limit', String(CATALOG_PAGE));
       if (!reset && catCursor) params.set('cursor', catCursor);
       const r = await apiFetch(`/api/catalog?${params.toString()}`);
@@ -251,10 +261,13 @@ export default function Catalog() {
   const catGroups = [];
   const groupIndex = new Map();
   for (const it of catItems) {
+    // Group by the ENGLISH product (stable, language-independent), but display
+    // the localized product name (English fallback) in the heading.
     const key = it.product || it.display_name || it.id;
     let g = groupIndex.get(key);
     if (!g) {
-      g = { key, product: it.product || it.display_name || t('common.product'), items: [] };
+      const heading = it.product_local || it.product || it.display_name_local || it.display_name || t('common.product');
+      g = { key, product: heading, items: [] };
       groupIndex.set(key, g);
       catGroups.push(g);
     }
@@ -378,7 +391,7 @@ export default function Catalog() {
               >
                 <option value="">{t('cat.allCategories')}</option>
                 {categories.map((c) => (
-                  <option key={c.category} value={c.category}>{c.category} ({c.count})</option>
+                  <option key={c.category} value={c.category}>{(c.category_local || c.category)} ({c.count})</option>
                 ))}
               </select>
               <select
@@ -388,10 +401,14 @@ export default function Catalog() {
               >
                 <option value="">{t('cat.allSubcategories')}</option>
                 {subOptions.map((s) => (
-                  <option key={s.name} value={s.name}>{s.name} ({s.count})</option>
+                  <option key={s.name} value={s.name}>{(s.name_local || s.name)} ({s.count})</option>
                 ))}
               </select>
             </div>
+
+            {localized && (
+              <p className="muted" style={{ marginTop: 0 }}>{t('cat.localNamesHint', { language: langName })}</p>
+            )}
 
             {catGroups.length > 0 && (
               <p className="muted" style={{ marginTop: 0 }}>{t('cat.selectSizes')}</p>
@@ -412,7 +429,7 @@ export default function Catalog() {
                     <div className="cat-group-vars">
                       {g.items.map((it) => {
                         const carried = !!it.carried;
-                        const meta = [it.brand, it.pack].filter(Boolean).join(' · ') || it.display_name || g.product;
+                        const meta = [it.brand, it.pack].filter(Boolean).join(' · ') || it.display_name_local || it.display_name || g.product;
                         return (
                           <div key={it.id} className="cat-var-row">
                             <input
