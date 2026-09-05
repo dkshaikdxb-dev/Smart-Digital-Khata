@@ -103,7 +103,8 @@ exports.getShop = async (req, res) => {
   // custom / unlinked products get null for both). Keep the existing fields.
   const products = await query(
     `SELECT p.id, p.name, p.description, p.price, p.unit, p.image_url,
-            ci.category, ci.subcategory
+            ci.category, ci.subcategory,
+            ci.product AS base_product, ci.brand, ci.pack
        FROM products p
        LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
       WHERE p.shop_id = $1 AND p.is_active = true

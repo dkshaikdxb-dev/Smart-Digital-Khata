@@ -192,12 +192,14 @@ describe('GET /public/shops/:shopId', () => {
     expect(res.body.shop.products).toHaveLength(2);
     const names = res.body.shop.products.map((p) => p.name).sort();
     expect(names).toEqual(['Atta', 'Rice']);
-    // Product fields now include category/subcategory from the base catalog
-    // (null for these hand-entered, unlinked products).
+    // Product fields now include category/subcategory + variant metadata
+    // (base_product/brand/pack) from the base catalog — all null for these
+    // hand-entered, unlinked products.
     expect(Object.keys(res.body.shop.products[0]).sort())
-      .toEqual(['category', 'description', 'id', 'image_url', 'name', 'price', 'subcategory', 'unit']);
+      .toEqual(['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'subcategory', 'unit']);
     expect(res.body.shop.products[0].category).toBeNull();
     expect(res.body.shop.products[0].subcategory).toBeNull();
+    expect(res.body.shop.products[0].base_product).toBeNull();
     // No owner/sensitive fields leaked; fulfillment fields (M7) are exposed.
     expect(Object.keys(res.body.shop).sort()).toEqual([
       'area', 'city', 'delivery_fee', 'delivery_hours', 'delivery_min_order',

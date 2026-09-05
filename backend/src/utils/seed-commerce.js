@@ -178,6 +178,29 @@ async function seedCommerce() {
       }
     }
 
+    // Variant demo: carry a few variant-rich base products (multiple brands ×
+    // pack sizes) so the storefront shows brand + size selectors. Linked to the
+    // catalog so each shop product exposes base_product/brand/pack. Skips
+    // silently if the base catalog hasn't been imported yet.
+    let variantCount = 0;
+    const VARIANT_PRODUCTS = ['Sona Masuri Rice', 'Marie Biscuits', 'Cream Biscuits'];
+    const ci = await client.query(
+      `SELECT id, product, brand, pack, indicative_price
+         FROM catalog_items
+        WHERE product = ANY($1) AND is_global = true
+        ORDER BY product, brand, pack`,
+      [VARIANT_PRODUCTS]
+    );
+    for (const row of ci.rows) {
+      const name = [row.brand, row.product, row.pack].filter(Boolean).join(' ');
+      await client.query(
+        `INSERT INTO products (shop_id, name, description, price, unit, is_active, catalog_item_id)
+         VALUES ($1,$2,$3,$4,$5,true,$6)`,
+        [shopId, name, row.product, Number(row.indicative_price) || 0, row.pack || 'unit', row.id]
+      );
+      variantCount += 1;
+    }
+
     const cust = await client.query(
       'SELECT id FROM customers WHERE shop_id = $1 ORDER BY created_at ASC LIMIT 1',
       [shopId]
@@ -211,7 +234,7 @@ async function seedCommerce() {
     await client.query('COMMIT');
 
     const domain = (process.env.APP_URL || 'https://khata.dadashaik.com').replace(/\/+$/, '');
-    console.log(`\n✓ Seeded ${PRODUCTS.length} products (${imagedCount} with images) and ${orderCount} orders for the demo shop.`);
+    console.log(`\n✓ Seeded ${PRODUCTS.length} products (${imagedCount} with images, ${variantCount} variant SKUs) and ${orderCount} orders for the demo shop.`);
     console.log('================ CONSUMER LINKS ================');
     console.log(`Shop catalog (share with customers): ${domain}/c/shop/${shopId}`);
     console.log(`Discover all listed shops:            ${domain}/c/shops`);
