@@ -11,6 +11,8 @@ const createSchema = Joi.object({
   amount: Joi.number().positive().required(),
   method: Joi.string().valid('cash', 'upi', 'credit', 'razorpay').default('credit'),
   note: Joi.string().max(500).allow('', null),
+  // Optional client-generated id for idempotent retries from offline/2G clients.
+  client_request_id: Joi.string().uuid().optional(),
 });
 
 router.use(auth(['owner', 'staff']));

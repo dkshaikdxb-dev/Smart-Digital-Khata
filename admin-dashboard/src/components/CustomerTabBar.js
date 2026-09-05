@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { clearCustomerToken } from '../lib/customerApi';
+import { clearApiCache } from '../lib/api';
 import { getActiveShopId, loadCart, cartTotals, CART_EVENT } from '../lib/customerCart';
 import { useLang } from '../lib/i18n';
 
@@ -36,6 +37,8 @@ export default function CustomerTabBar() {
 
   const logout = () => {
     clearCustomerToken();
+    // Drop cached API responses so a shared device doesn't leak this user's data.
+    clearApiCache();
     router.replace('/c/login');
   };
 

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
+import { enqueue, newClientRequestId } from '../lib/outbox';
 import { useLang } from '../lib/i18n';
 
 export default function Transactions() {
@@ -16,6 +17,7 @@ export default function Transactions() {
   const [filter, setFilter] = useState({ customer_id: '', type: '' });
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [savedMsg, setSavedMsg] = useState('');
 
   async function load() {
     const qs = new URLSearchParams();
@@ -38,22 +40,41 @@ export default function Transactions() {
 
   async function create(e) {
     e.preventDefault();
-    setError('');
+    setError(''); setSavedMsg('');
+    // Stable idempotency id, reused whether sent now or queued for later replay.
+    const client_request_id = newClientRequestId();
+    const body = {
+      customer_id: form.customer_id,
+      type: form.type,
+      amount: Math.round(Number(form.amount) * 100),
+      method: form.type === 'purchase' ? 'credit' : form.type,
+      note: form.note || null,
+      client_request_id,
+    };
     try {
-      await apiFetch('/api/transactions', {
-        method: 'POST',
-        body: JSON.stringify({
-          customer_id: form.customer_id,
-          type: form.type,
-          amount: Math.round(Number(form.amount) * 100),
-          method: form.type === 'purchase' ? 'credit' : form.type,
-          note: form.note || null,
-        }),
-      });
+      await apiFetch('/api/transactions', { method: 'POST', body: JSON.stringify(body) });
       setForm({ customer_id: form.customer_id, type: 'purchase', amount: '', note: '' });
       await load();
     } catch (err) {
-      setError(err.message);
+      // Queue only offline/network failures; a real HTTP error (4xx) is shown.
+      const offline = typeof err.status !== 'number'
+        || (typeof navigator !== 'undefined' && navigator.onLine === false);
+      if (!offline) { setError(err.message); return; }
+      try {
+        await enqueue({ url: '/api/transactions', method: 'POST', body, kind: 'transaction' });
+        // Optimistically prepend the entry to the visible history.
+        setItems((prev) => [{
+          id: `pending-${client_request_id}`,
+          created_at: new Date().toISOString(),
+          type: body.type,
+          method: body.method,
+          amount: body.amount,
+          note: body.note,
+          pending: true,
+        }, ...prev]);
+        setForm({ customer_id: form.customer_id, type: 'purchase', amount: '', note: '' });
+        setSavedMsg(t('off.savedWillSync'));
+      } catch (qerr) { setError(qerr.message); }
     }
   }
 
@@ -101,6 +122,7 @@ export default function Transactions() {
             <input placeholder={t('common.noteOptional')} value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
             <button>{t('common.save')}</button>
           </form>
+          {savedMsg && <div className="muted" style={{ marginTop: 8 }}>{savedMsg}</div>}
         </div>
 
         <div className="card">
