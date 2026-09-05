@@ -7,7 +7,6 @@ import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 // Paise → a plain rupee string for editable inputs (e.g. 4550 → "45.5").
 const rupeeStr = (p) => String(Number(p || 0) / 100);
 const CATALOG_PAGE = 30;
@@ -38,7 +37,8 @@ export default function Catalog() {
   const [catCursor, setCatCursor] = useState(null);
   const [catLoading, setCatLoading] = useState(false);
   const [catPriceDraft, setCatPriceDraft] = useState({}); // { [catalogItemId]: rupees string }
-  const [selectBusy, setSelectBusy] = useState(null); // catalog item id being added
+  const [catChecked, setCatChecked] = useState({}); // { [catalogItemId]: bool } — override of the carried default
+  const [bulkBusy, setBulkBusy] = useState(null); // product group key being bulk-added
 
   // --- Add custom item ----------------------------------------------------
   const [customForm, setCustomForm] = useState(emptyCustom);
@@ -175,27 +175,40 @@ export default function Catalog() {
     }
   }
 
-  // ---- Add from catalogue: select a base item ---------------------------
-  async function selectItem(it) {
+  // The price a variant row shows: an explicit draft, else the shop's current
+  // price if already carried, else the catalogue's indicative price.
+  function variantPrice(it) {
+    if (catPriceDraft[it.id] != null) return catPriceDraft[it.id];
+    return rupeeStr(it.carried && it.shop_price != null ? it.shop_price : it.indicative_price);
+  }
+  // Whether a variant row is checked — carried variants default to checked.
+  function isChecked(it) {
+    return catChecked[it.id] != null ? catChecked[it.id] : !!it.carried;
+  }
+
+  // ---- Add from catalogue: bulk-select a product group's variants --------
+  async function addSelected(group) {
     setError(''); setMsg('');
-    const raw = catPriceDraft[it.id] != null ? catPriceDraft[it.id] : rupeeStr(it.indicative_price);
-    const price = Math.round(Number(raw) * 100);
-    setSelectBusy(it.id);
+    const items = group.items
+      .filter((it) => isChecked(it))
+      .map((it) => ({ catalog_item_id: it.id, price: Math.round(Number(variantPrice(it)) * 100) }));
+    if (items.length === 0) return;
+    setBulkBusy(group.key);
     try {
-      const r = await apiFetch('/api/catalog/select', {
+      await apiFetch('/api/catalog/select-bulk', {
         method: 'POST',
-        body: JSON.stringify({ catalog_item_id: it.id, price }),
+        body: JSON.stringify({ items }),
       });
-      const product = r.product || {};
-      setCatItems((prev) => prev.map((x) => (x.id === it.id
-        ? { ...x, carried: true, product_id: product.id, shop_price: price }
+      const byId = new Map(items.map((i) => [i.catalog_item_id, i.price]));
+      setCatItems((prev) => prev.map((x) => (byId.has(x.id)
+        ? { ...x, carried: true, shop_price: byId.get(x.id) }
         : x)));
       await load();
       setMsg(t('cat.addedToRange'));
     } catch (err) {
       setError(err.message);
     } finally {
-      setSelectBusy(null);
+      setBulkBusy(null);
     }
   }
 
@@ -231,6 +244,22 @@ export default function Catalog() {
 
   const activeCat = categories.find((c) => c.category === catCategory);
   const subOptions = (activeCat && activeCat.subcategories) || [];
+
+  // Group the current page of catalogue items by product (first-seen order), so
+  // the owner adds all sizes/brands of a product at once. Whatever the current
+  // page returns is grouped; further variants may arrive via "Load more".
+  const catGroups = [];
+  const groupIndex = new Map();
+  for (const it of catItems) {
+    const key = it.product || it.display_name || it.id;
+    let g = groupIndex.get(key);
+    if (!g) {
+      g = { key, product: it.product || it.display_name || t('common.product'), items: [] };
+      groupIndex.set(key, g);
+      catGroups.push(g);
+    }
+    g.items.push(it);
+  }
 
   const columns = [
     {
@@ -364,42 +393,60 @@ export default function Catalog() {
               </select>
             </div>
 
+            {catGroups.length > 0 && (
+              <p className="muted" style={{ marginTop: 0 }}>{t('cat.selectSizes')}</p>
+            )}
+
             <div className="cat-list">
-              {catItems.map((it) => {
-                const carried = !!it.carried;
-                const busy = selectBusy === it.id;
-                const meta = [it.brand, it.pack].filter(Boolean).join(' · ');
+              {catGroups.map((g) => {
+                const busy = bulkBusy === g.key;
+                const anyChecked = g.items.some((it) => isChecked(it));
+                const cat = [g.items[0].category, g.items[0].subcategory].filter(Boolean).join(' › ');
                 return (
-                  <div key={it.id} className="cat-item">
-                    <div className="cat-item-body">
-                      <strong>{it.display_name || it.product}</strong>
-                      {meta ? <div className="muted">{meta}</div> : null}
-                      <div className="muted">
-                        {[it.category, it.subcategory].filter(Boolean).join(' › ')}
-                        {it.category && it.indicative_price != null ? ' · ' : ''}
-                        {it.indicative_price != null ? `${t('cat.indicativePrice')}: ${fmt(it.indicative_price)}` : ''}
-                      </div>
+                  <div key={g.key} className="cat-group">
+                    <div className="cat-group-head">
+                      <strong>{g.product}</strong>
+                      <span className="muted"> · {t('cat.variants')} ({g.items.length})</span>
+                      {cat ? <div className="muted cat-group-cat">{cat}</div> : null}
                     </div>
-                    <div className="cat-item-action">
-                      {carried ? (
-                        <span className="badge">{t('cat.inYourShop')}</span>
-                      ) : (
-                        <>
-                          <input
-                            className="cat-price-input"
-                            type="number" min="0" step="0.01"
-                            aria-label={t('cat.yourPrice')}
-                            value={catPriceDraft[it.id] != null ? catPriceDraft[it.id] : rupeeStr(it.indicative_price)}
-                            onChange={(e) => setCatPriceDraft((d) => ({ ...d, [it.id]: e.target.value }))}
-                          />
-                          <button disabled={busy} onClick={() => selectItem(it)}>{t('cat.addBtn')}</button>
-                        </>
-                      )}
+                    <div className="cat-group-vars">
+                      {g.items.map((it) => {
+                        const carried = !!it.carried;
+                        const meta = [it.brand, it.pack].filter(Boolean).join(' · ') || it.display_name || g.product;
+                        return (
+                          <div key={it.id} className="cat-var-row">
+                            <input
+                              type="checkbox"
+                              className="cat-var-check"
+                              checked={isChecked(it)}
+                              aria-label={meta}
+                              onChange={(e) => setCatChecked((c) => ({ ...c, [it.id]: e.target.checked }))}
+                            />
+                            <span className="cat-var-name">
+                              {meta}
+                              {carried && <span className="badge cat-var-badge">{t('cat.inYourShop')}</span>}
+                            </span>
+                            <span className="cat-var-price">
+                              <span className="cat-var-rs">₹</span>
+                              <input
+                                className="cat-price-input"
+                                type="number" min="0" step="0.01"
+                                aria-label={t('cat.yourPrice')}
+                                value={variantPrice(it)}
+                                onChange={(e) => setCatPriceDraft((d) => ({ ...d, [it.id]: e.target.value }))}
+                              />
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="cat-group-foot">
+                      <button disabled={busy || !anyChecked} onClick={() => addSelected(g)}>{t('cat.addSelected')}</button>
                     </div>
                   </div>
                 );
               })}
-              {!catLoading && catItems.length === 0 && (
+              {!catLoading && catGroups.length === 0 && (
                 <p className="muted" style={{ padding: '8px 2px' }}>{t('cat.noResults')}</p>
               )}
               {catLoading && <p className="muted" style={{ padding: '8px 2px' }}>{t('common.loading')}</p>}
@@ -408,6 +455,7 @@ export default function Catalog() {
             {catCursor && (
               <div style={{ marginTop: 12 }}>
                 <button className="secondary" disabled={catLoading} onClick={() => loadCatalog(false)}>{t('cat.loadMore')}</button>
+                <p className="muted" style={{ marginTop: 6, marginBottom: 0 }}>{t('cat.morePagesHint')}</p>
               </div>
             )}
           </div>

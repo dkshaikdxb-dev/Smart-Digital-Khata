@@ -222,14 +222,17 @@ export default function Cart() {
 
       <div className="card">
         <div className="cpwa-label">{t('c.payment')}</div>
-        <div className="cpwa-seg">
+        <div className="cpwa-seg cpwa-seg-wrap">
           <button type="button" className={payment === 'credit' ? 'active' : ''} onClick={() => setPayment('credit')}>{t('c.onKhata')}</button>
           <button type="button" className={payment === 'prepaid' ? 'active' : ''} onClick={() => setPayment('prepaid')}>{t('c.payOnline')}</button>
+          <button type="button" className={payment === 'cash' ? 'active' : ''} onClick={() => setPayment('cash')}>{t('c.payCash')}</button>
         </div>
         <p className="muted" style={{ marginTop: 8 }}>
           {payment === 'credit'
             ? t('c.creditNote')
-            : t('c.prepaidNote')}
+            : payment === 'cash'
+              ? t('c.payCashHint')
+              : t('c.prepaidNote')}
         </p>
       </div>
 

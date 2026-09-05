@@ -47,6 +47,12 @@ export default function Settings() {
   const [ful, setFul] = useState(null);
   const [fulMsg, setFulMsg] = useState('');
 
+  // Share your shop — consumer link + a client-side QR the owner can print and
+  // stick on the counter for customers to scan.
+  const [shopLink, setShopLink] = useState('');
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [copyMsg, setCopyMsg] = useState('');
+
   function loadPayment() {
     apiFetch('/api/shops/me/payment').then((r) => {
       const p = r.payment || r;
@@ -63,6 +69,44 @@ export default function Settings() {
     apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
     loadPayment();
   }, [router]);
+
+  // Build the consumer link and render its QR client-side (window + the qrcode
+  // package are browser-only, so this stays in an effect).
+  useEffect(() => {
+    if (!shop?.id || typeof window === 'undefined') return;
+    const link = `${window.location.origin}/c/shop/${shop.id}`;
+    setShopLink(link);
+    let cancelled = false;
+    (async () => {
+      try {
+        const QRCode = (await import('qrcode')).default;
+        const url = await QRCode.toDataURL(link, { width: 240, margin: 1 });
+        if (!cancelled) setQrDataUrl(url);
+      } catch (e) {
+        if (!cancelled) setQrDataUrl('');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [shop?.id]);
+
+  async function copyShopLink() {
+    setCopyMsg('');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shopLink);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = shopLink;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopyMsg(t('set.linkCopied'));
+    } catch (e) {
+      setCopyMsg(e.message);
+    }
+  }
 
   if (!shop) return (<div><Nav /><div className="container">{t('common.loading')}</div></div>);
 
@@ -190,6 +234,29 @@ export default function Settings() {
           <div style={{ height: 16 }} />
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
+        </div>
+
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('set.shareShop')}</h3>
+          <p className="muted">{t('set.shareShopDesc')}</p>
+          <div className="set-qr-card">
+            {qrDataUrl
+              ? <img className="set-qr-img" src={qrDataUrl} alt="" width={200} height={200} />
+              : <div className="set-qr-img set-qr-ph" aria-hidden="true">…</div>}
+            <code className="set-qr-link">{shopLink}</code>
+          </div>
+          <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 14 }}>
+            <button className="secondary" onClick={copyShopLink} disabled={!shopLink}>{t('set.copyLink')}</button>
+            <button className="secondary" onClick={() => window.print()} disabled={!qrDataUrl}>{t('set.print')}</button>
+          </div>
+          {copyMsg && <div className="muted" style={{ marginTop: 8 }}>{copyMsg}</div>}
+
+          {/* Print-only block: only this shows on paper (see @media print). */}
+          <div className="qr-print" aria-hidden="true">
+            <div className="qr-print-name">{shop.name}</div>
+            {qrDataUrl && <img className="qr-print-img" src={qrDataUrl} alt="" width={280} height={280} />}
+            <div className="qr-print-link">{shopLink}</div>
+          </div>
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>
