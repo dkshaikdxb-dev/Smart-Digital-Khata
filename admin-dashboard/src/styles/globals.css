@@ -292,3 +292,41 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-variant-row { margin-top: 10px; }
 .cpwa-variant-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
 .cpwa-variant-row .cpwa-chips { margin-top: 6px; }
+
+/* ---- Cash payment: let the three payment options wrap on a narrow phone ---- */
+.cpwa-seg-wrap { flex-wrap: wrap; }
+.cpwa-seg-wrap button { flex: 1 1 30%; min-width: 96px; }
+
+/* ---- Share your shop (owner settings): on-screen QR card + print block ---- */
+.set-qr-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
+.set-qr-img { width: 200px; height: 200px; border-radius: 10px; background: #fff; padding: 8px; box-sizing: border-box; }
+.set-qr-ph { display: flex; align-items: center; justify-content: center; color: #94a3b8; background: #0b1220; border: 1px dashed #334155; }
+.set-qr-link { display: block; word-break: break-all; padding: 8px 10px; border-radius: 8px; background: #0b1220; border: 1px solid #334155; font-size: 13px; flex: 1 1 200px; min-width: 0; }
+
+/* The print block is hidden on screen; @media print shows only it. */
+.qr-print { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  .qr-print, .qr-print * { visibility: visible; }
+  .qr-print {
+    display: block; visibility: visible;
+    position: absolute; left: 0; top: 0; width: 100%;
+    text-align: center; color: #000;
+  }
+  .qr-print-name { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+  .qr-print-img { width: 280px; height: 280px; }
+  .qr-print-link { margin-top: 12px; font-size: 14px; word-break: break-all; }
+}
+
+/* ---- Owner catalogue: product group card with per-variant checkbox + price ---- */
+.cat-group { border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; background: #0b1220; }
+.cat-group-head strong { overflow-wrap: anywhere; }
+.cat-group-cat { font-size: 12px; margin-top: 2px; }
+.cat-group-vars { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.cat-var-row { display: flex; align-items: center; gap: 10px; }
+.cat-var-check { width: auto; flex: 0 0 auto; }
+.cat-var-name { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cat-var-badge { flex: 0 0 auto; }
+.cat-var-price { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.cat-var-rs { color: var(--muted); }
+.cat-group-foot { margin-top: 12px; }
