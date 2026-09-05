@@ -8,6 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/admin.controller');
 const referralCtrl = require('../controllers/referral.controller');
 const exportCtrl = require('../controllers/admin-export.controller');
+const dashboardCtrl = require('../controllers/dashboard.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -59,6 +60,12 @@ router.use(asyncHandler(loadAdminRole));
 
 // Caller identity + permission set (drives the permission-aware frontend).
 router.get('/me', asyncHandler(ctrl.me));
+
+// Control-room dashboard (Phase E): read-only aggregation + rule-based insights.
+// No single requirePerm gate — the controller includes only the sections the
+// caller's admin sub-role may see (via hasPermission on req.adminRole) and
+// derives insights from just those. auth('admin') already blocks non-admins.
+router.get('/dashboard', asyncHandler(dashboardCtrl.dashboard));
 
 // Platform overview + shop directory (read).
 router.get('/stats', requirePerm('shops:view'), asyncHandler(ctrl.stats));
