@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/me.controller');
+const referralCtrl = require('../controllers/referral.controller');
 
 // Shared field rules. All PII is OPTIONAL: gender is one of four values or null,
 // date_of_birth is null or a real past date (future dates rejected), email is a
@@ -22,5 +23,10 @@ const updateSchema = Joi.object({
 router.use(auth(['owner', 'staff', 'admin']));
 router.get('/profile', asyncHandler(ctrl.getProfile));
 router.patch('/profile', validate(updateSchema), asyncHandler(ctrl.updateProfile));
+
+// Referrals (Phase D): the caller's own code + link, who they referred, who
+// referred them, and the visible chain. The code is created on first call.
+router.get('/referral', asyncHandler(referralCtrl.meReferral));
+router.get('/referral/chain', asyncHandler(referralCtrl.meReferralChain));
 
 module.exports = router;

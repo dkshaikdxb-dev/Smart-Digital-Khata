@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { withTx, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { captureReferral } = require('../utils/referral');
 
 const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
@@ -50,6 +51,18 @@ exports.register = async (req, res) => {
 
     return { user: { ...user, shop_id: shop.id }, shop };
   });
+
+  // Onboarding-source attribution (Phase D). Best-effort and non-blocking: a
+  // missing/invalid/self/duplicate referral never affects the created account.
+  if (req.body.ref) {
+    await captureReferral({
+      code: req.body.ref,
+      referredType: 'shop',
+      referredUserId: result.user.id,
+      referredShopId: result.shop.id,
+      sourceChannel: req.body.source_channel,
+    });
+  }
 
   const token = signToken(result.user);
   res.status(201).json({ token, user: result.user, shop: result.shop });
