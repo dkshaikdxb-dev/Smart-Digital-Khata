@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
+const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
@@ -210,12 +211,69 @@ async function insertOrderItems(client, orderId, lines) {
 }
 
 /**
+ * Resolve the shop OWNER's phone for the new-order alert. The owner is the
+ * `users` row with role='owner' scoped to this shop; if that row has no phone we
+ * fall back to the shop's owner_id user. (There is no shops.phone column in this
+ * schema — the owner's users.phone is the source of truth, and it is NOT NULL.)
+ * Returns { phone, shopName } or null when no phone can be resolved.
+ */
+async function resolveOwnerContact(shopId) {
+  const r = await query(
+    `SELECT s.name AS shop_name,
+            COALESCE(u_role.phone, u_owner.phone) AS phone
+       FROM shops s
+       LEFT JOIN users u_role
+         ON u_role.shop_id = s.id AND u_role.role = 'owner' AND u_role.phone IS NOT NULL
+       LEFT JOIN users u_owner
+         ON u_owner.id = s.owner_id
+      WHERE s.id = $1`,
+    [shopId]
+  );
+  if (!r.rowCount || !r.rows[0].phone) return null;
+  return { phone: r.rows[0].phone, shopName: r.rows[0].shop_name };
+}
+
+/** Human-readable ₹ from integer paise. */
+function rupees(paise) {
+  return `₹${(Number(paise) / 100).toFixed(2)}`;
+}
+
+/**
+ * Fire-and-forget WhatsApp alert to the shop owner when a customer places an
+ * order. A WhatsApp failure (or an unconfigured/unreachable Meta API) must NEVER
+ * fail or block the order — this is called AFTER the DB commit and every error is
+ * swallowed. Message carries what the owner needs to act: customer, item count,
+ * total, fulfillment, payment mode, and the address/note for a delivery.
+ */
+function alertOwnerNewOrder({ shopId, customerName, itemCount, total, fulfillmentType, paymentMode, address, note }) {
+  // Resolve + send in the background; never await, never let it reject.
+  (async () => {
+    const owner = await resolveOwnerContact(shopId);
+    if (!owner) return;
+    const modeLabel = { credit: 'Credit (khata)', prepaid: 'Prepaid (online)', cash: 'Cash on ' }[paymentMode] || paymentMode;
+    const lines = [
+      `New order at ${owner.shopName}`,
+      `Customer: ${customerName}`,
+      `Items: ${itemCount} · Total: ${rupees(total)}`,
+      `Fulfillment: ${fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}`,
+      `Payment: ${paymentMode === 'cash' ? `Cash on ${fulfillmentType}` : modeLabel}`,
+    ];
+    if (fulfillmentType === 'delivery' && address) lines.push(`Address: ${address}`);
+    if (note) lines.push(`Note: ${note}`);
+    await whatsapp.sendText(owner.phone, lines.join('\n'));
+  })().catch(() => {});
+}
+
+/**
  * POST /my/orders — place an order at a shop.
  * credit  → order + items + a khata `purchase` transaction (credit-limit
  *           enforced exactly like the owner transaction flow), all in one tx.
  * prepaid → order + items + a payment_orders row (linked via order_id) + a
  *           Razorpay order & hosted pay link, all in one tx (a failure — DB or
  *           Razorpay — rolls back and creates nothing). No khata entry.
+ * cash    → order + items only. NO khata debit, NO Razorpay/pay link. Total is
+ *           subtotal + delivery fee; payment_status='pending' (cash owed, to be
+ *           collected on fulfillment and marked 'paid' when the owner completes).
  */
 exports.createOrder = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
@@ -326,10 +384,50 @@ exports.createOrder = async (req, res) => {
         [newBalance, customer.id]
       );
 
-      return { order: { ...order, items: orderItems, total } };
+      return { order: { ...order, items: orderItems, total }, customerName: customer.name };
     });
 
-    return res.status(201).json(result);
+    alertOwnerNewOrder({
+      shopId: shop_id,
+      customerName: result.customerName,
+      itemCount: lines.length,
+      total,
+      fulfillmentType: fulfillment_type,
+      paymentMode: 'credit',
+      address,
+      note,
+    });
+    return res.status(201).json({ order: result.order });
+  }
+
+  if (payment_mode === 'cash') {
+    // Cash on pickup/delivery. No khata debit, no online pay. The order simply
+    // records what is owed (payment_status='pending'); the owner collects cash
+    // on hand-over and completing the order flips it to 'paid'.
+    const result = await withTx(async (client) => {
+      const customer = await resolveOrCreateCustomer(client, shop_id, phone);
+      const ord = await client.query(
+        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
+         VALUES ($1,$2,'pending',$3,'cash','pending',$4,$5,$6,$7)
+         RETURNING *`,
+        [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
+      );
+      const order = ord.rows[0];
+      const orderItems = await insertOrderItems(client, order.id, lines);
+      return { order: { ...order, items: orderItems, total }, customerName: customer.name };
+    });
+
+    alertOwnerNewOrder({
+      shopId: shop_id,
+      customerName: result.customerName,
+      itemCount: lines.length,
+      total,
+      fulfillmentType: fulfillment_type,
+      paymentMode: 'cash',
+      address,
+      note,
+    });
+    return res.status(201).json({ order: result.order });
   }
 
   // prepaid
@@ -379,10 +477,20 @@ exports.createOrder = async (req, res) => {
       [paymentLink.id, paymentLink.short_url, orderRow.id]
     );
 
-    return { order: { ...order, items: orderItems, total }, pay_link: paymentLink.short_url };
+    return { order: { ...order, items: orderItems, total }, pay_link: paymentLink.short_url, customerName: customer.name };
   });
 
-  return res.status(201).json(result);
+  alertOwnerNewOrder({
+    shopId: shop_id,
+    customerName: result.customerName,
+    itemCount: lines.length,
+    total,
+    fulfillmentType: fulfillment_type,
+    paymentMode: 'prepaid',
+    address,
+    note,
+  });
+  return res.status(201).json({ order: result.order, pay_link: result.pay_link });
 };
 
 /**

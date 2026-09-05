@@ -25,7 +25,7 @@ const createOrderSchema = Joi.object({
     )
     .required(),
   fulfillment_type: Joi.string().valid('delivery', 'pickup').required(),
-  payment_mode: Joi.string().valid('credit', 'prepaid').required(),
+  payment_mode: Joi.string().valid('credit', 'prepaid', 'cash').required(),
   address: Joi.string().allow('', null),
   note: Joi.string().allow('', null),
 });

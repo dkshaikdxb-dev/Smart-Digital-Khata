@@ -102,9 +102,18 @@ exports.updateStatus = async (req, res) => {
       });
     }
 
+    // A CASH order is settled on hand-over: completing it means the owner has
+    // collected the cash, so flip payment_status pending -> paid. Credit and
+    // prepaid payment_status is untouched here (khata / Razorpay own those).
+    const collectCash = order.payment_mode === 'cash' && next === 'completed';
     const upd = await client.query(
-      `UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-      [next, order.id]
+      `UPDATE orders
+          SET status = $1,
+              payment_status = CASE WHEN $3 THEN 'paid' ELSE payment_status END,
+              updated_at = NOW()
+        WHERE id = $2
+        RETURNING *`,
+      [next, order.id, collectCash]
     );
     return {
       order: upd.rows[0],
