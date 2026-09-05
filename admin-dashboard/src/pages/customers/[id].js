@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
+import { enqueue, newClientRequestId } from '../../lib/outbox';
 import { useLang } from '../../lib/i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -43,21 +44,48 @@ export default function CustomerDetail() {
 
   async function recordTx(e) {
     e.preventDefault(); setMsg(''); setError('');
+    // Generate the idempotency id up front so the SAME id is used whether the
+    // write goes through now or is queued and replayed later.
+    const client_request_id = newClientRequestId();
+    const body = {
+      customer_id: id,
+      type: tx.type,
+      amount: Math.round(Number(tx.amount) * 100),
+      method: tx.type === 'purchase' ? 'credit' : tx.type,
+      note: tx.note || null,
+      client_request_id,
+    };
     try {
-      await apiFetch('/api/transactions', {
-        method: 'POST',
-        body: JSON.stringify({
-          customer_id: id,
-          type: tx.type,
-          amount: Math.round(Number(tx.amount) * 100),
-          method: tx.type === 'purchase' ? 'credit' : tx.type,
-          note: tx.note || null,
-        }),
-      });
+      await apiFetch('/api/transactions', { method: 'POST', body: JSON.stringify(body) });
       setTx({ type: 'purchase', amount: '', note: '' });
       await load();
       setMsg(t('common.saved'));
-    } catch (err) { setError(err.message); }
+    } catch (err) {
+      // A rejected fetch (offline) carries no status; an HTTP error does. Queue
+      // only offline/network failures — a real 4xx (e.g. credit limit) is shown.
+      const offline = typeof err.status !== 'number'
+        || (typeof navigator !== 'undefined' && navigator.onLine === false);
+      if (!offline) { setError(err.message); return; }
+      try {
+        await enqueue({ url: '/api/transactions', method: 'POST', body, kind: 'transaction', label: c.name });
+        // Optimistically reflect the entry so the ledger updates immediately.
+        setData((d) => (d ? {
+          ...d,
+          customer: { ...d.customer, balance: Number(d.customer.balance) + (body.type === 'purchase' ? body.amount : -body.amount) },
+          transactions: [{
+            id: `pending-${client_request_id}`,
+            created_at: new Date().toISOString(),
+            type: body.type,
+            method: body.method,
+            amount: body.amount,
+            note: body.note,
+            pending: true,
+          }, ...d.transactions],
+        } : d));
+        setTx({ type: 'purchase', amount: '', note: '' });
+        setMsg(t('off.savedWillSync'));
+      } catch (qerr) { setError(qerr.message); }
+    }
   }
 
   async function saveEdit(e) {

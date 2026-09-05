@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import LangSwitch from './LangSwitch';
+import { clearApiCache } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
 export default function Nav() {
@@ -16,6 +17,8 @@ export default function Nav() {
   const logout = () => {
     window.localStorage.removeItem('skhata_token');
     window.localStorage.removeItem('skhata_role');
+    // Drop cached API responses so a shared device doesn't leak this user's data.
+    clearApiCache();
     router.push('/login');
   };
 

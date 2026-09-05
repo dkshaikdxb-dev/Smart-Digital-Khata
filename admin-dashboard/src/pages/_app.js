@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import '../styles/globals.css';
 import { useLang, isRtl, hasChosenLang, loadOverrides } from '../lib/i18n';
 import CustomerLangGate from '../components/CustomerLangGate';
+import OfflineBanner from '../components/OfflineBanner';
 
 export default function App({ Component, pageProps }) {
   const { pathname } = useRouter();
@@ -51,6 +52,7 @@ export default function App({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="manifest" href={manifest} />
       </Head>
+      <OfflineBanner />
       <Component {...pageProps} />
       {showLangGate && <CustomerLangGate onDone={() => setShowLangGate(false)} />}
     </>
