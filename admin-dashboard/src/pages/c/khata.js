@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react';
 import CustomerShell, { money, useCustomerGuard } from '../../components/CustomerShell';
+import DataSaverToggle from '../../components/DataSaverToggle';
 import { customerFetch } from '../../lib/customerApi';
 import { useLang } from '../../lib/i18n';
+import { useSpeech } from '../../lib/useSpeech';
 
 // My khata: cross-shop outstanding balances with a per-shop "Pay" that opens
 // the Razorpay link returned by POST /api/my/pay.
 export default function Khata() {
   const ready = useCustomerGuard();
   const { t } = useLang();
+  const { ttsSupported, speak } = useSpeech();
+
+  function sayBalance(s) {
+    const rs = Number(s.balance) / 100;
+    const amount = Number.isInteger(rs) ? String(rs) : rs.toFixed(2);
+    speak(t('voice.balanceSay', { name: s.shop_name, amount, rupees: t('voice.rupees') }));
+  }
   const [total, setTotal] = useState(0);
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,13 +88,32 @@ export default function Khata() {
                   {s.credit_limit != null && Number(s.credit_limit) > 0 ? t('c.limitSuffix', { amt: money(s.credit_limit) }) : ''}
                 </div>
               </div>
-              <button type="button" onClick={() => pay(s)} disabled={!owes || paying === s.shop_id}>
-                {paying === s.shop_id ? t('c.opening') : t('c.pay')}
-              </button>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {ttsSupported && (
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => sayBalance(s)}
+                    aria-label={t('voice.speak')}
+                    title={t('voice.speak')}
+                  >
+                    🔊
+                  </button>
+                )}
+                <button type="button" onClick={() => pay(s)} disabled={!owes || paying === s.shop_id}>
+                  {paying === s.shop_id ? t('c.opening') : t('c.pay')}
+                </button>
+              </div>
             </div>
           </div>
         );
       })}
+
+      {!loading && (
+        <div className="card">
+          <DataSaverToggle variant="cpwa" />
+        </div>
+      )}
     </CustomerShell>
   );
 }

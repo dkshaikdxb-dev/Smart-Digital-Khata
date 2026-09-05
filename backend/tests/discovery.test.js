@@ -196,7 +196,7 @@ describe('GET /public/shops/:shopId', () => {
     // (base_product/brand/pack) from the base catalog — all null for these
     // hand-entered, unlinked products.
     expect(Object.keys(res.body.shop.products[0]).sort())
-      .toEqual(['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'subcategory', 'unit']);
+      .toEqual(['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'sold_by_weight', 'subcategory', 'unit']);
     expect(res.body.shop.products[0].category).toBeNull();
     expect(res.body.shop.products[0].subcategory).toBeNull();
     expect(res.body.shop.products[0].base_product).toBeNull();

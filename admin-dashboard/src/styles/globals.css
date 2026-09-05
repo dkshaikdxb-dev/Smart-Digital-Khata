@@ -330,3 +330,25 @@ th { color: var(--muted); font-weight: 600; }
 .cat-var-price { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .cat-var-rs { color: var(--muted); }
 .cat-group-foot { margin-top: 12px; }
+
+/* ---- Voice input (mic buttons) + Data-saver toggle + Loose/weighed selling ---- */
+.cpwa-search-voice { display: flex; gap: 8px; align-items: stretch; }
+.cpwa-search-voice input { flex: 1 1 auto; min-width: 0; }
+.cpwa-mic, .cat-mic { flex: 0 0 auto; }
+.cpwa-mic.listening, .cat-mic.listening, .listening { outline: 2px solid var(--accent); }
+.cat-search-voice { display: inline-flex; gap: 8px; align-items: stretch; flex: 1 1 auto; min-width: 0; }
+.cat-search-voice input { flex: 1 1 auto; min-width: 0; }
+
+.ds-toggle .badge { text-transform: uppercase; }
+
+/* Consumer weight picker for loose/weighed items. */
+.cpwa-product-weighed { display: flex; flex-direction: column; gap: 10px; }
+.cpwa-weight { display: flex; flex-direction: column; gap: 8px; }
+.cpwa-weight-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.cpwa-weight-custom { display: flex; gap: 8px; align-items: stretch; }
+.cpwa-weight-custom input { flex: 1 1 auto; min-width: 0; }
+.cpwa-weight-line { display: flex; align-items: center; gap: 10px; }
+.cpwa-weight-line strong { margin-left: auto; }
+.cpwa-weight-remove { flex: 0 0 auto; }
+.cpwa-cart-weight { display: flex; align-items: center; gap: 6px; }
+.cpwa-weight-tag { font-size: 13px; color: var(--muted); white-space: nowrap; }

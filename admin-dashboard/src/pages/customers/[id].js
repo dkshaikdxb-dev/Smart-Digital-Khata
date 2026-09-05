@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
 import { enqueue, newClientRequestId } from '../../lib/outbox';
 import { useLang } from '../../lib/i18n';
+import { useSpeech, extractFirstNumber } from '../../lib/useSpeech';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -12,6 +13,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 export default function CustomerDetail() {
   const router = useRouter();
   const { t } = useLang();
+  const { sttSupported, ttsSupported, listening, listen, speak } = useSpeech();
   const { id } = router.query;
   const txnLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
   const [data, setData] = useState(null);
@@ -157,6 +159,22 @@ export default function CustomerDetail() {
             <div className="muted">{t('common.outstanding')}</div>
             <div className="kpi" style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--accent)' }}>{fmt(c.balance)}</div>
             <div className="muted">{t('common.limit')} {Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : t('common.none')}</div>
+            {ttsSupported && (
+              <button
+                type="button"
+                className="secondary"
+                style={{ marginTop: 8 }}
+                onClick={() => {
+                  const rs = Number(c.balance) / 100;
+                  const amount = Number.isInteger(rs) ? String(rs) : rs.toFixed(2);
+                  speak(t('voice.balanceSay', { name: c.name, amount, rupees: t('voice.rupees') }));
+                }}
+                aria-label={t('voice.speak')}
+                title={t('voice.speak')}
+              >
+                🔊 {t('voice.speak')}
+              </button>
+            )}
           </div>
         </div>
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 14 }}>
@@ -177,7 +195,23 @@ export default function CustomerDetail() {
             <option value="cash">{t('type.cashPayment')}</option>
             <option value="upi">{t('type.upiPayment')}</option>
           </select>
-          <input type="number" placeholder={t('common.amountRs')} value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} required />
+          <span style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
+            <input type="number" placeholder={t('common.amountRs')} value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} required style={{ flex: 1, minWidth: 0 }} />
+            {sttSupported && (
+              <button
+                type="button"
+                className={`secondary${listening ? ' listening' : ''}`}
+                onClick={() => listen((txt) => {
+                  const n = extractFirstNumber(txt);
+                  if (n != null) setTx((prev) => ({ ...prev, amount: String(n) }));
+                })}
+                aria-label={t('voice.listen')}
+                title={listening ? t('voice.listening') : t('voice.listen')}
+              >
+                🎤
+              </button>
+            )}
+          </span>
           <input placeholder={t('common.noteOptional')} value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} />
           <button>{t('common.save')}</button>
         </form>

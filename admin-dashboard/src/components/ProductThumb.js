@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDataSaver } from '../lib/useDataSaver';
 
 // A small square product image with an emoji fallback. Non-readers recognise
 // goods by picture, so when there is no photo we show a category emoji picked
@@ -45,6 +46,7 @@ function resolveSrc(url) {
 
 export default function ProductThumb({ product, size = 56 }) {
   const [failed, setFailed] = useState(false);
+  const { dataSaver } = useDataSaver();
   const src = resolveSrc(product && product.image_url);
   const box = {
     width: size,
@@ -54,7 +56,9 @@ export default function ProductThumb({ product, size = 56 }) {
     overflow: 'hidden',
   };
 
-  if (src && !failed) {
+  // Data-saver mode: never emit an <img src> — the whole point is to save bytes,
+  // so we render the emoji/placeholder tile instead of fetching the photo.
+  if (src && !failed && !dataSaver) {
     return (
       <img
         src={src}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import DataSaverToggle from '../components/DataSaverToggle';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -234,6 +235,11 @@ export default function Settings() {
           <div style={{ height: 16 }} />
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
+        </div>
+
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('ds.title')}</h3>
+          <DataSaverToggle />
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>
