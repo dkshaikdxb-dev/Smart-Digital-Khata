@@ -8,6 +8,9 @@ const {
   defaultRange,
   statementCsvRows,
   sendCsv,
+  csvRow,
+  rupees: rupeesCsv,
+  isoDate,
 } = require('../utils/statement');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
@@ -631,6 +634,53 @@ exports.listOrders = async (req, res) => {
     [phone]
   );
   res.json({ items: r.rows });
+};
+
+/**
+ * GET /my/orders.csv?shop_id= — the consumer's orders as CSV, always scoped to
+ * THEIR phone. With shop_id → that one shop; without → across every shop. Total
+ * is subtotal + delivery_fee (integer paise), rendered as rupees.
+ */
+exports.ordersCsv = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  const { shop_id } = req.query;
+
+  const params = [phone];
+  let where = 'c.phone = $1';
+  if (shop_id) {
+    params.push(shop_id);
+    where += ` AND o.shop_id = $${params.length}`;
+  }
+  const r = await query(
+    `SELECT o.created_at, s.name AS shop_name,
+            o.fulfillment_type, o.payment_mode, o.payment_status,
+            o.subtotal, o.delivery_fee
+     FROM orders o
+     JOIN customers c ON c.id = o.customer_id
+     JOIN shops s ON s.id = o.shop_id
+     WHERE ${where}
+     ORDER BY o.created_at DESC`,
+    params
+  );
+
+  const rows = [csvRow([
+    'Date', 'Shop', 'Fulfillment', 'Payment Mode', 'Payment Status',
+    'Subtotal (Rs)', 'Delivery Fee (Rs)', 'Total (Rs)',
+  ])];
+  for (const o of r.rows) {
+    const total = Number(o.subtotal) + Number(o.delivery_fee);
+    rows.push(csvRow([
+      isoDate(o.created_at),
+      o.shop_name,
+      o.fulfillment_type,
+      o.payment_mode,
+      o.payment_status,
+      rupeesCsv(o.subtotal),
+      rupeesCsv(o.delivery_fee),
+      rupeesCsv(total),
+    ]));
+  }
+  sendCsv(res, shop_id ? 'my-orders.csv' : 'my-orders-all-shops.csv', rows);
 };
 
 /**

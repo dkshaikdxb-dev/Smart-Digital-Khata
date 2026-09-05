@@ -7,6 +7,7 @@ const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/admin.controller');
 const referralCtrl = require('../controllers/referral.controller');
+const exportCtrl = require('../controllers/admin-export.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -93,5 +94,13 @@ router.get('/referrals/overview', requirePerm('revenue:view'), asyncHandler(refe
 router.get('/referrals/reward-rule', requirePerm('revenue:view'), asyncHandler(referralCtrl.getRewardRule));
 router.patch('/referrals/reward-rule', requirePerm('settings:manage'), validate(rewardRuleSchema), asyncHandler(referralCtrl.setRewardRule));
 router.post('/referral-codes', requirePerm('settings:manage'), validate(createCodeSchema), asyncHandler(referralCtrl.createReferralCode));
+
+// Role-based CSV exports. Each is gated by the permission for the data it emits,
+// so a caller only downloads what their admin sub-role is allowed to see.
+router.get('/exports/shops.csv', requirePerm('shops:view'), asyncHandler(exportCtrl.shopsCsv));
+router.get('/exports/users.csv', requirePerm('users:view'), asyncHandler(exportCtrl.usersCsv));
+router.get('/exports/moderation-log.csv', requirePerm('audit:view'), asyncHandler(exportCtrl.moderationLogCsv));
+router.get('/exports/referrals.csv', requirePerm('revenue:view'), asyncHandler(exportCtrl.referralsCsv));
+router.get('/exports/revenue.csv', requirePerm('revenue:view'), asyncHandler(exportCtrl.revenueCsv));
 
 module.exports = router;

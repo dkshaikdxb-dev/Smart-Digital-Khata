@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import HelpFaq from '../components/HelpFaq';
 import ReferralCard from '../components/ReferralCard';
+import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -97,6 +98,20 @@ export default function Account() {
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginTop: 8 }}>{error}</div>}
         </form>
+
+        <div style={{ maxWidth: 520 }}>
+          <DownloadList
+            title={t('dl.title')}
+            subtitle={t('dl.ownerSubtitle')}
+            items={[
+              { key: 'customers', label: t('dl.customers'), filename: 'customers.csv', path: '/api/reports/customers.csv' },
+              { key: 'transactions', label: t('dl.transactions'), filename: 'transactions.csv', dated: true, path: (r) => `/api/reports/transactions.csv?from=${encodeURIComponent(r.from)}&to=${encodeURIComponent(r.to)}` },
+              { key: 'orders', label: t('dl.orders'), filename: 'orders.csv', dated: true, path: (r) => `/api/reports/orders.csv?from=${encodeURIComponent(r.from)}&to=${encodeURIComponent(r.to)}` },
+              { key: 'catalogue', label: t('dl.catalogue'), filename: 'catalogue.csv', path: '/api/reports/catalogue.csv' },
+              { key: 'outstanding', label: t('dl.outstanding'), filename: 'khata-outstanding.csv', path: '/api/reports/khata-outstanding.csv' },
+            ]}
+          />
+        </div>
 
         <div style={{ maxWidth: 520 }}>
           <ReferralCard fetcher={apiFetch} endpoint="/api/me/referral" />

@@ -15,7 +15,9 @@ async function writeAudit({ adminUserId, action, targetType, targetId, reason, m
 }
 
 // Monthly price per plan, in paise (mirrors subscription.controller PLANS).
+// Exported so the admin CSV exports (revenue.csv) reuse the same plan config.
 const PLAN_PRICE = { free: 0, pro: 29900, family: 59900 };
+exports.PLAN_PRICE = PLAN_PRICE;
 
 exports.stats = async (_req, res) => {
   const [shops, users, tx, outstanding, plans, suspended] = await Promise.all([

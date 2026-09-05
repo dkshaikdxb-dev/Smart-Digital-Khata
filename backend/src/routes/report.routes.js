@@ -17,6 +17,9 @@ const idParamSchema = Joi.object({
 router.use(auth(['owner', 'staff']));
 router.get('/customers.csv', asyncHandler(ctrl.customersCsv));
 router.get('/transactions.csv', validate(rangeSchema, 'query'), asyncHandler(ctrl.transactionsCsv));
+router.get('/orders.csv', validate(rangeSchema, 'query'), asyncHandler(ctrl.ordersCsv));
+router.get('/catalogue.csv', asyncHandler(ctrl.catalogueCsv));
+router.get('/khata-outstanding.csv', asyncHandler(ctrl.khataOutstandingCsv));
 router.get(
   '/customer/:id/statement.csv',
   validate(idParamSchema, 'params'),
