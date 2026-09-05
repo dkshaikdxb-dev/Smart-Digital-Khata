@@ -43,6 +43,7 @@ export default function Nav() {
           <Link href="/transactions">{t('nav.transactions')}</Link>
           <Link href="/insights">{t('nav.insights')}</Link>
           <Link href="/settings">{t('nav.settings')}</Link>
+          <Link href="/account">{t('acc.title')}</Link>
         </>
       )}
       <span style={{ flex: 1 }} />

@@ -26,12 +26,19 @@ const shareSchema = Joi.object({
   regenerate: Joi.boolean().default(false),
 });
 
+const statementQuerySchema = Joi.object({
+  from: Joi.date().iso(),
+  to: Joi.date().iso(),
+  format: Joi.string().valid('json', 'csv').default('json'),
+});
+
 router.use(auth(['owner', 'staff']));
 router.get('/', asyncHandler(ctrl.list));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.get('/:id', asyncHandler(ctrl.get));
 router.patch('/:id', validate(updateSchema), asyncHandler(ctrl.update));
 router.get('/:id/ledger', asyncHandler(ctrl.ledger));
+router.get('/:id/statement', validate(statementQuerySchema, 'query'), asyncHandler(ctrl.statement));
 router.post('/:id/share-link', validate(shareSchema), asyncHandler(ctrl.shareLink));
 
 module.exports = router;
