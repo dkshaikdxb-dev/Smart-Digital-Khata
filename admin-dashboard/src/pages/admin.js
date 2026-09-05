@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions } from '../lib/adminPerms';
@@ -21,6 +22,16 @@ export default function PlatformAdmin() {
 
   const canModerateUsers = has('users:moderate');
   const canManageAdmins = has('admin:manage');
+
+  // Each export is shown only when the caller's permission set allows the data
+  // it emits — matching the requirePerm gate on the backend route.
+  const downloadItems = [
+    has('shops:view') && { key: 'shops', label: t('dl.shops'), filename: 'shops.csv', path: '/api/admin/exports/shops.csv' },
+    has('users:view') && { key: 'users', label: t('dl.users'), filename: 'users.csv', path: '/api/admin/exports/users.csv' },
+    has('audit:view') && { key: 'moderationLog', label: t('dl.moderationLog'), filename: 'moderation-log.csv', path: '/api/admin/exports/moderation-log.csv' },
+    has('revenue:view') && { key: 'referrals', label: t('dl.referrals'), filename: 'referrals.csv', path: '/api/admin/exports/referrals.csv' },
+    has('revenue:view') && { key: 'revenue', label: t('dl.revenue'), filename: 'revenue.csv', path: '/api/admin/exports/revenue.csv' },
+  ].filter(Boolean);
 
   const reloadUsers = useCallback(async () => {
     const u = await apiFetch('/api/admin/users');
@@ -136,6 +147,8 @@ export default function PlatformAdmin() {
           <h3>Users</h3>
           <DataTable empty="No users yet." columns={userColumns} rows={users} />
         </div>
+
+        <DownloadList title={t('dl.title')} subtitle={t('dl.adminSubtitle')} items={downloadItems} />
       </div>
     </div>
   );

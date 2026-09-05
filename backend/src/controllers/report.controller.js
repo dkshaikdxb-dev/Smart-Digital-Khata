@@ -1,40 +1,10 @@
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
-
-// --- CSV helpers ------------------------------------------------------------
-// The project deliberately avoids extra npm deps, so CSV is built by hand.
-// RFC-4180 style: a field is wrapped in double-quotes only when it contains a
-// comma, double-quote, CR or LF; inside a quoted field every double-quote is
-// doubled. Rows are joined with CRLF (Excel-friendly).
-function csvField(value) {
-  if (value === null || value === undefined) return '';
-  const s = String(value);
-  if (/[",\r\n]/.test(s)) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
-
-function csvRow(fields) {
-  return fields.map(csvField).join(',');
-}
-
-// paise (BIGINT) -> rupees string with 2 decimals, e.g. 12345 -> "123.45".
-function rupees(paise) {
-  return (Number(paise || 0) / 100).toFixed(2);
-}
-
-// timestamptz comes back from pg as a JS Date; emit a stable ISO string.
-function isoDate(d) {
-  if (!d) return '';
-  return d instanceof Date ? d.toISOString() : String(d);
-}
-
-function sendCsv(res, filename, rows) {
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-  res.send(rows.join('\r\n') + '\r\n');
-}
+// Reuse the ONE set of CSV helpers (statement.js) so amount/quoting/CRLF
+// behaviour is identical everywhere. `rupees` renders integer paise as a
+// 2-decimal rupee string; `isoDate` stabilises a pg Date; `sendCsv` writes the
+// text/csv attachment with CRLF rows.
+const { csvRow, rupees, isoDate, sendCsv } = require('../utils/statement');
 
 // GET /reports/customers.csv — all active customers for this shop.
 exports.customersCsv = async (req, res) => {
@@ -120,4 +90,86 @@ exports.statementCsv = async (req, res) => {
     ]));
   }
   sendCsv(res, `statement-${id}.csv`, rows);
+};
+
+// GET /reports/orders.csv?from=&to= — this shop's orders, optional ISO date
+// range (inclusive). Total is subtotal + delivery_fee (both integer paise).
+exports.ordersCsv = async (req, res) => {
+  const { from, to } = req.query;
+  const r = await query(
+    `SELECT o.created_at, c.name AS customer_name,
+            o.fulfillment_type, o.payment_mode, o.payment_status,
+            o.subtotal, o.delivery_fee
+     FROM orders o
+     JOIN customers c ON c.id = o.customer_id
+     WHERE o.shop_id = $1
+       AND ($2::timestamptz IS NULL OR o.created_at >= $2)
+       AND ($3::timestamptz IS NULL OR o.created_at <= $3)
+     ORDER BY o.created_at DESC`,
+    [req.user.shopId, from || null, to || null]
+  );
+
+  const rows = [csvRow([
+    'Date', 'Customer', 'Fulfillment', 'Payment Mode', 'Payment Status',
+    'Subtotal (Rs)', 'Delivery Fee (Rs)', 'Total (Rs)',
+  ])];
+  for (const o of r.rows) {
+    const total = Number(o.subtotal) + Number(o.delivery_fee);
+    rows.push(csvRow([
+      isoDate(o.created_at),
+      o.customer_name,
+      o.fulfillment_type,
+      o.payment_mode,
+      o.payment_status,
+      rupees(o.subtotal),
+      rupees(o.delivery_fee),
+      rupees(total),
+    ]));
+  }
+  sendCsv(res, 'orders.csv', rows);
+};
+
+// GET /reports/catalogue.csv — this shop's products. brand/pack come from the
+// linked base catalog item (LEFT JOIN, nullable for hand-entered products).
+exports.catalogueCsv = async (req, res) => {
+  const r = await query(
+    `SELECT p.name, ci.brand, ci.pack, p.unit, p.price, p.sold_by_weight, p.is_active
+     FROM products p
+     LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
+     WHERE p.shop_id = $1
+     ORDER BY p.name ASC`,
+    [req.user.shopId]
+  );
+
+  const rows = [csvRow(['Name', 'Brand', 'Pack', 'Unit', 'Price (Rs)', 'Sold by weight', 'Active'])];
+  for (const p of r.rows) {
+    rows.push(csvRow([
+      p.name,
+      p.brand,
+      p.pack,
+      p.unit,
+      rupees(p.price),
+      p.sold_by_weight ? 'yes' : 'no',
+      p.is_active ? 'yes' : 'no',
+    ]));
+  }
+  sendCsv(res, 'catalogue.csv', rows);
+};
+
+// GET /reports/khata-outstanding.csv — the "who owes me" list: this shop's
+// customers with a non-zero balance, highest balance first.
+exports.khataOutstandingCsv = async (req, res) => {
+  const r = await query(
+    `SELECT name, phone, balance
+     FROM customers
+     WHERE shop_id = $1 AND balance <> 0
+     ORDER BY balance DESC, name ASC`,
+    [req.user.shopId]
+  );
+
+  const rows = [csvRow(['Name', 'Phone', 'Balance (Rs)'])];
+  for (const c of r.rows) {
+    rows.push(csvRow([c.name, c.phone, rupees(c.balance)]));
+  }
+  sendCsv(res, 'khata-outstanding.csv', rows);
 };

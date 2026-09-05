@@ -5,6 +5,7 @@ import HelpFaq from '../../components/HelpFaq';
 import StatementView from '../../components/StatementView';
 import DataSaverToggle from '../../components/DataSaverToggle';
 import ReferralCard from '../../components/ReferralCard';
+import DownloadList from '../../components/DownloadList';
 import { customerFetch, clearCustomerToken, CUSTOMER_TOKEN_KEY } from '../../lib/customerApi';
 import { clearApiCache } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
@@ -218,6 +219,15 @@ export default function CAccount() {
           </div>
         )}
       </div>
+
+      <DownloadList
+        title={t('dl.title')}
+        subtitle={t('dl.consumerSubtitle')}
+        tokenKey={CUSTOMER_TOKEN_KEY}
+        items={[
+          { key: 'myOrders', label: t('dl.myOrders'), filename: 'my-orders.csv', path: '/api/my/orders.csv' },
+        ]}
+      />
 
       <ReferralCard fetcher={customerFetch} endpoint="/api/customer-auth/referral" />
 

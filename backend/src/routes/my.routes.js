@@ -54,7 +54,12 @@ router.get('/statement', validate(statementQuerySchema, 'query'), asyncHandler(c
 router.get('/khata/:shopId', validate(shopParamSchema, 'params'), asyncHandler(ctrl.shopKhata));
 router.post('/pay', validate(paySchema), asyncHandler(ctrl.pay));
 
+const ordersCsvQuerySchema = Joi.object({
+  shop_id: Joi.string().uuid(),
+});
+
 router.post('/orders', validate(createOrderSchema), asyncHandler(ctrl.createOrder));
+router.get('/orders.csv', validate(ordersCsvQuerySchema, 'query'), asyncHandler(ctrl.ordersCsv));
 router.get('/orders', asyncHandler(ctrl.listOrders));
 router.get('/orders/:id', validate(orderIdSchema, 'params'), asyncHandler(ctrl.getOrder));
 router.post('/orders/:id/cancel', validate(orderIdSchema, 'params'), asyncHandler(ctrl.cancelOrder));
