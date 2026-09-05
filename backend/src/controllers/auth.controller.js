@@ -50,13 +50,48 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  const r = await query(
-    'SELECT id, name, email, phone, password_hash, role, shop_id FROM users WHERE email = $1',
-    [email]
+  // The `email` field carries either an email (owner/admin) or a phone number
+  // (staff created by phone). Resolve the login user from it:
+  //  1) exact email match (lowercased) — the unchanged owner/admin path;
+  //  2) otherwise, an active login user whose phone matches the raw identifier.
+  const identifier = (email || '').trim();
+  const cols = 'id, name, email, phone, password_hash, role, shop_id, is_active';
+
+  // Case-insensitive email match: any identifier that previously matched
+  // `email = $1` exactly still matches here, so no existing login regresses.
+  let r = await query(
+    `SELECT ${cols} FROM users WHERE LOWER(email) = LOWER($1)`,
+    [identifier]
   );
+
+  if (!r.rowCount) {
+    // Phone fallback — only among login roles, preferring active rows so a
+    // deactivated duplicate never shadows a live account.
+    const byPhone = await query(
+      `SELECT ${cols} FROM users
+       WHERE phone = $1 AND role IN ('owner','staff','admin')
+       ORDER BY is_active DESC, created_at ASC`,
+      [identifier]
+    );
+    const activeMatches = byPhone.rows.filter((u) => u.is_active);
+    if (activeMatches.length > 1) {
+      // Defensive: two live accounts share this phone — force email sign-in.
+      throw ApiError.badRequest('Multiple accounts use this phone; sign in with email.');
+    }
+    if (byPhone.rowCount) {
+      r = { rowCount: 1, rows: [activeMatches[0] || byPhone.rows[0]] };
+    }
+  }
+
   if (!r.rowCount) throw ApiError.unauthorized('Invalid credentials');
 
   const user = r.rows[0];
+
+  // A disabled account cannot sign in (staff deactivated, or a suspended login).
+  if (user.is_active === false) {
+    throw ApiError.forbidden('This account has been disabled.');
+  }
+
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) throw ApiError.unauthorized('Invalid credentials');
 
@@ -75,7 +110,7 @@ exports.login = async (req, res) => {
 
 exports.me = async (req, res) => {
   const r = await query(
-    `SELECT u.id, u.name, u.email, u.phone, u.role, u.shop_id,
+    `SELECT u.id, u.name, u.email, u.phone, u.role, u.shop_id, u.is_active,
             s.name AS shop_name, s.plan, s.notification_mode
      FROM users u LEFT JOIN shops s ON s.id = u.shop_id
      WHERE u.id = $1`,
