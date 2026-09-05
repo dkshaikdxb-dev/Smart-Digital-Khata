@@ -21,6 +21,13 @@ const updateSchema = Joi.object({
   notifications_enabled: Joi.boolean(),
 });
 
+// Merge-aware number change (Phase G). merge:true opts in to combining ledgers
+// when the new number already belongs to another customer in this shop.
+const changePhoneSchema = Joi.object({
+  phone: Joi.string().pattern(/^\+?[0-9]{10,15}$/).required(),
+  merge: Joi.boolean().default(false),
+});
+
 const shareSchema = Joi.object({
   send: Joi.boolean().default(false),
   regenerate: Joi.boolean().default(false),
@@ -37,6 +44,7 @@ router.get('/', asyncHandler(ctrl.list));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.get('/:id', asyncHandler(ctrl.get));
 router.patch('/:id', validate(updateSchema), asyncHandler(ctrl.update));
+router.post('/:id/change-phone', validate(changePhoneSchema), asyncHandler(ctrl.changePhone));
 router.get('/:id/ledger', asyncHandler(ctrl.ledger));
 router.get('/:id/statement', validate(statementQuerySchema, 'query'), asyncHandler(ctrl.statement));
 router.post('/:id/share-link', validate(shareSchema), asyncHandler(ctrl.shareLink));

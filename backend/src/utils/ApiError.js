@@ -10,6 +10,7 @@ class ApiError extends Error {
   static notFound(msg = 'Not found') { return new ApiError(404, msg); }
   static conflict(msg, details) { return new ApiError(409, msg, details); }
   static unprocessable(msg, details) { return new ApiError(422, msg, details); }
+  static tooManyRequests(msg = 'Too many requests', details) { return new ApiError(429, msg, details); }
 }
 
 module.exports = ApiError;

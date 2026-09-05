@@ -30,6 +30,7 @@ export default function CustomerDetail() {
   const [stmtRange, setStmtRange] = useState({ from: defFrom(), to: defTo() });
   const [stmt, setStmt] = useState(null);
   const [stmtMsg, setStmtMsg] = useState('');
+  const [newNum, setNewNum] = useState('');
 
   const load = useCallback(async () => {
     const r = await apiFetch(`/api/customers/${id}/ledger`);
@@ -113,6 +114,34 @@ export default function CustomerDetail() {
       await load();
       setMsg(t('cust.updated'));
     } catch (err) { setError(err.message); }
+  }
+
+  // Merge-aware number change. On a 409 (another customer here already has the
+  // number) confirm the merge, then retry with merge:true. A merge lands on the
+  // surviving (target) customer, so navigate there.
+  async function changeNumber(withMerge) {
+    setMsg(''); setError('');
+    const target = newNum.trim();
+    if (!target) return;
+    try {
+      const r = await apiFetch(`/api/customers/${id}/change-phone`, {
+        method: 'POST',
+        body: JSON.stringify({ phone: target, merge: withMerge === true }),
+      });
+      setNewNum('');
+      if (r.merged && r.customer && r.customer.id && r.customer.id !== id) {
+        router.replace(`/customers/${r.customer.id}`);
+        return;
+      }
+      setMsg(r.merged ? t('ocn.merged') : t('ocn.changed'));
+      await load();
+    } catch (err) {
+      if (err.status === 409 && err.body && err.body.details && err.body.details.code === 'merge_required') {
+        if (window.confirm(t('ocn.mergePrompt'))) { await changeNumber(true); }
+        return;
+      }
+      setError(err.message);
+    }
   }
 
   async function remind() {
@@ -314,6 +343,25 @@ export default function CustomerDetail() {
           <input value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} required />
           <input type="number" value={edit.credit_limit} onChange={(e) => setEdit({ ...edit, credit_limit: e.target.value })} placeholder={t('cust.limitRs')} />
           <button>{t('common.save')}</button>
+        </form>
+      </div>
+
+      <div className="card">
+        <h3>{t('ocn.changeNumber')}</h3>
+        <form
+          onSubmit={(e) => { e.preventDefault(); changeNumber(false); }}
+          style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          <input
+            dir="ltr"
+            inputMode="tel"
+            placeholder={t('ocn.new')}
+            value={newNum}
+            onChange={(e) => setNewNum(e.target.value)}
+            style={{ flex: 1, minWidth: 180 }}
+            required
+          />
+          <button type="submit" disabled={!newNum.trim()}>{t('ocn.save')}</button>
         </form>
       </div>
     </Shell>

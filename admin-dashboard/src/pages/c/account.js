@@ -6,7 +6,7 @@ import StatementView from '../../components/StatementView';
 import DataSaverToggle from '../../components/DataSaverToggle';
 import ReferralCard from '../../components/ReferralCard';
 import DownloadList from '../../components/DownloadList';
-import { customerFetch, clearCustomerToken, CUSTOMER_TOKEN_KEY } from '../../lib/customerApi';
+import { customerFetch, clearCustomerToken, swapCustomerToken, CUSTOMER_TOKEN_KEY } from '../../lib/customerApi';
 import { clearApiCache } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 
@@ -29,6 +29,23 @@ export default function CAccount() {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
 
+  // Number-change flow: 'idle' → enter new number → 'code' (OTP sent to new number).
+  const [numStep, setNumStep] = useState('idle');
+  const [newPhone, setNewPhone] = useState('');
+  const [numCode, setNumCode] = useState('');
+  const [numDevCode, setNumDevCode] = useState('');
+  const [numMsg, setNumMsg] = useState('');
+  const [numErr, setNumErr] = useState('');
+  const [numBusy, setNumBusy] = useState(false);
+
+  // Login PIN: whether one is set, and the set/change form state.
+  const [hasPin, setHasPin] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
+  const [pinForm, setPinForm] = useState({ pin: '', current_pin: '' });
+  const [pinMsg, setPinMsg] = useState('');
+  const [pinErr, setPinErr] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+
   const [shops, setShops] = useState([]);
   const [pick, setPick] = useState(''); // '' = all shops
   const [range, setRange] = useState({ from: defFrom(), to: defTo() });
@@ -40,8 +57,12 @@ export default function CAccount() {
     (async () => {
       try {
         const r = await customerFetch('/api/customer-auth/me');
+        // Long-session refresh-on-use: if the server handed back a fresh token,
+        // swap it so the rolling 90-day window keeps this device signed in.
+        if (r.token) swapCustomerToken(r.token, r.phone);
         const cu = r.customer_user;
         setPhone(cu.phone || '');
+        setHasPin(r.has_pin === true);
         setForm({
           name: cu.name || '',
           email: cu.email || '',
@@ -76,6 +97,63 @@ export default function CAccount() {
       });
       setMsg(t('acc.saved'));
     } catch (err) { setError(err.message); }
+  }
+
+  // --- Number change (OTP-gated on the NEW number) -------------------------
+  async function requestNumberOtp(e) {
+    if (e) e.preventDefault();
+    setNumErr(''); setNumMsg(''); setNumBusy(true);
+    try {
+      const r = await customerFetch('/api/customer-auth/change-number/request', {
+        method: 'POST', body: JSON.stringify({ new_phone: newPhone.trim() }),
+      });
+      setNumDevCode(r && r.dev_code ? String(r.dev_code) : '');
+      setNumStep('code');
+    } catch (err) { setNumErr(err.message); } finally { setNumBusy(false); }
+  }
+
+  async function confirmNumberChange(e) {
+    e.preventDefault();
+    setNumErr(''); setNumMsg(''); setNumBusy(true);
+    try {
+      const r = await customerFetch('/api/customer-auth/change-number/verify', {
+        method: 'POST', body: JSON.stringify({ new_phone: newPhone.trim(), code: numCode.trim() }),
+      });
+      // Token now authenticates as the (possibly merged) identity on the new number.
+      if (r && r.token) swapCustomerToken(r.token, r.customer_user?.phone || newPhone.trim());
+      clearApiCache();
+      setPhone(r.customer_user?.phone || newPhone.trim());
+      setNumStep('idle'); setNewPhone(''); setNumCode(''); setNumDevCode('');
+      setNumMsg(t('num.changed'));
+    } catch (err) { setNumErr(err.message); } finally { setNumBusy(false); }
+  }
+
+  function cancelNumberChange() {
+    setNumStep('idle'); setNewPhone(''); setNumCode(''); setNumDevCode(''); setNumErr(''); setNumMsg('');
+  }
+
+  // --- Login PIN ------------------------------------------------------------
+  async function savePin(e) {
+    e.preventDefault();
+    setPinErr(''); setPinMsg('');
+    if (!/^[0-9]{4,6}$/.test(pinForm.pin)) { setPinErr(t('pin.len')); return; }
+    setPinBusy(true);
+    try {
+      const body = { pin: pinForm.pin };
+      if (hasPin && pinForm.current_pin) body.current_pin = pinForm.current_pin;
+      await customerFetch('/api/customer-auth/pin/set', { method: 'POST', body: JSON.stringify(body) });
+      setHasPin(true); setPinOpen(false); setPinForm({ pin: '', current_pin: '' });
+      setPinMsg(t('pin.saved'));
+    } catch (err) { setPinErr(err.message); } finally { setPinBusy(false); }
+  }
+
+  async function removePin() {
+    setPinErr(''); setPinMsg(''); setPinBusy(true);
+    try {
+      await customerFetch('/api/customer-auth/pin/clear', { method: 'POST', body: JSON.stringify({}) });
+      setHasPin(false); setPinOpen(false); setPinForm({ pin: '', current_pin: '' });
+      setPinMsg(t('pin.removed'));
+    } catch (err) { setPinErr(err.message); } finally { setPinBusy(false); }
   }
 
   function stmtQuery(csv) {
@@ -168,6 +246,100 @@ export default function CAccount() {
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
         </form>
       )}
+
+      {/* Mobile number — change flow (OTP sent to the NEW number). */}
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>{t('num.title')}</h3>
+        <label className="muted">{t('num.current')}</label>
+        <input value={phone} readOnly disabled dir="ltr" inputMode="tel" />
+
+        {numStep === 'idle' && (
+          <div style={{ marginTop: 12 }}>
+            <label className="muted">{t('num.new')}</label>
+            <input
+              type="tel" dir="ltr" inputMode="tel" placeholder="+91XXXXXXXXXX"
+              value={newPhone} onChange={(e) => setNewPhone(e.target.value)}
+            />
+            <div className="muted" style={{ fontSize: 12, margin: '4px 0 10px' }}>{t('num.newHint')}</div>
+            <button type="button" onClick={requestNumberOtp} disabled={numBusy || !newPhone.trim()}>
+              {numBusy ? t('num.sending') : t('num.sendCode')}
+            </button>
+          </div>
+        )}
+
+        {numStep === 'code' && (
+          <form onSubmit={confirmNumberChange} style={{ marginTop: 12 }}>
+            <label className="muted">{t('num.enterCode', { phone: newPhone.trim() })}</label>
+            <input
+              type="text" dir="ltr" inputMode="numeric" pattern="[0-9]*" maxLength={6}
+              value={numCode} onChange={(e) => setNumCode(e.target.value.replace(/\D/g, ''))}
+            />
+            {numDevCode && (
+              <div className="cpwa-devhint" style={{ marginTop: 8 }}>{t('num.devCode')} <strong>{numDevCode}</strong></div>
+            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              <button type="submit" disabled={numBusy || numCode.length < 4}>
+                {numBusy ? t('num.changing') : t('num.confirm')}
+              </button>
+              <button type="button" className="secondary" onClick={cancelNumberChange} disabled={numBusy}>
+                {t('num.cancel')}
+              </button>
+            </div>
+          </form>
+        )}
+        {numErr && <div className="cpwa-error" style={{ marginTop: 10 }}>{numErr}</div>}
+        {numMsg && <div className="muted" style={{ marginTop: 10 }}>{numMsg}</div>}
+      </div>
+
+      {/* Login PIN — faster-than-OTP login. HONEST: still needs internet. */}
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>{t('pin.title')}</h3>
+        <p className="muted" style={{ fontSize: 12 }}>{t('pin.note')}</p>
+        <div className="muted" style={{ marginBottom: 10 }}>{hasPin ? t('pin.on') : t('pin.off')}</div>
+
+        {!pinOpen && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" onClick={() => { setPinOpen(true); setPinMsg(''); setPinErr(''); }}>
+              {hasPin ? t('pin.change') : t('pin.set')}
+            </button>
+            {hasPin && (
+              <button type="button" className="secondary" onClick={removePin} disabled={pinBusy}>
+                {t('pin.remove')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {pinOpen && (
+          <form onSubmit={savePin}>
+            {hasPin && (
+              <>
+                <label className="muted">{t('pin.current')}</label>
+                <input
+                  type="password" dir="ltr" inputMode="numeric" pattern="[0-9]*" maxLength={6}
+                  value={pinForm.current_pin}
+                  onChange={(e) => setPinForm({ ...pinForm, current_pin: e.target.value.replace(/\D/g, '') })}
+                />
+                <div style={{ height: 10 }} />
+              </>
+            )}
+            <label className="muted">{t('pin.new')}</label>
+            <input
+              type="password" dir="ltr" inputMode="numeric" pattern="[0-9]*" maxLength={6}
+              value={pinForm.pin}
+              onChange={(e) => setPinForm({ ...pinForm, pin: e.target.value.replace(/\D/g, '') })}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              <button type="submit" disabled={pinBusy}>{pinBusy ? t('pin.saving') : t('pin.save')}</button>
+              <button type="button" className="secondary" onClick={() => { setPinOpen(false); setPinForm({ pin: '', current_pin: '' }); setPinErr(''); }}>
+                {t('num.cancel')}
+              </button>
+            </div>
+          </form>
+        )}
+        {pinErr && <div className="cpwa-error" style={{ marginTop: 10 }}>{pinErr}</div>}
+        {pinMsg && <div className="muted" style={{ marginTop: 10 }}>{pinMsg}</div>}
+      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>{t('stmt.title')}</h3>

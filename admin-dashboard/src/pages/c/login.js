@@ -9,9 +9,11 @@ import { useLang } from '../../lib/i18n';
 export default function CustomerLogin() {
   const router = useRouter();
   const { t } = useLang();
+  const [mode, setMode] = useState('otp'); // 'otp' | 'pin'
   const [step, setStep] = useState('phone'); // 'phone' | 'code'
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
+  const [pin, setPin] = useState('');
   const [devCode, setDevCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,6 +70,29 @@ export default function CustomerLogin() {
     }
   }
 
+  async function loginWithPin(e) {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const r = await publicFetch('/api/customer-auth/pin/login', {
+        method: 'POST',
+        body: JSON.stringify({ phone: phone.trim(), pin: pin.trim() }),
+      });
+      if (!r || !r.token) throw new Error(t('c.loginFailed'));
+      setCustomerToken(r.token, phone.trim());
+      router.replace(next.startsWith('/c') ? next : '/c/shops');
+    } catch (err) {
+      // The server sends a clear "too many attempts" message when the PIN is
+      // locked — map it to the localized locked-out copy; otherwise show the
+      // uniform invalid-credentials message (never reveals if the phone exists).
+      const locked = /too many/i.test(err.message || '');
+      setError(locked ? t('auth.locked') : t('auth.pinFailed'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // If already logged in, bounce straight through.
   if (typeof window !== 'undefined' && getCustomerToken()) {
     router.replace(next.startsWith('/c') ? next : '/c/shops');
@@ -81,7 +106,7 @@ export default function CustomerLogin() {
         <p className="muted">{t('c.loginBlurb')}</p>
       </div>
 
-      {step === 'phone' ? (
+      {mode === 'otp' && (step === 'phone' ? (
         <form onSubmit={requestOtp} className="card">
           <label className="cpwa-label" htmlFor="phone">{t('c.mobileNumber')}</label>
           <input
@@ -128,6 +153,53 @@ export default function CustomerLogin() {
             </button>
             <button type="button" className="secondary" onClick={() => requestOtp()} disabled={loading}>
               {t('c.resendCode')}
+            </button>
+          </div>
+        </form>
+      ))}
+
+      {mode === 'otp' && (
+        <div className="card" style={{ textAlign: 'center' }}>
+          <button type="button" className="secondary" onClick={() => { setMode('pin'); setError(''); }}>
+            {t('auth.usePin')}
+          </button>
+        </div>
+      )}
+
+      {mode === 'pin' && (
+        <form onSubmit={loginWithPin} className="card">
+          <label className="cpwa-label" htmlFor="pinphone">{t('c.mobileNumber')}</label>
+          <input
+            id="pinphone"
+            type="tel"
+            dir="ltr"
+            inputMode="tel"
+            placeholder="+91XXXXXXXXXX"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+          <div style={{ height: 10 }} />
+          <label className="cpwa-label" htmlFor="pin">{t('auth.pin')}</label>
+          <input
+            id="pin"
+            type="password"
+            dir="ltr"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+            required
+          />
+          <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>{t('auth.pinNet')}</p>
+          {error && <div className="cpwa-error">{error}</div>}
+          <button disabled={loading || pin.length < 4 || !phone.trim()} style={{ width: '100%', marginTop: 12 }}>
+            {loading ? t('c.verifying') : t('auth.pinLogin')}
+          </button>
+          <div style={{ textAlign: 'center', marginTop: 12 }}>
+            <button type="button" className="secondary" onClick={() => { setMode('otp'); setPin(''); setError(''); }}>
+              {t('auth.useOtp')}
             </button>
           </div>
         </form>
