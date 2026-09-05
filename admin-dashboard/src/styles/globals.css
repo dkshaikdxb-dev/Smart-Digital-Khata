@@ -281,3 +281,14 @@ th { color: var(--muted); font-weight: 600; }
 
 /* Order/cart grand total line */
 .cpwa-total { margin-top: 8px; padding-top: 10px; border-top: 1px solid #334155; font-size: 16px; }
+
+/* Variant group card (customer shop page): a product row on top, then one chip
+   row per selectable dimension (brand, size). Reuses .cpwa-product for the top
+   row and .cpwa-chips/.cpwa-chip for the selectors, so this is direction-neutral
+   and fits the same mobile column. */
+.cpwa-vcard { display: flex; flex-direction: column; }
+.cpwa-vcard-top { align-items: flex-start; }
+.cpwa-vcard-sub { font-size: 13px; margin-top: 2px; }
+.cpwa-variant-row { margin-top: 10px; }
+.cpwa-variant-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+.cpwa-variant-row .cpwa-chips { margin-top: 6px; }

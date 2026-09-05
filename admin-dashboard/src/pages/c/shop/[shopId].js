@@ -9,6 +9,12 @@ import { useLang } from '../../../lib/i18n';
 
 // Shop catalog + per-shop cart. Adding items persists to localStorage keyed by
 // shop. A customer can only build a cart for ONE shop at a time.
+//
+// Catalog-linked products carry a `base_product` (generic name), `brand` and
+// `pack` (size). Rows that share a non-null base_product are folded into ONE
+// "variant group" card where the shopper picks brand + size; each (brand,pack)
+// is still its own real product row with its own id/price, so the cart, the
+// stepper and checkout all operate on the resolved concrete product unchanged.
 export default function ShopCatalog() {
   const router = useRouter();
   const { t } = useLang();
@@ -89,6 +95,8 @@ export default function ShopCatalog() {
   const { count, subtotal } = cartTotals(cart);
 
   // Distinct catalog categories present in THIS shop's products (ignore null).
+  // A group inherits every category any of its variants carries, so iterating
+  // the raw product rows already covers grouped variants.
   const categories = useMemo(() => {
     const seen = [];
     for (const p of products) {
@@ -98,15 +106,56 @@ export default function ShopCatalog() {
     return seen;
   }, [products]);
 
-  // Client-side filter: bounded list, so search + category are cheap.
-  const visible = useMemo(() => {
+  // Fold products into display "units": rows sharing a non-null base_product
+  // become one variant group (in first-seen order); everything else — null
+  // base_product, or a group that ends up with a single row — is its own
+  // single unit rendered exactly as before.
+  const units = useMemo(() => {
+    const groupIndex = new Map(); // base_product -> unit reference
+    const list = [];
+    for (const p of products) {
+      const bp = p.base_product;
+      if (bp) {
+        let u = groupIndex.get(bp);
+        if (!u) {
+          u = { kind: 'group', key: `g_${bp}`, base: bp, variants: [] };
+          groupIndex.set(bp, u);
+          list.push(u);
+        }
+        u.variants.push(p);
+      } else {
+        list.push({ kind: 'single', key: `s_${p.id}`, product: p });
+      }
+    }
+    // A group of one is indistinguishable from a plain product — collapse it.
+    return list.map((u) =>
+      u.kind === 'group' && u.variants.length === 1
+        ? { kind: 'single', key: `s_${u.variants[0].id}`, product: u.variants[0] }
+        : u
+    );
+  }, [products]);
+
+  // Client-side filter over units: bounded list, so search + category are cheap.
+  // Search matches name AND (for catalog-linked rows) base_product + brand; a
+  // group stays visible if ANY of its variants matches.
+  const visibleUnits = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return products.filter((p) => {
-      if (activeCat && p.category !== activeCat) return false;
-      if (q && !String(p.name || '').toLowerCase().includes(q)) return false;
-      return true;
+    const matches = (p) => {
+      if (!q) return true;
+      return [p.name, p.base_product, p.brand].some((f) =>
+        String(f || '').toLowerCase().includes(q)
+      );
+    };
+    return units.filter((u) => {
+      if (u.kind === 'single') {
+        const p = u.product;
+        if (activeCat && p.category !== activeCat) return false;
+        return matches(p);
+      }
+      if (activeCat && !u.variants.some((v) => v.category === activeCat)) return false;
+      return u.variants.some(matches);
     });
-  }, [products, search, activeCat]);
+  }, [units, search, activeCat]);
 
   // Compact fulfillment summary derived from the shop's settings.
   function fulfillmentSummary(s) {
@@ -123,6 +172,24 @@ export default function ShopCatalog() {
       lines.push(t('c.deliveryHoursLabel', { hours: s.delivery_hours }));
     }
     return lines;
+  }
+
+  // Add/stepper block for a resolved product `p` (shared by single + variant
+  // cards). `inCart` is the current cart line for p, if any.
+  function ProductAction({ p, inCart }) {
+    return (
+      <div className="cpwa-product-action">
+        {inCart ? (
+          <div className="cpwa-stepper">
+            <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity - 1)} aria-label="Decrease">−</button>
+            <span className="cpwa-qty">{inCart.quantity}</span>
+            <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity + 1)} aria-label="Increase">+</button>
+          </div>
+        ) : (
+          <button type="button" onClick={() => addItem(p)}>{t('common.add')}</button>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -169,34 +236,36 @@ export default function ShopCatalog() {
         <div className="card muted">{t('c.noItems')}</div>
       )}
 
-      {!loading && products.length > 0 && visible.length === 0 && (
+      {!loading && products.length > 0 && visibleUnits.length === 0 && (
         <div className="card muted">{t('cat.noResults')}</div>
       )}
 
-      {visible.map((p) => {
-        const inCart = cart?.items?.[p.id];
-        return (
-          <div key={p.id} className="card cpwa-product">
-            <ProductThumb product={p} />
-            <div className="cpwa-product-info">
-              <div className="cpwa-product-name">{p.name}</div>
-              {p.description && <div className="muted cpwa-clamp">{p.description}</div>}
-              <div className="cpwa-product-price">
-                {money(p.price)} <span className="muted">/ {p.unit || t('c.unit')}</span>
-              </div>
-            </div>
-            <div className="cpwa-product-action">
-              {inCart ? (
-                <div className="cpwa-stepper">
-                  <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity - 1)} aria-label="Decrease">−</button>
-                  <span className="cpwa-qty">{inCart.quantity}</span>
-                  <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity + 1)} aria-label="Increase">+</button>
+      {visibleUnits.map((u) => {
+        if (u.kind === 'single') {
+          const p = u.product;
+          const inCart = cart?.items?.[p.id];
+          return (
+            <div key={u.key} className="card cpwa-product">
+              <ProductThumb product={p} />
+              <div className="cpwa-product-info">
+                <div className="cpwa-product-name">{p.name}</div>
+                {p.description && <div className="muted cpwa-clamp">{p.description}</div>}
+                <div className="cpwa-product-price">
+                  {money(p.price)} <span className="muted">/ {p.unit || t('c.unit')}</span>
                 </div>
-              ) : (
-                <button type="button" onClick={() => addItem(p)}>{t('common.add')}</button>
-              )}
+              </div>
+              <ProductAction p={p} inCart={inCart} />
             </div>
-          </div>
+          );
+        }
+        return (
+          <VariantCard
+            key={u.key}
+            unit={u}
+            cart={cart}
+            t={t}
+            renderAction={(p, inCart) => <ProductAction p={p} inCart={inCart} />}
+          />
         );
       })}
 
@@ -210,5 +279,109 @@ export default function ShopCatalog() {
         </div>
       )}
     </CustomerShell>
+  );
+}
+
+// One card for a multi-variant group. Holds the brand + size selection; resolves
+// the chosen (brand, pack) back to its concrete product row so the price, the
+// thumbnail and the Add/stepper all act on a real product id — identical to a
+// single product card from the cart's point of view.
+function VariantCard({ unit, cart, t, renderAction }) {
+  const variants = unit.variants;
+
+  // Distinct brands / packs kept in first-seen (stable) order. Null brand/pack
+  // collapse to '' so a group with a single implicit brand or size shows no row.
+  const brands = useMemo(() => {
+    const seen = [];
+    for (const v of variants) {
+      const b = v.brand ?? '';
+      if (!seen.includes(b)) seen.push(b);
+    }
+    return seen;
+  }, [variants]);
+
+  const packsFor = (brand) => {
+    const seen = [];
+    for (const v of variants) {
+      if ((v.brand ?? '') === brand) {
+        const pk = v.pack ?? '';
+        if (!seen.includes(pk)) seen.push(pk);
+      }
+    }
+    return seen;
+  };
+
+  const [brand, setBrand] = useState(brands[0] ?? '');
+  const [pack, setPack] = useState(() => packsFor(brands[0] ?? '')[0] ?? '');
+
+  // Keep selection valid if the product list changes underneath us.
+  const safeBrand = brands.includes(brand) ? brand : (brands[0] ?? '');
+  const packs = packsFor(safeBrand);
+  const safePack = packs.includes(pack) ? pack : (packs[0] ?? '');
+
+  function chooseBrand(b) {
+    setBrand(b);
+    // If the newly selected brand doesn't carry the current size, fall back to
+    // that brand's first available size.
+    const ps = packsFor(b);
+    if (!ps.includes(pack)) setPack(ps[0] ?? '');
+  }
+
+  const resolved =
+    variants.find((v) => (v.brand ?? '') === safeBrand && (v.pack ?? '') === safePack) || variants[0];
+  const inCart = cart?.items?.[resolved.id];
+
+  const subtitle = [safeBrand, safePack].filter(Boolean).join(' · ');
+
+  return (
+    <div className="card cpwa-vcard">
+      <div className="cpwa-product cpwa-vcard-top">
+        <ProductThumb product={resolved} />
+        <div className="cpwa-product-info">
+          <div className="cpwa-product-name">{unit.base}</div>
+          {subtitle && <div className="muted cpwa-vcard-sub">{subtitle}</div>}
+          <div className="cpwa-product-price">
+            {money(resolved.price)} <span className="muted">/ {resolved.unit || t('c.unit')}</span>
+          </div>
+        </div>
+        {renderAction(resolved, inCart)}
+      </div>
+
+      {brands.length > 1 && (
+        <div className="cpwa-variant-row">
+          <span className="cpwa-variant-label">{t('c.brand')}</span>
+          <div className="cpwa-chips" role="group" aria-label={t('c.brand')}>
+            {brands.map((b) => (
+              <button
+                key={b}
+                type="button"
+                className={`cpwa-chip ${b === safeBrand ? 'active' : ''}`}
+                onClick={() => chooseBrand(b)}
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {packs.length > 1 && (
+        <div className="cpwa-variant-row">
+          <span className="cpwa-variant-label">{t('c.size')}</span>
+          <div className="cpwa-chips" role="group" aria-label={t('c.size')}>
+            {packs.map((pk) => (
+              <button
+                key={pk}
+                type="button"
+                className={`cpwa-chip ${pk === safePack ? 'active' : ''}`}
+                onClick={() => setPack(pk)}
+              >
+                {pk}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
