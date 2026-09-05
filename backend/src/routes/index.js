@@ -18,6 +18,7 @@ router.use('/subscriptions', require('./subscription.routes'));
 router.use('/summaries', require('./summary.routes'));
 router.use('/reports', require('./report.routes'));
 router.use('/analytics', require('./analytics.routes'));
+router.use('/insights', require('./insights.routes'));
 router.use('/notifications', require('./notification.routes'));
 router.use('/admin', require('./admin.routes'));
 router.use('/webhooks', require('./webhook.routes'));
