@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import Balance from '../components/Balance';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -75,7 +76,7 @@ export default function Customers() {
     { key: 'name', label: t('common.name'), render: (c) => <strong>{c.name}</strong> },
     { key: 'phone', label: t('common.phone') },
     { key: 'credit_limit', label: t('common.creditLimit'), render: (c) => (Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : '—') },
-    { key: 'balance', label: t('common.balance'), render: (c) => <span style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(c.balance)}</span> },
+    { key: 'balance', label: t('common.balance'), render: (c) => <Balance paise={c.balance} /> },
     {
       key: 'alerts', label: t('customers.alerts'), render: (c) => (
         <button className="secondary" onClick={(e) => { e.stopPropagation(); toggleNotifications(c); }}

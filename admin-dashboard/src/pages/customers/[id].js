@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
 import StatementView from '../../components/StatementView';
+import Balance from '../../components/Balance';
 import { apiFetch } from '../../lib/api';
 import { enqueue, newClientRequestId } from '../../lib/outbox';
 import { useLang } from '../../lib/i18n';
@@ -225,7 +226,7 @@ export default function CustomerDetail() {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="muted">{t('common.outstanding')}</div>
-            <div className="kpi" style={{ color: Number(c.balance) > 0 ? 'var(--danger)' : 'var(--accent)' }}>{fmt(c.balance)}</div>
+            <div className="kpi"><Balance paise={c.balance} /></div>
             <div className="muted">{t('common.limit')} {Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : t('common.none')}</div>
             {ttsSupported && (
               <button

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
+import Balance from '../../components/Balance';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 
@@ -90,7 +91,7 @@ export default function FamilyDetail() {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="muted">{t('fam.combinedOutstanding')}</div>
-            <div className="kpi" style={{ color: Number(combined) > 0 ? 'var(--danger)' : 'var(--accent)' }}>{fmt(combined)}</div>
+            <div className="kpi"><Balance paise={combined} /></div>
             <div className="muted">{t('common.limit')} {Number(family.credit_limit) > 0 ? fmt(family.credit_limit) : t('common.none')}</div>
           </div>
         </div>
@@ -123,7 +124,7 @@ export default function FamilyDetail() {
             { key: 'name', label: t('common.name'), render: (m) => <strong>{m.name}</strong> },
             { key: 'phone', label: t('common.phone'), render: (m) => m.phone || '—' },
             { key: 'balance', label: t('common.outstanding'), align: 'right', render: (m) => (
-              <span style={{ color: Number(m.balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(m.balance)}</span>
+              <Balance paise={m.balance} />
             ) },
             { key: 'sub_limit', label: t('fam.subLimit'), render: (m) => (Number(m.sub_limit) > 0 ? fmt(m.sub_limit) : '—') },
             { key: 'actions', label: t('common.actions'), align: 'right', render: (m) => (

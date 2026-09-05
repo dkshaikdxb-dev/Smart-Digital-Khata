@@ -49,6 +49,8 @@ const DICT = {
     'nav.platform': 'Platform',
     'nav.translations': 'Translations',
     'nav.logout': 'Log out',
+    'nav.tabHome': 'Home',
+    'nav.more': 'More',
     'ctab.shops': 'Shops',
     'ctab.cart': 'Cart',
     'ctab.orders': 'Orders',
@@ -68,6 +70,8 @@ const DICT = {
     'nav.platform': 'प्लेटफ़ॉर्म',
     'nav.translations': 'अनुवाद',
     'nav.logout': 'लॉग आउट',
+    'nav.tabHome': 'होम',
+    'nav.more': 'और',
     'ctab.shops': 'दुकानें',
     'ctab.cart': 'कार्ट',
     'ctab.orders': 'ऑर्डर',
@@ -87,6 +91,8 @@ const DICT = {
     'nav.platform': 'தளம்',
     'nav.translations': 'மொழிபெயர்ப்புகள்',
     'nav.logout': 'வெளியேறு',
+    'nav.tabHome': 'முகப்பு',
+    'nav.more': 'மேலும்',
     'ctab.shops': 'கடைகள்',
     'ctab.cart': 'கார்ட்',
     'ctab.orders': 'ஆர்டர்கள்',
@@ -106,6 +112,8 @@ const DICT = {
     'nav.platform': 'ప్లాట్‌ఫారమ్',
     'nav.translations': 'అనువాదాలు',
     'nav.logout': 'లాగ్ అవుట్',
+    'nav.tabHome': 'హోమ్',
+    'nav.more': 'మరిన్ని',
     'ctab.shops': 'దుకాణాలు',
     'ctab.cart': 'కార్ట్',
     'ctab.orders': 'ఆర్డర్‌లు',
@@ -125,6 +133,8 @@ const DICT = {
     'nav.platform': 'ವೇದಿಕೆ',
     'nav.translations': 'ಅನುವಾದಗಳು',
     'nav.logout': 'ಲಾಗ್ ಔಟ್',
+    'nav.tabHome': 'ಮುಖಪುಟ',
+    'nav.more': 'ಇನ್ನಷ್ಟು',
     'ctab.shops': 'ಅಂಗಡಿಗಳು',
     'ctab.cart': 'ಕಾರ್ಟ್',
     'ctab.orders': 'ಆರ್ಡರ್‌ಗಳು',
@@ -144,6 +154,8 @@ const DICT = {
     'nav.platform': 'പ്ലാറ്റ്‌ഫോം',
     'nav.translations': 'വിവർത്തനങ്ങൾ',
     'nav.logout': 'ലോഗ് ഔട്ട്',
+    'nav.tabHome': 'ഹോം',
+    'nav.more': 'കൂടുതൽ',
     'ctab.shops': 'കടകൾ',
     'ctab.cart': 'കാർട്ട്',
     'ctab.orders': 'ഓർഡറുകൾ',
@@ -163,6 +175,8 @@ const DICT = {
     'nav.platform': 'پلیٹ فارم',
     'nav.translations': 'ترجمے',
     'nav.logout': 'لاگ آؤٹ',
+    'nav.tabHome': 'ہوم',
+    'nav.more': 'مزید',
     'ctab.shops': 'دکانیں',
     'ctab.cart': 'ٹوکری',
     'ctab.orders': 'آرڈرز',
@@ -3157,35 +3171,35 @@ const PAGE = {
     'stmt.customerStatement': 'Customer statement',
     'stmt.loadError': 'Could not load the statement.',
     'stmt.combined': 'Combined total',
-    'help.title': 'Help & FAQ',
-    'help.subtitle': 'Short how-tos for the most common tasks.',
-    'help.manualLink': 'Read the full user manual and FAQ for more.',
-    'help.e1.q': 'How do I add a customer?',
-    'help.e1.a': 'Open Customers, tap Add, and enter their name and phone. A credit limit is optional — 0 means no limit.',
-    'help.e2.q': 'How do I record udhaar (a credit sale)?',
-    'help.e2.a': 'Open the customer, choose Purchase, enter the amount and save. Their balance goes up by that amount.',
-    'help.e3.q': 'How do I take a payment?',
-    'help.e3.a': 'Open the customer, choose Cash or UPI, enter the amount received and save. Their balance comes down.',
-    'help.e4.q': 'How do reminders work?',
-    'help.e4.a': 'Polite WhatsApp reminders are sent based on your shop notification mode. You can turn them off for any single customer.',
-    'help.e5.q': 'How do I add items from the catalogue?',
-    'help.e5.a': 'In Catalog, search the shared master catalogue, add an item to your shop, then set your own price.',
-    'help.e6.q': 'How do I sell loose items by weight?',
-    'help.e6.a': 'Mark a product as sold by weight and set its price per kilogram. The price for a chosen weight is worked out for you.',
-    'help.e7.q': 'How do I share my shop with customers?',
-    'help.e7.a': 'In Settings, use Share your shop to copy the link or print the QR code for your counter. Customers can browse with no login.',
-    'help.e8.q': 'Does it work without internet?',
-    'help.e8.a': 'Yes. Entries you make while offline are saved on your phone and sync automatically when you are back online.',
-    'help.e9.q': 'How do I change the language?',
-    'help.e9.a': 'Use the language switch at the top of the screen. Your choice is remembered on this device.',
-    'help.e10.q': 'What is data-saver mode?',
-    'help.e10.a': 'Data-saver reduces images and data use for slow or costly connections. Turn it on from Settings or your account page.',
-    'help.e11.q': 'What do the plans include?',
-    'help.e11.a': 'The Free plan covers everyday khata. Paid plans raise limits and add features. See Settings to compare and change plans.',
-    'help.e12.q': 'How do I get an account statement?',
-    'help.e12.a': 'Use the Account statement tool to pick a date range, view the entries, and download a CSV or print it.',
-    'help.e13.q': 'Is my email, gender and date of birth required?',
-    'help.e13.a': 'No. These are optional and private. You can leave them blank and still use every feature.',
+    'help.title': 'مدد اور عام سوالات',
+    'help.subtitle': 'سب سے عام کاموں کے مختصر طریقے۔',
+    'help.manualLink': 'مزید کے لیے مکمل یوزر مینوئل اور عام سوالات پڑھیں۔',
+    'help.e1.q': 'گاہک کیسے شامل کریں؟',
+    'help.e1.a': 'گاہک کھولیں، شامل کریں دبائیں، اور نام و فون درج کریں۔ کریڈٹ حد اختیاری ہے — 0 کا مطلب کوئی حد نہیں۔',
+    'help.e2.q': 'ادھار (کریڈٹ فروخت) کیسے درج کریں؟',
+    'help.e2.a': 'گاہک کھولیں، خریداری چنیں، رقم درج کریں اور محفوظ کریں۔ ان کا بیلنس اتنا بڑھ جاتا ہے۔',
+    'help.e3.q': 'ادائیگی کیسے لیں؟',
+    'help.e3.a': 'گاہک کھولیں، نقد یا UPI چنیں، وصول شدہ رقم درج کریں اور محفوظ کریں۔ ان کا بیلنس کم ہو جاتا ہے۔',
+    'help.e4.q': 'یاد دہانیاں کیسے کام کرتی ہیں؟',
+    'help.e4.a': 'آپ کی دکان کے نوٹیفکیشن موڈ کے مطابق مہذب واٹس ایپ یاد دہانیاں بھیجی جاتی ہیں۔ کسی بھی ایک گاہک کے لیے انہیں بند کر سکتے ہیں۔',
+    'help.e5.q': 'فہرست سے اشیاء کیسے شامل کریں؟',
+    'help.e5.a': 'فہرست میں مشترکہ ماسٹر فہرست تلاش کریں، شے کو اپنی دکان میں شامل کریں، پھر اپنی قیمت طے کریں۔',
+    'help.e6.q': 'کھلا سامان وزن کے حساب سے کیسے بیچیں؟',
+    'help.e6.a': 'کسی پروڈکٹ کو وزن کے حساب سے فروخت ہونے والا نشان زد کریں اور فی کلوگرام قیمت طے کریں۔ چنے گئے وزن کی قیمت خود بخود نکل آتی ہے۔',
+    'help.e7.q': 'اپنی دکان گاہکوں کے ساتھ کیسے شیئر کریں؟',
+    'help.e7.a': 'ترتیبات میں "اپنی دکان شیئر کریں" سے لنک کاپی کریں یا کاؤنٹر کے لیے QR کوڈ پرنٹ کریں۔ گاہک بغیر لاگ اِن دیکھ سکتے ہیں۔',
+    'help.e8.q': 'کیا یہ انٹرنیٹ کے بغیر کام کرتا ہے؟',
+    'help.e8.a': 'جی ہاں۔ آف لائن کی گئی اندراجات آپ کے فون میں محفوظ ہو جاتی ہیں اور آن لائن ہوتے ہی خود بخود سنک ہو جاتی ہیں۔',
+    'help.e9.q': 'زبان کیسے بدلیں؟',
+    'help.e9.a': 'اسکرین کے اوپر زبان سوئچ استعمال کریں۔ آپ کا انتخاب اس ڈیوائس پر یاد رہتا ہے۔',
+    'help.e10.q': 'ڈیٹا سیور موڈ کیا ہے؟',
+    'help.e10.a': 'ڈیٹا سیور سست یا مہنگے کنکشن کے لیے تصاویر اور ڈیٹا کا استعمال کم کرتا ہے۔ اسے ترتیبات یا اپنے اکاؤنٹ صفحے سے آن کریں۔',
+    'help.e11.q': 'پلانز میں کیا شامل ہے؟',
+    'help.e11.a': 'مفت پلان روزمرہ کھاتے کے لیے ہے۔ ادا شدہ پلانز حدیں بڑھاتے اور خصوصیات شامل کرتے ہیں۔ موازنہ اور تبدیلی کے لیے ترتیبات دیکھیں۔',
+    'help.e12.q': 'اکاؤنٹ اسٹیٹمنٹ کیسے حاصل کریں؟',
+    'help.e12.a': 'اکاؤنٹ اسٹیٹمنٹ ٹول سے تاریخ کی مدت چنیں، اندراجات دیکھیں، اور CSV ڈاؤن لوڈ کریں یا پرنٹ کریں۔',
+    'help.e13.q': 'کیا میرا ای میل، جنس اور تاریخ پیدائش ضروری ہے؟',
+    'help.e13.a': 'نہیں۔ یہ اختیاری اور نجی ہیں۔ انہیں خالی چھوڑ کر بھی آپ ہر خصوصیت استعمال کر سکتے ہیں۔',
     'common.save': 'محفوظ کریں',
     'common.add': 'شامل کریں',
     'common.cancel': 'منسوخ کریں',
@@ -5953,6 +5967,56 @@ const AUTHRES = {
   },
 };
 
+// Batch H2 — FAQ read-aloud label + meaning-colored balance words. en/hi are
+// authored; ta/te/kn/ml/ur are single-word native terms (accounting vocabulary
+// widely used in trade), so they carry meaning on their own alongside the exact
+// ₹ figure. bal.owed = customer owes the shop (RED), bal.advance = customer has
+// credit/advance (GREEN), bal.settled = nothing due (neutral).
+const H2 = {
+  en: {
+    'help.listen': 'Listen',
+    'bal.owed': 'owed',
+    'bal.advance': 'advance',
+    'bal.settled': 'settled',
+  },
+  hi: {
+    'help.listen': 'सुनें',
+    'bal.owed': 'बाकी',
+    'bal.advance': 'जमा',
+    'bal.settled': 'चुकता',
+  },
+  ta: {
+    'help.listen': 'கேளுங்கள்',
+    'bal.owed': 'பாக்கி',
+    'bal.advance': 'முன்பணம்',
+    'bal.settled': 'தீர்ந்தது',
+  },
+  te: {
+    'help.listen': 'వినండి',
+    'bal.owed': 'బాకీ',
+    'bal.advance': 'జమా',
+    'bal.settled': 'తీరింది',
+  },
+  kn: {
+    'help.listen': 'ಕೇಳಿ',
+    'bal.owed': 'ಬಾಕಿ',
+    'bal.advance': 'ಜಮಾ',
+    'bal.settled': 'ತೀರಿದೆ',
+  },
+  ml: {
+    'help.listen': 'കേൾക്കുക',
+    'bal.owed': 'ബാക്കി',
+    'bal.advance': 'അഡ്വാൻസ്',
+    'bal.settled': 'തീർന്നു',
+  },
+  ur: {
+    'help.listen': 'سنیں',
+    'bal.owed': 'باقی',
+    'bal.advance': 'جمع',
+    'bal.settled': 'صاف',
+  },
+};
+
 // Merge page-body keys into the per-language DICT blocks. Nav keys defined in
 // DICT stay authoritative; PAGE only adds new keys.
 for (const code of Object.keys(PAGE)) {
@@ -6000,6 +6064,12 @@ for (const code of Object.keys(OWN)) {
 for (const code of Object.keys(AUTHRES)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], AUTHRES[code]);
+}
+
+// Merge the Batch H2 FAQ read-aloud + balance-word strings the same way.
+for (const code of Object.keys(H2)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], H2[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
