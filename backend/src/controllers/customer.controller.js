@@ -2,6 +2,12 @@ const crypto = require('crypto');
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
+const {
+  buildStatement,
+  defaultRange,
+  statementCsvRows,
+  sendCsv,
+} = require('../utils/statement');
 
 exports.list = async (req, res) => {
   const search = (req.query.search || '').trim();
@@ -135,6 +141,39 @@ exports.publicKhata = async (req, res) => {
       balance: customer.balance,
       transactions: tx.rows,
     },
+  });
+};
+
+/**
+ * GET /customers/:id/statement?from=&to=&format=json|csv — a full account
+ * statement (opening balance, dated lines, closing balance, totals) for one of
+ * THIS shop's customers, for printing or handing over. Scoped to req.user.shopId
+ * (404 for another shop's customer). Reuses the shared buildStatement() helper so
+ * the math matches the consumer endpoint exactly.
+ */
+exports.statement = async (req, res) => {
+  const { id } = req.params;
+  const own = await query(
+    'SELECT id, name, phone FROM customers WHERE id = $1 AND shop_id = $2',
+    [id, req.user.shopId]
+  );
+  if (!own.rowCount) throw ApiError.notFound('Customer not found');
+  const customer = own.rows[0];
+
+  const { from, to } = defaultRange(req.query.from, req.query.to);
+  if (from > to) throw ApiError.badRequest('The "from" date must be on or before the "to" date');
+
+  const stmt = await buildStatement(id, from, to);
+
+  if (req.query.format === 'csv') {
+    const rows = statementCsvRows(stmt, { customerName: customer.name });
+    return sendCsv(res, `statement-${id}-${from}-to-${to}.csv`, rows);
+  }
+  res.json({
+    from,
+    to,
+    customer: { id: customer.id, name: customer.name, phone: customer.phone },
+    statement: stmt,
   });
 };
 

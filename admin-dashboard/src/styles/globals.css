@@ -318,6 +318,20 @@ th { color: var(--muted); font-weight: 600; }
   .qr-print-link { margin-top: 12px; font-size: 14px; word-break: break-all; }
 }
 
+/* ---- Account statement: on-screen table + hidden print block ---- */
+.stmt-table th, .stmt-table td { padding: 6px 8px; border-bottom: 1px solid #334155; font-size: 13px; }
+.stmt-print { display: none; }
+@media print {
+  .stmt-print, .stmt-print * { visibility: visible; }
+  .stmt-print {
+    display: block; visibility: visible;
+    position: absolute; left: 0; top: 0; width: 100%; color: #000;
+  }
+  .stmt-print h2, .stmt-print h3 { color: #000; }
+  .stmt-print table { width: 100%; border-collapse: collapse; }
+  .stmt-print th, .stmt-print td { border: 1px solid #000; padding: 4px 6px; font-size: 12px; text-align: left; }
+}
+
 /* ---- Owner catalogue: product group card with per-variant checkbox + price ---- */
 .cat-group { border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; background: #0b1220; }
 .cat-group-head strong { overflow-wrap: anywhere; }

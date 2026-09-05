@@ -3,6 +3,12 @@ const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
+const {
+  buildStatement,
+  defaultRange,
+  statementCsvRows,
+  sendCsv,
+} = require('../utils/statement');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -61,6 +67,79 @@ exports.shopKhata = async (req, res) => {
     balance: row.balance,
     transactions: tx.rows,
   });
+};
+
+/**
+ * GET /my/statement?shop_id=&from=&to=&format=json|csv — the consumer's account
+ * statement, always scoped to THEIR phone. With shop_id → that one shop; without
+ * → an all-shops combined statement grouped by shop. Money stays paise in JSON;
+ * CSV prints ₹ with 2 decimals. Reuses the shared buildStatement() helper so the
+ * opening/closing math is identical to the owner endpoint.
+ */
+exports.statement = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  const { shop_id, format } = req.query;
+  const { from, to } = defaultRange(req.query.from, req.query.to);
+  if (from > to) throw ApiError.badRequest('The "from" date must be on or before the "to" date');
+
+  // Resolve the consumer's customers rows by phone (one shop, or all).
+  const params = [phone];
+  let where = 'c.phone = $1';
+  if (shop_id) {
+    params.push(shop_id);
+    where += ` AND c.shop_id = $2`;
+  }
+  const custRes = await query(
+    `SELECT c.id AS customer_id, c.shop_id, c.name AS customer_name, s.name AS shop_name
+     FROM customers c JOIN shops s ON s.id = c.shop_id
+     WHERE ${where}
+     ORDER BY s.name ASC`,
+    params
+  );
+  if (shop_id && !custRes.rowCount) throw ApiError.notFound('No khata found at this shop');
+
+  const shops = [];
+  const combined = { opening: 0, closing: 0, total_purchases: 0, total_paid: 0 };
+  for (const c of custRes.rows) {
+    const stmt = await buildStatement(c.customer_id, from, to);
+    shops.push({
+      shop_id: c.shop_id,
+      shop_name: c.shop_name,
+      customer_id: c.customer_id,
+      customer_name: c.customer_name,
+      statement: stmt,
+    });
+    combined.opening += stmt.opening;
+    combined.closing += stmt.closing;
+    combined.total_purchases += stmt.total_purchases;
+    combined.total_paid += stmt.total_paid;
+  }
+
+  if (format === 'csv') {
+    const rows = [];
+    for (const s of shops) {
+      if (rows.length) rows.push('');
+      for (const r of statementCsvRows(s.statement, { shopName: s.shop_name, customerName: s.customer_name })) {
+        rows.push(r);
+      }
+    }
+    if (shops.length !== 1) {
+      const { rupees } = require('../utils/statement');
+      rows.push('');
+      rows.push(`Combined opening (Rs),${rupees(combined.opening)}`);
+      rows.push(`Combined total purchases (Rs),${rupees(combined.total_purchases)}`);
+      rows.push(`Combined total paid (Rs),${rupees(combined.total_paid)}`);
+      rows.push(`Combined closing (Rs),${rupees(combined.closing)}`);
+    }
+    const fname = shop_id ? `statement-${from}-to-${to}.csv` : `statement-all-shops-${from}-to-${to}.csv`;
+    return sendCsv(res, fname, rows);
+  }
+
+  if (shop_id) {
+    const only = shops[0] || null;
+    return res.json({ from, to, shop: only });
+  }
+  res.json({ from, to, shops, combined });
 };
 
 /**

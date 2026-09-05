@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
+import StatementView from '../../components/StatementView';
 import { apiFetch } from '../../lib/api';
 import { enqueue, newClientRequestId } from '../../lib/outbox';
 import { useLang } from '../../lib/i18n';
@@ -9,6 +10,11 @@ import { useSpeech, extractFirstNumber } from '../../lib/useSpeech';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+// Default statement range: last 90 days (YYYY-MM-DD).
+const isoDay = (d) => d.toISOString().slice(0, 10);
+const defFrom = () => isoDay(new Date(Date.now() - 90 * 24 * 60 * 60 * 1000));
+const defTo = () => isoDay(new Date());
 
 export default function CustomerDetail() {
   const router = useRouter();
@@ -21,6 +27,9 @@ export default function CustomerDetail() {
   const [msg, setMsg] = useState('');
   const [edit, setEdit] = useState(null);
   const [tx, setTx] = useState({ type: 'purchase', amount: '', note: '' });
+  const [stmtRange, setStmtRange] = useState({ from: defFrom(), to: defTo() });
+  const [stmt, setStmt] = useState(null);
+  const [stmtMsg, setStmtMsg] = useState('');
 
   const load = useCallback(async () => {
     const r = await apiFetch(`/api/customers/${id}/ledger`);
@@ -137,6 +146,36 @@ export default function CustomerDetail() {
     } catch (err) { setError(err.message); }
   }
 
+  async function viewStatement() {
+    setStmtMsg(''); setError('');
+    if (stmtRange.from > stmtRange.to) { setStmtMsg(t('stmt.rangeError')); return; }
+    try {
+      const r = await apiFetch(`/api/customers/${id}/statement?from=${stmtRange.from}&to=${stmtRange.to}`);
+      setStmt(r.statement);
+    } catch (err) { setStmtMsg(err.message || t('stmt.loadError')); }
+  }
+
+  async function downloadStatementCsv() {
+    setStmtMsg(''); setError('');
+    if (stmtRange.from > stmtRange.to) { setStmtMsg(t('stmt.rangeError')); return; }
+    try {
+      const token = window.localStorage.getItem('skhata_token');
+      const res = await fetch(`${API}/api/customers/${id}/statement?from=${stmtRange.from}&to=${stmtRange.to}&format=csv`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `statement-${id}-${stmtRange.from}-to-${stmtRange.to}.csv`;
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) { setStmtMsg(err.message); }
+  }
+
+  async function printStatement() {
+    if (!stmt) { await viewStatement(); }
+    setTimeout(() => window.print(), 50);
+  }
+
   async function archive() {
     if (!window.confirm(t('cust.archiveConfirm', { name: c.name }))) return;
     try {
@@ -186,6 +225,38 @@ export default function CustomerDetail() {
         {msg && <div className="muted" style={{ marginTop: 10 }}>{msg}</div>}
         {error && <div style={{ color: 'var(--danger)', marginTop: 10 }}>{error}</div>}
       </div>
+
+      <div className="card">
+        <h3>{t('stmt.customerStatement')}</h3>
+        <p className="muted">{t('stmt.subtitle')}</p>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div>
+            <label className="muted">{t('stmt.from')}</label>
+            <input type="date" value={stmtRange.from} onChange={(e) => setStmtRange({ ...stmtRange, from: e.target.value })} />
+          </div>
+          <div>
+            <label className="muted">{t('stmt.to')}</label>
+            <input type="date" value={stmtRange.to} onChange={(e) => setStmtRange({ ...stmtRange, to: e.target.value })} />
+          </div>
+          <button type="button" onClick={viewStatement}>{t('stmt.view')}</button>
+          <button type="button" className="secondary" onClick={downloadStatementCsv}>{t('stmt.download')}</button>
+          <button type="button" className="secondary" onClick={printStatement}>{t('stmt.print')}</button>
+        </div>
+        {stmtMsg && <div className="muted" style={{ marginTop: 8 }}>{stmtMsg}</div>}
+        {stmt && (
+          <div style={{ marginTop: 14 }}>
+            <StatementView stmt={stmt} fmt={fmt} />
+          </div>
+        )}
+      </div>
+
+      {stmt && (
+        <div className="stmt-print" aria-hidden="true">
+          <h2>{c.name} — {t('stmt.title')}</h2>
+          <div>{stmtRange.from} → {stmtRange.to}</div>
+          <StatementView stmt={stmt} fmt={fmt} print />
+        </div>
+      )}
 
       <div className="card">
         <h3>{t('tx.record')}</h3>

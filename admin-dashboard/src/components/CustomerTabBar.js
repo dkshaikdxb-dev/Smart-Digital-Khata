@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { clearCustomerToken } from '../lib/customerApi';
-import { clearApiCache } from '../lib/api';
 import { getActiveShopId, loadCart, cartTotals, CART_EVENT } from '../lib/customerCart';
 import { useLang } from '../lib/i18n';
 
 // Fixed bottom tab bar for the logged-in customer pages. Mobile-first, sits
 // inside the `.cpwa` wrapper so its styles are scoped and never touch the
-// owner app. Tabs: Shops / Cart / Orders / Khata / Logout.
+// owner app. Tabs: Shops / Cart / Orders / Khata / Account. Logout now lives
+// INSIDE the Account page.
 export default function CustomerTabBar() {
   const router = useRouter();
   const { t } = useLang();
@@ -35,13 +34,6 @@ export default function CustomerTabBar() {
 
   const isActive = (base) => path === base || path.startsWith(base + '/');
 
-  const logout = () => {
-    clearCustomerToken();
-    // Drop cached API responses so a shared device doesn't leak this user's data.
-    clearApiCache();
-    router.replace('/c/login');
-  };
-
   return (
     <nav className="cpwa-tabbar cpwa-tabbar-5" aria-label="Customer navigation">
       <Link href="/c/shops" className={isActive('/c/shops') || isActive('/c/shop') ? 'active' : ''}>
@@ -65,10 +57,10 @@ export default function CustomerTabBar() {
         <span className="cpwa-tab-ico">📒</span>
         <span>{t('ctab.khata')}</span>
       </Link>
-      <button type="button" onClick={logout}>
-        <span className="cpwa-tab-ico">🚪</span>
-        <span>{t('ctab.logout')}</span>
-      </button>
+      <Link href="/c/account" className={isActive('/c/account') ? 'active' : ''}>
+        <span className="cpwa-tab-ico">👤</span>
+        <span>{t('ctab.account')}</span>
+      </Link>
     </nav>
   );
 }

@@ -38,10 +38,19 @@ const orderIdSchema = Joi.object({
   id: Joi.string().uuid().required(),
 });
 
+// Statement range/format. shop_id optional (omitted → all-shops combined).
+const statementQuerySchema = Joi.object({
+  shop_id: Joi.string().uuid(),
+  from: Joi.date().iso(),
+  to: Joi.date().iso(),
+  format: Joi.string().valid('json', 'csv').default('json'),
+});
+
 // Every /my endpoint is scoped to the authenticated customer's phone.
 router.use(customerAuth());
 
 router.get('/khata', asyncHandler(ctrl.khata));
+router.get('/statement', validate(statementQuerySchema, 'query'), asyncHandler(ctrl.statement));
 router.get('/khata/:shopId', validate(shopParamSchema, 'params'), asyncHandler(ctrl.shopKhata));
 router.post('/pay', validate(paySchema), asyncHandler(ctrl.pay));
 

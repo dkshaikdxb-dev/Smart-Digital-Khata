@@ -104,7 +104,8 @@ exports.verifyOtp = async (req, res) => {
 
 exports.me = async (req, res) => {
   const r = await query(
-    'SELECT id, phone, name, created_at, last_login_at FROM customer_users WHERE id = $1',
+    `SELECT id, phone, name, email, gender, date_of_birth, created_at, last_login_at
+     FROM customer_users WHERE id = $1`,
     [req.customerUser.id]
   );
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
@@ -123,4 +124,36 @@ exports.me = async (req, res) => {
   );
 
   res.json({ customer_user: customerUser, shops: shops.rows });
+};
+
+// PATCH /customer-auth/profile — update the consumer's own profile. phone is the
+// login id and is READ-ONLY here; only name, email, gender and date_of_birth
+// (all optional/omittable, privacy-first) can change.
+const CU_EDITABLE = ['name', 'email', 'gender', 'date_of_birth'];
+
+exports.updateProfile = async (req, res) => {
+  const fields = [];
+  const values = [];
+  let i = 1;
+  for (const k of CU_EDITABLE) {
+    if (Object.prototype.hasOwnProperty.call(req.body, k)) {
+      let v = req.body[k];
+      if (k === 'email' && v === '') v = null;
+      fields.push(`${k} = $${i++}`);
+      values.push(v);
+    }
+  }
+  const cols = 'id, phone, name, email, gender, date_of_birth, created_at, last_login_at';
+  if (!fields.length) {
+    const cur = await query(`SELECT ${cols} FROM customer_users WHERE id = $1`, [req.customerUser.id]);
+    if (!cur.rowCount) throw ApiError.notFound('Customer not found');
+    return res.json({ customer_user: cur.rows[0] });
+  }
+  values.push(req.customerUser.id);
+  const r = await query(
+    `UPDATE customer_users SET ${fields.join(', ')} WHERE id = $${i} RETURNING ${cols}`,
+    values
+  );
+  if (!r.rowCount) throw ApiError.notFound('Customer not found');
+  res.json({ customer_user: r.rows[0] });
 };
