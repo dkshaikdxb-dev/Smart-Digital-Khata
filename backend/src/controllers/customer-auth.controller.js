@@ -53,6 +53,30 @@ function maybeRefreshToken(customerUser, iat) {
   return signToken(customerUser);
 }
 
+// Demo-OTP affordance (env-gated, OFF by default). DEMO_OTP_PHONES is a
+// comma-separated E164 allowlist; any number on it gets its OTP echoed back in
+// the API response (dev_code) EVEN in production, so the operator can test
+// consumer login without a live SMS — WITHOUT any general backdoor. Empty/unset
+// = feature off. It NEVER affects a number not in the list, and it does NOT
+// touch OTP generation or verification at all: the code is still a single-use,
+// bcrypt-hashed random with the same attempt caps — this only reveals the
+// already-random code for these specific demo numbers.
+function demoOtpPhones() {
+  return String(process.env.DEMO_OTP_PHONES || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((p) => toE164(p));
+}
+
+// Whether to include dev_code in the response for `phone`: yes outside
+// production (existing dev/test behaviour), or — even in production — when this
+// exact phone is an allow-listed demo number. Real users are unaffected.
+function shouldRevealDevCode(phone) {
+  if (process.env.NODE_ENV !== 'production') return true;
+  return demoOtpPhones().includes(phone);
+}
+
 // Issue (replace) the single live OTP for a phone and return the plaintext code
 // so the caller can dispatch it. Only a bcrypt hash is ever persisted.
 async function issueOtp(phone) {
@@ -108,8 +132,9 @@ exports.requestOtp = async (req, res) => {
   );
 
   const body = { ok: true };
-  // For testability only — never leak the code in production.
-  if (process.env.NODE_ENV !== 'production') body.dev_code = code;
+  // Reveal the code outside production, or — for an allow-listed demo number —
+  // even in production (see shouldRevealDevCode). Never leaked for real users.
+  if (shouldRevealDevCode(phone)) body.dev_code = code;
   res.json(body);
 };
 
@@ -267,7 +292,9 @@ exports.changeNumberRequest = async (req, res) => {
   );
 
   const body = { ok: true };
-  if (process.env.NODE_ENV !== 'production') body.dev_code = code;
+  // Same demo-OTP affordance as request-otp: revealed for allow-listed demo
+  // numbers (even in production) so number-change can be tested without SMS.
+  if (shouldRevealDevCode(newPhone)) body.dev_code = code;
   res.json(body);
 };
 

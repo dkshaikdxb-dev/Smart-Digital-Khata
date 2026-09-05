@@ -16,6 +16,20 @@ async function start() {
 
     await settings.load();
 
+    // Make the demo-OTP affordance obvious in the logs whenever it is enabled,
+    // so an operator can never leave it on unnoticed. Only the count is logged,
+    // never the numbers or any code.
+    const demoPhones = String(process.env.DEMO_OTP_PHONES || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (demoPhones.length > 0) {
+      logger.warn(
+        { count: demoPhones.length },
+        'DEMO_OTP_PHONES is set — OTP codes will be returned in the API response for these numbers (demo/testing affordance)'
+      );
+    }
+
     if (process.env.RUN_WORKERS !== 'false') {
       startWorkers();
       logger.info('Background workers started');
