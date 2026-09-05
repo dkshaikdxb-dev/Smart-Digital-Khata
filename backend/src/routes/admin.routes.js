@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const Joi = require('joi');
 const auth = require('../middleware/auth');
+const loadAdminRole = require('../middleware/loadAdminRole');
+const requirePerm = require('../middleware/requirePerm');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/admin.controller');
@@ -8,6 +10,17 @@ const ctrl = require('../controllers/admin.controller');
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
   plan: Joi.string().valid('free', 'pro', 'family'),
+  // Optional moderation note recorded in the audit log on a status change.
+  reason: Joi.string().max(1000).allow('', null),
+}).min(1);
+
+const reasonSchema = Joi.object({
+  reason: Joi.string().max(1000).allow('', null),
+});
+
+const adminRoleSchema = Joi.object({
+  admin_role: Joi.string().valid('super', 'support', 'finance', 'moderation').allow(null),
+  reason: Joi.string().max(1000).allow('', null),
 }).min(1);
 
 const settingsSchema = Joi.object({
@@ -25,15 +38,40 @@ const settingsSchema = Joi.object({
   whatsapp_template_lang: Joi.string().allow(''),
 }).min(1);
 
+// auth guarantees role='admin'; loadAdminRole resolves the admin SUB-role onto
+// req.adminRole for requirePerm() and the controllers.
 router.use(auth('admin'));
-router.get('/stats', asyncHandler(ctrl.stats));
-router.get('/shops', asyncHandler(ctrl.listShops));
-router.get('/shops/:id', asyncHandler(ctrl.getShop));
+router.use(asyncHandler(loadAdminRole));
+
+// Caller identity + permission set (drives the permission-aware frontend).
+router.get('/me', asyncHandler(ctrl.me));
+
+// Platform overview + shop directory (read).
+router.get('/stats', requirePerm('shops:view'), asyncHandler(ctrl.stats));
+router.get('/shops', requirePerm('shops:view'), asyncHandler(ctrl.listShops));
+router.get('/shops/:id', requirePerm('shops:view'), asyncHandler(ctrl.getShop));
+// Mixed status/plan edit: permission is checked per-field inside the controller
+// (status → shops:moderate; plan → settings:manage or shops:moderate).
 router.patch('/shops/:id', validate(updateShopSchema), asyncHandler(ctrl.updateShop));
-router.get('/users', asyncHandler(ctrl.listUsers));
-router.get('/settings', asyncHandler(ctrl.getSettings));
-router.patch('/settings', validate(settingsSchema), asyncHandler(ctrl.updateSettings));
-router.post('/settings/razorpay/test', asyncHandler(ctrl.testRazorpay));
-router.post('/settings/whatsapp/test', validate(Joi.object({ to: Joi.string().required() })), asyncHandler(ctrl.testWhatsapp));
+
+// Login users (owners/staff/admins).
+router.get('/users', requirePerm('users:view'), asyncHandler(ctrl.listUsers));
+router.post('/users/:id/block', requirePerm('users:moderate'), validate(reasonSchema), asyncHandler(ctrl.blockUser));
+router.post('/users/:id/unblock', requirePerm('users:moderate'), validate(reasonSchema), asyncHandler(ctrl.unblockUser));
+router.patch('/users/:id/admin-role', requirePerm('admin:manage'), validate(adminRoleSchema), asyncHandler(ctrl.setAdminRole));
+
+// Consumer accounts.
+router.get('/customers', requirePerm('customers:view'), asyncHandler(ctrl.listCustomers));
+router.post('/customers/:id/block', requirePerm('customers:moderate'), validate(reasonSchema), asyncHandler(ctrl.blockCustomer));
+router.post('/customers/:id/unblock', requirePerm('customers:moderate'), validate(reasonSchema), asyncHandler(ctrl.unblockCustomer));
+
+// Moderation audit log.
+router.get('/moderation-log', requirePerm('audit:view'), asyncHandler(ctrl.moderationLog));
+
+// Platform integration settings (billing/messaging).
+router.get('/settings', requirePerm('settings:manage'), asyncHandler(ctrl.getSettings));
+router.patch('/settings', requirePerm('settings:manage'), validate(settingsSchema), asyncHandler(ctrl.updateSettings));
+router.post('/settings/razorpay/test', requirePerm('settings:manage'), asyncHandler(ctrl.testRazorpay));
+router.post('/settings/whatsapp/test', requirePerm('settings:manage'), validate(Joi.object({ to: Joi.string().required() })), asyncHandler(ctrl.testWhatsapp));
 
 module.exports = router;

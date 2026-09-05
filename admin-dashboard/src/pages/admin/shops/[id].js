@@ -2,15 +2,21 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../../components/Nav';
 import { apiFetch } from '../../../lib/api';
+import { useLang } from '../../../lib/i18n';
+import { usePermissions } from '../../../lib/adminPerms';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function AdminShopDetail() {
   const router = useRouter();
+  const { t } = useLang();
+  const { has } = usePermissions();
   const { id } = router.query;
   const [shop, setShop] = useState(null);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
+  const canModerate = has('shops:moderate');
+  const canPlan = has('settings:manage') || has('shops:moderate');
 
   const load = useCallback(async () => {
     const r = await apiFetch(`/api/admin/shops/${id}`);
@@ -34,6 +40,19 @@ export default function AdminShopDetail() {
       await load();
       setMsg(note);
     } catch (e) { setError(e.message); }
+  }
+
+  // Status changes require a reason (suspend: required, reinstate: optional) and
+  // record it in the moderation audit log.
+  function changeStatus(nextStatus) {
+    const isSuspend = nextStatus === 'suspended';
+    const reason = window.prompt(t(isSuspend ? 'mod.suspendReason' : 'mod.reinstateReason'), '');
+    if (reason === null) return; // cancelled
+    if (isSuspend && !reason.trim()) { setError(t('mod.reasonRequired')); return; }
+    patch(
+      { status: nextStatus, reason: reason.trim() },
+      isSuspend ? t('mod.blocked') : t('mod.unblocked')
+    );
   }
 
   const suspended = shop.status === 'suspended';
@@ -63,35 +82,39 @@ export default function AdminShopDetail() {
         <div className="card"><div className="muted">Outstanding</div><div className="kpi">{fmt(shop.outstanding_total)}</div></div>
       </div>
 
-      <div className="card">
-        <h3>Plan</h3>
-        <p className="muted">Change this shop&rsquo;s plan (overrides billing — use for comps or support).</p>
-        <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-          {['free', 'pro', 'family'].map((p) => (
-            shop.plan === p
-              ? <button key={p} disabled>{p} (current)</button>
-              : <button key={p} className="secondary" onClick={() => patch({ plan: p }, `Plan changed to ${p}.`)}>Set {p}</button>
-          ))}
+      {canPlan && (
+        <div className="card">
+          <h3>Plan</h3>
+          <p className="muted">Change this shop&rsquo;s plan (overrides billing — use for comps or support).</p>
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            {['free', 'pro', 'family'].map((p) => (
+              shop.plan === p
+                ? <button key={p} disabled>{p} (current)</button>
+                : <button key={p} className="secondary" onClick={() => patch({ plan: p }, `Plan changed to ${p}.`)}>Set {p}</button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="card">
-        <h3>Account status</h3>
-        {suspended ? (
-          <>
-            <p className="muted">This shop is suspended — the owner cannot sign in.</p>
-            <button onClick={() => patch({ status: 'active' }, 'Shop reactivated.')}>Reactivate shop</button>
-          </>
-        ) : (
-          <>
-            <p className="muted">Suspending blocks the owner from signing in. Data is kept and can be restored anytime.</p>
-            <button style={{ background: 'var(--danger)', color: '#fff' }}
-              onClick={() => { if (window.confirm(`Suspend ${shop.name}? The owner will be locked out.`)) patch({ status: 'suspended' }, 'Shop suspended.'); }}>
-              Suspend shop
-            </button>
-          </>
-        )}
-      </div>
+      {canModerate && (
+        <div className="card">
+          <h3>Account status</h3>
+          {suspended ? (
+            <>
+              <p className="muted">This shop is suspended — the owner cannot sign in.</p>
+              <button onClick={() => changeStatus('active')}>Reactivate shop</button>
+            </>
+          ) : (
+            <>
+              <p className="muted">Suspending blocks the owner from signing in. Data is kept and can be restored anytime.</p>
+              <button style={{ background: 'var(--danger)', color: '#fff' }}
+                onClick={() => changeStatus('suspended')}>
+                Suspend shop
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </Shell>
   );
 }

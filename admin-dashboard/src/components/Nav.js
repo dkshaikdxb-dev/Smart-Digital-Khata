@@ -4,11 +4,14 @@ import { useRouter } from 'next/router';
 import LangSwitch from './LangSwitch';
 import { clearApiCache } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { usePermissions, clearPermsCache } from '../lib/adminPerms';
 
 export default function Nav() {
   const router = useRouter();
   const { t } = useLang();
   const [role, setRole] = useState(null);
+  // Only admins have a permission set; skip the /api/admin/me fetch otherwise.
+  const { has } = usePermissions(role === 'admin');
 
   useEffect(() => {
     setRole(window.localStorage.getItem('skhata_role') || 'owner');
@@ -19,6 +22,7 @@ export default function Nav() {
     window.localStorage.removeItem('skhata_role');
     // Drop cached API responses so a shared device doesn't leak this user's data.
     clearApiCache();
+    clearPermsCache();
     router.push('/login');
   };
 
@@ -28,7 +32,9 @@ export default function Nav() {
       {role === 'admin' ? (
         <>
           <Link href="/admin">{t('nav.platform')}</Link>
-          <Link href="/admin/settings">{t('nav.settings')}</Link>
+          {has('customers:view') && <Link href="/admin/customers">{t('mod.navConsumers')}</Link>}
+          {has('audit:view') && <Link href="/admin/moderation">{t('mod.navModeration')}</Link>}
+          {has('settings:manage') && <Link href="/admin/settings">{t('nav.settings')}</Link>}
           <Link href="/admin/i18n">{t('nav.translations')}</Link>
           <Link href="/admin/languages">{t('alang.title')}</Link>
           <span className="badge">Platform Admin</span>
