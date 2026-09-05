@@ -172,11 +172,23 @@ async function resolveOrCreateCustomer(client, shopId, phone) {
   return created.rows[0];
 }
 
+// Loose/weighed items are the shop's money-critical case: products.price holds
+// paise PER KG and the line price for a chosen weight is round(price_per_kg *
+// weight_grams / 1000) in paise. This is ALWAYS recomputed here from the trusted
+// product row — a client-sent price or line_total is never used. A weight in
+// grams must be a positive integer within [1..100000] (1g..100kg).
+const MIN_WEIGHT_GRAMS = 1;
+const MAX_WEIGHT_GRAMS = 100000;
+
+function weighedLineTotal(pricePerKg, weightGrams) {
+  return Math.round((pricePerKg * weightGrams) / 1000);
+}
+
 /** Load & validate the ordered products; return snapshot line items + subtotal. */
 async function buildLineItems(shopId, items) {
   const ids = items.map((i) => i.product_id);
   const prodRes = await query(
-    `SELECT id, name, price, is_active FROM products
+    `SELECT id, name, price, unit, sold_by_weight, is_active FROM products
      WHERE shop_id = $1 AND id = ANY($2::uuid[])`,
     [shopId, ids]
   );
@@ -188,10 +200,38 @@ async function buildLineItems(shopId, items) {
     const p = byId[item.product_id];
     if (!p) throw ApiError.unprocessable('Product not available at this shop', { product_id: item.product_id });
     if (!p.is_active) throw ApiError.unprocessable('Product is not available', { product_id: item.product_id });
-    const unitPrice = Number(p.price);
-    const lineTotal = unitPrice * item.quantity;
-    subtotal += lineTotal;
-    lines.push({ product_id: p.id, name: p.name, unit_price: unitPrice, quantity: item.quantity, line_total: lineTotal });
+    const unitPrice = Number(p.price); // paise per KG for a weighed item, else per unit
+
+    if (p.sold_by_weight) {
+      // Weighed line: recompute the price server-side from weight_grams. Never
+      // trust any client-sent price/line_total. quantity is fixed at 1.
+      const grams = Number(item.weight_grams);
+      if (!Number.isInteger(grams) || grams < MIN_WEIGHT_GRAMS || grams > MAX_WEIGHT_GRAMS) {
+        throw ApiError.unprocessable('A valid weight in grams is required for this item', {
+          product_id: item.product_id,
+        });
+      }
+      const lineTotal = weighedLineTotal(unitPrice, grams);
+      subtotal += lineTotal;
+      lines.push({
+        product_id: p.id, name: p.name, unit_price: unitPrice,
+        quantity: 1, weight_grams: grams, line_total: lineTotal,
+      });
+    } else {
+      // Unit line: price * integer quantity (unchanged). Any weight_grams is ignored.
+      const qty = Number(item.quantity);
+      if (!Number.isInteger(qty) || qty < 1) {
+        throw ApiError.unprocessable('A valid quantity is required for this item', {
+          product_id: item.product_id,
+        });
+      }
+      const lineTotal = unitPrice * qty;
+      subtotal += lineTotal;
+      lines.push({
+        product_id: p.id, name: p.name, unit_price: unitPrice,
+        quantity: qty, weight_grams: null, line_total: lineTotal,
+      });
+    }
   }
   return { lines, subtotal };
 }
@@ -200,10 +240,10 @@ async function insertOrderItems(client, orderId, lines) {
   const out = [];
   for (const l of lines) {
     const r = await client.query(
-      `INSERT INTO order_items (order_id, product_id, name, unit_price, quantity, line_total)
-       VALUES ($1,$2,$3,$4,$5,$6)
-       RETURNING id, product_id, name, unit_price, quantity, line_total`,
-      [orderId, l.product_id, l.name, l.unit_price, l.quantity, l.line_total]
+      `INSERT INTO order_items (order_id, product_id, name, unit_price, quantity, line_total, weight_grams)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING id, product_id, name, unit_price, quantity, line_total, weight_grams`,
+      [orderId, l.product_id, l.name, l.unit_price, l.quantity, l.line_total, l.weight_grams]
     );
     out.push(r.rows[0]);
   }
@@ -530,7 +570,7 @@ exports.getOrder = async (req, res) => {
   if (!r.rowCount) throw ApiError.notFound('Order not found');
 
   const items = await query(
-    `SELECT id, product_id, name, unit_price, quantity, line_total
+    `SELECT id, product_id, name, unit_price, quantity, line_total, weight_grams
      FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
     [req.params.id]
   );

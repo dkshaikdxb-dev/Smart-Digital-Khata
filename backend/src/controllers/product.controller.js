@@ -16,7 +16,7 @@ const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 // Columns safe to return in JSON — never the raw image_data BYTEA blob.
 const PRODUCT_PUBLIC_COLS =
-  'id, shop_id, name, description, price, unit, is_active, image_url, image_mime, image_updated_at, created_at, updated_at';
+  'id, shop_id, name, description, price, unit, sold_by_weight, is_active, image_url, image_mime, image_updated_at, created_at, updated_at';
 
 exports.list = async (req, res) => {
   const search = (req.query.search || '').trim();
@@ -32,7 +32,7 @@ exports.list = async (req, res) => {
     where += ' AND is_active = true';
   }
   const r = await query(
-    `SELECT id, name, description, price, unit, is_active, image_url, created_at, updated_at
+    `SELECT id, name, description, price, unit, sold_by_weight, is_active, image_url, created_at, updated_at
      FROM products WHERE ${where}
      ORDER BY created_at DESC, id DESC`,
     params
@@ -41,12 +41,16 @@ exports.list = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { name, price = 0, description = null, unit = 'unit', image_url = null } = req.body;
+  const { name, price = 0, description = null, image_url = null } = req.body;
+  const soldByWeight = req.body.sold_by_weight === true;
+  // A loose/weighed item is priced per KG, so its unit is forced to 'kg'
+  // regardless of what was sent — the server stays the authority on this.
+  const unit = soldByWeight ? 'kg' : (req.body.unit || 'unit');
   const r = await query(
-    `INSERT INTO products (shop_id, name, price, description, unit, image_url)
-     VALUES ($1,$2,$3,$4,$5,$6)
+    `INSERT INTO products (shop_id, name, price, description, unit, sold_by_weight, image_url)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)
      RETURNING *`,
-    [req.user.shopId, name, price, description, unit, image_url]
+    [req.user.shopId, name, price, description, unit, soldByWeight, image_url]
   );
   res.status(201).json({ product: r.rows[0] });
 };
@@ -61,6 +65,8 @@ exports.get = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
+  // Turning a product into a loose/weighed one forces unit='kg' (price is per KG).
+  if (req.body.sold_by_weight === true) req.body.unit = 'kg';
   const fields = [];
   const values = [];
   let i = 1;

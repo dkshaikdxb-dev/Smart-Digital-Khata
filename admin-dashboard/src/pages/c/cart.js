@@ -4,8 +4,14 @@ import Link from 'next/link';
 import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
 import { customerFetch, getCustomerToken, publicFetch } from '../../lib/customerApi';
-import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId } from '../../lib/customerCart';
+import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId, lineTotalPaise } from '../../lib/customerCart';
 import { useLang } from '../../lib/i18n';
+
+// Human label for a weight in grams: "250 g" or "1 kg".
+function gramsLabel(g) {
+  const n = Number(g) || 0;
+  return n % 1000 === 0 ? `${n / 1000} kg` : `${n} g`;
+}
 
 // Review & place order. Login is required only at submit time — an anonymous
 // customer can build a cart and is sent to /c/login (preserving intent) when
@@ -110,7 +116,9 @@ export default function Cart() {
     try {
       const body = {
         shop_id: activeShopId,
-        items: lines.map((l) => ({ product_id: l.product_id, quantity: Number(l.quantity) })),
+        items: lines.map((l) => (l.sold_by_weight
+          ? { product_id: l.product_id, weight_grams: Number(l.weight_grams) }
+          : { product_id: l.product_id, quantity: Number(l.quantity) })),
         fulfillment_type: fulfillment,
         payment_mode: payment,
         address: fulfillment === 'delivery' ? address.trim() : '',
@@ -161,14 +169,25 @@ export default function Cart() {
             <ProductThumb product={l} size={40} />
             <div className="cpwa-cart-line-info">
               <div>{l.name}</div>
-              <div className="muted">{money(l.price)} / {l.unit || t('c.unit')}</div>
+              {l.sold_by_weight ? (
+                <div className="muted">{money(l.price)} {t('loose.perKg')} · {gramsLabel(l.weight_grams)}</div>
+              ) : (
+                <div className="muted">{money(l.price)} / {l.unit || t('c.unit')}</div>
+              )}
             </div>
-            <div className="cpwa-stepper">
-              <button type="button" className="secondary" onClick={() => setQty(l.product_id, l.quantity - 1)} aria-label="Decrease">−</button>
-              <span className="cpwa-qty">{l.quantity}</span>
-              <button type="button" className="secondary" onClick={() => setQty(l.product_id, l.quantity + 1)} aria-label="Increase">+</button>
-            </div>
-            <div className="cpwa-cart-line-total">{money(l.price * l.quantity)}</div>
+            {l.sold_by_weight ? (
+              <div className="cpwa-cart-weight">
+                <span className="cpwa-weight-tag">{gramsLabel(l.weight_grams)}</span>
+                <button type="button" className="secondary cpwa-weight-remove" onClick={() => setQty(l.product_id, 0)} aria-label={t('common.remove')}>×</button>
+              </div>
+            ) : (
+              <div className="cpwa-stepper">
+                <button type="button" className="secondary" onClick={() => setQty(l.product_id, l.quantity - 1)} aria-label="Decrease">−</button>
+                <span className="cpwa-qty">{l.quantity}</span>
+                <button type="button" className="secondary" onClick={() => setQty(l.product_id, l.quantity + 1)} aria-label="Increase">+</button>
+              </div>
+            )}
+            <div className="cpwa-cart-line-total">{money(lineTotalPaise(l))}</div>
           </div>
         ))}
         <div className="cpwa-row-between cpwa-subtotal">

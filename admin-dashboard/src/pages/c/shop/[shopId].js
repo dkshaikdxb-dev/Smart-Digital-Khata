@@ -4,8 +4,17 @@ import Link from 'next/link';
 import CustomerShell, { money } from '../../../components/CustomerShell';
 import ProductThumb from '../../../components/ProductThumb';
 import { publicFetch } from '../../../lib/customerApi';
-import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart } from '../../../lib/customerCart';
+import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineTotalPaise } from '../../../lib/customerCart';
 import { useLang } from '../../../lib/i18n';
+import { useSpeech } from '../../../lib/useSpeech';
+
+// Quick-pick weight chips (grams) offered for loose/weighed items.
+const WEIGHT_CHIPS = [250, 500, 1000];
+// Human label for a weight in grams: "250 g" or "1 kg".
+function gramsLabel(g) {
+  const n = Number(g) || 0;
+  return n % 1000 === 0 ? `${n / 1000} kg` : `${n} g`;
+}
 
 // Shop catalog + per-shop cart. Adding items persists to localStorage keyed by
 // shop. A customer can only build a cart for ONE shop at a time.
@@ -18,6 +27,7 @@ import { useLang } from '../../../lib/i18n';
 export default function ShopCatalog() {
   const router = useRouter();
   const { t } = useLang();
+  const { sttSupported, listening, listen } = useSpeech();
   const { shopId } = router.query;
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
@@ -89,6 +99,35 @@ export default function ShopCatalog() {
         quantity: qty,
       };
     }
+    persist({ shop_id: shopId, shop_name: shop?.name, items });
+  }
+
+  // Add/replace a loose/weighed item at the chosen weight (grams). A weighed item
+  // is a single line (quantity 1); re-choosing a weight replaces it.
+  function setWeight(p, grams) {
+    const g = Number(grams);
+    const items = { ...(cart?.items || {}) };
+    if (!g || g <= 0) {
+      delete items[p.id];
+      persist({ shop_id: shopId, shop_name: shop?.name, items });
+      return;
+    }
+    const other = otherActiveCartShopId(shopId);
+    if (other && !items[p.id]) {
+      const ok = window.confirm(t('c.switchCartConfirm'));
+      if (!ok) return;
+      clearCart(other);
+    }
+    items[p.id] = {
+      product_id: p.id,
+      name: p.name,
+      unit: p.unit,
+      price: Number(p.price || 0), // paise per KG
+      image_url: p.image_url || '',
+      sold_by_weight: true,
+      weight_grams: g,
+      quantity: 1,
+    };
     persist({ shop_id: shopId, shop_name: shop?.name, items });
   }
 
@@ -208,7 +247,7 @@ export default function ShopCatalog() {
 
       {shop && products.length > 0 && (
         <div className="card">
-          <div className="cpwa-search">
+          <div className="cpwa-search cpwa-search-voice">
             <input
               type="search"
               value={search}
@@ -216,6 +255,17 @@ export default function ShopCatalog() {
               placeholder={t('c.searchProducts')}
               aria-label={t('c.searchProducts')}
             />
+            {sttSupported && (
+              <button
+                type="button"
+                className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
+                onClick={() => listen((tx) => setSearch(tx))}
+                aria-label={t('voice.listen')}
+                title={listening ? t('voice.listening') : t('voice.listen')}
+              >
+                🎤
+              </button>
+            )}
           </div>
           {categories.length > 0 && (
             <div className="cpwa-chips" role="group" aria-label={t('c.category')}>
@@ -244,6 +294,23 @@ export default function ShopCatalog() {
         if (u.kind === 'single') {
           const p = u.product;
           const inCart = cart?.items?.[p.id];
+          if (p.sold_by_weight) {
+            return (
+              <div key={u.key} className="card cpwa-product-weighed">
+                <div className="cpwa-product cpwa-vcard-top">
+                  <ProductThumb product={p} />
+                  <div className="cpwa-product-info">
+                    <div className="cpwa-product-name">{p.name}</div>
+                    {p.description && <div className="muted cpwa-clamp">{p.description}</div>}
+                    <div className="cpwa-product-price">
+                      {money(p.price)} <span className="muted">{t('loose.perKg')}</span>
+                    </div>
+                  </div>
+                </div>
+                <WeightPicker p={p} inCart={inCart} t={t} onSet={(g) => setWeight(p, g)} />
+              </div>
+            );
+          }
           return (
             <div key={u.key} className="card cpwa-product">
               <ProductThumb product={p} />
@@ -279,6 +346,65 @@ export default function ShopCatalog() {
         </div>
       )}
     </CustomerShell>
+  );
+}
+
+// Weight picker for a loose/weighed product: quick chips (250g/500g/1kg) plus a
+// custom grams input. Choosing a weight adds/updates the cart line; the computed
+// line price is shown for the current selection. The server always recomputes the
+// price at order time — this is a preview.
+function WeightPicker({ p, inCart, t, onSet }) {
+  const [custom, setCustom] = useState('');
+  const active = (inCart && Number(inCart.weight_grams)) || 0;
+  return (
+    <div className="cpwa-weight">
+      <div className="cpwa-weight-chips" role="group" aria-label={t('loose.weight')}>
+        {WEIGHT_CHIPS.map((g) => (
+          <button
+            key={g}
+            type="button"
+            className={`cpwa-chip${active === g ? ' active' : ''}`}
+            onClick={() => onSet(g)}
+          >
+            {gramsLabel(g)}
+          </button>
+        ))}
+      </div>
+      <div className="cpwa-weight-custom">
+        <input
+          type="number"
+          min="1"
+          step="1"
+          inputMode="numeric"
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          placeholder={t('loose.grams')}
+          aria-label={t('loose.custom')}
+        />
+        <button
+          type="button"
+          className="secondary"
+          disabled={!(Number(custom) > 0)}
+          onClick={() => { onSet(Number(custom)); setCustom(''); }}
+        >
+          {t('common.add')}
+        </button>
+      </div>
+      {active > 0 && (
+        <div className="cpwa-weight-line">
+          <span className="muted">{gramsLabel(active)}</span>
+          <strong>{money(lineTotalPaise(inCart))}</strong>
+          <button
+            type="button"
+            className="secondary cpwa-weight-remove"
+            onClick={() => onSet(0)}
+            aria-label={t('common.remove')}
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 

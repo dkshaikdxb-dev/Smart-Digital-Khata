@@ -102,7 +102,7 @@ exports.getShop = async (req, res) => {
   // category/subcategory come from the linked base catalog item (LEFT JOIN, so
   // custom / unlinked products get null for both). Keep the existing fields.
   const products = await query(
-    `SELECT p.id, p.name, p.description, p.price, p.unit, p.image_url,
+    `SELECT p.id, p.name, p.description, p.price, p.unit, p.sold_by_weight, p.image_url,
             ci.category, ci.subcategory,
             ci.product AS base_product, ci.brand, ci.pack
        FROM products p

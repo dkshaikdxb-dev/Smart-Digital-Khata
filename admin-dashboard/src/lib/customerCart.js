@@ -18,7 +18,20 @@ function emitCartChanged() {
 }
 
 // Shape stored per shop:
-// { shop_id, shop_name, items: { [product_id]: { product_id, name, unit, price, quantity } } }
+// { shop_id, shop_name, items: { [product_id]: { product_id, name, unit, price, quantity,
+//   sold_by_weight?, weight_grams? } } }
+// For a loose/weighed item `price` is paise PER KG, quantity is 1, and the line
+// price is round(price_per_kg * weight_grams / 1000). The server ALWAYS recomputes
+// this at order time — the cart figure is only a preview.
+
+// Preview line price in paise for one cart item (weighed or unit).
+export function lineTotalPaise(it) {
+  if (!it) return 0;
+  if (it.sold_by_weight && it.weight_grams) {
+    return Math.round((Number(it.price || 0) * Number(it.weight_grams)) / 1000);
+  }
+  return Number(it.price || 0) * Number(it.quantity || 0);
+}
 
 export function loadCart(shopId) {
   if (typeof window === 'undefined' || !shopId) return null;
@@ -86,7 +99,8 @@ export function otherActiveCartShopId(shopId) {
 
 export function cartTotals(cart) {
   const items = cart ? Object.values(cart.items || {}) : [];
-  const count = items.reduce((n, it) => n + Number(it.quantity || 0), 0);
-  const subtotal = items.reduce((s, it) => s + Number(it.price || 0) * Number(it.quantity || 0), 0);
+  // A weighed item is one line (quantity 1); a unit item counts its quantity.
+  const count = items.reduce((n, it) => n + (it.sold_by_weight ? 1 : Number(it.quantity || 0)), 0);
+  const subtotal = items.reduce((s, it) => s + lineTotalPaise(it), 0);
   return { count, subtotal, lines: items };
 }

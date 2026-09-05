@@ -31,17 +31,19 @@ function uploadImageField(req, res, next) {
 
 const createSchema = Joi.object({
   name: Joi.string().min(1).max(200).required(),
-  price: Joi.number().integer().min(0).default(0), // paise
+  price: Joi.number().integer().min(0).default(0), // paise (per KG when sold_by_weight)
   description: Joi.string().allow('', null),
   unit: Joi.string().min(1).max(40),
+  sold_by_weight: Joi.boolean(), // loose selling: price is per KG, unit forced to 'kg'
   image_url: Joi.string().uri().allow('', null),
 });
 
 const updateSchema = Joi.object({
   name: Joi.string().min(1).max(200),
-  price: Joi.number().integer().min(0), // paise
+  price: Joi.number().integer().min(0), // paise (per KG when sold_by_weight)
   description: Joi.string().allow('', null),
   unit: Joi.string().min(1).max(40),
+  sold_by_weight: Joi.boolean(),
   image_url: Joi.string().uri().allow('', null),
   is_active: Joi.boolean(),
 });

@@ -59,7 +59,7 @@ exports.get = async (req, res) => {
   if (!r.rowCount) throw ApiError.notFound('Order not found');
 
   const items = await query(
-    `SELECT id, product_id, name, unit_price, quantity, line_total
+    `SELECT id, product_id, name, unit_price, quantity, line_total, weight_grams
      FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
     [req.params.id]
   );

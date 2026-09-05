@@ -324,8 +324,12 @@ exports.custom = async (req, res) => {
   const shopId = req.user.shopId;
   const {
     product, brand = null, pack = null, category = null,
-    subcategory = null, unit = null, price,
+    subcategory = null, price,
   } = req.body;
+  // Loose/weighed item: price is per KG and unit is forced to 'kg' (server is the
+  // authority). Otherwise use the supplied unit, defaulting to 'unit'.
+  const soldByWeight = req.body.sold_by_weight === true;
+  const unit = soldByWeight ? 'kg' : (req.body.unit || null);
 
   const result = await withTx(async (client) => {
     const ciIns = await client.query(
@@ -340,10 +344,10 @@ exports.custom = async (req, res) => {
     const name = displayName(item);
 
     const pIns = await client.query(
-      `INSERT INTO products (shop_id, name, price, unit, is_active, catalog_item_id)
-       VALUES ($1,$2,$3,$4,true,$5)
+      `INSERT INTO products (shop_id, name, price, unit, sold_by_weight, is_active, catalog_item_id)
+       VALUES ($1,$2,$3,$4,$5,true,$6)
        RETURNING *`,
-      [shopId, name, price, item.unit || 'unit', item.id]
+      [shopId, name, price, item.unit || 'unit', soldByWeight, item.id]
     );
     return { item, product: pIns.rows[0] };
   });

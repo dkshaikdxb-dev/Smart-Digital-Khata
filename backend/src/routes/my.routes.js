@@ -18,10 +18,14 @@ const createOrderSchema = Joi.object({
   shop_id: Joi.string().uuid().required(),
   items: Joi.array()
     .items(
+      // A line is either a unit line (quantity) or a weighed line (weight_grams,
+      // grams). At least one must be present; the server recomputes the price and
+      // decides which applies from the product's sold_by_weight flag.
       Joi.object({
         product_id: Joi.string().uuid().required(),
-        quantity: Joi.number().integer().min(1).required(),
-      })
+        quantity: Joi.number().integer().min(1),
+        weight_grams: Joi.number().integer().min(1).max(100000),
+      }).or('quantity', 'weight_grams')
     )
     .required(),
   fulfillment_type: Joi.string().valid('delivery', 'pickup').required(),

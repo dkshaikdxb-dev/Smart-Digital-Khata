@@ -5,16 +5,18 @@ import DataTable from '../components/DataTable';
 import ProductThumb from '../components/ProductThumb';
 import { apiFetch } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
+import { useSpeech } from '../lib/useSpeech';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 // Paise → a plain rupee string for editable inputs (e.g. 4550 → "45.5").
 const rupeeStr = (p) => String(Number(p || 0) / 100);
 const CATALOG_PAGE = 30;
-const emptyCustom = { product: '', brand: '', pack: '', category: '', subcategory: '', unit: '', price: '' };
+const emptyCustom = { product: '', brand: '', pack: '', category: '', subcategory: '', unit: '', price: '', sold_by_weight: false };
 
 export default function Catalog() {
   const router = useRouter();
   const { t, lang } = useLang();
+  const { sttSupported, listening, listen } = useSpeech();
   const localized = lang && lang !== 'en';
   const langName = (LANGS.find((l) => l.code === lang) || {}).name || '';
 
@@ -233,7 +235,9 @@ export default function Catalog() {
       if (customForm.pack.trim()) body.pack = customForm.pack.trim();
       if (customForm.category.trim()) body.category = customForm.category.trim();
       if (customForm.subcategory.trim()) body.subcategory = customForm.subcategory.trim();
-      if (customForm.unit.trim()) body.unit = customForm.unit.trim();
+      // Loose/weighed item: price is per KG and the server forces unit='kg'.
+      if (customForm.sold_by_weight) body.sold_by_weight = true;
+      else if (customForm.unit.trim()) body.unit = customForm.unit.trim();
       await apiFetch('/api/catalog/custom', { method: 'POST', body: JSON.stringify(body) });
       setCustomForm(emptyCustom);
       await load();
@@ -380,11 +384,24 @@ export default function Catalog() {
         {tab === 'browse' && (
           <div className="card">
             <div className="cat-browse-filters">
-              <input
-                placeholder={t('cat.catalogueSearchPlaceholder')}
-                value={catSearch}
-                onChange={(e) => setCatSearch(e.target.value)}
-              />
+              <span className="cat-search-voice">
+                <input
+                  placeholder={t('cat.catalogueSearchPlaceholder')}
+                  value={catSearch}
+                  onChange={(e) => setCatSearch(e.target.value)}
+                />
+                {sttSupported && (
+                  <button
+                    type="button"
+                    className={`secondary cat-mic${listening ? ' listening' : ''}`}
+                    onClick={() => listen((tx) => setCatSearch(tx))}
+                    aria-label={t('voice.listen')}
+                    title={listening ? t('voice.listening') : t('voice.listen')}
+                  >
+                    🎤
+                  </button>
+                )}
+              </span>
               <select
                 value={catCategory}
                 onChange={(e) => { setCatCategory(e.target.value); setCatSubcategory(''); }}
@@ -506,13 +523,22 @@ export default function Catalog() {
                 </label>
                 <label className="cat-field">
                   <span className="cat-field-label">{t('common.unit')}</span>
-                  <input placeholder={t('cat.unitPlaceholder')} value={customForm.unit} onChange={(e) => setCustomForm({ ...customForm, unit: e.target.value })} />
+                  <input placeholder={t('cat.unitPlaceholder')} value={customForm.sold_by_weight ? 'kg' : customForm.unit} disabled={customForm.sold_by_weight} onChange={(e) => setCustomForm({ ...customForm, unit: e.target.value })} />
                 </label>
                 <label className="cat-field">
-                  <span className="cat-field-label">{t('cat.priceRs')}</span>
+                  <span className="cat-field-label">{customForm.sold_by_weight ? t('loose.pricePerKgRs') : t('cat.priceRs')}</span>
                   <input type="number" min="0" step="0.01" value={customForm.price} onChange={(e) => setCustomForm({ ...customForm, price: e.target.value })} required />
                 </label>
               </div>
+              <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer', marginTop: 12 }}>
+                <input
+                  type="checkbox"
+                  style={{ width: 'auto' }}
+                  checked={customForm.sold_by_weight}
+                  onChange={(e) => setCustomForm({ ...customForm, sold_by_weight: e.target.checked })}
+                />
+                <span>{t('loose.soldLoose')}</span>
+              </label>
               <div style={{ marginTop: 14 }}>
                 <button disabled={customBusy}>{t('cat.addCustom')}</button>
               </div>

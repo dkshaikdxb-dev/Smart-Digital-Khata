@@ -48,7 +48,8 @@ const customSchema = Joi.object({
   category: Joi.string().max(120).allow('', null),
   subcategory: Joi.string().max(120).allow('', null),
   unit: Joi.string().max(40).allow('', null),
-  price: Joi.number().integer().min(0).required(), // paise
+  sold_by_weight: Joi.boolean(), // loose selling: price is per KG, unit forced to 'kg'
+  price: Joi.number().integer().min(0).required(), // paise (per KG when sold_by_weight)
 });
 
 // All catalog routes are owner/staff, shop-scoped.
