@@ -36,8 +36,9 @@ export default function Login() {
         <h2>{t('log.signIn')}</h2>
         <p className="muted">{t('log.tagline')}</p>
         <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-          <input type="email" placeholder={t('log.email')} value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input type="text" placeholder={t('login.identifierPlaceholder')} value={email} onChange={(e) => setEmail(e.target.value)} required />
           <input type="password" placeholder={t('log.password')} value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <div className="muted">{t('login.staffHint')}</div>
           {error && <div style={{ color: 'var(--danger)' }}>{error}</div>}
           <button disabled={loading}>{loading ? t('log.signingIn') : t('log.signIn')}</button>
           <div className="muted">
