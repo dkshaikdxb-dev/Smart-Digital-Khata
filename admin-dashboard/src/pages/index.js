@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import OwnerNudges from '../components/OwnerNudges';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -53,6 +54,8 @@ export default function Dashboard() {
             <div className="kpi">{outstanding ? outstanding.customers.length : '—'}</div>
           </div>
         </div>
+
+        <OwnerNudges />
 
         <div className="card">
           <h3>{t('dash.topOutstanding')}</h3>
