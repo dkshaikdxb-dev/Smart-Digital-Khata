@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import LangSwitch from './LangSwitch';
+import OwnerTabBar from './OwnerTabBar';
 import { clearApiCache } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions, clearPermsCache } from '../lib/adminPerms';
@@ -42,7 +43,9 @@ export default function Nav() {
           <span className="badge">Platform Admin</span>
         </>
       ) : (
-        <>
+        // On mobile these full links collapse (CSS) in favour of the bottom tab
+        // bar below; on desktop they stay as the primary owner navigation.
+        <span className="nav-owner-links">
           <Link href="/">{t('nav.dashboard')}</Link>
           <Link href="/catalog">{t('nav.catalog')}</Link>
           <Link href="/orders">{t('nav.orders')}</Link>
@@ -53,11 +56,13 @@ export default function Nav() {
           <Link href="/insights">{t('nav.insights')}</Link>
           <Link href="/settings">{t('nav.settings')}</Link>
           <Link href="/account">{t('acc.title')}</Link>
-        </>
+        </span>
       )}
       <span style={{ flex: 1 }} />
       <LangSwitch />
       <button className="secondary" onClick={logout}>{t('nav.logout')}</button>
+      {/* Icon-first bottom tab bar — owner/staff only, mobile widths only (CSS). */}
+      {role && role !== 'admin' && <OwnerTabBar showStaff={role === 'owner'} />}
     </div>
   );
 }

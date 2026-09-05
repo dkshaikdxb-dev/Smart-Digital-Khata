@@ -366,3 +366,74 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-weight-remove { flex: 0 0 auto; }
 .cpwa-cart-weight { display: flex; align-items: center; gap: 6px; }
 .cpwa-weight-tag { font-size: 13px; color: var(--muted); white-space: nowrap; }
+
+/* ==========================================================================
+   Batch H2 — icon-first owner navigation, spoken FAQ, meaning-colored balances.
+   ========================================================================== */
+
+/* Meaning-colored balance word (renders after the exact ₹ figure). The color +
+   this word carry meaning together, so the balance is never color-only. */
+.bal-word { font-size: 0.82em; font-weight: 600; white-space: nowrap; }
+
+/* FAQ (HelpFaq) — leading topic icon + per-answer read-aloud row. */
+.help-entry summary { display: flex; align-items: center; gap: 8px; }
+.help-ico { font-size: 18px; line-height: 1; flex: 0 0 auto; }
+.help-listen {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 4px 0 8px; padding: 8px 12px; min-height: 40px;
+  font-size: 13px;
+}
+
+/* On desktop the owner link row participates in the flex .nav layout as before
+   (display:contents makes the wrapper box vanish so the gaps still apply). */
+.nav-owner-links { display: contents; }
+
+/* Owner bottom tab bar — mirrors the consumer .cpwa-tabbar, but scoped to the
+   owner app and shown ONLY on narrow (mobile) widths. On desktop the top nav's
+   full link row is shown instead and this bar is hidden. */
+.owner-tabbar { display: none; }
+.owner-more-backdrop, .owner-more-sheet { display: none; }
+.owner-tab-ico, .owner-more-ico { font-size: 20px; line-height: 1; }
+
+@media (max-width: 768px) {
+  /* Collapse the owner top-nav link wall; the bottom bar takes over. */
+  .nav-owner-links { display: none; }
+
+  .owner-tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    background: var(--card); border-top: 1px solid #334155;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .owner-tabbar a, .owner-tabbar button {
+    background: none; border: none; border-radius: 0; color: var(--muted); font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    padding: 8px 4px; min-height: 56px; font-size: 11px; text-align: center; line-height: 1.15;
+    cursor: pointer;
+  }
+  .owner-tabbar a.active, .owner-tabbar button.active { color: var(--accent); }
+
+  /* Reserve space so the fixed bar never covers the last card. */
+  body.owner-has-tabs .container { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+  /* "More" sheet + backdrop. */
+  .owner-more-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 31;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .owner-more-sheet {
+    display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 32;
+    background: var(--card); border-top: 1px solid #334155;
+    border-top-left-radius: 16px; border-top-right-radius: 16px;
+    padding: 16px 16px calc(80px + env(safe-area-inset-bottom));
+  }
+  .owner-more-title { font-weight: 700; font-size: 15px; margin: 2px 4px 12px; }
+  .owner-more-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .owner-more-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 14px 6px; min-height: 76px; border-radius: 12px;
+    background: #0b1220; border: 1px solid #334155; color: var(--text);
+    font-size: 12px; font-weight: 600; text-align: center; line-height: 1.2;
+  }
+  .owner-more-item.active { border-color: var(--accent); color: var(--accent); }
+}

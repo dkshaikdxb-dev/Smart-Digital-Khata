@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import OwnerNudges from '../components/OwnerNudges';
+import Balance from '../components/Balance';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -66,7 +67,7 @@ export default function Dashboard() {
               { key: 'name', label: t('common.customer'), render: (c) => <strong>{c.name}</strong> },
               { key: 'phone', label: t('common.phone') },
               { key: 'balance', label: t('common.outstanding'), align: 'right', render: (c) => (
-                <span style={{ color: 'var(--danger)' }}>{fmt(c.balance)}</span>
+                <Balance paise={c.balance} />
               ) },
             ]}
             rows={(outstanding?.customers || []).slice(0, 10)}
