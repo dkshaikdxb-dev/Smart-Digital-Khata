@@ -31,6 +31,7 @@ export default function Nav() {
       <strong>Smart Digital Khata</strong>
       {role === 'admin' ? (
         <>
+          <Link href="/admin/dashboard">{t('dash.nav')}</Link>
           <Link href="/admin">{t('nav.platform')}</Link>
           {has('customers:view') && <Link href="/admin/customers">{t('mod.navConsumers')}</Link>}
           {has('revenue:view') && <Link href="/admin/referrals">{t('ref.navReferrals')}</Link>}
