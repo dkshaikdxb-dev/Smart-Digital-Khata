@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
-import { useLang, isRtl, hasChosenLang, loadOverrides } from '../lib/i18n';
+import { useLang, isRtl, hasChosenLang, loadOverrides, loadActiveLanguages } from '../lib/i18n';
 import CustomerLangGate from '../components/CustomerLangGate';
 import OfflineBanner from '../components/OfflineBanner';
 
@@ -32,10 +32,12 @@ export default function App({ Component, pageProps }) {
     }
   }, []);
 
-  // Load live translation overrides once on the client. SSR renders the static
-  // dict (OVERRIDES empty), so the first client render matches the server;
-  // overrides apply right after mount (a brief, acceptable swap).
-  useEffect(() => { loadOverrides(); }, []);
+  // Load live translation overrides + the active language registry once on the
+  // client. SSR renders the static dict and the built-in LANGS (both empty/
+  // fallback), so the first client render matches the server; the fetched
+  // values apply right after mount (a brief, acceptable swap). Both fetches
+  // fail-safe — the app keeps working offline / if the API is down.
+  useEffect(() => { loadOverrides(); loadActiveLanguages(); }, []);
 
   // First-open language prompt, customer app only. SSR renders nothing (so
   // hydration matches); on mount we show the gate if the viewer is on a /c page

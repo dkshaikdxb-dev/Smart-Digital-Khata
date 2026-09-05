@@ -25,8 +25,14 @@ export const LANGS = [
 ];
 
 // Languages that read right-to-left. The app sets dir="rtl" on <html> for these.
+// RTL_LANGS is the built-in fallback used before the active registry resolves
+// (and offline); once loaded, the chosen language's rtl flag comes from the
+// active list (getActiveLanguages) so a newly activated RTL language is honoured
+// without a code change.
 export const RTL_LANGS = new Set(LANGS.filter((l) => l.rtl).map((l) => l.code));
 export function isRtl(lang) {
+  const found = getActiveLanguages().find((l) => l.code === lang);
+  if (found) return !!found.rtl;
   return RTL_LANGS.has(lang);
 }
 
@@ -3602,11 +3608,241 @@ const PAGE = {
   },
 };
 
+// Admin UI strings for the language-activation registry page (Phase B). Kept in
+// their own block for clarity, merged into DICT like PAGE. en/hi are native;
+// ta/te/kn/ml/ur are seed translations (worth a native-speaker QA pass). Urdu is
+// RTL-safe. Any language missing a key falls back to English via translate().
+const ALANG = {
+  en: {
+    'alang.title': 'Languages',
+    'alang.subtitle': 'Turn a language on for everyone with one button — after its translations pass a native-speaker audit. Staged languages are launch-ready; activation needs no code deploy.',
+    'alang.note': "Activate a new state's language only after a native-speaker audit of its translations (Admin → Translations).",
+    'alang.colLanguage': 'Language',
+    'alang.colEnglish': 'English name',
+    'alang.colRtl': 'RTL',
+    'alang.colAudit': 'Audit',
+    'alang.colActive': 'Active',
+    'alang.colActivated': 'Activated',
+    'alang.colActions': 'Actions',
+    'alang.activate': 'Activate',
+    'alang.deactivate': 'Deactivate',
+    'alang.statusPending': 'pending',
+    'alang.statusInReview': 'in review',
+    'alang.statusAudited': 'audited',
+    'alang.yes': 'Yes',
+    'alang.no': 'No',
+    'alang.never': '—',
+    'alang.addTitle': 'Add a language',
+    'alang.fCode': 'Code (e.g. mr)',
+    'alang.fLabel': 'Native label (e.g. मराठी)',
+    'alang.fEnglish': 'English name',
+    'alang.fRtl': 'Right-to-left',
+    'alang.addBtn': 'Add language',
+    'alang.added': 'Language added.',
+    'alang.loadError': 'Could not load languages.',
+    'alang.saveError': 'Could not save.',
+    'alang.activeBadge': 'Active',
+    'alang.inactiveBadge': 'Inactive',
+  },
+  hi: {
+    'alang.title': 'भाषाएँ',
+    'alang.subtitle': 'किसी भाषा को सभी के लिए एक बटन से चालू करें — जब उसके अनुवाद मूल-वक्ता ऑडिट पास कर लें। तैयार भाषाएँ लॉन्च के लिए तैयार हैं; चालू करने के लिए कोड डिप्लॉय की ज़रूरत नहीं।',
+    'alang.note': 'किसी नए राज्य की भाषा तभी चालू करें जब उसके अनुवादों की मूल-वक्ता ऑडिट हो जाए (एडमिन → अनुवाद)।',
+    'alang.colLanguage': 'भाषा',
+    'alang.colEnglish': 'अंग्रेज़ी नाम',
+    'alang.colRtl': 'दाएँ-से-बाएँ',
+    'alang.colAudit': 'ऑडिट',
+    'alang.colActive': 'सक्रिय',
+    'alang.colActivated': 'सक्रिय किया',
+    'alang.colActions': 'क्रियाएँ',
+    'alang.activate': 'चालू करें',
+    'alang.deactivate': 'बंद करें',
+    'alang.statusPending': 'लंबित',
+    'alang.statusInReview': 'समीक्षा में',
+    'alang.statusAudited': 'ऑडिट हो गया',
+    'alang.yes': 'हाँ',
+    'alang.no': 'नहीं',
+    'alang.never': '—',
+    'alang.addTitle': 'भाषा जोड़ें',
+    'alang.fCode': 'कोड (जैसे mr)',
+    'alang.fLabel': 'मूल नाम (जैसे मराठी)',
+    'alang.fEnglish': 'अंग्रेज़ी नाम',
+    'alang.fRtl': 'दाएँ-से-बाएँ',
+    'alang.addBtn': 'भाषा जोड़ें',
+    'alang.added': 'भाषा जोड़ी गई।',
+    'alang.loadError': 'भाषाएँ लोड नहीं हो सकीं।',
+    'alang.saveError': 'सहेजा नहीं जा सका।',
+    'alang.activeBadge': 'सक्रिय',
+    'alang.inactiveBadge': 'निष्क्रिय',
+  },
+  ta: {
+    'alang.title': 'மொழிகள்',
+    'alang.subtitle': 'ஒரு மொழியை அனைவருக்கும் ஒரே பொத்தானில் இயக்கவும் — அதன் மொழிபெயர்ப்புகள் தாய்மொழி பேசுபவர் தணிக்கையில் தேறிய பிறகு. தயார் மொழிகள் தொடங்கத் தயார்; இயக்க குறியீட்டை மறுபதிப்பிட வேண்டியதில்லை.',
+    'alang.note': 'ஒரு புதிய மாநிலத்தின் மொழியை அதன் மொழிபெயர்ப்புகளின் தாய்மொழி தணிக்கைக்குப் பிறகே இயக்கவும் (நிர்வாகம் → மொழிபெயர்ப்புகள்).',
+    'alang.colLanguage': 'மொழி',
+    'alang.colEnglish': 'ஆங்கிலப் பெயர்',
+    'alang.colRtl': 'வலம்-இடம்',
+    'alang.colAudit': 'தணிக்கை',
+    'alang.colActive': 'செயலில்',
+    'alang.colActivated': 'இயக்கியவர்',
+    'alang.colActions': 'செயல்கள்',
+    'alang.activate': 'இயக்கு',
+    'alang.deactivate': 'முடக்கு',
+    'alang.statusPending': 'நிலுவையில்',
+    'alang.statusInReview': 'மதிப்பாய்வில்',
+    'alang.statusAudited': 'தணிக்கை முடிந்தது',
+    'alang.yes': 'ஆம்',
+    'alang.no': 'இல்லை',
+    'alang.never': '—',
+    'alang.addTitle': 'மொழி சேர்',
+    'alang.fCode': 'குறியீடு (எ.கா. mr)',
+    'alang.fLabel': 'சொந்தப் பெயர் (எ.கா. मराठी)',
+    'alang.fEnglish': 'ஆங்கிலப் பெயர்',
+    'alang.fRtl': 'வலமிருந்து இடம்',
+    'alang.addBtn': 'மொழி சேர்',
+    'alang.added': 'மொழி சேர்க்கப்பட்டது.',
+    'alang.loadError': 'மொழிகளை ஏற்ற முடியவில்லை.',
+    'alang.saveError': 'சேமிக்க முடியவில்லை.',
+    'alang.activeBadge': 'செயலில்',
+    'alang.inactiveBadge': 'செயலற்ற',
+  },
+  te: {
+    'alang.title': 'భాషలు',
+    'alang.subtitle': 'ఒక భాషను అందరికీ ఒకే బటన్‌తో ఆన్ చేయండి — దాని అనువాదాలు స్థానిక-వక్త ఆడిట్‌లో నెగ్గిన తర్వాత. సిద్ధమైన భాషలు ప్రారంభానికి సిద్ధం; యాక్టివేట్ చేయడానికి కోడ్ డిప్లాయ్ అవసరం లేదు.',
+    'alang.note': 'కొత్త రాష్ట్ర భాషను దాని అనువాదాల స్థానిక-వక్త ఆడిట్ తర్వాతే యాక్టివేట్ చేయండి (అడ్మిన్ → అనువాదాలు).',
+    'alang.colLanguage': 'భాష',
+    'alang.colEnglish': 'ఆంగ్ల పేరు',
+    'alang.colRtl': 'కుడి-నుండి-ఎడమ',
+    'alang.colAudit': 'ఆడిట్',
+    'alang.colActive': 'యాక్టివ్',
+    'alang.colActivated': 'యాక్టివేట్ చేసినవారు',
+    'alang.colActions': 'చర్యలు',
+    'alang.activate': 'యాక్టివేట్',
+    'alang.deactivate': 'డియాక్టివేట్',
+    'alang.statusPending': 'పెండింగ్',
+    'alang.statusInReview': 'సమీక్షలో',
+    'alang.statusAudited': 'ఆడిట్ పూర్తయింది',
+    'alang.yes': 'అవును',
+    'alang.no': 'కాదు',
+    'alang.never': '—',
+    'alang.addTitle': 'భాష జోడించండి',
+    'alang.fCode': 'కోడ్ (ఉదా. mr)',
+    'alang.fLabel': 'స్థానిక పేరు (ఉదా. मराठी)',
+    'alang.fEnglish': 'ఆంగ్ల పేరు',
+    'alang.fRtl': 'కుడి-నుండి-ఎడమ',
+    'alang.addBtn': 'భాష జోడించండి',
+    'alang.added': 'భాష జోడించబడింది.',
+    'alang.loadError': 'భాషలను లోడ్ చేయలేకపోయాం.',
+    'alang.saveError': 'సేవ్ చేయలేకపోయాం.',
+    'alang.activeBadge': 'యాక్టివ్',
+    'alang.inactiveBadge': 'ఇనాక్టివ్',
+  },
+  kn: {
+    'alang.title': 'ಭಾಷೆಗಳು',
+    'alang.subtitle': 'ಒಂದು ಭಾಷೆಯನ್ನು ಎಲ್ಲರಿಗೂ ಒಂದೇ ಬಟನ್‌ನಿಂದ ಆನ್ ಮಾಡಿ — ಅದರ ಅನುವಾದಗಳು ಸ್ಥಳೀಯ-ಮಾತುಗಾರರ ಆಡಿಟ್‌ನಲ್ಲಿ ತೇರ್ಗಡೆಯಾದ ನಂತರ. ಸಿದ್ಧ ಭಾಷೆಗಳು ಆರಂಭಕ್ಕೆ ಸಿದ್ಧ; ಸಕ್ರಿಯಗೊಳಿಸಲು ಕೋಡ್ ಡಿಪ್ಲಾಯ್ ಬೇಕಿಲ್ಲ.',
+    'alang.note': 'ಹೊಸ ರಾಜ್ಯದ ಭಾಷೆಯನ್ನು ಅದರ ಅನುವಾದಗಳ ಸ್ಥಳೀಯ-ಮಾತುಗಾರರ ಆಡಿಟ್ ನಂತರವೇ ಸಕ್ರಿಯಗೊಳಿಸಿ (ಅಡ್ಮಿನ್ → ಅನುವಾದಗಳು).',
+    'alang.colLanguage': 'ಭಾಷೆ',
+    'alang.colEnglish': 'ಇಂಗ್ಲಿಷ್ ಹೆಸರು',
+    'alang.colRtl': 'ಬಲ-ಎಡ',
+    'alang.colAudit': 'ಆಡಿಟ್',
+    'alang.colActive': 'ಸಕ್ರಿಯ',
+    'alang.colActivated': 'ಸಕ್ರಿಯಗೊಳಿಸಿದವರು',
+    'alang.colActions': 'ಕ್ರಿಯೆಗಳು',
+    'alang.activate': 'ಸಕ್ರಿಯಗೊಳಿಸಿ',
+    'alang.deactivate': 'ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ',
+    'alang.statusPending': 'ಬಾಕಿ',
+    'alang.statusInReview': 'ಪರಿಶೀಲನೆಯಲ್ಲಿ',
+    'alang.statusAudited': 'ಆಡಿಟ್ ಆಗಿದೆ',
+    'alang.yes': 'ಹೌದು',
+    'alang.no': 'ಇಲ್ಲ',
+    'alang.never': '—',
+    'alang.addTitle': 'ಭಾಷೆ ಸೇರಿಸಿ',
+    'alang.fCode': 'ಕೋಡ್ (ಉದಾ. mr)',
+    'alang.fLabel': 'ಸ್ಥಳೀಯ ಹೆಸರು (ಉದಾ. मराठी)',
+    'alang.fEnglish': 'ಇಂಗ್ಲಿಷ್ ಹೆಸರು',
+    'alang.fRtl': 'ಬಲದಿಂದ ಎಡ',
+    'alang.addBtn': 'ಭಾಷೆ ಸೇರಿಸಿ',
+    'alang.added': 'ಭಾಷೆ ಸೇರಿಸಲಾಗಿದೆ.',
+    'alang.loadError': 'ಭಾಷೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.',
+    'alang.saveError': 'ಉಳಿಸಲಾಗಲಿಲ್ಲ.',
+    'alang.activeBadge': 'ಸಕ್ರಿಯ',
+    'alang.inactiveBadge': 'ನಿಷ್ಕ್ರಿಯ',
+  },
+  ml: {
+    'alang.title': 'ഭാഷകൾ',
+    'alang.subtitle': 'ഒരു ഭാഷ എല്ലാവർക്കുമായി ഒറ്റ ബട്ടണിൽ ഓണാക്കുക — അതിന്റെ വിവർത്തനങ്ങൾ മാതൃഭാഷക്കാരുടെ ഓഡിറ്റ് വിജയിച്ച ശേഷം. തയ്യാറായ ഭാഷകൾ ലോഞ്ചിന് സജ്ജം; സജീവമാക്കാൻ കോഡ് ഡിപ്ലോയ് വേണ്ട.',
+    'alang.note': 'ഒരു പുതിയ സംസ്ഥാനത്തിന്റെ ഭാഷ അതിന്റെ വിവർത്തനങ്ങളുടെ മാതൃഭാഷക്കാരുടെ ഓഡിറ്റിന് ശേഷം മാത്രം സജീവമാക്കുക (അഡ്മിൻ → വിവർത്തനങ്ങൾ).',
+    'alang.colLanguage': 'ഭാഷ',
+    'alang.colEnglish': 'ഇംഗ്ലീഷ് പേര്',
+    'alang.colRtl': 'വലം-ഇടം',
+    'alang.colAudit': 'ഓഡിറ്റ്',
+    'alang.colActive': 'സജീവം',
+    'alang.colActivated': 'സജീവമാക്കിയത്',
+    'alang.colActions': 'പ്രവർത്തനങ്ങൾ',
+    'alang.activate': 'സജീവമാക്കുക',
+    'alang.deactivate': 'നിഷ്ക്രിയമാക്കുക',
+    'alang.statusPending': 'തീർപ്പാകാത്തത്',
+    'alang.statusInReview': 'അവലോകനത്തിൽ',
+    'alang.statusAudited': 'ഓഡിറ്റ് ചെയ്തു',
+    'alang.yes': 'അതെ',
+    'alang.no': 'അല്ല',
+    'alang.never': '—',
+    'alang.addTitle': 'ഭാഷ ചേർക്കുക',
+    'alang.fCode': 'കോഡ് (ഉദാ. mr)',
+    'alang.fLabel': 'സ്വന്തം പേര് (ഉദാ. मराठी)',
+    'alang.fEnglish': 'ഇംഗ്ലീഷ് പേര്',
+    'alang.fRtl': 'വലത്തുനിന്ന് ഇടത്ത്',
+    'alang.addBtn': 'ഭാഷ ചേർക്കുക',
+    'alang.added': 'ഭാഷ ചേർത്തു.',
+    'alang.loadError': 'ഭാഷകൾ ലോഡ് ചെയ്യാനായില്ല.',
+    'alang.saveError': 'സേവ് ചെയ്യാനായില്ല.',
+    'alang.activeBadge': 'സജീവം',
+    'alang.inactiveBadge': 'നിഷ്ക്രിയം',
+  },
+  ur: {
+    'alang.title': 'زبانیں',
+    'alang.subtitle': 'کسی زبان کو سب کے لیے ایک بٹن سے آن کریں — جب اس کے تراجم مقامی بولنے والے کے آڈٹ سے گزر جائیں۔ تیار زبانیں لانچ کے لیے تیار ہیں؛ فعال کرنے کے لیے کوڈ ڈیپلائے کی ضرورت نہیں۔',
+    'alang.note': 'کسی نئی ریاست کی زبان صرف اس کے تراجم کے مقامی بولنے والے آڈٹ کے بعد فعال کریں (ایڈمن → تراجم)۔',
+    'alang.colLanguage': 'زبان',
+    'alang.colEnglish': 'انگریزی نام',
+    'alang.colRtl': 'دائیں-سے-بائیں',
+    'alang.colAudit': 'آڈٹ',
+    'alang.colActive': 'فعال',
+    'alang.colActivated': 'فعال کیا',
+    'alang.colActions': 'کارروائیاں',
+    'alang.activate': 'فعال کریں',
+    'alang.deactivate': 'غیر فعال کریں',
+    'alang.statusPending': 'زیر التوا',
+    'alang.statusInReview': 'زیر جائزہ',
+    'alang.statusAudited': 'آڈٹ ہو گیا',
+    'alang.yes': 'ہاں',
+    'alang.no': 'نہیں',
+    'alang.never': '—',
+    'alang.addTitle': 'زبان شامل کریں',
+    'alang.fCode': 'کوڈ (مثلاً mr)',
+    'alang.fLabel': 'مقامی نام (مثلاً मराठी)',
+    'alang.fEnglish': 'انگریزی نام',
+    'alang.fRtl': 'دائیں سے بائیں',
+    'alang.addBtn': 'زبان شامل کریں',
+    'alang.added': 'زبان شامل کر دی گئی۔',
+    'alang.loadError': 'زبانیں لوڈ نہیں ہو سکیں۔',
+    'alang.saveError': 'محفوظ نہیں ہو سکا۔',
+    'alang.activeBadge': 'فعال',
+    'alang.inactiveBadge': 'غیر فعال',
+  },
+};
+
 // Merge page-body keys into the per-language DICT blocks. Nav keys defined in
 // DICT stay authoritative; PAGE only adds new keys.
 for (const code of Object.keys(PAGE)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], PAGE[code]);
+}
+
+// Merge the admin language-registry UI strings the same way.
+for (const code of Object.keys(ALANG)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], ALANG[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
@@ -3659,6 +3895,63 @@ export function staticValue(lang, key) {
 }
 export function getOverrideValue(lang, key) {
   return (OVERRIDES[lang] && OVERRIDES[lang][key]) || '';
+}
+
+// ---- Active language registry (Phase B) ---------------------------------
+// Which languages are SHOWN comes from the DB registry via
+// /api/public/languages. The built-in LANGS below stays as the offline /
+// first-paint fallback, and the string catalog (DICT) is untouched — the
+// registry only decides visibility. Activating a staged language degrades
+// gracefully to English (translate() falls back) until its strings are added.
+const ACTIVE_EVENT = 'skhata-langs';
+
+// Null until loadActiveLanguages() resolves, so getActiveLanguages() falls back
+// to the built-in LANGS (the current 7) and the picker/gate ALWAYS work offline
+// or before the API answers.
+let ACTIVE_LANGS = null;
+
+// Fetch the active languages and cache them app-wide. Normalised to the LANGS
+// shape ({ code, label, name, rtl }) so the picker and gate iterate identically.
+// Errors and empty/blank responses are swallowed — we never blank the picker.
+export async function loadActiveLanguages() {
+  try {
+    const base = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) || '';
+    const res = await fetch(`${base}/api/public/languages`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = (data && data.languages) || [];
+    if (!Array.isArray(list) || list.length === 0) return; // keep the fallback
+    ACTIVE_LANGS = list.map((l) => ({
+      code: l.code,
+      // The registry's native label is what the picker shows (LANGS uses `name`).
+      name: l.label,
+      label: l.label,
+      rtl: !!l.rtl,
+    }));
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(ACTIVE_EVENT));
+  } catch {
+    /* offline / fetch blocked / not seeded — keep the built-in LANGS */
+  }
+}
+
+// The languages to SHOW: the fetched active set, or the built-in LANGS when the
+// fetch hasn't resolved or failed — so the picker/gate ALWAYS render something.
+export function getActiveLanguages() {
+  return ACTIVE_LANGS && ACTIVE_LANGS.length ? ACTIVE_LANGS : LANGS;
+}
+
+// Hook returning the active language list, re-rendering when it loads/changes.
+// First render (SSR + client) is always the built-in LANGS, so hydration never
+// mismatches; the fetched list applies right after it resolves.
+export function useActiveLanguages() {
+  const [list, setList] = useState(getActiveLanguages());
+  useEffect(() => {
+    setList(getActiveLanguages());
+    const on = () => setList(getActiveLanguages());
+    window.addEventListener(ACTIVE_EVENT, on);
+    return () => window.removeEventListener(ACTIVE_EVENT, on);
+  }, []);
+  return list;
 }
 
 export function getLang() {
