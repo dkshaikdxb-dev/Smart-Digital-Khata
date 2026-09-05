@@ -1,0 +1,31 @@
+name: Import catalog translations
+
+# Manual only. Loads the committed catalog translation seed
+# (backend/src/data/catalog-i18n.json) into `catalog_i18n` on the VPS. This is
+# REAL localisation data, not demo data, so NO FORCE_DEMO is needed. The
+# importer is idempotent (UPSERT by term_type+term_en+lang) and only ever writes
+# translation rows — it never touches the English `catalog_items` base.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: import-catalog-i18n-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import:
+    name: Import catalog translations on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            docker compose exec -T backend npm run import:catalog-i18n

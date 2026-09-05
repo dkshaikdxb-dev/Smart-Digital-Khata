@@ -1,0 +1,6328 @@
+[
+  {
+    "term_type": "category",
+    "term_en": "Food",
+    "translations": {
+      "hi": {
+        "name": "खाद्य पदार्थ",
+        "aliases": "khadya khana food",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "உணவு",
+        "aliases": "unavu food",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆహారం",
+        "aliases": "aaharam food",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಆಹಾರ",
+        "aliases": "aahara food",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഭക്ഷണം",
+        "aliases": "bhakshanam food",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کھانا",
+        "aliases": "khana food",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "category",
+    "term_en": "Fresh Food",
+    "translations": {
+      "hi": {
+        "name": "ताज़ा खाद्य",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "புதிய உணவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "తాజా ఆహారం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ತಾಜಾ ಆಹಾರ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പുതിയ ഭക്ഷണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "تازہ کھانا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "category",
+    "term_en": "Household",
+    "translations": {
+      "hi": {
+        "name": "घरेलू सामान",
+        "aliases": "gharelu household",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வீட்டுப் பொருட்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఇంటి సామాను",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮನೆಯ ವಸ್ತುಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വീട്ടുസാധനങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گھریلو سامان",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "category",
+    "term_en": "Personal Care",
+    "translations": {
+      "hi": {
+        "name": "व्यक्तिगत देखभाल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தனிநபர் பராமரிப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వ్యక్తిగత సంరక్షణ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ವೈಯಕ್ತಿಕ ಆರೈಕೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വ്യക്തിഗത പരിചരണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ذاتی نگہداشت",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Beverages",
+    "translations": {
+      "hi": {
+        "name": "पेय पदार्थ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பானங்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పానీయాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪಾನೀಯಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പാനീയങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مشروبات",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Breakfast",
+    "translations": {
+      "hi": {
+        "name": "नाश्ता",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "காலை உணவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అల్పాహారం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಳಗಿನ ಉಪಾಹಾರ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പ്രഭാതഭക്ഷണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ناشتہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Cleaning",
+    "translations": {
+      "hi": {
+        "name": "सफ़ाई",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சுத்தம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "శుభ్రత",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸ್ವಚ್ಛತೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ശുചീകരണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "صفائی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Cleaning Tools",
+    "translations": {
+      "hi": {
+        "name": "सफ़ाई के उपकरण",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சுத்தம் செய்யும் கருவிகள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "శుభ్రపరిచే పరికరాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸ್ವಚ್ಛತೆ ಉಪಕರಣಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ശുചീകരണ ഉപകരണങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "صفائی کے آلات",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Cooking Oils",
+    "translations": {
+      "hi": {
+        "name": "खाद्य तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சமையல் எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వంట నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಡುಗೆ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പാചക എണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کھانے کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Dairy",
+    "translations": {
+      "hi": {
+        "name": "डेयरी उत्पाद",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பால் பொருட்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పాల ఉత్పత్తులు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಾಲಿನ ಉತ್ಪನ್ನಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പാൽ ഉൽപ്പന്നങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دودھ کی اشیاء",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Dal & Pulses",
+    "translations": {
+      "hi": {
+        "name": "दाल और दलहन",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பருப்பு வகைகள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పప్పు ధాన్యాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೇಳೆಕಾಳುಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പയർ വർഗ്ഗങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دالیں",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Dishwashing",
+    "translations": {
+      "hi": {
+        "name": "बर्तन धुलाई",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பாத்திரம் கழுவுதல்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గిన్నెలు కడగడం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪಾತ್ರೆ ತೊಳೆಯುವುದು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പാത്രം കഴുകൽ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "برتن دھونا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Feminine Hygiene",
+    "translations": {
+      "hi": {
+        "name": "महिला स्वच्छता",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மகளிர் சுகாதாரம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మహిళా పరిశుభ్రత",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಹಿಳಾ ನೈರ್ಮಲ್ಯ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സ്ത്രീ ശുചിത്വം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "خواتین کی صفائی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Food Ingredients",
+    "translations": {
+      "hi": {
+        "name": "खाद्य सामग्री",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "உணவுப் பொருட்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆహార పదార్థాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಆಹಾರ ಪದಾರ್ಥಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഭക്ഷ്യവസ്തുക്കൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کھانے کی اشیاء",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Fruits",
+    "translations": {
+      "hi": {
+        "name": "फल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பழங்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పండ్లు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಣ್ಣುಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പഴങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پھل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Grains",
+    "translations": {
+      "hi": {
+        "name": "अनाज",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தானியங்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ధాన్యాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಧಾನ್ಯಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ധാന്യങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اناج",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Hair Care",
+    "translations": {
+      "hi": {
+        "name": "बालों की देखभाल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முடி பராமரிப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జుట్టు సంరక్షణ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೂದಲ ಆರೈಕೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുടി പരിചരണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بالوں کی نگہداشت",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Hand Hygiene",
+    "translations": {
+      "hi": {
+        "name": "हाथ की स्वच्छता",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கை சுகாதாரம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చేతి పరిశుభ్రత",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೈ ನೈರ್ಮಲ್ಯ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കൈ ശുചിത്വം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ہاتھ کی صفائی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Kitchen Consumables",
+    "translations": {
+      "hi": {
+        "name": "रसोई का सामान",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சமையலறை பொருட்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వంటగది సామాను",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಡುಗೆಮನೆ ಸಾಮಾನು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അടുക്കള സാധനങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "باورچی خانے کا سامان",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Laundry",
+    "translations": {
+      "hi": {
+        "name": "कपड़े धुलाई",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "துணி துவைப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బట్టల ఉతుకుడు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಟ್ಟೆ ಒಗೆತ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തുണി അലക്ക്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کپڑوں کی دھلائی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Millets",
+    "translations": {
+      "hi": {
+        "name": "मोटे अनाज",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சிறுதானியங்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చిరుధాన్యాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಿರಿಧಾನ್ಯಗಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചെറുധാന്യങ്ങൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "موٹا اناج",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Nuts & Seeds",
+    "translations": {
+      "hi": {
+        "name": "सूखे मेवे",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "خشک میوہ جات",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Oral Care",
+    "translations": {
+      "hi": {
+        "name": "दांतों की देखभाल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பல் பராமரிப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దంత సంరక్షణ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಲ್ಲಿನ ಆರೈಕೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ദന്ത പരിചരണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دانتوں کی نگہداشت",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Paper Products",
+    "translations": {
+      "hi": {
+        "name": "कागज़ के उत्पाद",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کاغذی مصنوعات",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Pest Control",
+    "translations": {
+      "hi": {
+        "name": "कीट नियंत्रण",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பூச்சி கட்டுப்பாடு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కీటక నియంత్రణ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೀಟ ನಿಯಂತ್ರಣ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കീട നിയന്ത്രണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کیڑے مار ادویات",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Pickles",
+    "translations": {
+      "hi": {
+        "name": "अचार",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஊறுகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఊరగాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಉಪ್ಪಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അച്ചാർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اچار",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Rice",
+    "translations": {
+      "hi": {
+        "name": "चावल",
+        "aliases": "chawal chaawal rice",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "அரிசி",
+        "aliases": "arisi rice",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బియ్యం",
+        "aliases": "biyyam rice",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಕ್ಕಿ",
+        "aliases": "akki rice",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അരി",
+        "aliases": "ari rice",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چاول",
+        "aliases": "chawal rice",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Skin Care",
+    "translations": {
+      "hi": {
+        "name": "त्वचा की देखभाल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சரும பராமரிப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చర్మ సంరక్షణ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚರ್ಮದ ಆರೈಕೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ത്വക്ക് പരിചരണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "جلد کی نگہداشت",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Snacks",
+    "translations": {
+      "hi": {
+        "name": "स्नैक्स",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தின்பண்டங்கள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చిరుతిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ತಿಂಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ലഘുഭക്ഷണം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سنیکس",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Spices",
+    "translations": {
+      "hi": {
+        "name": "मसाले",
+        "aliases": "masala masale",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மசாலா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మసాలాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಸಾಲೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മസാല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مصالحے",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Sweeteners",
+    "translations": {
+      "hi": {
+        "name": "मिठास",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مٹھاس",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Tea & Coffee",
+    "translations": {
+      "hi": {
+        "name": "चाय और कॉफ़ी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேநீர் மற்றும் காபி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "టీ మరియు కాఫీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚಹಾ ಮತ್ತು ಕಾಫಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചായയും കാപ്പിയും",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چائے اور کافی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Vegetables",
+    "translations": {
+      "hi": {
+        "name": "सब्ज़ियां",
+        "aliases": "sabzi sabziyan",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "காய்கறிகள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కూరగాయలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ತರಕಾರಿಗಳు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പച്ചക്കറികൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سبزیاں",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Wheat & Flour",
+    "translations": {
+      "hi": {
+        "name": "गेहूं और आटा",
+        "aliases": "atta gehu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கோதுமை மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గోధుమ పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗೋಧಿ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഗോതമ്പ് പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گندم اور آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ajwain",
+    "translations": {
+      "hi": {
+        "name": "अजवाइन",
+        "aliases": "ajwain",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஓமம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వాము",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಓಮ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അയമോദകം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اجوائن",
+        "aliases": "ajwain",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Almonds",
+    "translations": {
+      "hi": {
+        "name": "बादाम",
+        "aliases": "badam",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பாதாம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బాదం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಾದಾಮಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബദാം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بادام",
+        "aliases": "badam",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Amchur Powder",
+    "translations": {
+      "hi": {
+        "name": "अमचूर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "آمچور",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Apple",
+    "translations": {
+      "hi": {
+        "name": "सेब",
+        "aliases": "seb",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஆப்பிள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆపిల్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೇಬು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ആപ്പിൾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سیب",
+        "aliases": "seb",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bajra Flour",
+    "translations": {
+      "hi": {
+        "name": "बाजरे का आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கம்பு மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సజ్జ పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಜ್ಜೆ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബജ്റ പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "باجرے کا آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Banana",
+    "translations": {
+      "hi": {
+        "name": "केला",
+        "aliases": "kela",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வாழைப்பழம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అరటిపండు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಾಳೆಹಣ್ಣು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വാഴപ്പഴം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کیلا",
+        "aliases": "kela",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Basmati Rice",
+    "translations": {
+      "hi": {
+        "name": "बासमती चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பாஸ்மதி அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బాస్మతి బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಾಸ್ಮತಿ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബാസ്മതി അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "باسمتی چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bath Soap",
+    "translations": {
+      "hi": {
+        "name": "नहाने का साबुन",
+        "aliases": "sabun soap",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "குளியல் சோப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "స్నానం సబ్బు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸ್ನಾನದ ಸಾಬೂನು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കുളിസോപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "نہانے کا صابن",
+        "aliases": "sabun",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bay Leaf",
+    "translations": {
+      "hi": {
+        "name": "तेज़ पत्ता",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பிரியாணி இலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బిర్యానీ ఆకు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಿರಿಯಾನಿ ಎಲೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "تیز پتہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Beans",
+    "translations": {
+      "hi": {
+        "name": "सेम",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பீன்ஸ்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బీన్స్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೀನ್ಸ್",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബീൻസ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پھلیاں",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Beetroot",
+    "translations": {
+      "hi": {
+        "name": "चुकंदर",
+        "aliases": "chukandar",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பீட்ரூட்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బీట్‌రూట్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೀಟ್‌ರೂಟ್",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബീറ്റ്റൂട്ട്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چقندر",
+        "aliases": "chukandar",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Besan",
+    "translations": {
+      "hi": {
+        "name": "बेसन",
+        "aliases": "besan",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கடலை மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "శనగపిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಡಲೆ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കടലമാവ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بیسن",
+        "aliases": "besan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Biryani Masala",
+    "translations": {
+      "hi": {
+        "name": "बिरयानी मसाला",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பிரியாணி மசாலா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బిర్యానీ మసాలా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಿರಿಯಾನಿ ಮಸಾಲಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ബിരിയാണി മസാല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بریانی مسالہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bitter Gourd",
+    "translations": {
+      "hi": {
+        "name": "करेला",
+        "aliases": "karela",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பாகற்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కాకరకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಾಗಲಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പാവയ്ക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کریلا",
+        "aliases": "karela",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Black Pepper",
+    "translations": {
+      "hi": {
+        "name": "काली मिर्च",
+        "aliases": "kali mirch",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மிளகு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మిరియాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕರಿಮೆಣಸು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കുരുമുളക്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کالی مرچ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bottle Gourd",
+    "translations": {
+      "hi": {
+        "name": "लौकी",
+        "aliases": "lauki ghiya",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சுரைக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సొరకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೋರೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചുരയ്ക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لوکی",
+        "aliases": "lauki",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Brinjal",
+    "translations": {
+      "hi": {
+        "name": "बैंगन",
+        "aliases": "baingan",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கத்திரிக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వంకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬದನೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വഴുതന",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بینگن",
+        "aliases": "baingan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Broom",
+    "translations": {
+      "hi": {
+        "name": "झाड़ू",
+        "aliases": "jhadu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "துடைப்பம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చీపురు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪೊರಕೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചൂല്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "جھاڑو",
+        "aliases": "jhadu",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Butter",
+    "translations": {
+      "hi": {
+        "name": "मक्खन",
+        "aliases": "makkhan",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వెన్న",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مکھن",
+        "aliases": "makkhan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cabbage",
+    "translations": {
+      "hi": {
+        "name": "पत्ता गोभी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முட்டைக்கோஸ்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "క్యాబేజీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಎಲೆಕೋಸು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കാബേജ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بند گوبھی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Capsicum",
+    "translations": {
+      "hi": {
+        "name": "शिमला मिर्च",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "குடைமிளகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "క్యాప్సికం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದೊಣ್ಣೆ ಮೆಣಸಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കാപ്സിക്കം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "شملہ مرچ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cardamom",
+    "translations": {
+      "hi": {
+        "name": "इलायची",
+        "aliases": "elaichi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஏலக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "యాలకులు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಏಲಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഏലക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "الائچی",
+        "aliases": "elaichi",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Carrot",
+    "translations": {
+      "hi": {
+        "name": "गाजर",
+        "aliases": "gajar",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கேரட்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "క్యారెట్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗಜ್ಜರಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കാരറ്റ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گاجر",
+        "aliases": "gajar",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cashews",
+    "translations": {
+      "hi": {
+        "name": "काजू",
+        "aliases": "kaju",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முந்திரி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జీడిపప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗೋಡಂಬಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കശുവണ്ടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کاجو",
+        "aliases": "kaju",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cauliflower",
+    "translations": {
+      "hi": {
+        "name": "फूल गोभी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பூக்கோஸ்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కాలీఫ్లవర్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹೂಕೋಸು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കോളിഫ്ലവർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پھول گوبھی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chaat Masala",
+    "translations": {
+      "hi": {
+        "name": "चाट मसाला",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சாட் மசாலா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చాట్ మసాలా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚಾಟ್ ಮಸಾಲಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചാട്ട് മസാല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چاٹ مسالہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chana Dal",
+    "translations": {
+      "hi": {
+        "name": "चना दाल",
+        "aliases": "chana dal",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கடலைப் பருப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "శనగపప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಡಲೆ ಬೇಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കടലപ്പരിപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چنا دال",
+        "aliases": "chana dal",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chapati",
+    "translations": {
+      "hi": {
+        "name": "चपाती",
+        "aliases": "chapati roti",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சப்பாத்தி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చపాతీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚಪಾತಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചപ്പാത്തി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چپاتی",
+        "aliases": "chapati roti",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chicken Masala",
+    "translations": {
+      "hi": {
+        "name": "चिकन मसाला",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சிக்கன் மசாலா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చికెన్ మసాలా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚಿಕನ್ ಮಸಾಲಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചിക്കൻ മസാല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چکن مسالہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cinnamon",
+    "translations": {
+      "hi": {
+        "name": "दालचीनी",
+        "aliases": "dalchini",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பட்டை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దాల్చిన చెక్క",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದಾಲ್ಚಿನ್ನಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കറുവപ്പട്ട",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دارچینی",
+        "aliases": "darchini",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cloves",
+    "translations": {
+      "hi": {
+        "name": "लौंग",
+        "aliases": "laung",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கிராம்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "లవంగాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಲವಂಗ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഗ്രാമ്പൂ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لونگ",
+        "aliases": "laung",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Coconut Oil",
+    "translations": {
+      "hi": {
+        "name": "नारियल तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேங்காய் எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కొబ్బరి నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ತೆಂಗಿನ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെളിച്ചെണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ناریل کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Coconut Water",
+    "translations": {
+      "hi": {
+        "name": "नारियल पानी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இளநீர்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కొబ్బరి నీళ్లు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಎಳನೀರು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കരിക്കിൻ വെള്ളം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ناریل پانی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Coriander",
+    "translations": {
+      "hi": {
+        "name": "धनिया",
+        "aliases": "dhaniya",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கொத்தமல்லி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కొత్తిమీర",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೊತ್ತಂಬರಿ ಸೊಪ್ಪು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മല്ലിയില",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دھنیا",
+        "aliases": "dhaniya",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Coriander Powder",
+    "translations": {
+      "hi": {
+        "name": "धनिया पाउडर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கொத்தமல்லி தூள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ధనియాల పొడి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೊತ್ತಂಬರಿ ಪುಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മല്ലിപ്പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دھنیا پاؤڈر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cucumber",
+    "translations": {
+      "hi": {
+        "name": "खीरा",
+        "aliases": "kheera",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெள்ளரி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దోసకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೌತೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെള്ളരിക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کھیرا",
+        "aliases": "kheera",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cumin Seeds",
+    "translations": {
+      "hi": {
+        "name": "जीरा",
+        "aliases": "jeera",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சீரகம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జీలకర్ర",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಜೀರಿಗೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ജീരകം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "زیرہ",
+        "aliases": "zeera",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Curd",
+    "translations": {
+      "hi": {
+        "name": "दही",
+        "aliases": "dahi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தயிர்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పెరుగు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೊಸರು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തൈര്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دہی",
+        "aliases": "dahi",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Curry Leaves",
+    "translations": {
+      "hi": {
+        "name": "करी पत्ता",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கறிவேப்பிலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కరివేపాకు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕರಿಬೇವು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കറിവേപ്പില",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کڑی پتہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dalia",
+    "translations": {
+      "hi": {
+        "name": "दलिया",
+        "aliases": "dalia",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கோதுமை ரவை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గోధుమ రవ్వ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗೋಧಿ ನುಚ್ಚು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഗോതമ്പ് നുറുക്ക്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دلیہ",
+        "aliases": "dalia",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Desi Ghee",
+    "translations": {
+      "hi": {
+        "name": "देसी घी",
+        "aliases": "ghee ghi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேசி நெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దేశీ నెయ్యి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದೇಸಿ ತುಪ್ಪ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ദേശി നെയ്യ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "دیسی گھی",
+        "aliases": "ghee",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Desiccated Coconut",
+    "translations": {
+      "hi": {
+        "name": "सूखा नारियल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேங்காய் தூள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఎండు కొబ్బరి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಒಣ ಕೊಬ್ಬರಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉണക്ക തേങ്ങ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "خشک ناریل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Detergent Liquid",
+    "translations": {
+      "hi": {
+        "name": "कपड़े धोने का लिक्विड",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کپڑے دھونے کا لیکوئڈ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Detergent Powder",
+    "translations": {
+      "hi": {
+        "name": "कपड़े धोने का पाउडर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کپڑے دھونے کا پاؤڈر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dosa Batter",
+    "translations": {
+      "hi": {
+        "name": "डोसा बैटर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தோசை மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దోస పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದೋಸೆ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ദോശ മാവ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ڈوسہ بیٹر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Drumstick",
+    "translations": {
+      "hi": {
+        "name": "सहजन",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முருங்கைக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మునగకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ನುಗ್ಗೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുരിങ്ങയ്ക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سہجن",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Fennel Seeds",
+    "translations": {
+      "hi": {
+        "name": "सौंफ",
+        "aliases": "saunf",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சோம்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సోంపు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೋಂಪು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പെരുംജീരകം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سونف",
+        "aliases": "saunf",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Fenugreek Seeds",
+    "translations": {
+      "hi": {
+        "name": "मेथी दाना",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெந்தயம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మెంతులు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೆಂತ್ಯ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉലുവ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "میتھی دانہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Filter Coffee",
+    "translations": {
+      "hi": {
+        "name": "फ़िल्टर कॉफ़ी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பில்டர் காபி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఫిల్టర్ కాఫీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಫಿಲ್ಟರ್ ಕಾಫಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഫിൽട്ടർ കാപ്പി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "فلٹر کافی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Flax Seeds",
+    "translations": {
+      "hi": {
+        "name": "अलसी",
+        "aliases": "alsi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஆளி விதை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అవిసె గింజలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಗಸೆ ಬೀಜ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "السی",
+        "aliases": "alsi",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Fruit Juice",
+    "translations": {
+      "hi": {
+        "name": "फलों का रस",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பழச்சாறு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పండ్ల రసం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಣ್ಣಿನ ರಸ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പഴച്ചാറ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پھلوں کا رس",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Full Cream Milk",
+    "translations": {
+      "hi": {
+        "name": "फुल क्रीम दूध",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஃபுல் கிரீம் பால்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఫుల్ క్రీమ్ పాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಫುಲ್ ಕ್ರೀಂ ಹಾಲು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഫുൾ ക്രീം പാൽ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "فل کریم دودھ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Garam Masala",
+    "translations": {
+      "hi": {
+        "name": "गरम मसाला",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கரம் மசாலா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గరం మసాలా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗರಂ ಮಸಾಲಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഗരം മസാല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گرم مسالہ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Garbage Bags",
+    "translations": {
+      "hi": {
+        "name": "कचरा बैग",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "குப்பை பை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చెత్త సంచులు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಸದ ಚೀಲ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کچرے کے تھیلے",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Garlic",
+    "translations": {
+      "hi": {
+        "name": "लहसुन",
+        "aliases": "lahsun",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பூண்டு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వెల్లుల్లి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಳ್ಳುಳ್ಳಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെളുത്തുള്ളി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لہسن",
+        "aliases": "lehsan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ginger",
+    "translations": {
+      "hi": {
+        "name": "अदरक",
+        "aliases": "adrak",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இஞ்சி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అల్లం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಶುಂಠಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഇഞ്ചി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ادرک",
+        "aliases": "adrak",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ginger Pickle",
+    "translations": {
+      "hi": {
+        "name": "अदरक का अचार",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இஞ்சி ஊறுகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అల్లం ఊరగాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಶುಂಠಿ ಉಪ್ಪಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഇഞ്ചി അച്ചാർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ادرک کا اچار",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Grapes",
+    "translations": {
+      "hi": {
+        "name": "अंगूर",
+        "aliases": "angoor",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "திராட்சை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ద్రాక్ష",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದ್ರಾಕ್ಷಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുന്തിരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "انگور",
+        "aliases": "angoor",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Green Chilli",
+    "translations": {
+      "hi": {
+        "name": "हरी मिर्च",
+        "aliases": "hari mirch",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பச்சை மிளகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పచ్చిమిర్చి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಸಿ ಮೆಣಸಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പച്ചമുളക്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ہری مرچ",
+        "aliases": "hari mirch",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Green Moong Whole",
+    "translations": {
+      "hi": {
+        "name": "साबुत मूंग",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பச்சைப் பயறு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పెసలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹೆಸರುಕಾಳು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചെറുപയർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ثابت مونگ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Green Peas",
+    "translations": {
+      "hi": {
+        "name": "हरी मटर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பச்சை பட்டாணி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పచ్చి బఠానీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹಸಿ ಬಟಾಣಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പച്ച പട്ടാണി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ہری مٹر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Green Tea",
+    "translations": {
+      "hi": {
+        "name": "ग्रीन टी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گرین ٹی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Groundnut Oil",
+    "translations": {
+      "hi": {
+        "name": "मूंगफली का तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கடலை எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వేరుశనగ నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಶೇಂಗಾ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കപ്പലണ്ടി എണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مونگ پھلی کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Guava",
+    "translations": {
+      "hi": {
+        "name": "अमरूद",
+        "aliases": "amrood",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கொய்யா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జామపండు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೀಬೆಹಣ್ಣು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പേരയ്ക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "امرود",
+        "aliases": "amrood",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Hair Oil",
+    "translations": {
+      "hi": {
+        "name": "बालों का तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தலை எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జుట్టు నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೂದಲ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തലയെണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بالوں کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Hing",
+    "translations": {
+      "hi": {
+        "name": "हींग",
+        "aliases": "hing",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பெருங்காயம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఇంగువ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಇಂಗು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കായം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ہینگ",
+        "aliases": "hing",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Honey",
+    "translations": {
+      "hi": {
+        "name": "शहद",
+        "aliases": "shahad",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேன்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "తేనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಜೇನುತುಪ್ಪ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തേൻ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "شہد",
+        "aliases": "shahad",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Idli Batter",
+    "translations": {
+      "hi": {
+        "name": "इडली बैटर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இட்லி மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఇడ్లీ పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಇಡ್ಲಿ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഇഡ്ലി മാവ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اڈلی بیٹر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Idli Rice",
+    "translations": {
+      "hi": {
+        "name": "इडली चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இட்லி அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఇడ్లీ బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಇಡ್ಲಿ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഇഡ്ലി അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اڈلی چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Instant Coffee",
+    "translations": {
+      "hi": {
+        "name": "इंस्टेंट कॉफ़ी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "انسٹنٹ کافی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Jaggery",
+    "translations": {
+      "hi": {
+        "name": "गुड़",
+        "aliases": "gud gur",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெல்லம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బెల్లం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಲ್ಲ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ശർക്കര",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گڑ",
+        "aliases": "gur",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Jowar Flour",
+    "translations": {
+      "hi": {
+        "name": "ज्वार का आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சோள மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "జొన్న పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಜೋಳದ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചോളപ്പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "جوار کا آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kabuli Chana",
+    "translations": {
+      "hi": {
+        "name": "काबुली चना",
+        "aliases": "chhole chole",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கொண்டைக் கடலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కాబూలీ శనగ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಾಬೂಲಿ ಕಡಲೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെള്ളക്കടല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کابلی چنا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kala Chana",
+    "translations": {
+      "hi": {
+        "name": "काला चना",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கருப்பு கொண்டைக்கடலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "నల్ల శనగలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಪ್ಪು ಕಡಲೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കറുത്ത കടല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کالا چنا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kasuri Methi",
+    "translations": {
+      "hi": {
+        "name": "कसूरी मेथी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கசூரி மேத்தி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కసూరి మెంతి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಸೂರಿ ಮೆಂತ್ಯ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കസൂരി മേത്തി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "قصوری میتھی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kokum",
+    "translations": {
+      "hi": {
+        "name": "कोकम",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کوکم",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kolam Rice",
+    "translations": {
+      "hi": {
+        "name": "कोलम चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கோலம் அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కొలం బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೊಲಂ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കോലം അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کولم چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Lady Finger",
+    "translations": {
+      "hi": {
+        "name": "भिंडी",
+        "aliases": "bhindi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெண்டைக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బెండకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಂಡೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വെണ്ടയ്ക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بھنڈی",
+        "aliases": "bhindi",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Lemon",
+    "translations": {
+      "hi": {
+        "name": "नींबू",
+        "aliases": "nimbu neembu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "எலுமிச்சை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "నిమ్మకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ನಿಂಬೆಹಣ್ಣು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "നാരങ്ങ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لیموں",
+        "aliases": "limu",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Lime Pickle",
+    "translations": {
+      "hi": {
+        "name": "नींबू का अचार",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "எலுமிச்சை ஊறுகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "నిమ్మకాయ ఊరగాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ನಿಂಬೆ ಉಪ್ಪಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "നാരങ്ങ അച്ചാർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لیموں کا اچار",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Lobia",
+    "translations": {
+      "hi": {
+        "name": "लोबिया",
+        "aliases": "lobia",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "காராமணி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అలసందలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಲಸಂದೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വൻപയർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لوبیا",
+        "aliases": "lobia",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Maida",
+    "translations": {
+      "hi": {
+        "name": "मैदा",
+        "aliases": "maida",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மைதா மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మైదా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೈದಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മൈദ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "میدہ",
+        "aliases": "maida",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mango",
+    "translations": {
+      "hi": {
+        "name": "आम",
+        "aliases": "aam",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மாம்பழம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మామిడిపండు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಾವಿನಹಣ್ಣು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മാമ്പഴം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "آم",
+        "aliases": "aam",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mango Pickle",
+    "translations": {
+      "hi": {
+        "name": "आम का अचार",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மாங்காய் ஊறுகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మామిడికాయ ఊరగాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಾವಿನಕಾಯಿ ಉಪ್ಪಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മാങ്ങ അച്ചാർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "آم کا اچار",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Masoor Dal",
+    "translations": {
+      "hi": {
+        "name": "मसूर दाल",
+        "aliases": "masoor dal",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மசூர் பருப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మసూర్ పప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಸೂರ್ ಬೇಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മസൂർ പരിപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مسور دال",
+        "aliases": "masoor dal",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Matchbox",
+    "translations": {
+      "hi": {
+        "name": "माचिस",
+        "aliases": "machis",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தீப்பெட்டி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అగ్గిపెట్టె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬೆಂಕಿಪೊಟ್ಟಣ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തീപ്പെട്ടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ماچس",
+        "aliases": "machis",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Matki",
+    "translations": {
+      "hi": {
+        "name": "मटकी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مٹکی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Matta Rice",
+    "translations": {
+      "hi": {
+        "name": "मट्टा चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மட்டா அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మట్టా బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಟ್ಟಾ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മട്ട അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مٹا چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Methi Leaves",
+    "translations": {
+      "hi": {
+        "name": "मेथी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெந்தய கீரை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మెంతికూర",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೆಂತ್ಯ ಸೊಪ್ಪು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉലുവയില",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "میتھی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mint",
+    "translations": {
+      "hi": {
+        "name": "पुदीना",
+        "aliases": "pudina",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "புதினா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పుదీనా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪುದೀನ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പുതിന",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پودینہ",
+        "aliases": "pudina",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mint Chutney",
+    "translations": {
+      "hi": {
+        "name": "पुदीना चटनी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "புதினா சட்னி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పుదీనా చట్నీ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪುದೀನ ಚಟ್ನಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പുതിന ചട്ണി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پودینہ چٹنی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mixed Pickle",
+    "translations": {
+      "hi": {
+        "name": "मिला-जुला अचार",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கலவை ஊறுகாய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మిశ్రమ ఊరగాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಿಶ್ರ ಉಪ್ಪಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മിക്സഡ് അച്ചാർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ملا جلا اچار",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Moong Dal",
+    "translations": {
+      "hi": {
+        "name": "मूंग दाल",
+        "aliases": "moong dal",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பாசிப் பருப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పెసర పప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹೆಸರು ಬೇಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചെറുപയർ പരിപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مونگ دال",
+        "aliases": "moong dal",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mosambi",
+    "translations": {
+      "hi": {
+        "name": "मौसंबी",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சாத்துக்குடி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బత్తాయి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೂಸಂಬಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുസംബി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "موسمبی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mosquito Coils",
+    "translations": {
+      "hi": {
+        "name": "मच्छर कॉइल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கொசு சுருள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దోమల చుట్ట",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೊಳ್ಳೆ ಸುರುಳಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കൊതുക് തിരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مچھر کوائل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Moth Beans",
+    "translations": {
+      "hi": {
+        "name": "मोठ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "موٹھ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Multigrain Atta",
+    "translations": {
+      "hi": {
+        "name": "मल्टीग्रेन आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ملٹی گرین آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mushroom",
+    "translations": {
+      "hi": {
+        "name": "मशरूम",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "காளான்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పుట్టగొడుగు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಣಬೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കൂൺ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کھمبی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mustard Oil",
+    "translations": {
+      "hi": {
+        "name": "सरसों का तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கடுகு எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆవనూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಾಸಿವೆ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കടുകെണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سرسوں کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mustard Seeds",
+    "translations": {
+      "hi": {
+        "name": "सरसों",
+        "aliases": "rai sarson",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கடுகு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆవాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಾಸಿವೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കടുക്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "رائی",
+        "aliases": "rai",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Oats",
+    "translations": {
+      "hi": {
+        "name": "ओट्स",
+        "aliases": "oats jai",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اوٹس",
+        "aliases": "oats",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Olive Oil",
+    "translations": {
+      "hi": {
+        "name": "जैतून का तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஆலிவ் எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఆలివ్ నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಆಲಿವ್ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഒലിവ് എണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "زیتون کا تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Onion",
+    "translations": {
+      "hi": {
+        "name": "प्याज़",
+        "aliases": "pyaz pyaaz",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வெங்காயம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఉల్లిపాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಈರುಳ್ಳಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സവാള",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پیاز",
+        "aliases": "pyaz",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Orange",
+    "translations": {
+      "hi": {
+        "name": "संतरा",
+        "aliases": "santra",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஆரஞ்சு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "నారింజ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಿತ್ತಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഓറഞ്ച്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سنترہ",
+        "aliases": "santra",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Paneer",
+    "translations": {
+      "hi": {
+        "name": "पनीर",
+        "aliases": "paneer",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பன்னீர்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పనీర్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪನೀರ್",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പനീർ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پنیر",
+        "aliases": "paneer",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Papaya",
+    "translations": {
+      "hi": {
+        "name": "पपीता",
+        "aliases": "papita",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பப்பாளி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బొప్పాయి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪಪ್ಪಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പപ്പായ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پپیتا",
+        "aliases": "papita",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Paratha",
+    "translations": {
+      "hi": {
+        "name": "पराठा",
+        "aliases": "paratha",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பராட்டா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పరాఠా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪರೋಟಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പൊറോട്ട",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پراٹھا",
+        "aliases": "paratha",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Peanuts",
+    "translations": {
+      "hi": {
+        "name": "मूंगफली",
+        "aliases": "moongphali",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "நிலக்கடலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వేరుశనగ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಡಲೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കപ്പലണ്ടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مونگ پھلی",
+        "aliases": "moongphali",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Pineapple",
+    "translations": {
+      "hi": {
+        "name": "अनानास",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "அன்னாசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అనాస",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅನಾನಸ್",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "കൈതച്ചക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "انناس",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Poha",
+    "translations": {
+      "hi": {
+        "name": "पोहा",
+        "aliases": "poha",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "அவல்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అటుకులు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅವಲಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അവൽ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پوہا",
+        "aliases": "poha",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Pomegranate",
+    "translations": {
+      "hi": {
+        "name": "अनार",
+        "aliases": "anar",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மாதுளை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "దానిమ్మ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ದಾಳಿಂಬೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മാതളം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "انار",
+        "aliases": "anar",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ponni Rice",
+    "translations": {
+      "hi": {
+        "name": "पोन्नी चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பொன்னி அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పొన్ని బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪೊನ್ನಿ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പൊന്നി അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پونی چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Potato",
+    "translations": {
+      "hi": {
+        "name": "आलू",
+        "aliases": "aloo alu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "உருளைக்கிழங்கு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బంగాళాదుంప",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಆಲೂಗಡ್ಡೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉരുളക്കിഴങ്ങ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "آلو",
+        "aliases": "aloo",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Pumpkin",
+    "translations": {
+      "hi": {
+        "name": "कद्दू",
+        "aliases": "kaddu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பூசணிக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గుమ్మడికాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕುಂಬಳಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മത്തങ്ങ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کدو",
+        "aliases": "kaddu",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Radish",
+    "translations": {
+      "hi": {
+        "name": "मूली",
+        "aliases": "mooli",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முள்ளங்கி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ముల్లంగి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮೂಲಂಗಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുള്ളങ്കി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "مولی",
+        "aliases": "mooli",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ragi Flour",
+    "translations": {
+      "hi": {
+        "name": "रागी का आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கேழ்வரகு மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "రాగి పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ರಾಗಿ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "റാഗി പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "راگی کا آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Raisins",
+    "translations": {
+      "hi": {
+        "name": "किशमिश",
+        "aliases": "kishmish",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "உலர் திராட்சை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఎండు ద్రాక్ష",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಒಣ ದ್ರಾಕ್ಷಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉണക്കമുന്തിരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کشمش",
+        "aliases": "kishmish",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Rajma Chitra",
+    "translations": {
+      "hi": {
+        "name": "चितरा राजमा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சித்ரா ராஜ்மா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చిత్ర రాజ్మా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಚಿತ್ರಾ ರಾಜ್ಮಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചിത്ര രാജ്മ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چترا راجما",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Rajma Red",
+    "translations": {
+      "hi": {
+        "name": "लाल राजमा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சிவப்பு ராஜ்மா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఎర్ర రాజ్మా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೆಂಪು ರಾಜ್ಮಾ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചുവന്ന രാജ്മ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لال راجما",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Rasam Powder",
+    "translations": {
+      "hi": {
+        "name": "रसम पाउडर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ரசம் பொடி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "రసం పొడి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ರಸಂ ಪುಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "രസം പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "رسم پاؤڈر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Raw Banana",
+    "translations": {
+      "hi": {
+        "name": "कच्चा केला",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "வாழைக்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "అరటికాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಬಾಳೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വാഴക്ക",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کچا کیلا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Raw Mango",
+    "translations": {
+      "hi": {
+        "name": "कच्चा आम",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மாங்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మామిడికాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಮಾವಿನಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മാങ്ങ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "کچا آم",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Razor",
+    "translations": {
+      "hi": {
+        "name": "रेज़र",
+        "aliases": "ustra razor",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ریزر",
+        "aliases": "ustura",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Red Chilli Powder",
+    "translations": {
+      "hi": {
+        "name": "लाल मिर्च पाउडर",
+        "aliases": "lal mirch",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மிளகாய் தூள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "ఎర్ర కారం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕೆಂಪು ಮೆಣಸಿನ ಪುಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുളകുപൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "لال مرچ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Rice Flour",
+    "translations": {
+      "hi": {
+        "name": "चावल का आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "அரிசி மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బియ్యప్పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅಕ್ಕಿ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "അരിപ്പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چاول کا آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Ridge Gourd",
+    "translations": {
+      "hi": {
+        "name": "तोरई",
+        "aliases": "turai",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பீர்க்கங்காய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "బీరకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹೀರೆಕಾಯಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പീച്ചിങ്ങ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "توری",
+        "aliases": "turai",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Roasted Chana",
+    "translations": {
+      "hi": {
+        "name": "भुना चना",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பொரி கடலை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "వేయించిన శనగలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹುರಿಗಡಲೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പൊരി കടല",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "بھنا چنا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sabudana",
+    "translations": {
+      "hi": {
+        "name": "साबूदाना",
+        "aliases": "sabudana",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஜவ்வரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సగ్గుబియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಬ್ಬಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചവ്വരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ساگودانہ",
+        "aliases": "sabudana",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sambar Powder",
+    "translations": {
+      "hi": {
+        "name": "सांबर पाउडर",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சாம்பார் பொடி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సాంబార్ పొడి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಾಂಬಾರ್ ಪುಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സാമ്പാർ പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سانبھار پاؤڈر",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Shampoo",
+    "translations": {
+      "hi": {
+        "name": "शैम्पू",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ஷாம்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "షాంపూ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಶಾಂಪೂ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഷാംപൂ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "شیمپو",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sharbati Atta",
+    "translations": {
+      "hi": {
+        "name": "शरबती आटा",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "شربتی آٹا",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Shaving Cream",
+    "translations": {
+      "hi": {
+        "name": "शेविंग क्रीम",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "شیونگ کریم",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sona Masuri Rice",
+    "translations": {
+      "hi": {
+        "name": "सोना मसूरी चावल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சோனா மசூரி அரிசி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సోనా మసూరి బియ్యం",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സോന മസൂരി അരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سونا مسوری چاول",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sooji/Rava",
+    "translations": {
+      "hi": {
+        "name": "सूजी",
+        "aliases": "sooji rava",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "ரவை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "రవ్వ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ರವೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "റവ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سوجی",
+        "aliases": "sooji",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Spinach",
+    "translations": {
+      "hi": {
+        "name": "पालक",
+        "aliases": "palak",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பசலைக் கீரை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పాలకూర",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಪಾಲಕ್ ಸೊಪ್ಪು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ചീര",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "پالک",
+        "aliases": "palak",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sugar",
+    "translations": {
+      "hi": {
+        "name": "चीनी",
+        "aliases": "chini shakkar cheeni",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சர்க்கரை",
+        "aliases": "sarkarai",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చక్కెర",
+        "aliases": "chakkera",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಕ್ಕರೆ",
+        "aliases": "sakkare",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പഞ്ചസാര",
+        "aliases": "panchasara",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چینی",
+        "aliases": "chini shakar",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sunflower Oil",
+    "translations": {
+      "hi": {
+        "name": "सूरजमुखी तेल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சூரியகாந்தி எண்ணெய்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సూర్యకాంతి నూనె",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സൂര്യകാന്തി എണ്ണ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سورج مکھی تیل",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sweet Corn",
+    "translations": {
+      "hi": {
+        "name": "मीठा मक्का",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "இனிப்பு சோளம்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "తీపి మొక్కజొన్న",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಸಿಹಿ ಜೋಳ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മധുര ചോളം",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "میٹھی مکئی",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Tamarind",
+    "translations": {
+      "hi": {
+        "name": "इमली",
+        "aliases": "imli",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "புளி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "చింతపండు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಹುಣಸೆಹಣ್ಣು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "പുളി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "املی",
+        "aliases": "imli",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Tea",
+    "translations": {
+      "hi": {
+        "name": "चाय पत्ती",
+        "aliases": "chai chaay tea",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தேயிலை",
+        "aliases": "tea chai",
+        "needs_review": false
+      },
+      "te": {
+        "name": "తేయాకు",
+        "aliases": "tea chai",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಟೀ ಪುಡಿ",
+        "aliases": "tea chai",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തേയില",
+        "aliases": "tea chai",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "چائے کی پتی",
+        "aliases": "chai tea",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Tomato",
+    "translations": {
+      "hi": {
+        "name": "टमाटर",
+        "aliases": "tamatar",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தக்காளி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "టమాటా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಟೊಮೇಟೊ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തക്കാളി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ٹماٹر",
+        "aliases": "tamatar",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toned Milk",
+    "translations": {
+      "hi": {
+        "name": "टोंड दूध",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "டோண்டு பால்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "టోన్డ్ పాలు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಟೋನ್ಡ್ ಹಾಲು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ടോൺഡ് പാൽ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ٹونڈ دودھ",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toor Dal",
+    "translations": {
+      "hi": {
+        "name": "तूर दाल",
+        "aliases": "toor dal arhar",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "துவரம் பருப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "కందిపప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ತೊಗರಿ ಬೇಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തുവരപ്പരിപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "تور دال",
+        "aliases": "toor dal",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toothbrush",
+    "translations": {
+      "hi": {
+        "name": "टूथब्रश",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ٹوتھ برش",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toothpaste",
+    "translations": {
+      "hi": {
+        "name": "टूथपेस्ट",
+        "aliases": "manjan toothpaste",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "பற்பசை",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "టూత్‌పేస్ట్",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಟೂತ್‌ಪೇಸ್ಟ್",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ടൂത്ത്പേസ്റ്റ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ٹوتھ پیسٹ",
+        "aliases": "manjan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Turmeric Powder",
+    "translations": {
+      "hi": {
+        "name": "हल्दी",
+        "aliases": "haldi",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "மஞ்சள் தூள்",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పసుపు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಅರಿಶಿನ ಪುಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മഞ്ഞൾ പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ہلدی",
+        "aliases": "haldi",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Urad Dal Split",
+    "translations": {
+      "hi": {
+        "name": "धुली उड़द दाल",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "உளுத்தம் பருப்பு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మినప్పప్పు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಉದ್ದಿನ ಬೇಳೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഉഴുന്ന് പരിപ്പ്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "اڑد دال",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Urad Dal Whole",
+    "translations": {
+      "hi": {
+        "name": "साबुत उड़द",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "முழு உளுந்து",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "మినుములు",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಇಡೀ ಉದ್ದು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "മുഴു ഉഴുന്ന്",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "ثابت اڑد",
+        "aliases": "",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Vermicelli",
+    "translations": {
+      "hi": {
+        "name": "सेवई",
+        "aliases": "sevai semiya",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "சேமியா",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "సేమియా",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಶಾವಿಗೆ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "സേമിയ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سویاں",
+        "aliases": "seviyan",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Vinegar",
+    "translations": {
+      "hi": {
+        "name": "सिरका",
+        "aliases": "sirka",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "വിനാഗിരി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "سرکہ",
+        "aliases": "sirka",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Watermelon",
+    "translations": {
+      "hi": {
+        "name": "तरबूज़",
+        "aliases": "tarbooz",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "தர்பூசணி",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "పుచ్చకాయ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಕಲ್ಲಂಗಡಿ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "തണ്ണിമത്തൻ",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "تربوز",
+        "aliases": "tarbooz",
+        "needs_review": false
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Whole Wheat Atta",
+    "translations": {
+      "hi": {
+        "name": "गेहूं का आटा",
+        "aliases": "atta gehu",
+        "needs_review": false
+      },
+      "ta": {
+        "name": "கோதுமை மாவு",
+        "aliases": "",
+        "needs_review": false
+      },
+      "te": {
+        "name": "గోధుమ పిండి",
+        "aliases": "",
+        "needs_review": false
+      },
+      "kn": {
+        "name": "ಗೋಧಿ ಹಿಟ್ಟು",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ml": {
+        "name": "ഗോതമ്പ് പൊടി",
+        "aliases": "",
+        "needs_review": false
+      },
+      "ur": {
+        "name": "گندم کا آٹا",
+        "aliases": "atta",
+        "needs_review": false
+      }
+    }
+  }
+]
