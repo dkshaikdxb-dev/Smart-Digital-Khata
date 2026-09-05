@@ -26,4 +26,8 @@ const i18n = require('./i18n.routes');
 router.use('/i18n', i18n.router); // PUBLIC: GET /api/i18n/overrides
 router.use('/admin/i18n', i18n.adminRouter); // ADMIN: PATCH /api/admin/i18n
 
+const languages = require('./languages.routes');
+router.use('/public/languages', languages.router); // PUBLIC: GET /api/public/languages
+router.use('/admin/languages', languages.adminRouter); // ADMIN: language activation registry
+
 module.exports = router;

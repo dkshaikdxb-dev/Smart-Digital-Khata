@@ -1,12 +1,15 @@
-import { LANGS, setLang } from '../lib/i18n';
+import { setLang, useActiveLanguages } from '../lib/i18n';
 
 // First-open language chooser for the customer app. Shown full-screen the very
 // first time someone opens any /c page and has not yet picked a language, so a
 // non-English speaker lands in their own language before doing anything. Each
 // button is the language's own name in its own script, so it needs no reading
-// of another language to choose. Tapping one persists the choice (setLang marks
-// it chosen) and dismisses the gate for good.
+// of another language to choose. The choices come from the active language
+// registry (useActiveLanguages), falling back to the built-in LANGS before it
+// resolves / offline — so the gate always works. Tapping one persists the
+// choice (setLang marks it chosen) and dismisses the gate for good.
 export default function CustomerLangGate({ onDone }) {
+  const langs = useActiveLanguages();
   function pick(code) {
     setLang(code);
     onDone();
@@ -20,7 +23,7 @@ export default function CustomerLangGate({ onDone }) {
           <span>Choose your language</span>
         </h1>
         <div className="cpwa-langgate-list">
-          {LANGS.map((l) => (
+          {langs.map((l) => (
             <button
               key={l.code}
               type="button"
