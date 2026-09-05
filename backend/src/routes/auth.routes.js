@@ -27,6 +27,10 @@ const registerSchema = Joi.object({
   phone: Joi.string().pattern(/^\+?[0-9]{10,15}$/).required(),
   password: Joi.string().min(8).max(128).required(),
   shopName: Joi.string().min(2).max(120).required(),
+  // Optional onboarding-source attribution (Phase D). A missing/blank/invalid
+  // referral code never blocks registration.
+  ref: Joi.string().max(64).allow('', null),
+  source_channel: Joi.string().max(64).allow('', null),
 });
 
 // The login identifier arrives in the `email` field but may be an email

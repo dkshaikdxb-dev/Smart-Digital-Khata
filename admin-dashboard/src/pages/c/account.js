@@ -4,6 +4,7 @@ import CustomerShell, { money, useCustomerGuard } from '../../components/Custome
 import HelpFaq from '../../components/HelpFaq';
 import StatementView from '../../components/StatementView';
 import DataSaverToggle from '../../components/DataSaverToggle';
+import ReferralCard from '../../components/ReferralCard';
 import { customerFetch, clearCustomerToken, CUSTOMER_TOKEN_KEY } from '../../lib/customerApi';
 import { clearApiCache } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
@@ -217,6 +218,8 @@ export default function CAccount() {
           </div>
         )}
       </div>
+
+      <ReferralCard fetcher={customerFetch} endpoint="/api/customer-auth/referral" />
 
       <HelpFaq variant="cpwa" />
 

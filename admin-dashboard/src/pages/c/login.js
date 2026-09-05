@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch, setCustomerToken, getCustomerToken } from '../../lib/customerApi';
@@ -15,9 +15,19 @@ export default function CustomerLogin() {
   const [devCode, setDevCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ref, setRef] = useState(''); // onboarding-source code from the invite link
 
   // Where to go after login (cart preserves its intent via ?next=).
   const next = typeof router.query.next === 'string' ? router.query.next : '/c/shops';
+
+  // Capture ?ref= from an invite link (unobtrusive; only used when a brand-new
+  // consumer is created on first verify — a returning consumer is never re-tagged).
+  useEffect(() => {
+    if (!router.isReady) return;
+    const q = router.query.ref;
+    const code = Array.isArray(q) ? q[0] : q;
+    if (code) setRef(String(code));
+  }, [router.isReady, router.query.ref]);
 
   async function requestOtp(e) {
     if (e) e.preventDefault();
@@ -42,9 +52,11 @@ export default function CustomerLogin() {
     setError('');
     setLoading(true);
     try {
+      const body = { phone: phone.trim(), code: code.trim() };
+      if (ref && ref.trim()) body.ref = ref.trim();
       const r = await publicFetch('/api/customer-auth/verify-otp', {
         method: 'POST',
-        body: JSON.stringify({ phone: phone.trim(), code: code.trim() }),
+        body: JSON.stringify(body),
       });
       if (!r || !r.token) throw new Error(t('c.loginFailed'));
       setCustomerToken(r.token, phone.trim());

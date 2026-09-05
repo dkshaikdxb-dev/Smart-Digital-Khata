@@ -5,6 +5,7 @@ const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
+const { captureReferral } = require('../utils/referral');
 
 const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 const OTP_TTL_MS = 5 * 60_000; // 5 minutes
@@ -91,10 +92,15 @@ exports.verifyOtp = async (req, res) => {
      ON CONFLICT (phone) DO UPDATE
        SET last_login_at = NOW(),
            name = COALESCE(customer_users.name, EXCLUDED.name)
-     RETURNING id, phone, name, status, created_at, last_login_at`,
+     RETURNING id, phone, name, status, created_at, last_login_at, (xmax = 0) AS inserted`,
     [phone, seedName]
   );
   const customerUser = upsert.rows[0];
+  // (xmax = 0) is true only for the row this statement INSERTed — i.e. a brand
+  // new consumer. Referral capture happens only on first login, never on repeat
+  // sign-ins, so a returning consumer can never be re-attributed.
+  const isNewCustomer = customerUser.inserted === true;
+  delete customerUser.inserted;
 
   // A platform-blocked consumer cannot complete login even with a valid code.
   // The OTP is still consumed above via the upsert path below, so a blocked
@@ -105,6 +111,18 @@ exports.verifyOtp = async (req, res) => {
   }
 
   await query('DELETE FROM customer_otps WHERE phone = $1', [phone]);
+
+  // Onboarding-source attribution (Phase D). Only a NEW consumer is attributed,
+  // and only best-effort — a missing/invalid/self/duplicate code never affects
+  // the login.
+  if (isNewCustomer && req.body.ref) {
+    await captureReferral({
+      code: req.body.ref,
+      referredType: 'customer',
+      referredCustomerId: customerUser.id,
+      sourceChannel: req.body.source_channel,
+    });
+  }
 
   const token = signToken(customerUser);
   res.json({ token, customer_user: customerUser });

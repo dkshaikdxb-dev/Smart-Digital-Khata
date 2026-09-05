@@ -5,6 +5,7 @@ const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const customerAuth = require('../middleware/customerAuth');
 const ctrl = require('../controllers/customer-auth.controller');
+const referralCtrl = require('../controllers/referral.controller');
 
 // OTP-flooding guard: 5 requests / minute / IP (mirrors auth.routes).
 const tightLimiter = rateLimit({
@@ -24,6 +25,10 @@ const requestOtpSchema = Joi.object({
 const verifyOtpSchema = Joi.object({
   phone: phoneField,
   code: Joi.string().pattern(/^[0-9]{6}$/).required(),
+  // Optional onboarding-source attribution (Phase D). A missing/blank/invalid
+  // code never blocks login; it is captured only when a NEW consumer is created.
+  ref: Joi.string().max(64).allow('', null),
+  source_channel: Joi.string().max(64).allow('', null),
 });
 
 // Consumer profile edit. phone is the login id and is intentionally NOT here.
@@ -41,5 +46,9 @@ router.post('/request-otp', tightLimiter, validate(requestOtpSchema), asyncHandl
 router.post('/verify-otp', tightLimiter, validate(verifyOtpSchema), asyncHandler(ctrl.verifyOtp));
 router.get('/me', customerAuth(), asyncHandler(ctrl.me));
 router.patch('/profile', customerAuth(), validate(profileSchema), asyncHandler(ctrl.updateProfile));
+
+// Referrals (Phase D) — consumer equivalents of /api/me/referral.
+router.get('/referral', customerAuth(), asyncHandler(referralCtrl.customerReferral));
+router.get('/referral/chain', customerAuth(), asyncHandler(referralCtrl.customerReferralChain));
 
 module.exports = router;

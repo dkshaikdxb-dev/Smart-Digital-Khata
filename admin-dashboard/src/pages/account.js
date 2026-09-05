@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import HelpFaq from '../components/HelpFaq';
+import ReferralCard from '../components/ReferralCard';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -96,6 +97,10 @@ export default function Account() {
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginTop: 8 }}>{error}</div>}
         </form>
+
+        <div style={{ maxWidth: 520 }}>
+          <ReferralCard fetcher={apiFetch} endpoint="/api/me/referral" />
+        </div>
 
         <HelpFaq />
       </div>

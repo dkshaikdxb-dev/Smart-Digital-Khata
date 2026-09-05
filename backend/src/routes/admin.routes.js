@@ -6,6 +6,7 @@ const requirePerm = require('../middleware/requirePerm');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/admin.controller');
+const referralCtrl = require('../controllers/referral.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -36,6 +37,18 @@ const settingsSchema = Joi.object({
   whatsapp_verify_token: Joi.string().allow(''),
   whatsapp_template_reminder: Joi.string().allow(''),
   whatsapp_template_lang: Joi.string().allow(''),
+}).min(1);
+
+// Referrals (Phase D): create an offline influencer/other code, and the reward
+// rule scaffolding stored in platform_settings.
+const createCodeSchema = Joi.object({
+  label: Joi.string().max(120).allow('', null),
+  owner_type: Joi.string().valid('influencer', 'other').required(),
+});
+
+const rewardRuleSchema = Joi.object({
+  enabled: Joi.boolean(),
+  amount_paise: Joi.number().integer().min(0).max(100000000),
 }).min(1);
 
 // auth guarantees role='admin'; loadAdminRole resolves the admin SUB-role onto
@@ -73,5 +86,12 @@ router.get('/settings', requirePerm('settings:manage'), asyncHandler(ctrl.getSet
 router.patch('/settings', requirePerm('settings:manage'), validate(settingsSchema), asyncHandler(ctrl.updateSettings));
 router.post('/settings/razorpay/test', requirePerm('settings:manage'), asyncHandler(ctrl.testRazorpay));
 router.post('/settings/whatsapp/test', requirePerm('settings:manage'), validate(Joi.object({ to: Joi.string().required() })), asyncHandler(ctrl.testWhatsapp));
+
+// Referrals / onboarding-source analytics (Phase D). Reads gated with
+// revenue:view (super/finance), writes with settings:manage (super/finance).
+router.get('/referrals/overview', requirePerm('revenue:view'), asyncHandler(referralCtrl.overview));
+router.get('/referrals/reward-rule', requirePerm('revenue:view'), asyncHandler(referralCtrl.getRewardRule));
+router.patch('/referrals/reward-rule', requirePerm('settings:manage'), validate(rewardRuleSchema), asyncHandler(referralCtrl.setRewardRule));
+router.post('/referral-codes', requirePerm('settings:manage'), validate(createCodeSchema), asyncHandler(referralCtrl.createReferralCode));
 
 module.exports = router;
