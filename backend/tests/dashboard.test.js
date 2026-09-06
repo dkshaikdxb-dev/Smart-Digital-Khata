@@ -192,6 +192,23 @@ describe('GET /api/admin/dashboard — super sees everything', () => {
     expect(body.insights.length).toBeGreaterThan(0);
   });
 
+  it('returns a non-empty commentary array of well-formed analyst blocks', () => {
+    expect(Array.isArray(body.commentary)).toBe(true);
+    expect(body.commentary.length).toBeGreaterThan(0);
+    const DOMAINS = ['overview', 'marketing', 'growth', 'finance', 'research', 'investor'];
+    const TONES = ['positive', 'neutral', 'watch', 'risk'];
+    for (const b of body.commentary) {
+      expect(DOMAINS).toContain(b.domain);
+      expect(TONES).toContain(b.tone);
+      expect(typeof b.observation).toBe('string');
+      expect(typeof b.interpretation).toBe('string');
+      expect(typeof b.recommendation).toBe('string');
+      expect(Array.isArray(b.metrics)).toBe(true);
+      // Every commentary block carries a perm the super role holds.
+      expect(permissionsFor('super')).toContain(b.perm);
+    }
+  });
+
   it('exposes all six domain tabs for super, and every insight carries a domain', () => {
     for (const d of ['overview', 'marketing', 'growth', 'finance', 'research', 'investor']) {
       expect(body.domains[d]).toBeDefined();
@@ -311,6 +328,10 @@ describe('permission gating by admin sub-role', () => {
     expect(res.body.sections.investor).toBeUndefined();
     // Marketing attribution IS visible to a shops:view caller (no money in it).
     expect(res.body.sections.marketing).toBeDefined();
+    // Commentary is gated the same way: no revenue:view block reaches support.
+    expect(Array.isArray(res.body.commentary)).toBe(true);
+    for (const b of res.body.commentary) expect(supportPerms).toContain(b.perm);
+    expect(res.body.commentary.some((b) => b.perm === 'revenue:view')).toBe(false);
   });
 
   it('finance gets revenue + acquisition + finance/investor domains (revenue:view)', async () => {
