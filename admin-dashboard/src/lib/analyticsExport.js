@@ -41,9 +41,14 @@ function slug(s) {
 }
 
 // RFC-4180 CSV field quoting: wrap in quotes and double any embedded quote when
-// the field contains a comma, quote, or newline.
+// the field contains a comma, quote, or newline. Also neutralises CSV/formula
+// injection: a value that a user controls (e.g. a distributor's business name in
+// a "Referrer:" row) starting with = + - @ — or a leading tab/CR that some
+// parsers strip to reveal one — is executed as a formula by Excel/Sheets, so a
+// leading apostrophe is prepended to force it to render as literal text.
 function csvField(v) {
-  const s = v == null ? '' : String(v);
+  let s = v == null ? '' : String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
