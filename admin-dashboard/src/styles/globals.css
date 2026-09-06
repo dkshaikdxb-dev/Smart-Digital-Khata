@@ -179,8 +179,19 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tl-dot { width: 12px; height: 12px; border-radius: 50%; background: #334155; flex: none; }
 .cpwa-tl-step.done { color: var(--text); }
 .cpwa-tl-step.done .cpwa-tl-dot { background: var(--accent); }
-.cpwa-tl-step.current { font-weight: 700; }
+.cpwa-tl-step.current { font-weight: 700; font-size: 16px; }
+.cpwa-tl-step.current .cpwa-tl-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); }
+.cpwa-tl-step.cancelled { color: var(--danger); font-weight: 700; }
 .cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--danger); }
+/* The one thing the customer is waiting for, on the orders list. */
+.cpwa-order-next { margin-top: 4px; font-weight: 600; color: var(--accent); }
+
+/* Owner order-detail stepper — a compact horizontal progress row. Reached
+   stages are filled by rank; the current one is highlighted. */
+.ord-stepper { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ord-stepper-node { padding: 4px 10px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border, #334155); color: var(--muted); background: transparent; }
+.ord-stepper-node.done { color: var(--text); border-color: var(--accent); }
+.ord-stepper-node.current { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 700; }
 
 /* Language switch (navigation chrome i18n) — a compact dropdown used in the
    owner nav (.langswitch) and the customer PWA topbar (.cpwa-lang). A <select>

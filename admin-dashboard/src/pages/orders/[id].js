@@ -4,6 +4,7 @@ import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { nextStatus, stepsForOrder, currentStepIndex } from '../../lib/orderStatus';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -21,23 +22,13 @@ const payColor = (s) => {
 
 const TERMINAL = ['completed', 'cancelled'];
 
-// Sensible forward transitions given the current status (Cancel is offered separately).
-function nextStatuses(order) {
-  const isPickup = order.fulfillment_type === 'pickup';
-  switch (order.status) {
-    case 'pending': return ['accepted'];
-    case 'accepted': return ['preparing'];
-    case 'preparing': return ['ready'];
-    case 'ready': return isPickup ? ['completed'] : ['out_for_delivery'];
-    case 'out_for_delivery': return ['completed'];
-    default: return [];
-  }
-}
-
 export default function OrderDetail() {
   const router = useRouter();
   const { t } = useLang();
   const enumLabel = (ns, s) => { const v = t(`${ns}.${s}`); return v === `${ns}.${s}` ? label(s) : v; };
+  // Action label for advancing to the next stage, e.g. "Start preparing",
+  // "Out for delivery", "Mark completed". Falls back to the generic "Mark {s}".
+  const advanceLabel = (s) => { const v = t(`ord.advance.${s}`); return v === `ord.advance.${s}` ? t('ord.mark', { s: enumLabel('status', s) }) : v; };
   const { id } = router.query;
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
@@ -75,7 +66,9 @@ export default function OrderDetail() {
   }
 
   const terminal = TERMINAL.includes(order.status);
-  const forwards = nextStatuses(order);
+  const next = nextStatus(order);
+  const steps = stepsForOrder(order.fulfillment_type);
+  const currentIdx = currentStepIndex(order.status, steps);
   const items = order.items || [];
 
   return (
@@ -100,10 +93,20 @@ export default function OrderDetail() {
           </div>
         </div>
 
+        {!terminal && (
+          <div className="ord-stepper" style={{ marginTop: 16 }}>
+            {steps.map((s, i) => (
+              <span key={s} className={`ord-stepper-node ${i < currentIdx ? 'done' : ''} ${i === currentIdx ? 'current' : ''}`}>
+                {enumLabel('status', s)}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
-          {forwards.map((s) => (
-            <button key={s} onClick={() => setStatus(s)} disabled={busy || terminal}>{t('ord.mark', { s: enumLabel('status', s) })}</button>
-          ))}
+          {next && (
+            <button onClick={() => setStatus(next)} disabled={busy || terminal}>{advanceLabel(next)}</button>
+          )}
           <button className="secondary" onClick={cancel} disabled={busy || terminal}>{t('ord.cancelOrder')}</button>
         </div>
         {terminal && <div className="muted" style={{ marginTop: 10 }}>{t('ord.terminal', { s: enumLabel('status', order.status) })}</div>}

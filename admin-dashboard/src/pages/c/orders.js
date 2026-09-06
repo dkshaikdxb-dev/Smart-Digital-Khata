@@ -3,6 +3,7 @@ import Link from 'next/link';
 import CustomerShell, { money, useCustomerGuard } from '../../components/CustomerShell';
 import { customerFetch } from '../../lib/customerApi';
 import { useLang } from '../../lib/i18n';
+import { waitingHintKey } from '../../lib/orderStatus';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -64,6 +65,7 @@ export default function Orders() {
               <span className="cpwa-shopcard-name">{o.shop_name || t('c.shop')}</span>
               <span className={`badge ${statusBadgeClass(o.status)}`}>{ostatusLabel(o.status)}</span>
             </div>
+            <div className="cpwa-order-next">{t(waitingHintKey(o))}</div>
             <div className="muted">
               {new Date(o.created_at).toLocaleString()} · {o.item_count != null ? t('common.itemCount', { n: o.item_count, s: o.item_count > 1 ? 's' : '' }) : ''}
             </div>
