@@ -173,6 +173,40 @@ describe('pure composer (utils/weekly-summary)', () => {
     expect(buildWeeklySummary({ collected_paise: 100 }, 'en').lang).toBe('en');
     expect(buildWeeklySummary({ collected_paise: 100 }, 'ur').lang).toBe('ur');
   });
+
+  it('composes a Tamil (ta) message from the NATIVE template, not the English one', () => {
+    const data = {
+      collected_paise: COLLECTED_PAISE,
+      new_udhaar_paise: NEW_UDHAAR_PAISE,
+      dues_count: 2,
+      dues_total_paise: DUES_TOTAL_PAISE,
+      top_item: 'Rice',
+      busy_day_dow: 6, // Saturday → சனி
+    };
+    const a = buildWeeklySummary(data, 'ta');
+    expect(a.lang).toBe('ta');
+    // Native Tamil script header + fragments (proves it is NOT the English template).
+    expect(a.message).toContain('இந்த வாரம் உங்கள் கடையில்');
+    expect(a.message).toContain('வசூல்');
+    expect(a.message).toContain('நிலுவையில்');
+    expect(a.message).toContain('சனி'); // Saturday, in Tamil
+    // Tokens are filled with the exact grouped amounts + count + item.
+    expect(a.message).toContain('₹28,400');
+    expect(a.message).toContain('₹6,750');
+    expect(a.message).toContain('(2 வாடிக்கையாளர்கள்)');
+    expect(a.message).toContain('Rice');
+    // The English template header must never appear in a ta message.
+    expect(a.message).not.toContain('This week at your shop');
+    // At least one character is in the Tamil Unicode block (U+0B80–U+0BFF).
+    expect(/[஀-௿]/.test(a.message)).toBe(true);
+  });
+
+  it('quiet-week ta message is native Tamil (not English)', () => {
+    const q = buildWeeklySummary({}, 'ta');
+    expect(q.quiet).toBe(true);
+    expect(/[஀-௿]/.test(q.message)).toBe(true);
+    expect(q.message).not.toContain('A quiet week');
+  });
 });
 
 describe('GET /api/insights/owner/weekly', () => {

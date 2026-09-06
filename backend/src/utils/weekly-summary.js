@@ -13,9 +13,9 @@
 // The message mirrors the frontend own.weekly.* i18n strings; this backend copy
 // is the source of truth for the WhatsApp text (the backend does not load the
 // admin dashboard's i18n.js — the daily digest is composed server-side the same
-// way). en + hi are authored naturally; ta/te/kn/ml/ur are a native-QA seed and
-// want a native-speaker pass before a wide rollout. Urdu (ur) is RTL — the
-// numbers interpolate as data so they stay RTL-safe.
+// way). All seven languages are authored natively (en + hi + ta/te/kn/ml/ur), so
+// a regional owner receives the weekly WhatsApp in their own language. Urdu (ur)
+// is RTL — the numbers interpolate as data so they stay RTL-safe.
 
 const LANGS = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
 const FALLBACK_ORDER = Object.freeze(['hi', 'en']); // owner lang → hi → en
@@ -57,53 +57,53 @@ const T = Object.freeze({
     stop: '।',
   },
   ta: {
-    header: 'இந்த வாரம் உங்கள் கடை',
-    collected: '₹{amount} வசூல்',
-    udhaar: '₹{amount} புதிய கடன்',
-    dues: '₹{amount} நிலுவை ({n} வாடிக்கையாளர்கள்)',
+    header: 'இந்த வாரம் உங்கள் கடையில்',
+    collected: '₹{amount} வசூல் ஆனது',
+    udhaar: '₹{amount} புதிய உதார்',
+    dues: '₹{amount} நிலுவையில் ({n} வாடிக்கையாளர்கள்)',
     best_day: 'சிறந்த நாள் {day}',
     top_item: 'அதிகம் விற்றது {item}',
-    quiet: 'இந்த வாரம் விற்பனை அல்லது வசூல் பதிவு இல்லை. அடுத்த வாடிக்கையாளர் வாங்கும்போது பதிவு சேர்க்கவும்.',
+    quiet: 'இந்த வாரம் விற்பனையோ வசூலோ பதிவாகவில்லை. அடுத்த வாடிக்கையாளர் வாங்கும்போது ஒரு பதிவைச் சேர்க்கவும்.',
     stop: '.',
   },
   te: {
-    header: 'ఈ వారం మీ దుకాణం',
-    collected: '₹{amount} వసూలు',
-    udhaar: '₹{amount} కొత్త అప్పు',
+    header: 'ఈ వారం మీ దుకాణంలో',
+    collected: '₹{amount} వసూలైంది',
+    udhaar: '₹{amount} కొత్త ఉధార్',
     dues: '₹{amount} బాకీ ({n} వినియోగదారులు)',
     best_day: 'ఉత్తమ రోజు {day}',
     top_item: 'ఎక్కువగా అమ్ముడైనది {item}',
-    quiet: 'ఈ వారం అమ్మకాలు లేదా వసూళ్లు నమోదు కాలేదు. తదుపరి వినియోగదారు కొన్నప్పుడు ఎంట్రీ జోడించండి.',
+    quiet: 'ఈ వారం అమ్మకాలు గానీ వసూళ్లు గానీ నమోదు కాలేదు. తదుపరి వినియోగదారు కొన్నప్పుడు ఒక ఎంట్రీ జోడించండి.',
     stop: '.',
   },
   kn: {
-    header: 'ಈ ವಾರ ನಿಮ್ಮ ಅಂಗಡಿ',
-    collected: '₹{amount} ವಸೂಲಿ',
+    header: 'ಈ ವಾರ ನಿಮ್ಮ ಅಂಗಡಿಯಲ್ಲಿ',
+    collected: '₹{amount} ವಸೂಲಿಯಾಗಿದೆ',
     udhaar: '₹{amount} ಹೊಸ ಸಾಲ',
     dues: '₹{amount} ಬಾಕಿ ({n} ಗ್ರಾಹಕರು)',
     best_day: 'ಅತ್ಯುತ್ತಮ ದಿನ {day}',
     top_item: 'ಹೆಚ್ಚು ಮಾರಾಟವಾದದ್ದು {item}',
-    quiet: 'ಈ ವಾರ ಯಾವುದೇ ಮಾರಾಟ ಅಥವಾ ವಸೂಲಿ ದಾಖಲಾಗಿಲ್ಲ. ಮುಂದಿನ ಗ್ರಾಹಕ ಖರೀದಿಸಿದಾಗ ನಮೂದನ್ನು ಸೇರಿಸಿ.',
+    quiet: 'ಈ ವಾರ ಯಾವುದೇ ಮಾರಾಟ ಅಥವಾ ವಸೂಲಿ ದಾಖಲಾಗಿಲ್ಲ. ಮುಂದಿನ ಗ್ರಾಹಕ ಖರೀದಿಸಿದಾಗ ಒಂದು ನಮೂದನ್ನು ಸೇರಿಸಿ.',
     stop: '.',
   },
   ml: {
-    header: 'ഈ ആഴ്ച നിങ്ങളുടെ കട',
-    collected: '₹{amount} പിരിവ്',
+    header: 'ഈ ആഴ്ച നിങ്ങളുടെ കടയിൽ',
+    collected: '₹{amount} പിരിഞ്ഞു കിട്ടി',
     udhaar: '₹{amount} പുതിയ കടം',
     dues: '₹{amount} ബാക്കി ({n} ഉപഭോക്താക്കൾ)',
     best_day: 'മികച്ച ദിവസം {day}',
     top_item: 'ഏറ്റവും കൂടുതൽ വിറ്റത് {item}',
-    quiet: 'ഈ ആഴ്ച വിൽപ്പനയോ പിരിവോ രേഖപ്പെടുത്തിയിട്ടില്ല. അടുത്ത ഉപഭോക്താവ് വാങ്ങുമ്പോൾ എൻട്രി ചേർക്കുക.',
+    quiet: 'ഈ ആഴ്ച വിൽപ്പനയോ പിരിവോ രേഖപ്പെടുത്തിയിട്ടില്ല. അടുത്ത ഉപഭോക്താവ് വാങ്ങുമ്പോൾ ഒരു എൻട്രി ചേർക്കുക.',
     stop: '.',
   },
   ur: {
-    header: 'اس ہفتے آپ کی دکان',
-    collected: '₹{amount} وصولی',
+    header: 'اس ہفتے آپ کی دکان پر',
+    collected: '₹{amount} وصول ہوئے',
     udhaar: '₹{amount} نیا ادھار',
     dues: '₹{amount} باقی ({n} گاہک)',
-    best_day: 'بہترین دن {day}',
+    best_day: 'سب سے اچھا دن {day}',
     top_item: 'سب سے زیادہ بکا {item}',
-    quiet: 'اس ہفتے کوئی فروخت یا وصولی درج نہیں ہوئی۔ اگلے گاہک کی خریداری پر اندراج شامل کریں۔',
+    quiet: 'اس ہفتے کوئی فروخت یا وصولی درج نہیں ہوئی۔ اگلے گاہک کی خریداری پر ایک اندراج شامل کریں۔',
     stop: '۔',
   },
 });
