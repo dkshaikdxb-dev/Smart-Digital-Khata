@@ -369,6 +369,11 @@ exports.getSettings = async (_req, res) => {
       template_reminder: settings.get('WHATSAPP_TEMPLATE_REMINDER'),
       template_lang: settings.get('WHATSAPP_TEMPLATE_LANG') || 'en',
     },
+    landing: {
+      // Public "chat with us" WhatsApp number shown on the marketing landing
+      // (international digits, no +). Distinct from the Cloud API sender above.
+      whatsapp: settings.get('LANDING_WHATSAPP') || '',
+    },
   });
 };
 
@@ -389,6 +394,12 @@ exports.updateSettings = async (req, res) => {
   };
   for (const [field, key] of Object.entries(passthrough)) {
     if (b[field] !== undefined) patch[key] = b[field];
+  }
+  // Landing WhatsApp number: store digits only (strip +, spaces, dashes) so the
+  // public /config and the landing's wa.me link are always well-formed. Empty
+  // clears it (landing falls back to its built-in default).
+  if (b.landing_whatsapp !== undefined) {
+    patch.LANDING_WHATSAPP = String(b.landing_whatsapp).replace(/\D/g, '');
   }
   // secrets: only overwrite when a non-empty value is supplied
   const secrets = {

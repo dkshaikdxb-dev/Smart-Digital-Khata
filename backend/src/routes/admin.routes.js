@@ -39,6 +39,7 @@ const settingsSchema = Joi.object({
   whatsapp_verify_token: Joi.string().allow(''),
   whatsapp_template_reminder: Joi.string().allow(''),
   whatsapp_template_lang: Joi.string().allow(''),
+  landing_whatsapp: Joi.string().allow('').max(20),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward

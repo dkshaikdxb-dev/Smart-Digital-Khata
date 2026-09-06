@@ -11,19 +11,35 @@ import { useRouter } from 'next/router';
 // deliberate, self-contained marketing surface and does NOT use the app i18n
 // system. Both light and dark themes render from the token structure below.
 
-// WhatsApp CTA target: the shop's WhatsApp number in international format (no
-// leading +). NEXT_PUBLIC_WHATSAPP overrides at build time; the default is the
-// live business number. A friendly prefilled message opens the chat ready to go.
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP || '919731422995';
+// WhatsApp CTA target. The number is editable at runtime from Admin → Settings
+// (served by GET /api/public/config); until that loads — or if it's unset or the
+// request fails — we use this built-in default, so the button always works.
+// NEXT_PUBLIC_WHATSAPP still overrides the default at build time.
+const DEFAULT_WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP || '919731422995';
 const WA_TEXT = encodeURIComponent('नमस्ते! मुझे Smart Digital Khata शुरू करना है।');
-const WA = WA_NUMBER
-  ? 'https://wa.me/' + WA_NUMBER + '?text=' + WA_TEXT
-  : '/register';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const buildWA = (number) =>
+  number ? 'https://wa.me/' + number + '?text=' + WA_TEXT : '/register';
 
 export default function Home() {
   const router = useRouter();
   const [redirecting, setRedirecting] = useState(true);
   const [hi, setHi] = useState(false);
+  const [wa, setWa] = useState(buildWA(DEFAULT_WA_NUMBER));
+
+  // Pull the admin-configured landing WhatsApp number at runtime; keep the
+  // built-in default if it's unset or the request fails (never break the CTA).
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/api/public/config`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const n = d && d.landing_whatsapp ? String(d.landing_whatsapp).replace(/\D/g, '') : '';
+        if (!cancelled && n) setWa(buildWA(n));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Client-only auth check. A logged-in visitor is bounced to their app so the
   // marketing page is only ever shown to logged-out visitors.
@@ -110,7 +126,7 @@ export default function Home() {
               )}
             </p>
             <div className="cta">
-              <a href={WA} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
+              <a href={wa} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
               <a href="/register" className="btn btn-green">मुफ़्त साइन अप · Sign up free</a>
             </div>
             <div className="trust">
@@ -258,7 +274,7 @@ export default function Home() {
             <h2 style={{ marginTop: 12 }}>Give your shop a memory that never forgets.</h2>
             <p className="lede" style={{ maxWidth: '52ch', marginInline: 'auto' }}>Thousands of counters across Bharat run on udhaar. Make yours run on Smart Digital Khata — free to begin, in your language, today.</p>
             <div className="cta">
-              <a href={WA} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
+              <a href={wa} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
               <a href="/register" className="btn btn-green">मुफ़्त साइन अप · Sign up free</a>
             </div>
             <p className="note">Already live at <a className="link" href="/">khata.dadashaik.com</a> · works on any Android phone</p>

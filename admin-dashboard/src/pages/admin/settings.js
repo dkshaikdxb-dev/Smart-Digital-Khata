@@ -10,6 +10,7 @@ export default function AdminSettings() {
   const [s, setS] = useState(null);
   const [rz, setRz] = useState({});
   const [wa, setWa] = useState({});
+  const [landing, setLanding] = useState({ landing_whatsapp: '' });
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
   const [origin, setOrigin] = useState('');
@@ -29,6 +30,7 @@ export default function AdminSettings() {
         whatsapp_template_reminder: d.whatsapp.template_reminder || '',
         whatsapp_template_lang: d.whatsapp.template_lang || 'en',
       });
+      setLanding({ landing_whatsapp: (d.landing && d.landing.whatsapp) || '' });
     }).catch((e) => setErr(e.message));
   }, [router]);
 
@@ -118,6 +120,16 @@ export default function AdminSettings() {
             <button className="secondary" onClick={testWhatsapp}>Send test message</button>
           </div>
           <p className="muted" style={{ fontSize: 13 }}>Webhook URL for Meta: <code>{origin}/api/webhooks/whatsapp</code> (subscribe to <b>messages</b>)</p>
+        </div>
+
+        <div className="card">
+          <h3>Public website</h3>
+          <p className="muted" style={{ fontSize: 13 }}>The “chat with us” WhatsApp number shown on the marketing landing (khata.dadashaik.com). International digits, e.g. <code>919731422995</code> — no “+”. Changes go live within a minute; leave blank to use the built-in default. This is separate from the Cloud API sender above.</p>
+          <label className="muted">Landing WhatsApp number</label>
+          <input inputMode="numeric" placeholder="919731422995" value={landing.landing_whatsapp} onChange={(e) => setLanding({ landing_whatsapp: e.target.value })} />
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            <button onClick={() => save(landing, 'Landing settings saved.')}>Save landing</button>
+          </div>
         </div>
       </div>
     </Shell>

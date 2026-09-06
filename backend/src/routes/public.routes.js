@@ -5,6 +5,10 @@ const asyncHandler = require('../utils/asyncHandler');
 const customerCtrl = require('../controllers/customer.controller');
 const productCtrl = require('../controllers/product.controller');
 const discoveryCtrl = require('../controllers/discovery.controller');
+const configCtrl = require('../controllers/config.controller');
+
+// Public runtime config for the marketing landing (safe values only).
+router.get('/config', asyncHandler(configCtrl.publicConfig));
 
 // Unauthenticated, read-only. Access is the unguessable 32-hex share token.
 // Covered by the global /api rate limiter.
