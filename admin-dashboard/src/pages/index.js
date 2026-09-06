@@ -50,7 +50,10 @@ export default function Home() {
     if (token) {
       let role = null;
       try { role = window.localStorage.getItem('skhata_role'); } catch (_) { role = null; }
-      router.replace(role === 'admin' ? '/admin' : '/dashboard');
+      const dest = role === 'admin'
+        ? '/admin'
+        : (role === 'distributor' ? '/distributor' : '/dashboard');
+      router.replace(dest);
       return;
     }
     setRedirecting(false);

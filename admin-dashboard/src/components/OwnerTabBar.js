@@ -34,10 +34,11 @@ export default function OwnerTabBar({ showStaff = true }) {
 
   // The "More" tab is highlighted when the current page is one of the secondary
   // destinations it links to.
-  const moreRoutes = ['/transactions', '/families', '/staff', '/insights', '/settings', '/account'];
+  const moreRoutes = ['/suppliers', '/transactions', '/families', '/staff', '/insights', '/settings', '/account'];
   const moreActive = moreRoutes.some((base) => path === base || path.startsWith(`${base}/`));
 
   const moreItems = [
+    { href: '/suppliers', ico: '🚚', label: t('sup.nav') },
     { href: '/transactions', ico: '🧾', label: t('nav.transactions') },
     { href: '/families', ico: '👨‍👩‍👧', label: t('nav.families') },
     ...(showStaff ? [{ href: '/staff', ico: '🧑‍💼', label: t('nav.staff') }] : []),

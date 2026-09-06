@@ -75,3 +75,38 @@ export function waitingHintKey(order) {
   }
   return `ostatus.hint.${status}`;
 }
+
+// ---------------------------------------------------------------------------
+// Purchase-order (B2B supply) status pipeline — Batch O2. Distinct from the
+// consumer order pipeline above, this mirrors the BACKEND
+// distributor.controller PO_RANK exactly: placed → confirmed → dispatched →
+// delivered. 'cancelled' is terminal and only reachable from placed/confirmed.
+// The stepper reuses the same .ord-stepper rendering; these helpers give the
+// PO-specific stages, next forward move, and the cancel/terminal rules.
+// ---------------------------------------------------------------------------
+
+export const PO_PIPELINE = ['placed', 'confirmed', 'dispatched', 'delivered'];
+
+export const PO_TERMINAL = new Set(['delivered', 'cancelled']);
+
+/** Index of a PO status within the linear pipeline (-1 for cancelled). */
+export function poStepIndex(status) {
+  return PO_PIPELINE.indexOf(status);
+}
+
+/**
+ * The single next forward PO status a distributor can advance to, or null when
+ * the order is terminal. Exactly one of the transitions the backend PATCH
+ * /distributor/orders/:id accepts.
+ */
+export function poNextStatus(status) {
+  if (PO_TERMINAL.has(status)) return null;
+  const i = PO_PIPELINE.indexOf(status);
+  if (i < 0 || i >= PO_PIPELINE.length - 1) return null;
+  return PO_PIPELINE[i + 1];
+}
+
+/** Whether a PO may still be cancelled (placed or confirmed only). */
+export function poCanCancel(status) {
+  return status === 'placed' || status === 'confirmed';
+}

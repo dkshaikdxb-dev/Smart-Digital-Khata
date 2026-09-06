@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import SUPPLY from './i18nSupply';
 
 // Lightweight i18n for the owner dashboard + customer PWA. Nav chrome and page
 // bodies (headings, buttons, form labels/placeholders, table headers, status &
@@ -6512,6 +6513,12 @@ for (const code of Object.keys(H2)) {
 for (const code of Object.keys(WEEKLY)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], WEEKLY[code]);
+}
+
+// Merge the Batch O2 distributor/supplier ecosystem strings (sup.*/dist.*).
+for (const code of Object.keys(SUPPLY)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], SUPPLY[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
