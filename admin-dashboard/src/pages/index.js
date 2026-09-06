@@ -11,11 +11,13 @@ import { useRouter } from 'next/router';
 // deliberate, self-contained marketing surface and does NOT use the app i18n
 // system. Both light and dark themes render from the token structure below.
 
-// WhatsApp CTA target: use the configured number when present, otherwise fall
-// back to /register so the button always works. Set NEXT_PUBLIC_WHATSAPP later
-// to point it at wa.me (see .env.example).
-const WA = process.env.NEXT_PUBLIC_WHATSAPP
-  ? 'https://wa.me/' + process.env.NEXT_PUBLIC_WHATSAPP
+// WhatsApp CTA target: the shop's WhatsApp number in international format (no
+// leading +). NEXT_PUBLIC_WHATSAPP overrides at build time; the default is the
+// live business number. A friendly prefilled message opens the chat ready to go.
+const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP || '919731422995';
+const WA_TEXT = encodeURIComponent('नमस्ते! मुझे Smart Digital Khata शुरू करना है।');
+const WA = WA_NUMBER
+  ? 'https://wa.me/' + WA_NUMBER + '?text=' + WA_TEXT
   : '/register';
 
 export default function Home() {
