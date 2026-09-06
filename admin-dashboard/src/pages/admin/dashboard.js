@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { usePermissions } from '../../lib/adminPerms';
+import { exportCsv, exportPptx, exportChartPngs } from '../../lib/analyticsExport';
 
 // Admin "Khata Control Room" (Phase E, Batch L). One page that fetches the
 // aggregated, permission-filtered /api/admin/dashboard payload and lays it out
@@ -30,6 +31,8 @@ function pctColor(p) {
 }
 
 const SEV_COLOR = { urgent: 'var(--danger)', warn: '#eab308', info: 'var(--accent)' };
+// Analyst-commentary tone → colour chip (distinct from insight severity).
+const TONE_COLOR = { positive: 'var(--accent)', neutral: 'var(--muted)', watch: '#eab308', risk: 'var(--danger)' };
 
 // Fixed tab order. Only those present in data.domains are rendered.
 const TAB_ORDER = ['overview', 'marketing', 'growth', 'finance', 'research', 'investor'];
@@ -111,6 +114,9 @@ export default function ControlRoom() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('overview');
+  const [busy, setBusy] = useState('');   // active export id while running
+  const [toast, setToast] = useState(''); // transient status message
+  const reportRef = useRef(null);         // hidden all-tabs print report (chart source)
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -161,6 +167,86 @@ export default function ControlRoom() {
     return k === 'overview' ? permitted : permitted.filter((i) => i.domain === k);
   };
 
+  // Prefer an i18n commentary override; fall back to the server's English prose.
+  // The prose is already fully composed server-side (no vars), so a present
+  // override simply replaces the whole field.
+  const commentaryText = (b, field) => {
+    const key = `commentary.${b.id}.${field}`;
+    const v = t(key);
+    return v === key ? b[field] : v;
+  };
+
+  // Commentary for a tab, gated the same way as insights (Overview shows all
+  // permitted; a domain tab shows its own). The perm second-gate ensures a block
+  // never renders a figure the caller lacks the permission for.
+  const commentaryFor = (k) => {
+    const all = (data && data.commentary) || [];
+    const permitted = all.filter((b) => (!ready || has(b.perm)));
+    return k === 'overview' ? permitted : permitted.filter((b) => b.domain === k);
+  };
+
+  // Formatters + labels handed to the export module so downloaded figures match
+  // exactly what the page renders.
+  const fmt = { rupees, num, pct };
+  const tabLabel = (k) => t(`dash.tab.${k}`);
+  const permGate = (perm) => (!ready || has(perm));
+
+  // Build a { tab: firstSvgElement } map from the hidden all-tabs print report,
+  // so PPTX can embed a chart for every permitted tab (not just the active one).
+  const svgByTabFromReport = () => {
+    const map = {};
+    const root = reportRef.current;
+    if (!root) return map;
+    for (const k of tabs) {
+      const svg = root.querySelector(`[data-print-tab="${k}"] svg`);
+      if (svg) map[k] = svg;
+    }
+    return map;
+  };
+
+  const flash = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3500); };
+
+  const runExport = async (id, fn) => {
+    if (busy) return;
+    setBusy(id);
+    setToast(t('dash.exporting'));
+    try {
+      await fn();
+      flash(t('dash.dlReady'));
+    } catch (e) {
+      flash(t('dash.dlFailed'));
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const onPdf = () => runExport('pdf', async () => {
+    // The print stylesheet swaps the app chrome for the report; the admin then
+    // "Save as PDF" from the browser dialog. No dependency.
+    if (typeof window !== 'undefined') window.print();
+  });
+
+  const onCsv = () => runExport('csv', async () => {
+    exportCsv({
+      tabs, sections: s, commentary: (data && data.commentary) || [],
+      generatedAt: data && data.generated_at, fmt, has: permGate, tabLabel,
+    });
+  });
+
+  const onPptx = () => runExport('pptx', async () => {
+    await exportPptx({
+      tabs, sections: s, commentary: (data && data.commentary) || [],
+      generatedAt: data && data.generated_at, fmt, has: permGate, tabLabel,
+      svgByTab: svgByTabFromReport(),
+    });
+  });
+
+  const onPng = () => runExport('png', async () => {
+    const root = reportRef.current && reportRef.current.querySelector(`[data-print-tab="${tab}"]`);
+    const n = await exportChartPngs({ root, tab, tabLabel });
+    if (!n) flash(t('dash.dlNoCharts'));
+  });
+
   function InsightCards({ list }) {
     if (!list.length) return null;
     return (
@@ -177,6 +263,48 @@ export default function ControlRoom() {
               <button className="secondary" onClick={() => router.push(ins.action_link)}>
                 {insightText(ins, 'action_label')} →
               </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Analyst's read — deterministic commentary blocks (Observation / Interpretation
+  // / Recommendation) with a tone chip. Styled to match InsightCards.
+  function AnalystRead({ list }) {
+    if (!list.length) return null;
+    return (
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>{t('dash.analystRead')}</h3>
+        <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          {list.map((b) => (
+            <div key={b.id} style={{ background: '#0b1220', borderRadius: 10, padding: '12px 14px', borderInlineStart: `4px solid ${TONE_COLOR[b.tone] || 'var(--muted)'}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span className="badge" style={{ background: TONE_COLOR[b.tone], color: '#000' }}>{t(`dash.tone.${b.tone}`)}</span>
+                <strong style={{ fontSize: 15 }}>{commentaryText(b, 'title')}</strong>
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <div className="muted" style={{ fontSize: 12, fontWeight: 700 }}>{t('dash.observation')}</div>
+                <div>{commentaryText(b, 'observation')}</div>
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <div className="muted" style={{ fontSize: 12, fontWeight: 700 }}>{t('dash.interpretation')}</div>
+                <div>{commentaryText(b, 'interpretation')}</div>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <div className="muted" style={{ fontSize: 12, fontWeight: 700 }}>{t('dash.recommendation')}</div>
+                <div>{commentaryText(b, 'recommendation')}</div>
+              </div>
+              {Array.isArray(b.metrics) && b.metrics.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+                  {b.metrics.map((m, i) => (
+                    <span key={i} className="muted" style={{ fontSize: 12 }}>
+                      {m.label}: <strong style={{ color: 'var(--text)' }}>{m.value}</strong>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -241,6 +369,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('overview')} />
+        <AnalystRead list={commentaryFor('overview')} />
         {s.overview && (
           <div className="grid">
             <Tile label={t('dash.kpi.shops')} value={num(s.overview.total_shops)} sub={t('dash.kpi.activeShops', { n: num(s.overview.active_shops_30d) })} />
@@ -279,6 +408,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('marketing')} />
+        <AnalystRead list={commentaryFor('marketing')} />
         {m && (
           <div className="card">
             <h3>{t('dash.mkt.title')}</h3>
@@ -337,6 +467,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('growth')} />
+        <AnalystRead list={commentaryFor('growth')} />
         {g && (
           <div className="card">
             <h3>{t('dash.growth.title')}</h3>
@@ -389,6 +520,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('finance')} />
+        <AnalystRead list={commentaryFor('finance')} />
         {r && (
           <div className="card">
             <h3>{t('dash.revenue.title')}</h3>
@@ -444,6 +576,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('research')} />
+        <AnalystRead list={commentaryFor('research')} />
         {rs && (
           <div className="card">
             <h3>{t('dash.res.catalogue')}</h3>
@@ -505,6 +638,7 @@ export default function ControlRoom() {
     return (
       <>
         <InsightCards list={insightsFor('investor')} />
+        <AnalystRead list={commentaryFor('investor')} />
         <div className="card">
           <h3>{t('dash.inv.title')}</h3>
           <div className="muted" style={{ marginBottom: 12 }}>{t('dash.inv.subtitle')}</div>
@@ -535,44 +669,106 @@ export default function ControlRoom() {
   };
   const ActiveTab = TAB_RENDER[tabs.includes(tab) ? tab : (tabs[0] || 'overview')];
 
+  // Hidden, print-only report of EVERY permitted tab (KPIs + charts + analyst's
+  // read). It stays display:none on screen; the print stylesheet reveals it and
+  // hides the app chrome. It also doubles as the chart source for PNG/PPTX
+  // export, so a chart is available for every tab, not just the active one.
+  function PrintReport() {
+    if (!data) return null;
+    return (
+      <div className="print-only" ref={reportRef}>
+        <div className="print-header">
+          <h1>{t('dash.title')}</h1>
+          <div className="muted">{t('dash.reportGenerated')}: {data.generated_at}</div>
+        </div>
+        {tabs.map((k) => {
+          const R = TAB_RENDER[k];
+          return (
+            <section key={k} data-print-tab={k} className="print-tab">
+              <h2>{t(`dash.tab.${k}`)}</h2>
+              {R && <R />}
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const dlDisabled = !data || !!busy;
+
   return (
     <div>
-      <Nav />
-      <div className="container">
-        <h1>{t('dash.title')}</h1>
-        <p className="muted">{t('dash.subtitle')}</p>
-        {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
-        {!data && !error && <div className="card">{t('common.loading')}</div>}
+      <div className="no-print">
+        <Nav />
+        <div className="container">
+          <h1>{t('dash.title')}</h1>
+          <p className="muted">{t('dash.subtitle')}</p>
+          {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
+          {!data && !error && <div className="card">{t('common.loading')}</div>}
 
-        {data && (
-          <>
-            {/* ---- Domain tab bar ---- */}
-            <div role="tablist" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '4px 0 16px' }}>
-              {tabs.map((k) => {
-                const active = k === (tabs.includes(tab) ? tab : tabs[0]);
-                return (
-                  <button
-                    key={k}
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => selectTab(k)}
-                    className={active ? undefined : 'secondary'}
-                    style={{
-                      borderRadius: 999,
-                      padding: '6px 16px',
-                      ...(active ? { background: 'var(--accent)', color: '#000', fontWeight: 700 } : {}),
-                    }}
-                  >
-                    {t(`dash.tab.${k}`)}
-                  </button>
-                );
-              })}
-            </div>
+          {data && (
+            <>
+              {/* ---- Tab bar + download control ---- */}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 16px' }}>
+                <div role="tablist" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {tabs.map((k) => {
+                    const active = k === (tabs.includes(tab) ? tab : tabs[0]);
+                    return (
+                      <button
+                        key={k}
+                        role="tab"
+                        aria-selected={active}
+                        onClick={() => selectTab(k)}
+                        className={active ? undefined : 'secondary'}
+                        style={{
+                          borderRadius: 999,
+                          padding: '6px 16px',
+                          ...(active ? { background: 'var(--accent)', color: '#000', fontWeight: 700 } : {}),
+                        }}
+                      >
+                        {t(`dash.tab.${k}`)}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className="muted" style={{ fontSize: 13 }}>{t('dash.download')}:</span>
+                  <button className="secondary" onClick={onPdf} disabled={dlDisabled} aria-busy={busy === 'pdf'}>{t('dash.dlPdf')}</button>
+                  <button className="secondary" onClick={onCsv} disabled={dlDisabled} aria-busy={busy === 'csv'}>{t('dash.dlCsv')}</button>
+                  <button className="secondary" onClick={onPptx} disabled={dlDisabled} aria-busy={busy === 'pptx'}>{t('dash.dlPptx')}</button>
+                  <button className="secondary" onClick={onPng} disabled={dlDisabled} aria-busy={busy === 'png'}>{t('dash.dlPng')}</button>
+                </div>
+              </div>
 
-            {ActiveTab && <ActiveTab />}
-          </>
-        )}
+              {ActiveTab && <ActiveTab />}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Print / export report (hidden on screen). */}
+      <PrintReport />
+
+      {/* Transient export status toast. */}
+      {toast && (
+        <div className="no-print" role="status" style={{ position: 'fixed', insetInlineEnd: 16, insetBlockEnd: 16, background: '#0b1220', color: 'var(--text)', border: '1px solid var(--accent)', borderRadius: 8, padding: '10px 14px', zIndex: 1000 }}>
+          {toast}
+        </div>
+      )}
+
+      <style jsx global>{`
+        .print-only { display: none; }
+        @media print {
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          .print-tab { break-inside: avoid; page-break-inside: avoid; margin-bottom: 18px; }
+          .print-tab > h2 { border-bottom: 2px solid #888; padding-bottom: 4px; page-break-after: avoid; }
+          .print-header { margin-bottom: 12px; }
+          body { background: #fff; }
+          .card { break-inside: avoid; page-break-inside: avoid; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+      `}</style>
     </div>
   );
 }

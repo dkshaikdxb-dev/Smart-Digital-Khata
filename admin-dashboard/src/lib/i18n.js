@@ -5773,6 +5773,62 @@ const DASHL = {
   ur: DASHL_EN,
 };
 
+// Batch P: analyst-commentary + analytics-download CHROME strings (labels only —
+// the generated commentary prose stays English, optionally overridden per field
+// by a `commentary.<id>.<field>` key with English fallback, exactly like the
+// insight text). en + hi are authored; ta/te/kn/ml/ur are SEEDED from English
+// (translate() falls back to en, so the seed just makes the entries explicit for
+// a later native-speaker pass).
+const DASHP_EN = {
+  'dash.analystRead': "Analyst's read",
+  'dash.observation': 'Observation',
+  'dash.interpretation': 'Interpretation',
+  'dash.recommendation': 'Recommendation',
+  'dash.tone.positive': 'Positive',
+  'dash.tone.neutral': 'Neutral',
+  'dash.tone.watch': 'Watch',
+  'dash.tone.risk': 'Risk',
+  'dash.download': 'Download',
+  'dash.dlPdf': 'PDF report',
+  'dash.dlCsv': 'CSV data',
+  'dash.dlPptx': 'PowerPoint',
+  'dash.dlPng': 'Chart images',
+  'dash.exporting': 'Preparing…',
+  'dash.dlReady': 'Download ready.',
+  'dash.dlFailed': 'Could not prepare the download.',
+  'dash.dlNoCharts': 'No chart images available on this tab.',
+  'dash.reportGenerated': 'Generated',
+};
+const DASHP_HI = {
+  'dash.analystRead': 'विश्लेषक की राय',
+  'dash.observation': 'अवलोकन',
+  'dash.interpretation': 'व्याख्या',
+  'dash.recommendation': 'सिफ़ारिश',
+  'dash.tone.positive': 'सकारात्मक',
+  'dash.tone.neutral': 'तटस्थ',
+  'dash.tone.watch': 'निगरानी',
+  'dash.tone.risk': 'जोखिम',
+  'dash.download': 'डाउनलोड',
+  'dash.dlPdf': 'PDF रिपोर्ट',
+  'dash.dlCsv': 'CSV डेटा',
+  'dash.dlPptx': 'पावरपॉइंट',
+  'dash.dlPng': 'चार्ट छवियाँ',
+  'dash.exporting': 'तैयार हो रहा है…',
+  'dash.dlReady': 'डाउनलोड तैयार है।',
+  'dash.dlFailed': 'डाउनलोड तैयार नहीं हो सका।',
+  'dash.dlNoCharts': 'इस टैब पर कोई चार्ट छवि उपलब्ध नहीं है।',
+  'dash.reportGenerated': 'तैयार किया गया',
+};
+const DASHP = {
+  en: DASHP_EN,
+  hi: DASHP_HI,
+  ta: DASHP_EN,
+  te: DASHP_EN,
+  kn: DASHP_EN,
+  ml: DASHP_EN,
+  ur: DASHP_EN,
+};
+
 const OWN = {
   en: {
     'own.todayTitle': 'Today at your shop',
@@ -6489,6 +6545,12 @@ for (const code of Object.keys(DASH)) {
 for (const code of Object.keys(DASHL)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], DASHL[code]);
+}
+
+// Merge the Batch P analyst-commentary + download chrome strings the same way.
+for (const code of Object.keys(DASHP)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], DASHP[code]);
 }
 
 // Merge the Owner Help "Today at your shop" nudge strings the same way.

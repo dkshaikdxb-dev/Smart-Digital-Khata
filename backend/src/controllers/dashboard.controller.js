@@ -2,6 +2,7 @@ const { query } = require('../config/db');
 const { hasPermission } = require('../config/permissions');
 const { PLAN_PRICE } = require('./admin.controller');
 const { buildInsights } = require('../utils/insights');
+const { buildCommentary } = require('../utils/commentary');
 
 // Admin "Khata Control Room" (Phase E). One read-only aggregation endpoint that
 // returns { sections, insights, generated_at }. It is pure aggregation over the
@@ -570,6 +571,9 @@ exports.dashboard = async (req, res) => {
   await Promise.all(tasks);
 
   const insights = buildInsights(sections);
+  // Deterministic analyst commentary over the SAME permission-filtered sections,
+  // so it can never reference a figure the caller was not given.
+  const commentary = buildCommentary(sections);
 
   // The visible domain tabs (fixed order), each present only when the caller
   // holds its permission. The frontend renders one tab per key and reads the
@@ -579,5 +583,5 @@ exports.dashboard = async (req, res) => {
     if (hasPermission(role, perm)) domains[name] = { perm };
   }
 
-  res.json({ sections, domains, insights, generated_at: new Date().toISOString() });
+  res.json({ sections, domains, insights, commentary, generated_at: new Date().toISOString() });
 };
