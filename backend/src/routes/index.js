@@ -15,6 +15,8 @@ router.use('/distributors', require('./distributors.routes')); // PUBLIC: POST /
 router.use('/distributor', require('./distributor.routes')); // distributor self-service
 router.use('/suppliers', require('./suppliers.routes')); // owner/staff: discovery + ledger
 router.use('/purchase-orders', require('./purchase-orders.routes')); // owner/staff: POs
+router.use('/demand-posts', require('./demand-posts.routes')); // owner/staff: demand board posts
+router.use('/demand-board', require('./demand-board.routes')); // distributor: open demand board + claim
 router.use('/families', require('./family.routes'));
 router.use('/transactions', require('./transaction.routes'));
 router.use('/payments', require('./payment.routes'));
