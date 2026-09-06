@@ -6,6 +6,11 @@ const whatsapp = require('../services/whatsapp.service');
 
 const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
+// Canonical Fresh-Produce category name — the marker category a farmer carries.
+// Mirrored on the UI side (admin-dashboard/src/lib/supplyConstants.js).
+const FRESH_CATEGORY = 'Fresh Produce';
+const DIST_KINDS = new Set(['distributor', 'farmer']);
+
 // Linear PO status pipeline, mirroring order.controller's forward-move rule. A
 // "forward move" is any status with a strictly higher rank; 'cancelled' is only
 // valid from a non-dispatched state (placed/confirmed). delivered/cancelled are
@@ -27,15 +32,21 @@ function signToken(user) {
   );
 }
 
-// Commission rate in basis points, from platform_settings key
-// SUPPLY_COMMISSION_BPS (default 100 = 1.00%). Read inside the caller's tx so a
-// rate change is honoured atomically; a missing/invalid value falls back to 100.
-async function getCommissionBps(client) {
+// Commission rate in basis points, depending on the SUPPLIER'S KIND. A farmer
+// (Fresh Produce) uses platform_settings key SUPPLY_COMMISSION_FRESH_BPS with a
+// fallback of 0 (farmers pay nothing at launch); any other distributor uses
+// SUPPLY_COMMISSION_BPS with the unchanged fallback of 100 (= 1.00%). Read inside
+// the caller's tx so a rate change is honoured atomically; a missing/invalid
+// value falls back to the per-kind default.
+async function getCommissionBps(client, kind) {
+  const key = kind === 'farmer' ? 'SUPPLY_COMMISSION_FRESH_BPS' : 'SUPPLY_COMMISSION_BPS';
+  const fallback = kind === 'farmer' ? 0 : 100;
   const r = await client.query(
-    "SELECT value FROM platform_settings WHERE key = 'SUPPLY_COMMISSION_BPS'"
+    'SELECT value FROM platform_settings WHERE key = $1',
+    [key]
   );
   const v = r.rowCount ? parseInt(r.rows[0].value, 10) : NaN;
-  return Number.isFinite(v) && v >= 0 ? v : 100;
+  return Number.isFinite(v) && v >= 0 ? v : fallback;
 }
 
 // Resolve the caller's distributor row (by login user id). 404 if the login
@@ -60,6 +71,9 @@ function publicDistributor(d) {
     brands: d.brands,
     whatsapp: d.whatsapp,
     min_order_paise: Number(d.min_order_paise),
+    kind: d.kind,
+    village: d.village,
+    is_farmer: d.kind === 'farmer',
     is_active: d.is_active,
     created_at: d.created_at,
     updated_at: d.updated_at,
@@ -84,7 +98,14 @@ async function postDeliveryIfNeeded(client, po) {
     [po.shop_id, po.distributor_id, subtotal, po.id, 'PO delivered']
   );
 
-  const bps = await getCommissionBps(client);
+  // Commission rate depends on the supplier's kind (farmer → Fresh rate). The
+  // supply ledger + shop balance above are identical regardless of kind.
+  const kindRes = await client.query(
+    'SELECT kind FROM distributors WHERE id = $1',
+    [po.distributor_id]
+  );
+  const kind = kindRes.rowCount ? kindRes.rows[0].kind : 'distributor';
+  const bps = await getCommissionBps(client, kind);
   const commission = Math.round((subtotal * bps) / 10000);
   await client.query(
     `INSERT INTO supply_commissions (po_id, distributor_id, shop_id, gmv_paise, rate_bps, amount_paise)
@@ -110,6 +131,18 @@ exports.register = async (req, res) => {
   const email = req.body.email ? req.body.email.trim().toLowerCase() : null;
   const cleanPhone = phone.trim();
 
+  // Farmer flavour: an invalid/absent kind is a plain 'distributor'. A farmer
+  // pays no minimum order and defaults to the Fresh Produce category when none
+  // was given; everything else about registration is unchanged.
+  const kind = req.body.kind === 'farmer' ? 'farmer' : 'distributor';
+  const village = req.body.village ? String(req.body.village).trim() : null;
+  let cats = categories || [];
+  let minOrderPaise = 0;
+  if (kind === 'farmer') {
+    minOrderPaise = 0;
+    if (!cats.length) cats = [FRESH_CATEGORY];
+  }
+
   const phoneClash = await query('SELECT 1 FROM users WHERE phone = $1', [cleanPhone]);
   if (phoneClash.rowCount) throw ApiError.conflict('Phone already in use');
   if (email) {
@@ -130,12 +163,12 @@ exports.register = async (req, res) => {
 
     const distRes = await client.query(
       `INSERT INTO distributors
-         (user_id, business_name, city, area, categories, brands, whatsapp)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+         (user_id, business_name, city, area, categories, brands, whatsapp, kind, village, min_order_paise)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING *`,
       [
         user.id, business_name.trim(), city || null, area || null,
-        categories || [], brands || [], wa || null,
+        cats, brands || [], wa || null, kind, village, minOrderPaise,
       ]
     );
     return { user, distributor: distRes.rows[0] };
@@ -155,6 +188,8 @@ exports.getMe = async (req, res) => {
 exports.patchMe = async (req, res) => {
   const d = await requireDistributor(req);
   const b = req.body;
+  // kind is validated to the two allowed values; anything else is ignored (kept).
+  const kind = DIST_KINDS.has(b.kind) ? b.kind : null;
   const updated = await query(
     `UPDATE distributors SET
        business_name = COALESCE($2, business_name),
@@ -165,6 +200,8 @@ exports.patchMe = async (req, res) => {
        whatsapp      = COALESCE($7, whatsapp),
        min_order_paise = COALESCE($8, min_order_paise),
        is_active     = COALESCE($9, is_active),
+       village       = COALESCE($10, village),
+       kind          = COALESCE($11, kind),
        updated_at    = NOW()
      WHERE id = $1
      RETURNING *`,
@@ -178,6 +215,8 @@ exports.patchMe = async (req, res) => {
       b.whatsapp ?? null,
       b.min_order_paise ?? null,
       b.is_active ?? null,
+      b.village ?? null,
+      kind,
     ]
   );
   res.json({ distributor: publicDistributor(updated.rows[0]) });
@@ -207,8 +246,19 @@ exports.listSuppliers = async (req, res) => {
     params.push([req.query.brand]);
     where.push(`d.brands && $${params.length}`);
   }
+  // Farmer flavour: filter by kind ('farmer'|'distributor') and/or ?fresh=1
+  // (Fresh Produce category overlap). City-scoping and the category/brand
+  // filters above are unchanged.
+  if (DIST_KINDS.has(req.query.kind)) {
+    params.push(req.query.kind);
+    where.push(`d.kind = $${params.length}`);
+  }
+  if (req.query.fresh === '1' || req.query.fresh === 'true') {
+    params.push([FRESH_CATEGORY]);
+    where.push(`d.categories && $${params.length}`);
+  }
   const r = await query(
-    `SELECT d.id, d.business_name, d.city, d.area, d.categories, d.brands, d.min_order_paise
+    `SELECT d.id, d.business_name, d.city, d.area, d.categories, d.brands, d.min_order_paise, d.kind, d.village
        FROM distributors d
       WHERE ${where.join(' AND ')}
       ORDER BY d.business_name ASC`,
@@ -222,6 +272,9 @@ exports.listSuppliers = async (req, res) => {
     categories: row.categories,
     brands: row.brands,
     min_order_paise: Number(row.min_order_paise),
+    kind: row.kind,
+    village: row.village,
+    is_farmer: row.kind === 'farmer',
   }));
   res.json({ suppliers });
 };
@@ -562,7 +615,7 @@ exports.recordPayment = async (req, res) => {
 exports.adminListDistributors = async (_req, res) => {
   const r = await query(
     `SELECT d.id, d.business_name, d.city, d.area, d.categories, d.brands,
-            d.min_order_paise, d.is_active, d.created_at,
+            d.min_order_paise, d.kind, d.village, d.is_active, d.created_at,
             (SELECT COUNT(*)::int FROM purchase_orders po WHERE po.distributor_id = d.id) AS po_count,
             (SELECT COUNT(*)::int FROM purchase_orders po WHERE po.distributor_id = d.id AND po.status = 'delivered') AS delivered_count,
             COALESCE((SELECT SUM(sc.gmv_paise) FROM supply_commissions sc WHERE sc.distributor_id = d.id AND sc.status = 'accrued'), 0)::bigint AS gmv_paise,

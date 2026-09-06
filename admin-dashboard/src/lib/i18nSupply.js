@@ -163,6 +163,18 @@ const SUPPLY = {
     'dist.haveAccount': 'Already registered? ',
     'dist.areYou': 'Are you a distributor? ',
     'dist.registerCta': 'Register',
+
+    // Farmer / Fresh Produce flavour
+    'sup.freshFilter': '🌾 Fresh from farmers',
+    'sup.farmerBadge': '🌾 Farmer',
+    'sup.village': 'Village',
+    'dist.iAm': 'I am a…',
+    'dist.kindDistributor': 'Distributor',
+    'dist.kindFarmer': 'Farmer (Fresh Produce)',
+    'dist.village': 'Village',
+    'dist.freshProduce': 'Fresh Produce',
+    'dist.farmerBadge': '🌾 Farmer',
+    'dist.freshHint': 'As a farmer, you sell Fresh Produce with no minimum order.',
   },
 
   hi: {
@@ -306,6 +318,17 @@ const SUPPLY = {
     'dist.haveAccount': 'पहले से रजिस्टर हैं? ',
     'dist.areYou': 'क्या आप वितरक हैं? ',
     'dist.registerCta': 'रजिस्टर करें',
+
+    'sup.freshFilter': '🌾 किसानों से ताज़ा',
+    'sup.farmerBadge': '🌾 किसान',
+    'sup.village': 'गाँव',
+    'dist.iAm': 'मैं हूँ…',
+    'dist.kindDistributor': 'वितरक',
+    'dist.kindFarmer': 'किसान (ताज़ा उपज)',
+    'dist.village': 'गाँव',
+    'dist.freshProduce': 'ताज़ा उपज',
+    'dist.farmerBadge': '🌾 किसान',
+    'dist.freshHint': 'किसान के रूप में आप बिना न्यूनतम ऑर्डर के ताज़ा उपज बेचते हैं।',
   },
 
   ta: {
@@ -449,6 +472,17 @@ const SUPPLY = {
     'dist.haveAccount': 'ஏற்கனவே பதிவு செய்துள்ளீர்களா? ',
     'dist.areYou': 'நீங்கள் விநியோகஸ்தரா? ',
     'dist.registerCta': 'பதிவு செய்',
+
+    'sup.freshFilter': '🌾 விவசாயிகளிடமிருந்து புதியது',
+    'sup.farmerBadge': '🌾 விவசாயி',
+    'sup.village': 'கிராமம்',
+    'dist.iAm': 'நான்…',
+    'dist.kindDistributor': 'விநியோகஸ்தர்',
+    'dist.kindFarmer': 'விவசாயி (புதிய விளைபொருள்)',
+    'dist.village': 'கிராமம்',
+    'dist.freshProduce': 'புதிய விளைபொருள்',
+    'dist.farmerBadge': '🌾 விவசாயி',
+    'dist.freshHint': 'விவசாயியாக, குறைந்தபட்ச ஆர்டர் இல்லாமல் புதிய விளைபொருட்களை விற்கிறீர்கள்.',
   },
 
   te: {
@@ -592,6 +626,17 @@ const SUPPLY = {
     'dist.haveAccount': 'ఇప్పటికే నమోదయ్యారా? ',
     'dist.areYou': 'మీరు పంపిణీదారా? ',
     'dist.registerCta': 'నమోదు',
+
+    'sup.freshFilter': '🌾 రైతుల నుండి తాజా',
+    'sup.farmerBadge': '🌾 రైతు',
+    'sup.village': 'గ్రామం',
+    'dist.iAm': 'నేను…',
+    'dist.kindDistributor': 'పంపిణీదారు',
+    'dist.kindFarmer': 'రైతు (తాజా ఉత్పత్తులు)',
+    'dist.village': 'గ్రామం',
+    'dist.freshProduce': 'తాజా ఉత్పత్తులు',
+    'dist.farmerBadge': '🌾 రైతు',
+    'dist.freshHint': 'రైతుగా, కనీస ఆర్డర్ లేకుండా తాజా ఉత్పత్తులను అమ్ముతారు.',
   },
 
   kn: {
@@ -735,6 +780,17 @@ const SUPPLY = {
     'dist.haveAccount': 'ಈಗಾಗಲೇ ನೋಂದಾಯಿಸಿದ್ದೀರಾ? ',
     'dist.areYou': 'ನೀವು ವಿತರಕರೇ? ',
     'dist.registerCta': 'ನೋಂದಣಿ',
+
+    'sup.freshFilter': '🌾 ರೈತರಿಂದ ತಾಜಾ',
+    'sup.farmerBadge': '🌾 ರೈತ',
+    'sup.village': 'ಗ್ರಾಮ',
+    'dist.iAm': 'ನಾನು…',
+    'dist.kindDistributor': 'ವಿತರಕ',
+    'dist.kindFarmer': 'ರೈತ (ತಾಜಾ ಉತ್ಪನ್ನ)',
+    'dist.village': 'ಗ್ರಾಮ',
+    'dist.freshProduce': 'ತಾಜಾ ಉತ್ಪನ್ನ',
+    'dist.farmerBadge': '🌾 ರೈತ',
+    'dist.freshHint': 'ರೈತರಾಗಿ, ಕನಿಷ್ಠ ಆರ್ಡರ್ ಇಲ್ಲದೆ ತಾಜಾ ಉತ್ಪನ್ನಗಳನ್ನು ಮಾರುತ್ತೀರಿ.',
   },
 
   ml: {
@@ -878,6 +934,17 @@ const SUPPLY = {
     'dist.haveAccount': 'ഇതിനകം രജിസ്റ്റർ ചെയ്തോ? ',
     'dist.areYou': 'നിങ്ങൾ വിതരണക്കാരനാണോ? ',
     'dist.registerCta': 'രജിസ്റ്റർ',
+
+    'sup.freshFilter': '🌾 കർഷകരിൽ നിന്ന് പുതിയത്',
+    'sup.farmerBadge': '🌾 കർഷകൻ',
+    'sup.village': 'ഗ്രാമം',
+    'dist.iAm': 'ഞാൻ…',
+    'dist.kindDistributor': 'വിതരണക്കാരൻ',
+    'dist.kindFarmer': 'കർഷകൻ (പുതിയ വിളവ്)',
+    'dist.village': 'ഗ്രാമം',
+    'dist.freshProduce': 'പുതിയ വിളവ്',
+    'dist.farmerBadge': '🌾 കർഷകൻ',
+    'dist.freshHint': 'കർഷകനെന്ന നിലയിൽ, കുറഞ്ഞ ഓർഡർ ഇല്ലാതെ പുതിയ വിളവ് വിൽക്കുന്നു.',
   },
 
   ur: {
@@ -1021,6 +1088,17 @@ const SUPPLY = {
     'dist.haveAccount': 'پہلے سے رجسٹرڈ ہیں؟ ',
     'dist.areYou': 'کیا آپ تقسیم کار ہیں؟ ',
     'dist.registerCta': 'رجسٹر کریں',
+
+    'sup.freshFilter': '🌾 کسانوں سے تازہ',
+    'sup.farmerBadge': '🌾 کسان',
+    'sup.village': 'گاؤں',
+    'dist.iAm': 'میں ہوں…',
+    'dist.kindDistributor': 'تقسیم کار',
+    'dist.kindFarmer': 'کسان (تازہ پیداوار)',
+    'dist.village': 'گاؤں',
+    'dist.freshProduce': 'تازہ پیداوار',
+    'dist.farmerBadge': '🌾 کسان',
+    'dist.freshHint': 'کسان کے طور پر، آپ بغیر کم از کم آرڈر کے تازہ پیداوار بیچتے ہیں۔',
   },
 };
 

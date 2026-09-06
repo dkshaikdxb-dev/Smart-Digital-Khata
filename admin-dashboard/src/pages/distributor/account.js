@@ -40,6 +40,8 @@ export default function DistributorAccount() {
           whatsapp: d.whatsapp || '',
           min_order: rupeeStr(d.min_order_paise),
           is_active: d.is_active !== false,
+          village: d.village || '',
+          is_farmer: d.is_farmer === true || d.kind === 'farmer',
         });
       })
       .catch((e) => setError(e.message));
@@ -57,8 +59,10 @@ export default function DistributorAccount() {
         categories: toList(form.categories),
         brands: toList(form.brands),
         whatsapp: form.whatsapp || null,
-        min_order_paise: Math.round(Number(form.min_order || 0) * 100),
+        // A farmer keeps min order at 0; the field is hidden for that path.
+        min_order_paise: form.is_farmer ? 0 : Math.round(Number(form.min_order || 0) * 100),
         is_active: !!form.is_active,
+        village: form.village || null,
       };
       const r = await apiFetch('/api/distributor/me', { method: 'PATCH', body: JSON.stringify(body) });
       const d = r.distributor;
@@ -71,6 +75,8 @@ export default function DistributorAccount() {
         whatsapp: d.whatsapp || '',
         min_order: rupeeStr(d.min_order_paise),
         is_active: d.is_active !== false,
+        village: d.village || '',
+        is_farmer: d.is_farmer === true || d.kind === 'farmer',
       });
       setMsg(t('common.saved'));
     } catch (err) {
@@ -88,7 +94,12 @@ export default function DistributorAccount() {
     <div>
       <DistNav />
       <div className="container">
-        <h1>{t('dist.accountTitle')}</h1>
+        <h1>
+          {t('dist.accountTitle')}
+          <span className="badge" style={{ marginInlineStart: 8 }}>
+            {form.is_farmer ? t('dist.farmerBadge') : t('dist.kindDistributor')}
+          </span>
+        </h1>
 
         <form className="card" style={{ maxWidth: 520 }} onSubmit={save}>
           <p className="muted" style={{ marginTop: 0 }}>{t('dist.accountSubtitle')}</p>
@@ -105,6 +116,10 @@ export default function DistributorAccount() {
           <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} />
           <div style={{ height: 12 }} />
 
+          <label className="muted">{t('dist.village')}</label>
+          <input value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} />
+          <div style={{ height: 12 }} />
+
           <label className="muted">{t('dist.categories')} <span className="muted">({t('dist.listHint')})</span></label>
           <input value={form.categories} onChange={(e) => setForm({ ...form, categories: e.target.value })} />
           <div style={{ height: 12 }} />
@@ -117,9 +132,13 @@ export default function DistributorAccount() {
           <input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} dir="ltr" />
           <div style={{ height: 12 }} />
 
-          <label className="muted">{t('dist.minOrderRs')}</label>
-          <input type="number" min="0" step="0.01" value={form.min_order} onChange={(e) => setForm({ ...form, min_order: e.target.value })} />
-          <div style={{ height: 12 }} />
+          {!form.is_farmer && (
+            <>
+              <label className="muted">{t('dist.minOrderRs')}</label>
+              <input type="number" min="0" step="0.01" value={form.min_order} onChange={(e) => setForm({ ...form, min_order: e.target.value })} />
+              <div style={{ height: 12 }} />
+            </>
+          )}
 
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
             <input type="checkbox" style={{ width: 'auto' }} checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />

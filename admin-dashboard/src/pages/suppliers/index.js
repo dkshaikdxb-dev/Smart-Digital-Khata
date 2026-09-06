@@ -19,6 +19,7 @@ export default function Suppliers() {
   const [suppliers, setSuppliers] = useState([]);
   const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
+  const [kind, setKind] = useState(''); // '' | 'farmer'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -34,13 +35,14 @@ export default function Suppliers() {
   const [products, setProducts] = useState([]);
   const [pickSearch, setPickSearch] = useState('');
 
-  async function load(cat, br) {
+  async function load(cat, br, kd) {
     setLoading(true);
     setError('');
     try {
       const params = new URLSearchParams();
       if (cat) params.set('category', cat);
       if (br) params.set('brand', br);
+      if (kd) params.set('kind', kd);
       const qs = params.toString();
       const r = await apiFetch(`/api/suppliers${qs ? `?${qs}` : ''}`);
       setSuppliers(r.suppliers || []);
@@ -56,7 +58,7 @@ export default function Suppliers() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load('', '');
+    load('', '', '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -76,17 +78,23 @@ export default function Suppliers() {
   function pickCategory(c) {
     const next = category === c ? '' : c;
     setCategory(next);
-    load(next, brand);
+    load(next, brand, kind);
   }
   function pickBrand(b) {
     const next = brand === b ? '' : b;
     setBrand(next);
-    load(category, next);
+    load(category, next, kind);
+  }
+  function toggleFarmers() {
+    const next = kind === 'farmer' ? '' : 'farmer';
+    setKind(next);
+    load(category, brand, next);
   }
   function clearFilters() {
     setCategory('');
     setBrand('');
-    load('', '');
+    setKind('');
+    load('', '', '');
   }
 
   // ---- Reorder modal ------------------------------------------------------
@@ -170,8 +178,14 @@ export default function Suppliers() {
         {sent && <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>{sent}</div>}
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
 
-        {(allCategories.length > 0 || allBrands.length > 0) && (
-          <div className="card">
+        <div className="card">
+          <div style={{ marginBottom: (allCategories.length > 0 || allBrands.length > 0) ? 12 : 0 }}>
+            <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+              <button className={kind === 'farmer' ? '' : 'secondary'} onClick={toggleFarmers}>{t('sup.freshFilter')}</button>
+            </div>
+          </div>
+          {(allCategories.length > 0 || allBrands.length > 0) && (
+            <>
             {allCategories.length > 0 && (
               <div style={{ marginBottom: allBrands.length ? 12 : 0 }}>
                 <div className="muted" style={{ marginBottom: 6 }}>{t('sup.filterCategory')}</div>
@@ -192,26 +206,31 @@ export default function Suppliers() {
                 </div>
               </div>
             )}
-            {(category || brand) && (
-              <div style={{ marginTop: 12 }}>
-                <button className="secondary" onClick={clearFilters}>{t('sup.clearFilters')}</button>
-              </div>
-            )}
-          </div>
-        )}
+            </>
+          )}
+          {(category || brand || kind) && (
+            <div style={{ marginTop: 12 }}>
+              <button className="secondary" onClick={clearFilters}>{t('sup.clearFilters')}</button>
+            </div>
+          )}
+        </div>
 
         {loading ? (
           <div className="card">{t('common.loading')}</div>
         ) : suppliers.length === 0 ? (
           <div className="card">
-            <p style={{ margin: 0 }}>{category || brand ? t('sup.filterEmpty') : t('sup.empty')}</p>
-            {!(category || brand) && <p className="muted" style={{ marginBottom: 0 }}>{t('sup.emptyHint')}</p>}
+            <p style={{ margin: 0 }}>{category || brand || kind ? t('sup.filterEmpty') : t('sup.empty')}</p>
+            {!(category || brand || kind) && <p className="muted" style={{ marginBottom: 0 }}>{t('sup.emptyHint')}</p>}
           </div>
         ) : (
           <div className="grid">
             {suppliers.map((s) => (
               <div key={s.id} className="card" style={{ marginBottom: 0 }}>
-                <h3 style={{ margin: '0 0 4px' }}>{s.business_name}</h3>
+                <h3 style={{ margin: '0 0 4px' }}>
+                  {s.business_name}
+                  {s.is_farmer && <span className="badge" style={{ marginInlineStart: 8 }}>{t('sup.farmerBadge')}</span>}
+                </h3>
+                {s.is_farmer && s.village && <div className="muted">{t('sup.village')}: {s.village}</div>}
                 {s.area && <div className="muted">{t('sup.area')}: {s.area}{s.city ? `, ${s.city}` : ''}</div>}
                 {(s.categories || []).length > 0 && (
                   <div style={{ marginTop: 8 }}>

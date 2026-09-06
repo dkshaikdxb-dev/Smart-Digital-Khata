@@ -8,6 +8,8 @@ const ctrl = require('../controllers/distributor.controller');
 const listQuerySchema = Joi.object({
   category: Joi.string().max(80),
   brand: Joi.string().max(80),
+  kind: Joi.string().valid('distributor', 'farmer'),
+  fresh: Joi.string().valid('1', 'true'),
 });
 
 const ledgerQuerySchema = Joi.object({
