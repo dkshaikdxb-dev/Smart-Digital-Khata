@@ -23,6 +23,7 @@ export default function DistNav() {
     <div className="nav">
       <strong>Smart Digital Khata</strong>
       <Link href="/distributor">{t('dist.navHome')}</Link>
+      <Link href="/distributor/demand">{t('dem.nav')}</Link>
       <Link href="/distributor/shops">{t('dist.navShops')}</Link>
       <Link href="/distributor/account">{t('dist.navAccount')}</Link>
       <span className="badge">{t('dist.brand')}</span>

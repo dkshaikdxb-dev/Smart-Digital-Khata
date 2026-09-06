@@ -2,14 +2,16 @@ import Link from 'next/link';
 import { useLang } from '../lib/i18n';
 
 // Sub-navigation for the owner "Suppliers" surface: Discover / My orders /
-// What I owe. Reuses the catalogue's .cat-tabs pill styling so it matches the
-// rest of the owner app. `active` is one of 'discover' | 'orders' | 'ledger'.
+// What I owe / Demand board. Reuses the catalogue's .cat-tabs pill styling so it
+// matches the rest of the owner app. `active` is one of 'discover' | 'orders' |
+// 'ledger' | 'demand'.
 export default function SupplierTabs({ active }) {
   const { t } = useLang();
   const tabs = [
     { key: 'discover', href: '/suppliers', label: t('sup.tabDiscover') },
     { key: 'orders', href: '/suppliers/orders', label: t('sup.tabOrders') },
     { key: 'ledger', href: '/suppliers/ledger', label: t('sup.tabLedger') },
+    { key: 'demand', href: '/suppliers/demand', label: t('dem.nav') },
   ];
   return (
     <div className="cat-tabs">
