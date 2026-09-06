@@ -139,3 +139,65 @@ describe('seed integrity', () => {
     }
   });
 });
+
+// Batch M — the owner voice ("Ask") answers + the weekly summary must be spoken/
+// shown in the owner's language. These 13 keys were added AFTER the original
+// regional override pass and previously fell back to English; the seed must now
+// carry a native value for EVERY one of ta/te/kn/ml/ur.
+describe('voice + weekly keys are covered natively for all regional languages', () => {
+  // Per-language Unicode block, used to prove a value is in the native script
+  // (an English fallback would be Latin/ASCII, even though it may carry a ₹).
+  const SCRIPT = {
+    ta: /[஀-௿]/, // Tamil
+    te: /[ఀ-౿]/, // Telugu
+    kn: /[ಀ-೿]/, // Kannada
+    ml: /[ഀ-ൿ]/, // Malayalam
+    ur: /[؀-ۿ]/, // Arabic (Urdu)
+  };
+
+  // The 13 previously-missing keys and the tokens each MUST preserve.
+  const VOICE_WEEKLY_TOKENS = {
+    'ask.button': [], 'ask.prompt': [], 'ask.listening': [], 'ask.tryAgain': [], 'ask.fallback': [],
+    'ask.answer.collection': ['amount'], 'ask.answer.outstanding': ['amount', 'n'],
+    'ask.answer.whoOwes': ['n'], 'ask.answer.bestSeller': ['item'], 'ask.answer.bestSellerNone': [],
+    'own.weekly.title': [], 'own.weekly.subtitle': [], 'own.weekly.loadError': [],
+  };
+
+  it('every one of the 13 keys has a non-empty native value for ta/te/kn/ml/ur', () => {
+    expect(Object.keys(VOICE_WEEKLY_TOKENS)).toHaveLength(13);
+    for (const key of Object.keys(VOICE_WEEKLY_TOKENS)) {
+      for (const lang of SEED_LANGS) {
+        const value = seed[lang][key];
+        expect(typeof value).toBe('string');
+        expect(value.trim().length).toBeGreaterThan(0);
+        // native script present → NOT an English fallback
+        expect(SCRIPT[lang].test(value)).toBe(true);
+        // no NUL/control bytes
+        expect(hasControlChar(value)).toBe(false);
+      }
+    }
+  });
+
+  it('preserves the {token} set on the spoken answer templates', () => {
+    for (const [key, expected] of Object.entries(VOICE_WEEKLY_TOKENS)) {
+      for (const lang of SEED_LANGS) {
+        expect(tokensOf(seed[lang][key])).toEqual([...expected].sort());
+      }
+    }
+  });
+
+  it('GET /api/i18n/overrides returns all 13 keys natively for every regional language', async () => {
+    await importI18nOverrides();
+    const res = await request(app).get('/api/i18n/overrides');
+    expect(res.status).toBe(200);
+    for (const key of Object.keys(VOICE_WEEKLY_TOKENS)) {
+      for (const lang of SEED_LANGS) {
+        const value = res.body.overrides[lang][key];
+        expect(typeof value).toBe('string');
+        expect(value.trim().length).toBeGreaterThan(0);
+        expect(SCRIPT[lang].test(value)).toBe(true);
+        expect(value).toBe(seed[lang][key]);
+      }
+    }
+  });
+});
