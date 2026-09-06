@@ -4,6 +4,7 @@ import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { nextStatus } from '../lib/orderStatus';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -25,8 +26,10 @@ export default function Orders() {
   const router = useRouter();
   const { t } = useLang();
   const enumLabel = (ns, s) => { const v = t(`${ns}.${s}`); return v === `${ns}.${s}` ? label(s) : v; };
+  const advanceLabel = (s) => { const v = t(`ord.advance.${s}`); return v === `ord.advance.${s}` ? t('ord.mark', { s: enumLabel('status', s) }) : v; };
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('all');
+  const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
 
   async function load(s) {
@@ -51,6 +54,21 @@ export default function Orders() {
 
   const open = (o) => router.push(`/orders/${o.id}`);
 
+  // One-tap advance from the list, without opening the order. Calls the same
+  // PATCH /orders/:id/status the backend already validates; reloads on 200.
+  async function advance(o, e) {
+    if (e) e.stopPropagation();
+    const next = nextStatus(o);
+    if (!next) return;
+    setBusyId(o.id);
+    setError('');
+    try {
+      await apiFetch(`/api/orders/${o.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: next }) });
+      await load();
+    } catch (err) { setError(err.message); }
+    finally { setBusyId(null); }
+  }
+
   const columns = [
     { key: 'created_at', label: t('common.when'), render: (o) => new Date(o.created_at).toLocaleString() },
     { key: 'customer', label: t('common.customer'), render: (o) => (
@@ -65,6 +83,15 @@ export default function Orders() {
     { key: 'status', label: t('common.status'), render: (o) => (
       <span className="badge" style={{ color: statusColor(o.status) }}>{enumLabel('status', o.status)}</span>
     ) },
+    { key: 'advance', label: t('ord.advanceCol'), render: (o) => {
+      const next = nextStatus(o);
+      if (!next) return <span className="muted">—</span>;
+      return (
+        <button className="secondary" style={{ padding: '4px 10px', fontSize: 13 }} disabled={busyId === o.id} onClick={(e) => advance(o, e)}>
+          {advanceLabel(next)}
+        </button>
+      );
+    } },
   ];
 
   return (
