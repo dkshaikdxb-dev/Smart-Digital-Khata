@@ -22,7 +22,13 @@ export default function Login() {
       });
       window.localStorage.setItem('skhata_token', r.token);
       window.localStorage.setItem('skhata_role', r.user.role);
-      router.push(r.user.role === 'admin' ? '/admin' : '/dashboard');
+      // Route each role to its own home. Admins to the platform console,
+      // distributors to their supply dashboard, everyone else (owner/staff) to
+      // the shop dashboard.
+      const dest = r.user.role === 'admin'
+        ? '/admin'
+        : (r.user.role === 'distributor' ? '/distributor' : '/dashboard');
+      router.push(dest);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,6 +49,9 @@ export default function Login() {
           <button disabled={loading}>{loading ? t('log.signingIn') : t('log.signIn')}</button>
           <div className="muted">
             {t('log.newHere')}<a href="/register">{t('log.createAccount')}</a>
+          </div>
+          <div className="muted">
+            {t('dist.areYou')}<a href="/distributor/register">{t('dist.registerCta')}</a>
           </div>
         </div>
       </form>

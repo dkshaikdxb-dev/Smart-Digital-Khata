@@ -21,6 +21,7 @@ export default function Staff() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     const role = window.localStorage.getItem('skhata_role');
     if (role === 'admin') { router.replace('/admin'); return; }
+    if (role === 'distributor') { router.replace('/distributor'); return; }
     // Owner-only: staff (and any non-owner) cannot manage staff.
     if (role !== 'owner') { router.replace('/dashboard'); return; }
     load().catch((e) => setError(e.message));

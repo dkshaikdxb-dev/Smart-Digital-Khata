@@ -50,6 +50,7 @@ export default function Nav() {
           <Link href="/catalog">{t('nav.catalog')}</Link>
           <Link href="/orders">{t('nav.orders')}</Link>
           <Link href="/customers">{t('nav.customers')}</Link>
+          <Link href="/suppliers">{t('sup.nav')}</Link>
           {role === 'owner' && <Link href="/staff">{t('nav.staff')}</Link>}
           <Link href="/families">{t('nav.families')}</Link>
           <Link href="/transactions">{t('nav.transactions')}</Link>

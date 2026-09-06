@@ -65,6 +65,7 @@ export default function Settings() {
   useEffect(() => {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
     apiFetch('/api/shops/me').then((r) => { setShop(r.shop); setFul(fulFromShop(r.shop)); }).catch(console.error);
     apiFetch('/api/subscriptions/plans').then((r) => setPlans(r.plans)).catch(console.error);
     apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
