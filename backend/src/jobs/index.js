@@ -3,10 +3,12 @@ const { connection } = require('../config/redis');
 const logger = require('../utils/logger');
 const { query } = require('../config/db');
 const notifier = require('../services/notification.service');
+const weekly = require('../services/weekly-summary.service');
 
 const QUEUES = {
   reminders: new Queue('reminders', { connection }),
   summaries: new Queue('summaries', { connection }),
+  weekly: new Queue('weekly', { connection }),
 };
 
 async function enqueueDailyReminders() {
@@ -59,6 +61,17 @@ function startWorkers() {
     { connection, concurrency: 5 }
   );
 
+  new Worker(
+    'weekly',
+    async (job) => {
+      // The repeatable "weekly-summary" tick runs the whole per-shop iteration in
+      // this worker. The iteration + composition live in the service so they are
+      // unit-testable WITHOUT Redis (the queue is only the scheduler here).
+      if (job.name === 'weekly-summary') return weekly.runWeeklySummaries();
+    },
+    { connection, concurrency: 1 }
+  );
+
   scheduleRecurring().catch((e) => logger.error({ err: e.message }, 'scheduleRecurring failed'));
 }
 
@@ -92,6 +105,19 @@ async function scheduleRecurring() {
     {
       repeat: { pattern: '0 21 * * *', tz: process.env.TZ || 'Asia/Kolkata' }, // 9pm IST — closing time
       jobId: 'daily-digest',
+      removeOnComplete: 100,
+      removeOnFail: 100,
+    }
+  );
+  // Weekly WhatsApp summary to owners: Sunday 9am IST. One repeatable tick fans
+  // out to runWeeklySummaries(), which itself guards opt-in (weekly_summary), the
+  // >6-day last-sent window, and skips when WhatsApp isn't configured.
+  await QUEUES.weekly.add(
+    'weekly-summary',
+    {},
+    {
+      repeat: { pattern: '0 9 * * 0', tz: process.env.TZ || 'Asia/Kolkata' }, // Sun 9am IST
+      jobId: 'weekly-summary',
       removeOnComplete: 100,
       removeOnFail: 100,
     }
