@@ -68,7 +68,7 @@ async function buildOverview() {
 async function buildGrowth() {
   // Weekly signups (shops + consumers) for the last 8 ISO weeks, zero-filled so
   // the sparkline always has 8 points even when a week had no signups.
-  const [shopWeeks, consumerWeeks, withProduct, withTx, totalShops, neverActivated] = await Promise.all([
+  const [shopWeeks, consumerWeeks, withProduct, withTx, withOrder, totalShops, neverActivated] = await Promise.all([
     query(
       `SELECT to_char(date_trunc('week', created_at), 'YYYY-MM-DD') AS wk, COUNT(*)::int AS c
        FROM shops WHERE created_at >= date_trunc('week', NOW()) - INTERVAL '7 weeks'
@@ -81,6 +81,8 @@ async function buildGrowth() {
     ),
     scalar('SELECT COUNT(DISTINCT shop_id)::int AS c FROM products'),
     scalar('SELECT COUNT(DISTINCT shop_id)::int AS c FROM transactions'),
+    // Activation funnel's deepest step: shops that have received an order.
+    scalar('SELECT COUNT(DISTINCT shop_id)::int AS c FROM orders'),
     scalar('SELECT COUNT(*)::int AS c FROM shops'),
     // Never activated = has NO product OR has NO transaction.
     scalar(
@@ -105,12 +107,22 @@ async function buildGrowth() {
     weeks.push({ week: key, shops: shopMap.get(key) || 0, consumers: consumerMap.get(key) || 0 });
   }
 
+  // Week-over-week growth from the two most-recent COMPLETE weeks (weeks[7] is
+  // the current, still-partial week, so it is excluded to avoid a false dip).
+  const lastFull = weeks[6] || { shops: 0, consumers: 0 };
+  const priorFull = weeks[5] || { shops: 0, consumers: 0 };
+  const last = lastFull.shops + lastFull.consumers;
+  const prev = priorFull.shops + priorFull.consumers;
+  const wowPct = prev > 0 ? Math.round(((last - prev) / prev) * 1000) / 10 : null;
+
   return {
     weekly: weeks,
+    wow: { prev, last, pct: wowPct },
     activation: {
       total_shops: totalShops,
       shops_with_product: withProduct,
       shops_with_transaction: withTx,
+      shops_with_order: withOrder,
       never_activated: neverActivated,
     },
   };
@@ -297,6 +309,232 @@ async function buildTrust() {
   };
 }
 
+// ---- Batch L: domain-specific cuts (all read-only over existing tables) -----
+
+// Marketing (shops:view). Onboarding-attribution and reach cuts — the referral
+// source-channel mix, top referrers BY COUNT (no money), signups by referred
+// type, and the listed-shops share. The money side of referrals (accrued
+// rewards) stays in buildAcquisition under revenue:view; this is attribution
+// only, so it is safe for a shops:view caller.
+async function buildMarketing() {
+  const [byChannel, top, byType, listedShare] = await Promise.all([
+    query(
+      `SELECT COALESCE(source_channel, 'unknown') AS channel, COUNT(*)::int AS c
+       FROM referrals GROUP BY COALESCE(source_channel, 'unknown') ORDER BY c DESC`
+    ),
+    query(
+      `SELECT rc.code, rc.owner_type,
+              COALESCE(rc.label, u.name, cu.name, cu.phone) AS label,
+              COUNT(r.id)::int AS referred_count
+       FROM referral_codes rc
+       JOIN referrals r ON r.referral_code_id = rc.id
+       LEFT JOIN users u ON u.id = rc.owner_user_id
+       LEFT JOIN customer_users cu ON cu.id = rc.owner_customer_id
+       GROUP BY rc.code, rc.owner_type, rc.label, u.name, cu.name, cu.phone
+       ORDER BY referred_count DESC, rc.code ASC
+       LIMIT 5`
+    ),
+    query('SELECT referred_type, COUNT(*)::int AS c FROM referrals GROUP BY referred_type ORDER BY c DESC'),
+    query('SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE is_listed = true)::int AS listed FROM shops'),
+  ]);
+  const ls = listedShare.rows[0] || { total: 0, listed: 0 };
+  const listedPct = ls.total > 0 ? Math.round((ls.listed / ls.total) * 1000) / 10 : 0;
+  return {
+    source_channel_mix: byChannel.rows,
+    top_referrers: top.rows.map((r) => ({
+      code: r.code, owner_type: r.owner_type, label: r.label || null, referred_count: r.referred_count,
+    })),
+    signups_by_owner_type: byType.rows,
+    listed_shops: ls.listed,
+    total_shops: ls.total,
+    listed_share_pct: listedPct,
+  };
+}
+
+// Research (shops:view). Exploratory catalogue + order-pattern cuts. All derived
+// from existing rows; nothing here is fabricated — a cut with no data comes back
+// as an empty list / zero, which the UI simply renders as "no data yet".
+async function buildResearch() {
+  const [catalogue, topCategories, topSub, weekday, hour, loose] = await Promise.all([
+    query(
+      `SELECT COUNT(DISTINCT shop_id)::int AS shops_with_products,
+              COUNT(DISTINCT shop_id) FILTER (WHERE catalog_item_id IS NOT NULL)::int AS shops_using_base,
+              COUNT(*) FILTER (WHERE catalog_item_id IS NOT NULL)::int AS base_linked_products,
+              COUNT(*) FILTER (WHERE catalog_item_id IS NULL)::int AS custom_products
+       FROM products`
+    ),
+    query(
+      `SELECT COALESCE(NULLIF(TRIM(ci.category), ''), 'Uncategorised') AS category, COUNT(*)::int AS c
+       FROM products p JOIN catalog_items ci ON ci.id = p.catalog_item_id
+       GROUP BY 1 ORDER BY c DESC, category ASC LIMIT 8`
+    ),
+    query(
+      `SELECT COALESCE(NULLIF(TRIM(ci.subcategory), ''), 'Other') AS subcategory, COUNT(*)::int AS c
+       FROM products p JOIN catalog_items ci ON ci.id = p.catalog_item_id
+       WHERE ci.subcategory IS NOT NULL AND TRIM(ci.subcategory) <> ''
+       GROUP BY 1 ORDER BY c DESC, subcategory ASC LIMIT 8`
+    ),
+    query("SELECT EXTRACT(DOW FROM created_at)::int AS dow, COUNT(*)::int AS c FROM orders GROUP BY 1 ORDER BY 1"),
+    query("SELECT EXTRACT(HOUR FROM created_at)::int AS hour, COUNT(*)::int AS c FROM orders GROUP BY 1 ORDER BY 1"),
+    query('SELECT COUNT(*) FILTER (WHERE sold_by_weight = true)::int AS loose, COUNT(*) FILTER (WHERE sold_by_weight = false)::int AS unit FROM products'),
+  ]);
+  const cat = catalogue.rows[0] || {};
+  const l = loose.rows[0] || { loose: 0, unit: 0 };
+  // Zero-fill the 7 weekday buckets so the UI always has a full week (0 = Sun).
+  const dowMap = new Map(weekday.rows.map((r) => [r.dow, r.c]));
+  const orders_by_weekday = [];
+  for (let d = 0; d < 7; d++) orders_by_weekday.push({ dow: d, c: dowMap.get(d) || 0 });
+  return {
+    catalogue: {
+      shops_with_products: cat.shops_with_products || 0,
+      shops_using_base: cat.shops_using_base || 0,
+      base_linked_products: cat.base_linked_products || 0,
+      custom_products: cat.custom_products || 0,
+      loose_products: l.loose || 0,
+      unit_products: l.unit || 0,
+    },
+    top_categories: topCategories.rows,
+    top_subcategories: topSub.rows,
+    orders_by_weekday,
+    orders_by_hour: hour.rows,
+  };
+}
+
+// Finance (revenue:view). Money-side derivations that build on the plan mix and
+// the ledger: ARPU, run-rate, and the collection-rate TREND (this 30-day window
+// vs the prior 30-day window). Money stays integer paise throughout.
+async function buildFinance() {
+  const [plans, trend] = await Promise.all([
+    query("SELECT plan, COUNT(*)::int AS c FROM shops GROUP BY plan"),
+    // Two windows: current = last 30 days; prior = days 31–60. Collection rate =
+    // repayments (cash/upi) over purchases in the same window.
+    query(
+      `SELECT
+         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase' AND created_at >= NOW() - INTERVAL '30 days'), 0)::bigint AS cur_purch,
+         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi') AND created_at >= NOW() - INTERVAL '30 days'), 0)::bigint AS cur_paid,
+         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase' AND created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'), 0)::bigint AS prior_purch,
+         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi') AND created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'), 0)::bigint AS prior_paid
+       FROM transactions`
+    ),
+  ]);
+  const planCounts = { free: 0, pro: 0, family: 0 };
+  let mrr = 0;
+  for (const row of plans.rows) {
+    if (planCounts[row.plan] !== undefined) planCounts[row.plan] = row.c;
+    mrr += (PLAN_PRICE[row.plan] || 0) * row.c;
+  }
+  const payingShops = planCounts.pro + planCounts.family;
+  const arpu = payingShops > 0 ? Math.round(mrr / payingShops) : 0;
+
+  const t = trend.rows[0] || {};
+  const curPurch = Number(t.cur_purch || 0);
+  const curPaid = Number(t.cur_paid || 0);
+  const priorPurch = Number(t.prior_purch || 0);
+  const priorPaid = Number(t.prior_paid || 0);
+  const curPct = curPurch > 0 ? Math.round((curPaid / curPurch) * 1000) / 10 : null;
+  const priorPct = priorPurch > 0 ? Math.round((priorPaid / priorPurch) * 1000) / 10 : null;
+
+  return {
+    plan_counts: planCounts,
+    plan_price_paise: { ...PLAN_PRICE },
+    mrr_paise: mrr,
+    paying_shops: payingShops,
+    arpu_paise: arpu,
+    run_rate_paise: mrr * 12,
+    collection_trend: {
+      current_pct: curPct,
+      prior_pct: priorPct,
+      delta: (curPct != null && priorPct != null) ? Math.round((curPct - priorPct) * 10) / 10 : null,
+    },
+  };
+}
+
+// Investor (revenue:view). A single north-star screen: active shops, consumers,
+// GMV (30d + all-time), MRR + run-rate, period-over-period growth, collection
+// rate, outstanding, and the referral-driven signup share. All aggregation.
+async function buildInvestor() {
+  const [
+    activeShops, totalShops, totalConsumers, gmv30, gmvAll, plans, outstanding,
+    coll, referred, cur30, prior30,
+  ] = await Promise.all([
+    scalar("SELECT COUNT(DISTINCT shop_id)::int AS c FROM transactions WHERE created_at >= NOW() - INTERVAL '30 days'"),
+    scalar('SELECT COUNT(*)::int AS c FROM shops'),
+    scalar('SELECT COUNT(*)::int AS c FROM customer_users'),
+    scalar("SELECT COALESCE(SUM(subtotal + delivery_fee),0)::bigint AS s FROM orders WHERE created_at >= NOW() - INTERVAL '30 days'"),
+    scalar('SELECT COALESCE(SUM(subtotal + delivery_fee),0)::bigint AS s FROM orders'),
+    query("SELECT plan, COUNT(*)::int AS c FROM shops GROUP BY plan"),
+    scalar('SELECT COALESCE(SUM(balance),0)::bigint AS s FROM customers WHERE balance > 0'),
+    query(
+      `SELECT
+         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase'), 0)::bigint AS purch,
+         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi')), 0)::bigint AS paid
+       FROM transactions WHERE created_at >= NOW() - INTERVAL '30 days'`
+    ),
+    // Distinct principals attributed to a referral code (shops + consumers).
+    scalar('SELECT COUNT(*)::int AS c FROM referrals'),
+    // New signups (shops + consumers) in the last 30 days vs the prior 30.
+    scalar(
+      `SELECT (
+         (SELECT COUNT(*) FROM shops WHERE created_at >= NOW() - INTERVAL '30 days')
+       + (SELECT COUNT(*) FROM customer_users WHERE created_at >= NOW() - INTERVAL '30 days')
+       )::int AS c`
+    ),
+    scalar(
+      `SELECT (
+         (SELECT COUNT(*) FROM shops WHERE created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days')
+       + (SELECT COUNT(*) FROM customer_users WHERE created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days')
+       )::int AS c`
+    ),
+  ]);
+
+  const planCounts = { free: 0, pro: 0, family: 0 };
+  let mrr = 0;
+  for (const row of plans.rows) {
+    if (planCounts[row.plan] !== undefined) planCounts[row.plan] = row.c;
+    mrr += (PLAN_PRICE[row.plan] || 0) * row.c;
+  }
+  const c = coll.rows[0] || {};
+  const purch = Number(c.purch || 0);
+  const paid = Number(c.paid || 0);
+  const collectionPct = purch > 0 ? Math.round((paid / purch) * 1000) / 10 : null;
+
+  const cur = Number(cur30 || 0);
+  const prior = Number(prior30 || 0);
+  const growthPct = prior > 0 ? Math.round(((cur - prior) / prior) * 1000) / 10 : null;
+
+  const signupsTotal = (totalShops || 0) + (totalConsumers || 0);
+  const referralPct = signupsTotal > 0 ? Math.round((Number(referred || 0) / signupsTotal) * 1000) / 10 : 0;
+
+  return {
+    active_shops_30d: activeShops || 0,
+    total_shops: totalShops || 0,
+    total_consumers: totalConsumers || 0,
+    gmv_30d_paise: Number(gmv30 || 0),
+    gmv_all_time_paise: Number(gmvAll || 0),
+    mrr_paise: mrr,
+    run_rate_paise: mrr * 12,
+    growth_rate_pct: growthPct,
+    signups_30d: cur,
+    signups_prior_30d: prior,
+    collection_rate_pct: collectionPct,
+    outstanding_total_paise: Number(outstanding || 0),
+    referral_driven_signups: Number(referred || 0),
+    referral_driven_pct: referralPct,
+  };
+}
+
+// The fixed domain tab order + the permission each tab requires. The controller
+// includes a tab in the `domains` descriptor only when the caller holds its
+// perm, so a tab the caller can't see is simply absent (the UI hides it).
+const DOMAIN_PERMS = Object.freeze({
+  overview: 'shops:view',
+  marketing: 'shops:view',
+  growth: 'shops:view',
+  finance: 'revenue:view',
+  research: 'shops:view',
+  investor: 'revenue:view',
+});
+
 // GET /api/admin/dashboard — assemble every section the caller may see, then
 // derive the insights from exactly those sections.
 exports.dashboard = async (req, res) => {
@@ -317,10 +555,14 @@ exports.dashboard = async (req, res) => {
     tasks.push(buildNetwork().then((v) => { sections.network = v; }));
     tasks.push(buildGeography().then((v) => { sections.geography = v; }));
     tasks.push(buildLanguages().then((v) => { sections.languages = v; }));
+    tasks.push(buildMarketing().then((v) => { sections.marketing = v; }));
+    tasks.push(buildResearch().then((v) => { sections.research = v; }));
   }
   if (canRevenue) {
     tasks.push(buildRevenue().then((v) => { sections.revenue = v; }));
     tasks.push(buildAcquisition().then((v) => { sections.acquisition = v; }));
+    tasks.push(buildFinance().then((v) => { sections.finance = v; }));
+    tasks.push(buildInvestor().then((v) => { sections.investor = v; }));
   }
   if (canAudit) {
     tasks.push(buildTrust().then((v) => { sections.trust = v; }));
@@ -329,5 +571,13 @@ exports.dashboard = async (req, res) => {
 
   const insights = buildInsights(sections);
 
-  res.json({ sections, insights, generated_at: new Date().toISOString() });
+  // The visible domain tabs (fixed order), each present only when the caller
+  // holds its permission. The frontend renders one tab per key and reads the
+  // relevant flat `sections.*` for its contents; `perm` lets it second-gate.
+  const domains = {};
+  for (const [name, perm] of Object.entries(DOMAIN_PERMS)) {
+    if (hasPermission(role, perm)) domains[name] = { perm };
+  }
+
+  res.json({ sections, domains, insights, generated_at: new Date().toISOString() });
 };
