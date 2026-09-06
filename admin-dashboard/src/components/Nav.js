@@ -46,7 +46,7 @@ export default function Nav() {
         // On mobile these full links collapse (CSS) in favour of the bottom tab
         // bar below; on desktop they stay as the primary owner navigation.
         <span className="nav-owner-links">
-          <Link href="/">{t('nav.dashboard')}</Link>
+          <Link href="/dashboard">{t('nav.dashboard')}</Link>
           <Link href="/catalog">{t('nav.catalog')}</Link>
           <Link href="/orders">{t('nav.orders')}</Link>
           <Link href="/customers">{t('nav.customers')}</Link>

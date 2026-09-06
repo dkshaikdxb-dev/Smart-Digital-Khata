@@ -22,7 +22,7 @@ export default function Login() {
       });
       window.localStorage.setItem('skhata_token', r.token);
       window.localStorage.setItem('skhata_role', r.user.role);
-      router.push(r.user.role === 'admin' ? '/admin' : '/');
+      router.push(r.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
