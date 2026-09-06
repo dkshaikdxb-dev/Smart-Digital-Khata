@@ -28,6 +28,8 @@ const registerSchema = Joi.object({
   categories: strArray,
   brands: strArray,
   whatsapp: Joi.string().pattern(/^\+?[0-9]{10,15}$/).allow('', null),
+  kind: Joi.string().valid('distributor', 'farmer'),
+  village: Joi.string().max(120).allow('', null),
 });
 
 router.post('/register', tightLimiter, validate(registerSchema), asyncHandler(ctrl.register));

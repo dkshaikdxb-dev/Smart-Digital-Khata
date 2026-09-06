@@ -17,6 +17,8 @@ const profileSchema = Joi.object({
   whatsapp: Joi.string().pattern(/^\+?[0-9]{10,15}$/).allow('', null),
   min_order_paise: Joi.number().integer().min(0),
   is_active: Joi.boolean(),
+  village: Joi.string().max(120).allow('', null),
+  kind: Joi.string().valid('distributor', 'farmer'),
 }).min(1);
 
 const listQuerySchema = Joi.object({ status: Joi.string().valid(...PO_STATUSES) });
