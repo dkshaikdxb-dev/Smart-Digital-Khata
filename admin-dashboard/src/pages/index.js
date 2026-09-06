@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import OwnerNudges from '../components/OwnerNudges';
+import AskShop from '../components/AskShop';
 import Balance from '../components/Balance';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
@@ -55,6 +56,8 @@ export default function Dashboard() {
             <div className="kpi">{outstanding ? outstanding.customers.length : '—'}</div>
           </div>
         </div>
+
+        <AskShop />
 
         <OwnerNudges />
 

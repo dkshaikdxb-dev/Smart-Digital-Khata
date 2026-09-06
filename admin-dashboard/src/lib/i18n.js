@@ -6017,6 +6017,128 @@ const H2 = {
   },
 };
 
+// Batch J — Owner help B (weekly summary in-app view + Settings toggle) and C
+// (voice "Ask" on the owner home). own.weekly.* mirror the backend WhatsApp
+// composer (utils/weekly-summary) so an in-app "your weekly summary" reads the
+// same; ask.* drive the mic button, its status and the spoken one-line answers.
+// {amount}/{n}/{day}/{item} are interpolated as DATA (amounts pre-grouped, counts
+// numbers) so Urdu (RTL) stays token-safe. en + hi authored; ta/te/kn/ml/ur are a
+// native-QA seed wanting a native-speaker pass before a wide rollout.
+const WEEKLY = {
+  en: {
+    'own.weekly.title': 'Your weekly summary',
+    'own.weekly.subtitle': 'A recap of the last 7 days.',
+    'own.weekly.loadError': 'Could not load your weekly summary.',
+    'set.weeklySummary': 'Send me a weekly summary on WhatsApp (Sunday morning)',
+    'ask.button': 'Ask',
+    'ask.prompt': 'Tap and ask about your shop',
+    'ask.listening': 'Listening…',
+    'ask.tryAgain': 'Sorry, I did not catch that. Please try again.',
+    'ask.fallback': 'Try asking: today’s collection, or how much is pending.',
+    'ask.answer.collection': 'Today you have collected ₹{amount}.',
+    'ask.answer.outstanding': '₹{amount} is still to be collected from {n} customers.',
+    'ask.answer.whoOwes': '{n} customers still owe you money.',
+    'ask.answer.bestSeller': 'Your best seller is {item}.',
+    'ask.answer.bestSellerNone': 'No sales recorded yet, so there is no best seller.',
+  },
+  hi: {
+    'own.weekly.title': 'आपका हफ़्ते का सारांश',
+    'own.weekly.subtitle': 'पिछले 7 दिनों की एक झलक।',
+    'own.weekly.loadError': 'आपका हफ़्ते का सारांश लोड नहीं हो सका।',
+    'set.weeklySummary': 'हर हफ़्ते WhatsApp पर सारांश भेजें (रविवार सुबह)',
+    'ask.button': 'पूछें',
+    'ask.prompt': 'दबाएँ और अपनी दुकान के बारे में पूछें',
+    'ask.listening': 'सुन रहे हैं…',
+    'ask.tryAgain': 'माफ़ करें, समझ नहीं आया। फिर से बोलें।',
+    'ask.fallback': 'ऐसे पूछें: आज की वसूली, या कितना बाकी है।',
+    'ask.answer.collection': 'आज तक ₹{amount} जमा हुआ है।',
+    'ask.answer.outstanding': '{n} ग्राहकों से ₹{amount} अभी वसूलना बाकी है।',
+    'ask.answer.whoOwes': '{n} ग्राहकों पर अभी उधार बाकी है।',
+    'ask.answer.bestSeller': 'सबसे ज़्यादा बिका {item}।',
+    'ask.answer.bestSellerNone': 'अभी कोई बिक्री दर्ज नहीं है, इसलिए कोई सबसे ज़्यादा बिकने वाला नहीं है।',
+  },
+  ta: {
+    'own.weekly.title': 'உங்கள் வார சுருக்கம்',
+    'own.weekly.subtitle': 'கடந்த 7 நாட்களின் சுருக்கம்.',
+    'own.weekly.loadError': 'உங்கள் வார சுருக்கத்தை ஏற்ற முடியவில்லை.',
+    'set.weeklySummary': 'ஒவ்வொரு வாரமும் WhatsApp-இல் சுருக்கம் அனுப்பவும் (ஞாயிறு காலை)',
+    'ask.button': 'கேளுங்கள்',
+    'ask.prompt': 'தட்டி உங்கள் கடையைப் பற்றி கேளுங்கள்',
+    'ask.listening': 'கேட்கிறது…',
+    'ask.tryAgain': 'மன்னிக்கவும், புரியவில்லை. மீண்டும் சொல்லுங்கள்.',
+    'ask.fallback': 'இப்படி கேளுங்கள்: இன்றைய வசூல், அல்லது எவ்வளவு நிலுவை.',
+    'ask.answer.collection': 'இன்று ₹{amount} வசூலாகியுள்ளது.',
+    'ask.answer.outstanding': '{n} வாடிக்கையாளர்களிடமிருந்து ₹{amount} இன்னும் வசூலிக்க வேண்டும்.',
+    'ask.answer.whoOwes': '{n} வாடிக்கையாளர்கள் இன்னும் கடன் வைத்துள்ளனர்.',
+    'ask.answer.bestSeller': 'அதிகம் விற்றது {item}.',
+    'ask.answer.bestSellerNone': 'இன்னும் விற்பனை பதிவு இல்லை, எனவே சிறந்த விற்பனை இல்லை.',
+  },
+  te: {
+    'own.weekly.title': 'మీ వారపు సారాంశం',
+    'own.weekly.subtitle': 'గత 7 రోజుల సంక్షిప్తం.',
+    'own.weekly.loadError': 'మీ వారపు సారాంశాన్ని లోడ్ చేయలేకపోయాము.',
+    'set.weeklySummary': 'ప్రతి వారం WhatsApp-లో సారాంశం పంపండి (ఆదివారం ఉదయం)',
+    'ask.button': 'అడగండి',
+    'ask.prompt': 'నొక్కి మీ దుకాణం గురించి అడగండి',
+    'ask.listening': 'వింటున్నాము…',
+    'ask.tryAgain': 'క్షమించండి, అర్థం కాలేదు. మళ్లీ చెప్పండి.',
+    'ask.fallback': 'ఇలా అడగండి: ఈరోజు వసూలు, లేదా ఎంత బాకీ ఉంది.',
+    'ask.answer.collection': 'ఈరోజు ₹{amount} వసూలైంది.',
+    'ask.answer.outstanding': '{n} వినియోగదారుల నుండి ₹{amount} ఇంకా వసూలు చేయాలి.',
+    'ask.answer.whoOwes': '{n} వినియోగదారులు ఇంకా అప్పు ఉన్నారు.',
+    'ask.answer.bestSeller': 'ఎక్కువగా అమ్ముడైనది {item}.',
+    'ask.answer.bestSellerNone': 'ఇంకా అమ్మకాలు నమోదు కాలేదు, కాబట్టి బెస్ట్ సెల్లర్ లేదు.',
+  },
+  kn: {
+    'own.weekly.title': 'ನಿಮ್ಮ ವಾರದ ಸಾರಾಂಶ',
+    'own.weekly.subtitle': 'ಕಳೆದ 7 ದಿನಗಳ ಸಂಕ್ಷಿಪ್ತ.',
+    'own.weekly.loadError': 'ನಿಮ್ಮ ವಾರದ ಸಾರಾಂಶವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.',
+    'set.weeklySummary': 'ಪ್ರತಿ ವಾರ WhatsApp-ನಲ್ಲಿ ಸಾರಾಂಶ ಕಳುಹಿಸಿ (ಭಾನುವಾರ ಬೆಳಿಗ್ಗೆ)',
+    'ask.button': 'ಕೇಳಿ',
+    'ask.prompt': 'ಒತ್ತಿ ನಿಮ್ಮ ಅಂಗಡಿಯ ಬಗ್ಗೆ ಕೇಳಿ',
+    'ask.listening': 'ಕೇಳುತ್ತಿದೆ…',
+    'ask.tryAgain': 'ಕ್ಷಮಿಸಿ, ಅರ್ಥವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಹೇಳಿ.',
+    'ask.fallback': 'ಹೀಗೆ ಕೇಳಿ: ಇಂದಿನ ವಸೂಲಿ, ಅಥವಾ ಎಷ್ಟು ಬಾಕಿ ಇದೆ.',
+    'ask.answer.collection': 'ಇಂದು ₹{amount} ಸಂಗ್ರಹವಾಗಿದೆ.',
+    'ask.answer.outstanding': '{n} ಗ್ರಾಹಕರಿಂದ ₹{amount} ಇನ್ನೂ ವಸೂಲಿ ಮಾಡಬೇಕಿದೆ.',
+    'ask.answer.whoOwes': '{n} ಗ್ರಾಹಕರು ಇನ್ನೂ ಸಾಲ ಹೊಂದಿದ್ದಾರೆ.',
+    'ask.answer.bestSeller': 'ಹೆಚ್ಚು ಮಾರಾಟವಾದದ್ದು {item}.',
+    'ask.answer.bestSellerNone': 'ಇನ್ನೂ ಮಾರಾಟ ದಾಖಲಾಗಿಲ್ಲ, ಆದ್ದರಿಂದ ಬೆಸ್ಟ್ ಸೆಲ್ಲರ್ ಇಲ್ಲ.',
+  },
+  ml: {
+    'own.weekly.title': 'നിങ്ങളുടെ ആഴ്ചയിലെ സംഗ്രഹം',
+    'own.weekly.subtitle': 'കഴിഞ്ഞ 7 ദിവസത്തിന്റെ ചുരുക്കം.',
+    'own.weekly.loadError': 'നിങ്ങളുടെ ആഴ്ചയിലെ സംഗ്രഹം ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.',
+    'set.weeklySummary': 'എല്ലാ ആഴ്ചയും WhatsApp-ൽ സംഗ്രഹം അയയ്ക്കുക (ഞായർ രാവിലെ)',
+    'ask.button': 'ചോദിക്കുക',
+    'ask.prompt': 'അമർത്തി നിങ്ങളുടെ കടയെക്കുറിച്ച് ചോദിക്കുക',
+    'ask.listening': 'കേൾക്കുന്നു…',
+    'ask.tryAgain': 'ക്ഷമിക്കണം, മനസ്സിലായില്ല. വീണ്ടും പറയുക.',
+    'ask.fallback': 'ഇങ്ങനെ ചോദിക്കുക: ഇന്നത്തെ പിരിവ്, അല്ലെങ്കിൽ എത്ര ബാക്കി.',
+    'ask.answer.collection': 'ഇന്ന് ₹{amount} പിരിഞ്ഞു കിട്ടി.',
+    'ask.answer.outstanding': '{n} ഉപഭോക്താക്കളിൽ നിന്ന് ₹{amount} ഇനിയും പിരിക്കാനുണ്ട്.',
+    'ask.answer.whoOwes': '{n} ഉപഭോക്താക്കൾ ഇനിയും കടം ഉള്ളവരാണ്.',
+    'ask.answer.bestSeller': 'ഏറ്റവും കൂടുതൽ വിറ്റത് {item}.',
+    'ask.answer.bestSellerNone': 'ഇതുവരെ വിൽപ്പന രേഖപ്പെടുത്തിയിട്ടില്ല, അതിനാൽ ബെസ്റ്റ് സെല്ലർ ഇല്ല.',
+  },
+  ur: {
+    'own.weekly.title': 'آپ کے ہفتے کا خلاصہ',
+    'own.weekly.subtitle': 'پچھلے 7 دنوں کی ایک جھلک۔',
+    'own.weekly.loadError': 'آپ کے ہفتے کا خلاصہ لوڈ نہیں ہو سکا۔',
+    'set.weeklySummary': 'ہر ہفتے WhatsApp پر خلاصہ بھیجیں (اتوار صبح)',
+    'ask.button': 'پوچھیں',
+    'ask.prompt': 'دبائیں اور اپنی دکان کے بارے میں پوچھیں',
+    'ask.listening': 'سن رہے ہیں…',
+    'ask.tryAgain': 'معاف کریں، سمجھ نہیں آیا۔ دوبارہ بولیں۔',
+    'ask.fallback': 'ایسے پوچھیں: آج کی وصولی، یا کتنا باقی ہے۔',
+    'ask.answer.collection': 'آج ₹{amount} جمع ہوئے ہیں۔',
+    'ask.answer.outstanding': '{n} گاہکوں سے ₹{amount} ابھی وصول کرنا باقی ہے۔',
+    'ask.answer.whoOwes': '{n} گاہکوں پر ابھی ادھار باقی ہے۔',
+    'ask.answer.bestSeller': 'سب سے زیادہ بکنے والا {item}۔',
+    'ask.answer.bestSellerNone': 'ابھی کوئی فروخت درج نہیں، اس لیے کوئی بہترین فروخت نہیں۔',
+  },
+};
+
 // Merge page-body keys into the per-language DICT blocks. Nav keys defined in
 // DICT stay authoritative; PAGE only adds new keys.
 for (const code of Object.keys(PAGE)) {
@@ -6070,6 +6192,12 @@ for (const code of Object.keys(AUTHRES)) {
 for (const code of Object.keys(H2)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], H2[code]);
+}
+
+// Merge the Batch J weekly-summary + voice-ask strings the same way.
+for (const code of Object.keys(WEEKLY)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], WEEKLY[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in

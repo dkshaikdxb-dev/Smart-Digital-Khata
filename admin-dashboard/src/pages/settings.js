@@ -120,6 +120,7 @@ export default function Settings() {
           name: shop.name,
           notification_mode: shop.notification_mode,
           daily_digest: shop.daily_digest !== false,
+          weekly_summary: shop.weekly_summary !== false,
         }),
       });
       setShop(r.shop);
@@ -231,6 +232,16 @@ export default function Settings() {
               onChange={(e) => setShop({ ...shop, daily_digest: e.target.checked })}
             />
             <span>{t('set.dailyDigest')}</span>
+          </label>
+          <div style={{ height: 12 }} />
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              style={{ width: 'auto' }}
+              checked={shop.weekly_summary !== false}
+              onChange={(e) => setShop({ ...shop, weekly_summary: e.target.checked })}
+            />
+            <span>{t('set.weeklySummary')}</span>
           </label>
           <div style={{ height: 16 }} />
           <button onClick={save}>{t('common.save')}</button>

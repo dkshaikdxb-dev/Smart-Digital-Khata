@@ -7,5 +7,8 @@ const ctrl = require('../controllers/owner-insights.controller');
 // Shop-scoped via req.user.shopId; owner + staff of THIS shop only.
 router.use(auth(['owner', 'staff']));
 router.get('/owner', asyncHandler(ctrl.ownerNudges));
+// Owner Help "lane B": the weekly summary as JSON (same computation the WhatsApp
+// job sends). Shop-scoped via req.user.shopId.
+router.get('/owner/weekly', asyncHandler(ctrl.ownerWeekly));
 
 module.exports = router;

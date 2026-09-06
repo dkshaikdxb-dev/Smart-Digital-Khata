@@ -1,5 +1,7 @@
 const { query } = require('../config/db');
 const { buildOwnerNudges, THRESHOLDS } = require('../utils/owner-nudges');
+const { computeWeeklyForShop } = require('../services/weekly-summary.service');
+const { LANGS } = require('../utils/weekly-summary');
 
 // Owner Help "lane A" (Phase F). ONE read-only aggregation endpoint that returns
 // { nudges, generated_at } for the CURRENT shop only. Pure aggregation over the
@@ -130,4 +132,26 @@ exports.ownerNudges = async (req, res) => {
   });
 
   res.json({ nudges, generated_at: new Date().toISOString() });
+};
+
+// GET /api/insights/owner/weekly — the same shop-scoped weekly summary the WhatsApp
+// job composes, returned as JSON so the app can show "your weekly summary" and so
+// the composition is testable over HTTP. Auth owner/staff, scoped by shopId. The
+// message language honours ?lang= (a known language), defaulting via the owner →
+// hi → en fallback in the composer.
+exports.ownerWeekly = async (req, res) => {
+  const shopId = req.user.shopId;
+  const known = new Set(LANGS);
+  const raw = String(req.query.lang || '').trim().toLowerCase();
+  const lang = known.has(raw) ? raw : undefined; // undefined → composer fallback (hi)
+
+  if (!shopId) {
+    // A staff/owner token without a shop yields a friendly quiet summary rather
+    // than leaking or erroring (mirrors ownerNudges).
+    const { buildWeeklySummary } = require('../utils/weekly-summary');
+    return res.json({ summary: buildWeeklySummary({}, lang), generated_at: new Date().toISOString() });
+  }
+
+  const summary = await computeWeeklyForShop(shopId, lang);
+  res.json({ summary, generated_at: new Date().toISOString() });
 };

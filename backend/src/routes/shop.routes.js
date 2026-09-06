@@ -10,6 +10,8 @@ const updateSchema = Joi.object({
   notification_mode: Joi.string().valid('silent', 'smart', 'active'),
   default_credit_limit: Joi.number().min(0),
   daily_digest: Joi.boolean(),
+  // Owner Help "lane B": weekly WhatsApp summary opt-in (Batch J).
+  weekly_summary: Joi.boolean(),
   // Shop Discovery (M6): public directory opt-in + location. null clears a
   // field so an owner can wipe their location / opt out of the geo directory.
   city: Joi.string().allow('', null).max(120),
