@@ -30,7 +30,7 @@ export default function OwnerTabBar({ showStaff = true }) {
     return () => router.events.off('routeChangeStart', close);
   }, [router.events]);
 
-  const isActive = (base) => (base === '/' ? path === '/' : path === base || path.startsWith(`${base}/`));
+  const isActive = (base) => (base === '/dashboard' ? path === '/dashboard' : path === base || path.startsWith(`${base}/`));
 
   // The "More" tab is highlighted when the current page is one of the secondary
   // destinations it links to.
@@ -71,7 +71,7 @@ export default function OwnerTabBar({ showStaff = true }) {
       )}
 
       <nav className="owner-tabbar" aria-label={t('nav.dashboard')}>
-        <Link href="/" className={isActive('/') ? 'active' : ''}>
+        <Link href="/dashboard" className={isActive('/dashboard') ? 'active' : ''}>
           <span className="owner-tab-ico" aria-hidden="true">🏠</span>
           <span>{t('nav.tabHome')}</span>
         </Link>

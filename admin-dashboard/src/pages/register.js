@@ -29,7 +29,7 @@ export default function Register() {
       const r = await apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify(body) });
       window.localStorage.setItem('skhata_token', r.token);
       window.localStorage.setItem('skhata_role', r.user.role);
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       setError(err.message);
     }
