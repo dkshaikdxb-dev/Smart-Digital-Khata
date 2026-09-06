@@ -9,6 +9,7 @@ const ctrl = require('../controllers/admin.controller');
 const referralCtrl = require('../controllers/referral.controller');
 const exportCtrl = require('../controllers/admin-export.controller');
 const dashboardCtrl = require('../controllers/dashboard.controller');
+const distributorCtrl = require('../controllers/distributor.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -72,6 +73,10 @@ router.get('/dashboard', asyncHandler(dashboardCtrl.dashboard));
 router.get('/stats', requirePerm('shops:view'), asyncHandler(ctrl.stats));
 router.get('/shops', requirePerm('shops:view'), asyncHandler(ctrl.listShops));
 router.get('/shops/:id', requirePerm('shops:view'), asyncHandler(ctrl.getShop));
+
+// Distributor / supply directory (read). Gated with shops:view alongside the
+// rest of the supply-side operational surface.
+router.get('/distributors', requirePerm('shops:view'), asyncHandler(distributorCtrl.adminListDistributors));
 // Mixed status/plan edit: permission is checked per-field inside the controller
 // (status → shops:moderate; plan → settings:manage or shops:moderate).
 router.patch('/shops/:id', validate(updateShopSchema), asyncHandler(ctrl.updateShop));

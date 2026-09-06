@@ -90,7 +90,7 @@ exports.login = async (req, res) => {
     // deactivated duplicate never shadows a live account.
     const byPhone = await query(
       `SELECT ${cols} FROM users
-       WHERE phone = $1 AND role IN ('owner','staff','admin')
+       WHERE phone = $1 AND role IN ('owner','staff','admin','distributor')
        ORDER BY is_active DESC, created_at ASC`,
       [identifier]
     );
