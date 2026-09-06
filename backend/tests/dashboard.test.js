@@ -183,12 +183,52 @@ describe('GET /api/admin/dashboard — super sees everything', () => {
   });
 
   it('returns all sections + a generated_at + a non-empty insights array', () => {
-    for (const s of ['overview', 'growth', 'commerce', 'network', 'geography', 'revenue', 'acquisition', 'languages', 'trust']) {
+    for (const s of ['overview', 'growth', 'commerce', 'network', 'geography', 'revenue', 'acquisition', 'languages', 'trust',
+      'marketing', 'research', 'finance', 'investor']) {
       expect(body.sections[s]).toBeDefined();
     }
     expect(typeof body.generated_at).toBe('string');
     expect(Array.isArray(body.insights)).toBe(true);
     expect(body.insights.length).toBeGreaterThan(0);
+  });
+
+  it('exposes all six domain tabs for super, and every insight carries a domain', () => {
+    for (const d of ['overview', 'marketing', 'growth', 'finance', 'research', 'investor']) {
+      expect(body.domains[d]).toBeDefined();
+      expect(typeof body.domains[d].perm).toBe('string');
+    }
+    const KNOWN = ['overview', 'marketing', 'growth', 'finance', 'research', 'investor'];
+    for (const ins of body.insights) {
+      expect(typeof ins.domain).toBe('string');
+      expect(KNOWN).toContain(ins.domain);
+    }
+  });
+
+  it('domain metric spot-checks: MRR = plan price × count, ARPU, activation funnel', () => {
+    // MRR = Σ plan_price × plan_count over the finance plan mix.
+    const fin = body.sections.finance;
+    const expectedMrr = fin.plan_counts.pro * fin.plan_price_paise.pro
+      + fin.plan_counts.family * fin.plan_price_paise.family
+      + fin.plan_counts.free * fin.plan_price_paise.free;
+    expect(fin.mrr_paise).toBe(expectedMrr);
+    // ARPU = MRR / paying shops (pro + family), integer paise, floor via round.
+    expect(fin.paying_shops).toBe(fin.plan_counts.pro + fin.plan_counts.family);
+    if (fin.paying_shops > 0) {
+      expect(fin.arpu_paise).toBe(Math.round(fin.mrr_paise / fin.paying_shops));
+    } else {
+      expect(fin.arpu_paise).toBe(0);
+    }
+    expect(fin.run_rate_paise).toBe(fin.mrr_paise * 12);
+    // Activation funnel is monotonically non-increasing: registered ≥ product ≥ tx ≥ order.
+    const a = body.sections.growth.activation;
+    expect(a.total_shops).toBeGreaterThanOrEqual(a.shops_with_product);
+    expect(a.shops_with_product).toBeGreaterThanOrEqual(0);
+    expect(Number.isInteger(a.shops_with_order)).toBe(true);
+    // The seeded shop A has a completed order → at least one shop with an order.
+    expect(a.shops_with_order).toBeGreaterThanOrEqual(1);
+    // Investor MRR mirrors the finance MRR (same plan-price math, separate query).
+    expect(body.sections.investor.mrr_paise).toBe(fin.mrr_paise);
+    expect(body.sections.investor.run_rate_paise).toBe(fin.mrr_paise * 12);
   });
 
   it('overview counts reflect the fixture (the 2 seeded shops are present)', () => {
@@ -259,14 +299,31 @@ describe('permission gating by admin sub-role', () => {
     for (const ins of res.body.insights) expect(supportPerms).toContain(ins.perm);
     // In particular, revenue-gated insights are absent.
     expect(res.body.insights.some((i) => i.perm === 'revenue:view')).toBe(false);
+    // Domain tabs: support (no revenue:view) sees the shops:view tabs but NOT
+    // Finance or Investor, and never a revenue-only section.
+    expect(res.body.domains.overview).toBeDefined();
+    expect(res.body.domains.growth).toBeDefined();
+    expect(res.body.domains.marketing).toBeDefined();
+    expect(res.body.domains.research).toBeDefined();
+    expect(res.body.domains.finance).toBeUndefined();
+    expect(res.body.domains.investor).toBeUndefined();
+    expect(res.body.sections.finance).toBeUndefined();
+    expect(res.body.sections.investor).toBeUndefined();
+    // Marketing attribution IS visible to a shops:view caller (no money in it).
+    expect(res.body.sections.marketing).toBeDefined();
   });
 
-  it('finance gets revenue + acquisition (revenue:view)', async () => {
+  it('finance gets revenue + acquisition + finance/investor domains (revenue:view)', async () => {
     const res = await withToken(request(app).get('/api/admin/dashboard'), admins.finance.token);
     expect(res.status).toBe(200);
     expect(res.body.sections.revenue).toBeDefined();
     expect(res.body.sections.acquisition).toBeDefined();
+    expect(res.body.sections.finance).toBeDefined();
+    expect(res.body.sections.investor).toBeDefined();
     expect(res.body.sections.overview).toBeDefined(); // finance also has shops:view
+    expect(res.body.domains.finance).toBeDefined();
+    expect(res.body.domains.investor).toBeDefined();
+    expect(res.body.domains.finance.perm).toBe('revenue:view');
     const financePerms = permissionsFor('finance');
     for (const ins of res.body.insights) expect(financePerms).toContain(ins.perm);
   });

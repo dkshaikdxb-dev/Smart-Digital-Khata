@@ -1,14 +1,20 @@
-// Rule-based actionable-insights engine (Phase E). PURE and DETERMINISTIC: given
-// the already-permission-filtered `sections` payload built by the dashboard
-// controller, it returns a prioritised list of insight cards. No I/O, no clock,
-// no randomness, no external/AI calls — the same sections always yield the same
-// insights, so it is trivially unit-testable.
+// Rule-based actionable-insights engine (Phase E, extended in Batch L). PURE and
+// DETERMINISTIC: given the already-permission-filtered `sections` payload built
+// by the dashboard controller, it returns a prioritised list of insight cards.
+// No I/O, no clock, no randomness, no external/AI calls — the same sections
+// always yield the same insights, so it is trivially unit-testable.
 //
 // Each rule reads ONLY from sections the caller was allowed to see (the
 // controller omits a section the caller's admin sub-role cannot view), so an
 // insight can never leak a figure the caller isn't entitled to. Every emitted
 // insight also carries the `perm` its data came from — the frontend hides any
 // insight whose `perm` the caller lacks, a belt-and-braces second gate.
+//
+// Batch L: every insight is ALSO tagged with the domain tab it belongs to
+// (overview / marketing / growth / finance / research / investor). The Overview
+// tab shows every permitted insight (as before); each domain tab additionally
+// surfaces just the insights tagged with its own domain. The `domain` tag never
+// widens visibility — `perm` remains the only gate on whether a card is emitted.
 //
 // Money is integer paise everywhere here (same as the rest of the app); the UI
 // renders rupees. Insight `metric` is a plain number used only for ordering and
@@ -39,6 +45,16 @@ const THRESHOLDS = Object.freeze({
   MODERATION_OPEN_MIN: 1,
   // Blocked principals (users + consumers) at or above this → a possible spike.
   BLOCKED_SPIKE_MIN: 5,
+  // Week-over-week signup drop (%) at or beyond which growth is stalling. Only
+  // fires when the prior week had a meaningful base (avoids 1→0 noise).
+  GROWTH_STALL_DROP_PCT: 25,
+  GROWTH_STALL_MIN_PREV: 4,
+  // Share (%) of total outstanding sitting in the oldest (61+ day) aging bucket
+  // at or above which the book is skewing to hard-to-collect debt.
+  AGING_RISK_SHARE_PCT: 40,
+  // Drop (percentage points) in the 30-day collection rate versus the prior
+  // 30-day window at or beyond which collection is trending down.
+  COLLECTION_TREND_DROP_PCT: 10,
 });
 
 const SEVERITY_RANK = Object.freeze({ urgent: 0, warn: 1, info: 2 });
@@ -48,7 +64,7 @@ const SEVERITY_RANK = Object.freeze({ urgent: 0, warn: 1, info: 2 });
 // controller assembles; any section may be absent.
 function buildInsights(sections = {}) {
   const out = [];
-  const { overview, growth, network, revenue, acquisition, languages, trust } = sections;
+  const { overview, growth, network, revenue, acquisition, languages, trust, finance } = sections;
 
   // churn_risk — shops with no transaction in the last 30 days.
   if (overview) {
@@ -63,6 +79,7 @@ function buildInsights(sections = {}) {
         action_label: 'Review shops',
         action_link: '/admin',
         perm: 'shops:view',
+        domain: 'growth',
         vars: { n: inactive },
       });
     }
@@ -81,6 +98,7 @@ function buildInsights(sections = {}) {
         action_label: 'Review shops',
         action_link: '/admin',
         perm: 'shops:view',
+        domain: 'growth',
         vars: { n: gap },
       });
     }
@@ -100,6 +118,7 @@ function buildInsights(sections = {}) {
         action_label: 'See network health',
         action_link: '/admin/dashboard',
         perm: 'shops:view',
+        domain: 'finance',
         vars: { pct },
       });
     }
@@ -117,6 +136,7 @@ function buildInsights(sections = {}) {
       action_label: 'View consumers',
       action_link: '/admin/customers',
       perm: 'shops:view',
+      domain: 'growth',
       vars: { n },
     });
   }
@@ -133,6 +153,7 @@ function buildInsights(sections = {}) {
       action_label: 'Open languages',
       action_link: '/admin/languages',
       perm: 'shops:view',
+      domain: 'marketing',
       vars: { n },
     });
   }
@@ -151,6 +172,7 @@ function buildInsights(sections = {}) {
         action_label: 'Open referrals',
         action_link: '/admin/referrals',
         perm: 'revenue:view',
+        domain: 'marketing',
         vars: { label, n: top.referred_count },
       });
     }
@@ -168,6 +190,7 @@ function buildInsights(sections = {}) {
       action_label: 'See revenue',
       action_link: '/admin/dashboard',
       perm: 'revenue:view',
+      domain: 'finance',
       vars: { n },
     });
   }
@@ -184,6 +207,7 @@ function buildInsights(sections = {}) {
       action_label: 'Open moderation',
       action_link: '/admin/moderation',
       perm: 'audit:view',
+      domain: 'overview',
       vars: { n },
     });
   }
@@ -201,7 +225,73 @@ function buildInsights(sections = {}) {
         action_label: 'Open moderation',
         action_link: '/admin/moderation',
         perm: 'audit:view',
+        domain: 'overview',
         vars: { n: blocked },
+      });
+    }
+  }
+
+  // growth_stall — week-over-week signups fell sharply from a real base. Reads
+  // the growth section's `wow` cut (last completed week vs the week before it).
+  if (growth && growth.wow && growth.wow.pct != null
+      && growth.wow.prev >= THRESHOLDS.GROWTH_STALL_MIN_PREV
+      && growth.wow.pct <= -THRESHOLDS.GROWTH_STALL_DROP_PCT) {
+    const drop = Math.abs(Math.round(growth.wow.pct));
+    out.push({
+      id: 'growth_stall',
+      severity: 'warn',
+      title: `Signups down ${drop}% week-over-week`,
+      detail: 'New shop + consumer signups fell versus the previous week — check acquisition channels.',
+      metric: drop,
+      action_label: 'See growth',
+      action_link: '/admin/dashboard',
+      perm: 'shops:view',
+      domain: 'growth',
+      vars: { pct: drop },
+    });
+  }
+
+  // aging_risk — the oldest (61+ day) bucket is a large share of outstanding, so
+  // the book is skewing to hard-to-collect debt. Reads the network section.
+  if (network && network.outstanding_total_paise > 0 && network.aging) {
+    const old = network.aging.b61_plus_paise || 0;
+    const share = Math.round((old / network.outstanding_total_paise) * 100);
+    if (old > 0 && share >= THRESHOLDS.AGING_RISK_SHARE_PCT) {
+      out.push({
+        id: 'aging_risk',
+        severity: 'warn',
+        title: `${share}% of dues are 61+ days old`,
+        detail: 'A large share of outstanding udhaar is ageing past two months — prioritise those follow-ups.',
+        metric: share,
+        action_label: 'See network health',
+        action_link: '/admin/dashboard',
+        perm: 'shops:view',
+        domain: 'finance',
+        vars: { pct: share },
+      });
+    }
+  }
+
+  // collection_trend_down — the 30-day collection rate slipped meaningfully from
+  // the prior 30-day window. Reads the finance section's collection_trend cut
+  // (revenue:view), so it only ever reaches a caller entitled to revenue data.
+  if (finance && finance.collection_trend
+      && finance.collection_trend.current_pct != null
+      && finance.collection_trend.prior_pct != null) {
+    const delta = finance.collection_trend.current_pct - finance.collection_trend.prior_pct;
+    if (delta <= -THRESHOLDS.COLLECTION_TREND_DROP_PCT) {
+      const drop = Math.abs(Math.round(delta));
+      out.push({
+        id: 'collection_trend_down',
+        severity: 'warn',
+        title: `Collection rate down ${drop} points`,
+        detail: 'The 30-day collection rate has dropped versus the previous 30 days — repayments are slowing.',
+        metric: drop,
+        action_label: 'See finance',
+        action_link: '/admin/dashboard',
+        perm: 'revenue:view',
+        domain: 'finance',
+        vars: { pts: drop },
       });
     }
   }

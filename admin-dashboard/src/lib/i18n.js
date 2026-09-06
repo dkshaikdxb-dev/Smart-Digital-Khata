@@ -5464,6 +5464,174 @@ const DASH = {
 // are weekday names (0=Sunday) for the busy_day nudge. en + hi are authored
 // naturally; ta/te/kn/ml/ur are the same native-QA seed as the other regional
 // strings and want a native-speaker pass before a wide rollout.
+// Batch L: domain-tab Control Room strings (tab names + the new marketing /
+// growth / finance / research / investor metric labels, and the three new
+// insight rules). en + hi are authored naturally; ta/te/kn/ml/ur are SEEDED
+// from English here (translate() already falls back to en, so the seed just
+// makes the entries explicit for a later native-speaker pass). Numbers stay
+// interpolated data, never baked-in digits.
+const DASHL_EN = {
+  'dash.tab.overview': 'Overview',
+  'dash.tab.marketing': 'Marketing',
+  'dash.tab.growth': 'Growth',
+  'dash.tab.finance': 'Finance',
+  'dash.tab.research': 'Research',
+  'dash.tab.investor': 'Investor',
+  'dash.kpi.activeShops30': 'Active shops (30d)',
+  // Marketing
+  'dash.mkt.title': 'Marketing & reach',
+  'dash.mkt.listed': 'Listed shops',
+  'dash.mkt.listedShareNote': '{pct}% of {n} shops listed',
+  'dash.mkt.signupsByType': 'Signups by type',
+  // Growth
+  'dash.growth.withOrder': 'Shops with an order',
+  'dash.growth.funnel': 'Activation funnel',
+  'dash.growth.registered': 'Registered',
+  'dash.growth.wowLabel': 'Week over week',
+  'dash.growth.wowUp': 'up {pct}%',
+  'dash.growth.wowDown': 'down {pct}%',
+  'dash.growth.wowNone': 'no prior week',
+  // Finance
+  'dash.fin.arpu': 'ARPU (paying)',
+  'dash.fin.payingShops': '{n} paying shops',
+  'dash.fin.runRate': 'Run-rate (MRR×12)',
+  'dash.fin.runRateNote': 'Annualised',
+  'dash.fin.collectionTrend': 'Collection trend',
+  'dash.fin.thisPeriod': 'This 30d',
+  'dash.fin.priorPeriod': 'Prior 30d',
+  'dash.fin.delta': 'Change (points)',
+  // Research
+  'dash.res.catalogue': 'Catalogue adoption',
+  'dash.res.shopsWithProducts': 'Shops with products',
+  'dash.res.usingBase': 'Using base catalogue',
+  'dash.res.baseLinked': '{n} base-linked items',
+  'dash.res.custom': 'Custom products',
+  'dash.res.loose': 'Loose (by weight)',
+  'dash.res.unit': '{n} by unit',
+  'dash.res.topCategories': 'Top categories',
+  'dash.res.topSubcategories': 'Top subcategories',
+  'dash.res.orderPatterns': 'Order patterns',
+  'dash.res.byPayment': 'By payment mode',
+  'dash.res.byWeekday': 'By weekday',
+  'dash.res.noData': 'No data yet.',
+  'dash.dow.0': 'Sun',
+  'dash.dow.1': 'Mon',
+  'dash.dow.2': 'Tue',
+  'dash.dow.3': 'Wed',
+  'dash.dow.4': 'Thu',
+  'dash.dow.5': 'Fri',
+  'dash.dow.6': 'Sat',
+  // Investor
+  'dash.inv.title': 'Investor snapshot',
+  'dash.inv.subtitle': 'The north-star numbers on one screen.',
+  'dash.inv.activeShops': 'Active shops (30d)',
+  'dash.inv.ofShops': 'of {n} total',
+  'dash.inv.consumers': 'Consumers',
+  'dash.inv.gmv30': 'GMV (30d)',
+  'dash.inv.gmvAll': 'GMV (all time)',
+  'dash.inv.mrr': 'MRR',
+  'dash.inv.runRate': 'Run-rate',
+  'dash.inv.growth': 'Growth (30d vs prior)',
+  'dash.inv.growthNote': 'Signups this period vs last',
+  'dash.inv.collection': 'Collection rate',
+  'dash.inv.outstanding': 'Outstanding',
+  'dash.inv.referralPct': 'Referral-driven',
+  'dash.inv.referralNote': '{n} referred signups',
+  // New insights
+  'insight.growth_stall.title': 'Signups down {pct}% week-over-week',
+  'insight.growth_stall.detail': 'New shop + consumer signups fell versus the previous week — check acquisition channels.',
+  'insight.growth_stall.action_label': 'See growth',
+  'insight.aging_risk.title': '{pct}% of dues are 61+ days old',
+  'insight.aging_risk.detail': 'A large share of outstanding udhaar is ageing past two months — prioritise those follow-ups.',
+  'insight.aging_risk.action_label': 'See network health',
+  'insight.collection_trend_down.title': 'Collection rate down {pts} points',
+  'insight.collection_trend_down.detail': 'The 30-day collection rate has dropped versus the previous 30 days — repayments are slowing.',
+  'insight.collection_trend_down.action_label': 'See finance',
+};
+const DASHL_HI = {
+  'dash.tab.overview': 'अवलोकन',
+  'dash.tab.marketing': 'मार्केटिंग',
+  'dash.tab.growth': 'वृद्धि',
+  'dash.tab.finance': 'वित्त',
+  'dash.tab.research': 'अनुसंधान',
+  'dash.tab.investor': 'निवेशक',
+  'dash.kpi.activeShops30': 'सक्रिय दुकानें (30द)',
+  'dash.mkt.title': 'मार्केटिंग और पहुँच',
+  'dash.mkt.listed': 'सूचीबद्ध दुकानें',
+  'dash.mkt.listedShareNote': '{n} में से {pct}% दुकानें सूचीबद्ध',
+  'dash.mkt.signupsByType': 'प्रकार के अनुसार साइनअप',
+  'dash.growth.withOrder': 'ऑर्डर वाली दुकानें',
+  'dash.growth.funnel': 'सक्रियण फ़नल',
+  'dash.growth.registered': 'पंजीकृत',
+  'dash.growth.wowLabel': 'सप्ताह-दर-सप्ताह',
+  'dash.growth.wowUp': '{pct}% ऊपर',
+  'dash.growth.wowDown': '{pct}% नीचे',
+  'dash.growth.wowNone': 'पिछला सप्ताह नहीं',
+  'dash.fin.arpu': 'ARPU (भुगतान)',
+  'dash.fin.payingShops': '{n} भुगतान करने वाली दुकानें',
+  'dash.fin.runRate': 'रन-रेट (MRR×12)',
+  'dash.fin.runRateNote': 'वार्षिक',
+  'dash.fin.collectionTrend': 'वसूली का रुझान',
+  'dash.fin.thisPeriod': 'यह 30द',
+  'dash.fin.priorPeriod': 'पिछला 30द',
+  'dash.fin.delta': 'बदलाव (अंक)',
+  'dash.res.catalogue': 'कैटलॉग अपनाना',
+  'dash.res.shopsWithProducts': 'उत्पाद वाली दुकानें',
+  'dash.res.usingBase': 'बेस कैटलॉग उपयोग',
+  'dash.res.baseLinked': '{n} बेस-लिंक वस्तुएँ',
+  'dash.res.custom': 'कस्टम उत्पाद',
+  'dash.res.loose': 'खुला (वज़न से)',
+  'dash.res.unit': '{n} इकाई से',
+  'dash.res.topCategories': 'शीर्ष श्रेणियाँ',
+  'dash.res.topSubcategories': 'शीर्ष उपश्रेणियाँ',
+  'dash.res.orderPatterns': 'ऑर्डर पैटर्न',
+  'dash.res.byPayment': 'भुगतान मोड के अनुसार',
+  'dash.res.byWeekday': 'सप्ताह के दिन के अनुसार',
+  'dash.res.noData': 'अभी कोई डेटा नहीं।',
+  'dash.dow.0': 'रवि',
+  'dash.dow.1': 'सोम',
+  'dash.dow.2': 'मंगल',
+  'dash.dow.3': 'बुध',
+  'dash.dow.4': 'गुरु',
+  'dash.dow.5': 'शुक्र',
+  'dash.dow.6': 'शनि',
+  'dash.inv.title': 'निवेशक झलक',
+  'dash.inv.subtitle': 'एक स्क्रीन पर मुख्य आँकड़े।',
+  'dash.inv.activeShops': 'सक्रिय दुकानें (30द)',
+  'dash.inv.ofShops': 'कुल {n} में से',
+  'dash.inv.consumers': 'उपभोक्ता',
+  'dash.inv.gmv30': 'GMV (30द)',
+  'dash.inv.gmvAll': 'GMV (कुल)',
+  'dash.inv.mrr': 'MRR',
+  'dash.inv.runRate': 'रन-रेट',
+  'dash.inv.growth': 'वृद्धि (30द बनाम पिछला)',
+  'dash.inv.growthNote': 'इस अवधि बनाम पिछली अवधि के साइनअप',
+  'dash.inv.collection': 'वसूली दर',
+  'dash.inv.outstanding': 'बकाया',
+  'dash.inv.referralPct': 'रेफ़रल-चालित',
+  'dash.inv.referralNote': '{n} रेफ़र किए गए साइनअप',
+  'insight.growth_stall.title': 'साइनअप {pct}% सप्ताह-दर-सप्ताह घटे',
+  'insight.growth_stall.detail': 'नई दुकान + उपभोक्ता साइनअप पिछले सप्ताह की तुलना में घटे — अधिग्रहण चैनल जाँचें।',
+  'insight.growth_stall.action_label': 'वृद्धि देखें',
+  'insight.aging_risk.title': '{pct}% बकाया 61+ दिन पुराना है',
+  'insight.aging_risk.detail': 'बकाया उधार का बड़ा हिस्सा दो महीने से पुराना हो रहा है — उन फ़ॉलो-अप को प्राथमिकता दें।',
+  'insight.aging_risk.action_label': 'नेटवर्क सेहत देखें',
+  'insight.collection_trend_down.title': 'वसूली दर {pts} अंक घटी',
+  'insight.collection_trend_down.detail': '30-दिन की वसूली दर पिछले 30 दिनों की तुलना में घटी है — भुगतान धीमे हो रहे हैं।',
+  'insight.collection_trend_down.action_label': 'वित्त देखें',
+};
+// Seed the regional languages from English so every one of the 7 languages
+// carries these keys; a native pass can replace the values later.
+const DASHL = {
+  en: DASHL_EN,
+  hi: DASHL_HI,
+  ta: DASHL_EN,
+  te: DASHL_EN,
+  kn: DASHL_EN,
+  ml: DASHL_EN,
+  ur: DASHL_EN,
+};
+
 const OWN = {
   en: {
     'own.todayTitle': 'Today at your shop',
@@ -6174,6 +6342,12 @@ for (const code of Object.keys(DL)) {
 for (const code of Object.keys(DASH)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], DASH[code]);
+}
+
+// Merge the Batch L domain-tab dashboard strings the same way.
+for (const code of Object.keys(DASHL)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], DASHL[code]);
 }
 
 // Merge the Owner Help "Today at your shop" nudge strings the same way.
