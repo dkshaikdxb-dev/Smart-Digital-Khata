@@ -63,6 +63,8 @@ export default function AdminContent() {
   const [msg, setMsg] = useState('');
   const [aiDrafting, setAiDrafting] = useState(false);
   const [draftingId, setDraftingId] = useState(null);
+  const [channels, setChannels] = useState({});
+  const [connecting, setConnecting] = useState(null);
 
   const canManage = has('content:manage');
 
@@ -81,6 +83,7 @@ export default function AdminContent() {
       setSummary(s);
       setItems(list.items || []);
       setAiDrafting(Boolean(cfg && cfg.ai_drafting));
+      setChannels((cfg && cfg.channels) || {});
     } catch (e) { setError(e.message); }
   }, [filters]);
 
@@ -90,6 +93,47 @@ export default function AdminContent() {
     if (window.localStorage.getItem('skhata_role') !== 'admin') { router.replace('/'); return; }
     load();
   }, [load, router]);
+
+  // On return from an OAuth connect, the callback redirects here with
+  // ?connected=<channel> or ?oauth_error=<reason>. Show a toast and strip the
+  // query so a refresh doesn't repeat it.
+  useEffect(() => {
+    if (!router.isReady) return;
+    const { connected, oauth_error: oauthError } = router.query;
+    if (connected) {
+      setMsg(t('content.connectedToast', { channel: connected }));
+      router.replace('/admin/content', undefined, { shallow: true });
+    } else if (oauthError) {
+      setError(t('content.oauthError', { channel: '' }).trim());
+      router.replace('/admin/content', undefined, { shallow: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
+
+  // Begin an OAuth connect: ask the backend for the authorize URL, then open the
+  // provider's consent screen. The backend mints the single-use state; we never
+  // build the authorize URL client-side.
+  async function connectChannel(channel) {
+    setError(''); setMsg(''); setConnecting(channel);
+    try {
+      const r = await apiFetch(`/api/admin/content/oauth/${channel}/start`);
+      if (r && r.authorize_url) {
+        window.open(r.authorize_url, '_blank', 'noopener');
+      }
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setConnecting(null);
+    }
+  }
+
+  async function disconnectChannel(channel) {
+    setError(''); setMsg('');
+    try {
+      await apiFetch(`/api/admin/content/accounts/${channel}/disconnect`, { method: 'POST' });
+      await load();
+    } catch (e) { setError(e.message); }
+  }
 
   async function createItem(e) {
     e.preventDefault();
@@ -187,6 +231,48 @@ export default function AdminContent() {
         }}>
           {aiDrafting ? t('content.aiConnected') : t('content.aiNotConfigured')}
         </span>
+      </div>
+
+      {/* Connections — real social publishers (Batch S) */}
+      <div className="card">
+        <h3>{t('content.connections')}</h3>
+        <p className="muted" style={{ marginTop: 0 }}>{t('content.connectionsSub')}</p>
+        <div style={{ display: 'grid', gap: 10 }}>
+          {['linkedin', 'twitter'].map((ch) => {
+            const c = channels[ch] || {};
+            const live = Boolean(c.connected);
+            return (
+              <div key={ch} style={{
+                display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap',
+                padding: '10px 12px', border: '1px solid var(--border, #eee)', borderRadius: 8,
+              }}>
+                <div style={{ fontWeight: 700, minWidth: 110 }}>{t(`content.channel.${ch}`)}</div>
+                <span style={{
+                  display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700,
+                  background: live ? '#dcfce7' : '#f1f5f9', color: live ? '#166534' : '#475569',
+                }}>
+                  {live ? t('content.live') : t('content.simulated')}
+                </span>
+                <div className="muted" style={{ flex: 1, minWidth: 160 }}>
+                  {live
+                    ? t('content.connected', { name: c.display_name || c.external_account_id || ch })
+                    : c.configured ? t('content.notConnected') : t('content.notConfigured')}
+                </div>
+                {live ? (
+                  <button className="secondary" onClick={() => disconnectChannel(ch)}>{t('content.disconnect')}</button>
+                ) : (
+                  <button
+                    onClick={() => connectChannel(ch)}
+                    disabled={!c.configured || connecting === ch}
+                    title={c.configured ? '' : t('content.notConfigured')}
+                  >
+                    {connecting === ch ? t('content.connecting') : t('content.connect')}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}

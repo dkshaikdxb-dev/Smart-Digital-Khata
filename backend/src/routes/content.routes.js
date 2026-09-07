@@ -10,6 +10,13 @@ const ctrl = require('../controllers/content.controller');
 // Editor-in-chief content desk. Mounted at /api/admin/content. Every route is
 // auth('admin') + content:manage — a non-admin is 401/403, an admin without
 // content:manage is 403. Mirrors the admin.routes guard chain.
+//
+// EXCEPTION — the OAuth callback is PUBLIC and declared BEFORE the auth chain
+// below, because the provider redirects the browser here WITHOUT the admin JWT.
+// Its sole authorization is the single-use `state` (validated in the handler,
+// which 400s a missing/unknown/expired/reused state before any token exchange).
+router.get('/oauth/:channel/callback', asyncHandler(ctrl.oauthCallback));
+
 router.use(auth('admin'));
 router.use(asyncHandler(loadAdminRole));
 router.use(requirePerm('content:manage'));
@@ -54,6 +61,12 @@ const transitionSchema = Joi.object({
 router.get('/', asyncHandler(ctrl.list));
 router.get('/summary', asyncHandler(ctrl.summary));
 router.get('/config', asyncHandler(ctrl.config));
+// Social OAuth connect flow (Batch S) — auth+perm. Declared BEFORE the '/:id'
+// route so 'accounts'/'oauth' are not captured as an item id. The callback
+// itself is PUBLIC and declared above, before the auth chain.
+router.get('/accounts', asyncHandler(ctrl.listAccounts));
+router.get('/oauth/:channel/start', asyncHandler(ctrl.oauthStart));
+router.post('/accounts/:channel/disconnect', asyncHandler(ctrl.disconnectAccount));
 router.get('/:id', asyncHandler(ctrl.get));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.patch('/:id', validate(patchSchema), asyncHandler(ctrl.patch));

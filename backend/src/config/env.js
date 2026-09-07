@@ -24,6 +24,18 @@ const schema = Joi.object({
   WHATSAPP_PHONE_NUMBER_ID: Joi.string().allow('').default(''),
   WHATSAPP_VERIFY_TOKEN: Joi.string().allow('').default(''),
 
+  // Content engine — real social publishers (Batch S). All optional: with any of
+  // these unset the affected channel stays INERT and uses the outbox adapter.
+  // PUBLIC_BASE_URL builds the FIXED OAuth redirect URI + the desk return URL.
+  // CONTENT_TOKEN_KEY is a 32-byte key (hex or base64) that encrypts OAuth tokens
+  // at rest. The client id/secret pairs are per platform.
+  PUBLIC_BASE_URL: Joi.string().uri().allow('').default(''),
+  CONTENT_TOKEN_KEY: Joi.string().allow('').default(''),
+  LINKEDIN_CLIENT_ID: Joi.string().allow('').default(''),
+  LINKEDIN_CLIENT_SECRET: Joi.string().allow('').default(''),
+  TWITTER_CLIENT_ID: Joi.string().allow('').default(''),
+  TWITTER_CLIENT_SECRET: Joi.string().allow('').default(''),
+
   RATE_LIMIT_WINDOW_MS: Joi.number().default(60_000),
   RATE_LIMIT_MAX: Joi.number().default(120),
 
