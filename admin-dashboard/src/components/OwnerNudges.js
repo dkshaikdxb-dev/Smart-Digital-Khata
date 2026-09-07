@@ -7,9 +7,14 @@ import { useSpeech } from '../lib/useSpeech';
 // Owner Help "lane A" (Phase F): the "Today at your shop" nudge cards on the
 // owner home. Reads the shop-scoped GET /api/insights/owner payload and renders
 // each nudge as one calm, localized one-line card with an optional action link
-// and a small read-aloud speaker. A single Listen control reads all the nudges in
-// sequence via the shared Web-Speech hook (useSpeech.speak) in the owner's chosen
-// language; it is hidden entirely when speech synthesis is unsupported.
+// and a small read-aloud speaker. A single Play/Pause control reads all the
+// nudges in sequence via the shared Web-Speech hook (useSpeech) in the owner's
+// chosen language.
+//
+// The cards themselves are DECOUPLED from speech support: they always render
+// whenever there are nudges, so the widget still appears in an Android WebView
+// (which usually lacks window.speechSynthesis). ONLY the read-aloud controls (the
+// Play/Pause toggle and the per-row 🔊 buttons) are gated on `ttsSupported`.
 
 // tone → a calm colour (not an alarm). good=green, attention=amber, info=neutral.
 const TONE_COLOR = {
@@ -30,7 +35,7 @@ function fmtRupees(paise) {
 export default function OwnerNudges() {
   const router = useRouter();
   const { t } = useLang();
-  const { speak, stop, ttsSupported } = useSpeech();
+  const { speak, pause, speaking, ttsSupported } = useSpeech();
   const [nudges, setNudges] = useState(null); // null = loading
   const [error, setError] = useState('');
 
@@ -74,8 +79,11 @@ export default function OwnerNudges() {
         </div>
         {ttsSupported && nudges && nudges.length > 0 && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={listenAll}>🔊 {t('own.listen')}</button>
-            <button type="button" className="secondary" onClick={stop}>{t('own.stop')}</button>
+            {speaking ? (
+              <button type="button" onClick={pause}>⏸ {t('own.pause')}</button>
+            ) : (
+              <button type="button" onClick={listenAll}>🔊 {t('own.listen')}</button>
+            )}
           </div>
         )}
       </div>

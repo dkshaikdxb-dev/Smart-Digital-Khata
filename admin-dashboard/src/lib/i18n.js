@@ -193,6 +193,7 @@ const DICT = {
 const PAGE = {
   en: {
     'acc.title': 'My Account',
+    'acc.language': 'Language',
     'acc.subtitle': 'Your personal profile. Email, gender and date of birth are optional.',
     'acc.profile': 'Profile',
     'acc.name': 'Name',
@@ -703,6 +704,7 @@ const PAGE = {
   },
   hi: {
     'acc.title': 'मेरा खाता',
+    'acc.language': 'भाषा',
     'acc.subtitle': 'आपकी निजी प्रोफ़ाइल। ईमेल, लिंग और जन्म तारीख़ ज़रूरी नहीं हैं।',
     'acc.profile': 'प्रोफ़ाइल',
     'acc.name': 'नाम',
@@ -5889,6 +5891,7 @@ const OWN = {
     'own.subtitle': 'A few simple updates about your shop.',
     'own.listen': 'Listen',
     'own.stop': 'Stop',
+    'own.pause': 'Pause',
     'own.remind': 'Send reminder',
     'own.empty': 'No updates yet. Add your first customer or item to get started.',
     'own.loadError': 'Could not load your updates.',
@@ -5913,6 +5916,7 @@ const OWN = {
     'own.subtitle': 'आपकी दुकान की कुछ आसान बातें।',
     'own.listen': 'सुनें',
     'own.stop': 'रोकें',
+    'own.pause': 'रोकें',
     'own.remind': 'याद दिलाएँ',
     'own.empty': 'अभी कोई जानकारी नहीं है। शुरू करने के लिए अपना पहला ग्राहक या सामान जोड़ें।',
     'own.loadError': 'आपकी जानकारी लोड नहीं हो सकी।',
