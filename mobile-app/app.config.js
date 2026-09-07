@@ -1,6 +1,6 @@
 // Dynamic Expo config. The build flavor is selected by the APP_FLAVOR env var
 // (set per profile in eas.json). Two Android apps are produced from this one
-// codebase: the Shop Owner native app and the Consumer WebView shell.
+// codebase: the Shop Owner native app and the native Consumer app.
 const fs = require('fs');
 const path = require('path');
 
@@ -40,6 +40,10 @@ module.exports = ({ config }) => {
 
   return {
     ...config,
+    // Expo account that owns both projects. Set explicitly so EAS can resolve
+    // the account non-interactively in CI (the token may see multiple accounts).
+    // Override with EAS_OWNER if the project is ever moved to another account.
+    owner: process.env.EAS_OWNER || 'dkshaikdxb',
     name: f.name,
     slug: f.slug,
     scheme: f.scheme,

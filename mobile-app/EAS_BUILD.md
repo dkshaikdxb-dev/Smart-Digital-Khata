@@ -23,8 +23,13 @@ One-time:
 1. Create an Expo access token → https://expo.dev/settings/access-tokens
 2. Repo → Settings → Secrets and variables → Actions → add secret **`EXPO_TOKEN`**
    (paste the token). Never commit it.
-3. First build creates the EAS project; copy the project id it prints and add it as
-   an Actions **variable** `EAS_PROJECT_ID` so later builds link non-interactively.
+3. The owning Expo account is pinned in `app.config.js` (the `owner` field, default
+   `dkshaikdxb`; override per build with the `EAS_OWNER` env var). Owner and consumer
+   are **separate EAS projects** (different slugs), so each has its own project id.
+   The first build of a flavor creates its project and prints the id (also shown as a
+   run annotation); add it as an Actions **variable** — **`EAS_PROJECT_ID_OWNER`** for
+   the owner app, **`EAS_PROJECT_ID_CONSUMER`** for the consumer app — so later builds
+   link non-interactively and skip the create step.
 
 Then: Actions tab → **EAS Build (Android APK)** → Run workflow → pick `consumer` or
 `owner`. The installable `.apk` URL appears in the run log (and on expo.dev → Builds).

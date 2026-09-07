@@ -11,9 +11,11 @@ name: EAS Build (Android APK)
 # One-time setup (see mobile-app/EAS_BUILD.md):
 #   1. Create an Expo access token at https://expo.dev/settings/access-tokens
 #   2. Add it as an Actions secret named  EXPO_TOKEN
-#   3. Get the EAS project id once (run `eas init` locally, or let this workflow's
-#      first run create it) and add it as an Actions *variable* named
-#      EAS_PROJECT_ID so subsequent builds link non-interactively.
+#   3. The owning Expo account is set in app.config.js (the `owner` field). Owner
+#      and consumer are separate EAS projects (different slugs), so each has its
+#      own project id. The first build of a flavor creates its project and prints
+#      the id; add it as an Actions *variable* — EAS_PROJECT_ID_OWNER for owner,
+#      EAS_PROJECT_ID_CONSUMER for consumer — so later builds link non-interactively.
 
 on:
   workflow_dispatch:
@@ -30,7 +32,9 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       APP_FLAVOR: ${{ inputs.flavor }}
-      EAS_PROJECT_ID: ${{ vars.EAS_PROJECT_ID }}
+      # Owner and consumer are separate EAS projects (different slugs), so each
+      # has its own project id. Pick the right one for this flavor.
+      EAS_PROJECT_ID: ${{ inputs.flavor == 'owner' && vars.EAS_PROJECT_ID_OWNER || vars.EAS_PROJECT_ID_CONSUMER }}
     steps:
       - name: Guard — token must be configured
         run: |
@@ -55,16 +59,28 @@ jobs:
         working-directory: mobile-app
         run: npm ci
 
-      - name: Ensure the EAS project is linked
+      - name: Resolve or create the EAS project id
         working-directory: mobile-app
         run: |
-          if [ -z "${EAS_PROJECT_ID}" ]; then
-            echo "No EAS_PROJECT_ID variable set — attempting first-time project creation via 'eas init'."
-            echo "After this run, copy the project id it prints and add it as an Actions variable EAS_PROJECT_ID."
-            eas init --non-interactive || true
-          else
-            echo "Using EAS_PROJECT_ID=${EAS_PROJECT_ID}"
+          set -o pipefail
+          VARNAME="EAS_PROJECT_ID_$(echo "${APP_FLAVOR}" | tr '[:lower:]' '[:upper:]')"
+          if [ -n "${EAS_PROJECT_ID}" ]; then
+            echo "Using ${VARNAME}=${EAS_PROJECT_ID}"
+            exit 0
           fi
+          echo "No ${VARNAME} variable set — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
+          # 'eas init' creates or links the project for this flavor's owner+slug.
+          # With a dynamic app config it cannot write the id back to the file, so
+          # it prints the id — we capture it and hand it to the build step (and
+          # tell the operator which Actions variable to save for next time).
+          out=$(eas init --non-interactive --force 2>&1 | tee /dev/stderr) || true
+          pid=$(printf '%s\n' "$out" | grep -oiE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+          if [ -z "$pid" ]; then
+            echo "::error::Could not determine the EAS project id from 'eas init'. See the log above; then create it once and add its id as the Actions variable ${VARNAME}."
+            exit 1
+          fi
+          echo "EAS_PROJECT_ID=$pid" >> "$GITHUB_ENV"
+          echo "::notice title=Save this::Project id for '${APP_FLAVOR}' is $pid. Add it as an Actions *variable* named ${VARNAME} to skip this step on future builds."
 
       - name: Build Android APK (${{ inputs.flavor }}-preview)
         working-directory: mobile-app
