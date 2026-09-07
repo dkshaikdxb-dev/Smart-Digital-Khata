@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
-import { useLang } from '../lib/i18n';
+import { useLang, canUseVoice, canReadAloud, languageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
 
 // Owner Help "lane C" (Batch J): a voice "Ask" on the owner home. The owner taps
@@ -77,8 +77,9 @@ function fmtRupees(paise) {
 }
 
 export default function AskShop() {
-  const { t } = useLang();
-  const { listen, speak, listening, sttSupported, ttsSupported } = useSpeech();
+  const { t, lang } = useLang();
+  const { listen, speak, listening, sttSupported, ttsSupported, ttsVoiceAvailable } = useSpeech();
+  const caps = languageCapability(lang);
   const [answer, setAnswer] = useState('');
   const [active, setActive] = useState(false); // an ask session is in flight
 
@@ -166,9 +167,13 @@ export default function AskShop() {
     listen(handleTranscript);
   }
 
-  // Show ONLY when both STT and TTS are supported — a voice ask needs to both
-  // hear and speak. Hidden entirely otherwise (no dead button).
+  // Show ONLY when this device AND this language can both hear and speak — a voice
+  // ask reads its answer aloud, so it needs recognition for the language, a TTS
+  // engine, AND a real local voice (never offer a control that would mis-recognize
+  // or speak the wrong language). Hidden entirely otherwise (no dead button).
   if (!sttSupported || !ttsSupported) return null;
+  if (!canUseVoice(lang, caps)) return null;
+  if (!canReadAloud(lang, caps) || !ttsVoiceAvailable) return null;
 
   return (
     <div className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>

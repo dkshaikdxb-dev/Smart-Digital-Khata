@@ -37,6 +37,11 @@ export function isRtl(lang) {
   return RTL_LANGS.has(lang);
 }
 
+// Voice-capability helpers (languageCapability / canUseVoice / canReadAloud) are
+// defined once, registry-driven, further down this module (near useActiveLanguages)
+// so they read the real per-dimension has_* flags from the language registry with a
+// safe built-in fallback. The consumer voice sites import them from there.
+
 const DICT = {
   en: {
     'nav.dashboard': 'Dashboard',
