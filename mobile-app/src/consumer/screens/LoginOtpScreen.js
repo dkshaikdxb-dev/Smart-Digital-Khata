@@ -7,7 +7,7 @@ import { colors, sizes } from '../theme';
 import { ErrorBanner } from '../components';
 import { consumerAuth } from '../consumerApi';
 import { useConsumerAuth } from '../ConsumerAuthContext';
-import { useT, LANGUAGES } from '../i18n';
+import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
 // Priority 1 — OTP auth. Step 1: enter phone -> request-otp. Step 2: enter the
 // 6-digit code -> verify-otp -> store token -> signed in. Mirrors c/login.js
@@ -286,15 +286,16 @@ export default function LoginOtpScreen() {
             <ScrollView style={styles.modalList}>
               {LANGUAGES.map((l) => {
                 const selected = l.code === lang;
+                const label = `${l.label}${isBetaLang(l.code) ? t('login.betaSuffix') : ''}`;
                 return (
                   <Pressable
                     key={l.code}
                     style={[styles.langRow, selected && styles.langRowSelected]}
                     onPress={() => { setLang(l.code); setLangOpen(false); }}
                     accessibilityRole="button"
-                    accessibilityLabel={l.label}
+                    accessibilityLabel={label}
                   >
-                    <Text style={styles.langRowText}>{l.label}</Text>
+                    <Text style={styles.langRowText}>{label}</Text>
                     {selected ? <View style={styles.langTick} /> : null}
                   </Pressable>
                 );

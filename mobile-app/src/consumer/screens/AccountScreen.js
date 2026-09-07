@@ -6,7 +6,7 @@ import { colors, sizes } from '../theme';
 import { Card, Field, Button, ErrorBanner } from '../components';
 import { consumerAuth, setToken } from '../consumerApi';
 import { useConsumerAuth } from '../ConsumerAuthContext';
-import { useT, LANGUAGES } from '../i18n';
+import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
 // Priority 6 — Account: editable profile (name/email; phone read-only), a
 // language switch, and logout. Profile via GET/PATCH /customer-auth/*.
@@ -101,7 +101,9 @@ export default function AccountScreen() {
                 onPress={() => setLang(l.code)}
                 style={[styles.lang, lang === l.code && styles.langActive]}
               >
-                <Text style={[styles.langText, lang === l.code && styles.langTextActive]}>{l.label}</Text>
+                <Text style={[styles.langText, lang === l.code && styles.langTextActive]}>
+                  {l.label}{isBetaLang(l.code) ? t('login.betaSuffix') : ''}
+                </Text>
               </Pressable>
             ))}
           </View>
