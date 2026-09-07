@@ -28,6 +28,20 @@ const listSchema = Joi.object({
 });
 
 router.get('/shops', validate(listSchema, 'query'), asyncHandler(discoveryCtrl.listShops));
+
+// Cross-shop product search (Flipkart-style). Active products in listed shops
+// whose (localized or base) name matches `q`. Same query-param style as the
+// directory; `q` is required.
+const searchSchema = Joi.object({
+  q: Joi.string().trim().min(1).max(120).required(),
+  city: Joi.string().trim().max(120),
+  lat: Joi.number().min(-90).max(90),
+  lng: Joi.number().min(-180).max(180),
+  lang: Joi.string(),
+  limit: Joi.number().integer(),
+});
+router.get('/products/search', validate(searchSchema, 'query'), asyncHandler(discoveryCtrl.searchProducts));
+
 router.get('/shops/:shopId', asyncHandler(discoveryCtrl.getShop));
 
 // Content engine (Batch T) — the public marketing-site blog. Read-only, only
