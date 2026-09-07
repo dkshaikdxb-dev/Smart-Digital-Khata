@@ -14,6 +14,7 @@
     "import:catalog": "node src/utils/import-catalog.js",
     "import:catalog-i18n": "node src/utils/import-catalog-i18n.js",
     "import:i18n": "node src/utils/import-i18n-overrides.js",
+    "refresh:search-text": "node src/utils/refresh-search-text.js",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {

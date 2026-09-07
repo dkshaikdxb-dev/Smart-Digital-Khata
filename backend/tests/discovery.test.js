@@ -195,8 +195,10 @@ describe('GET /public/shops/:shopId', () => {
     // Product fields now include category/subcategory + variant metadata
     // (base_product/brand/pack) from the base catalog — all null for these
     // hand-entered, unlinked products.
+    // search_text (the normalized all-language search blob) is now returned so
+    // the in-shop client filter can match aliases/romanized/native tokens.
     expect(Object.keys(res.body.shop.products[0]).sort())
-      .toEqual(['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'sold_by_weight', 'subcategory', 'unit']);
+      .toEqual(['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'search_text', 'sold_by_weight', 'subcategory', 'unit']);
     expect(res.body.shop.products[0].category).toBeNull();
     expect(res.body.shop.products[0].subcategory).toBeNull();
     expect(res.body.shop.products[0].base_product).toBeNull();

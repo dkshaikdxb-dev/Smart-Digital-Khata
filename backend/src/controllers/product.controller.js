@@ -1,5 +1,18 @@
-const { query } = require('../config/db');
+const { query, pool } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
+const { refreshProductSearchText } = require('../utils/refresh-search-text');
+
+// Best-effort refresh of a product's search_text after a write. A failure here
+// must never fail the product write — the SQL backfill / next edit / the
+// refresh:search-text script will repair it — so we log and continue.
+async function safeRefreshSearchText(productId) {
+  try {
+    await refreshProductSearchText(pool, productId);
+  } catch (err) {
+    logger.warn({ err: err.message, productId }, 'search_text refresh failed (continuing)');
+  }
+}
 
 // sharp is loaded lazily/defensively: if the native binary is unavailable at
 // runtime (e.g. an unexpected build), we fall back to storing original bytes.
@@ -62,6 +75,7 @@ exports.create = async (req, res) => {
      RETURNING *`,
     [req.user.shopId, name, price, description, unit, soldByWeight, image_url]
   );
+  await safeRefreshSearchText(r.rows[0].id);
   res.status(201).json({ product: r.rows[0] });
 };
 
@@ -93,6 +107,7 @@ exports.update = async (req, res) => {
     values
   );
   if (!r.rowCount) throw ApiError.notFound('Product not found');
+  await safeRefreshSearchText(r.rows[0].id);
   res.json({ product: r.rows[0] });
 };
 
@@ -116,25 +131,34 @@ exports.publicCatalog = async (req, res) => {
   const shop = await query('SELECT name FROM shops WHERE id = $1', [shopId]);
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
-  // Consumer localization (⑥, additive): when ?lang != en, LEFT JOIN
-  // catalog_i18n on the stored English product name and return
-  // COALESCE(cp.name, p.name) AS name — localized when a master translation
-  // exists, else the raw English/base name. Only the `name` VALUE changes; the
-  // response shape (id,name,description,price,unit,image_url) is unchanged.
+  // Consumer localization (⑥, additive): when ?lang != en, localize the product
+  // name with English fallback. Two localization sources, tried in order:
+  //   1. via the linked master item — LEFT JOIN catalog_items on p.catalog_item_id
+  //      then catalog_i18n on that item's English `product` term, so a localized
+  //      name shows even when the shop's p.name is free text (not a master term);
+  //   2. via the stored English name — the original term_en = p.name join.
+  // COALESCE(by-item, by-name, p.name). Only the `name` VALUE changes; English
+  // (lang=en) name behaviour is unchanged. `search_text` is added to the SELECT
+  // (both paths) so the in-shop client filter can match aliases/romanized/native
+  // tokens; it is the normalized all-language blob, not sensitive.
   const lang = resolveLang(req.query.lang);
   const localized = lang !== 'en';
   const params = [shopId];
   let sql;
   if (localized) {
     params.push(lang); // $2
-    sql = `SELECT p.id, COALESCE(cp.name, p.name) AS name, p.description, p.price, p.unit, p.image_url
+    sql = `SELECT p.id, COALESCE(cpi.name, cp.name, p.name) AS name,
+                  p.description, p.price, p.unit, p.image_url, p.search_text
              FROM products p
+             LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
+             LEFT JOIN catalog_i18n cpi
+               ON cpi.term_type = 'product' AND cpi.term_en = ci.product AND cpi.lang = $2
              LEFT JOIN catalog_i18n cp
                ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2
             WHERE p.shop_id = $1 AND p.is_active = true
             ORDER BY p.created_at DESC, p.id DESC`;
   } else {
-    sql = `SELECT id, name, description, price, unit, image_url
+    sql = `SELECT id, name, description, price, unit, image_url, search_text
              FROM products WHERE shop_id = $1 AND is_active = true
              ORDER BY created_at DESC, id DESC`;
   }

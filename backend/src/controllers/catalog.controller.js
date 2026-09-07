@@ -1,5 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
+const { refreshProductSearchText } = require('../utils/refresh-search-text');
 
 // Display name shown to owners/customers, assembled from the base item's parts.
 function displayName({ brand, product, pack }) {
@@ -257,6 +259,7 @@ async function selectItem(client, shopId, catalogItemId, price) {
     'SELECT id FROM products WHERE shop_id = $1 AND catalog_item_id = $2 LIMIT 1',
     [shopId, catalogItemId]
   );
+  let product;
   if (existing.rowCount) {
     const upd = await client.query(
       `UPDATE products
@@ -265,16 +268,27 @@ async function selectItem(client, shopId, catalogItemId, price) {
         RETURNING *`,
       [price, existing.rows[0].id, shopId]
     );
-    return upd.rows[0];
+    product = upd.rows[0];
+  } else {
+    const ins = await client.query(
+      `INSERT INTO products (shop_id, name, price, unit, is_active, catalog_item_id)
+       VALUES ($1,$2,$3,$4,true,$5)
+       RETURNING *`,
+      [shopId, name, price, unit, catalogItemId]
+    );
+    product = ins.rows[0];
   }
 
-  const ins = await client.query(
-    `INSERT INTO products (shop_id, name, price, unit, is_active, catalog_item_id)
-     VALUES ($1,$2,$3,$4,true,$5)
-     RETURNING *`,
-    [shopId, name, price, unit, catalogItemId]
-  );
-  return ins.rows[0];
+  // Refresh the normalized search blob for the (new or reactivated) product on
+  // the same tx client so a bulk select stays atomic. The row was just written
+  // by this tx, so the refresh queries are safe; a JS-level failure is logged
+  // and swallowed rather than aborting the product write.
+  try {
+    await refreshProductSearchText(client, product.id);
+  } catch (err) {
+    logger.warn({ err: err.message, productId: product.id }, 'search_text refresh failed (continuing)');
+  }
+  return product;
 }
 
 /**
