@@ -2,6 +2,9 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { canTransition, gateAllows, isStatus } = require('../utils/content-workflow');
 const drafter = require('../services/content-drafter.service');
+const social = require('../services/content-social.service');
+
+const SOCIAL_CHANNELS = ['linkedin', 'twitter'];
 
 // Editor-in-chief review desk API. All routes are auth('admin') +
 // requirePerm('content:manage') (wired in content.routes.js). The SAFETY CORE —
@@ -144,9 +147,80 @@ exports.patch = async (req, res) => {
 };
 
 // GET /api/admin/content/config — the desk reads this to show whether AI
-// drafting is wired. Never exposes the key; just a boolean.
+// drafting is wired and which social channels are configured/connected. Never
+// exposes any key or token — only booleans and (per connected channel) the
+// display name from the safe accounts projection.
 exports.config = async (_req, res) => {
-  res.json({ ai_drafting: drafter.isConfigured() });
+  const accounts = await social.listAccounts();
+  const connectedByChannel = {};
+  for (const a of accounts) connectedByChannel[a.channel] = a;
+
+  const channels = {};
+  for (const ch of SOCIAL_CHANNELS) {
+    const acct = connectedByChannel[ch] || null;
+    channels[ch] = {
+      configured: social.oauthConfigured(ch),
+      connected: Boolean(acct),
+      display_name: acct ? acct.display_name : null,
+    };
+  }
+  res.json({ ai_drafting: drafter.isConfigured(), channels });
+};
+
+// GET /api/admin/content/oauth/:channel/start — auth+perm. Begin an OAuth
+// connect: mint a single-use state (+ PKCE for X), store it tied to this admin,
+// and return the provider authorize URL. 400 when the channel isn't oauth-
+// configured (no creds / no token key) — nothing is minted.
+exports.oauthStart = async (req, res) => {
+  const { channel } = req.params;
+  if (!SOCIAL_CHANNELS.includes(channel)) throw ApiError.badRequest('Unsupported channel');
+  if (!social.oauthConfigured(channel)) {
+    throw ApiError.badRequest('This channel is not configured for OAuth');
+  }
+  const { authorize_url } = await social.startOAuth(channel, req.user.sub);
+  res.json({ authorize_url });
+};
+
+// GET /api/admin/content/oauth/:channel/callback — PUBLIC route (the provider
+// redirects the browser here without the admin JWT). Authorization is SOLELY the
+// single-use `state`. On an invalid/expired/reused state → 400 (CSRF reject),
+// BEFORE any token exchange. On success → encrypted account stored, state burned,
+// 302 back to the desk. A downstream exchange failure → 302 with ?oauth_error.
+exports.oauthCallback = async (req, res) => {
+  const { channel } = req.params;
+  const { code, state } = req.query;
+  if (!SOCIAL_CHANNELS.includes(channel)) throw ApiError.badRequest('Unsupported channel');
+
+  const deskUrl = `${social.baseUrl()}/admin/content`;
+  let result;
+  try {
+    result = await social.handleCallback(channel, { code, state });
+  } catch (_e) {
+    // A token-exchange / identity / network error after a VALID state — not CSRF.
+    return res.redirect(302, `${deskUrl}?oauth_error=exchange_failed`);
+  }
+  if (!result.ok) {
+    // Missing/unknown/expired/reused state → CSRF reject with a 400 (no redirect,
+    // no account stored). The browser sees a plain 400.
+    throw ApiError.badRequest('Invalid or expired OAuth state');
+  }
+  return res.redirect(302, `${deskUrl}?connected=${channel}`);
+};
+
+// GET /api/admin/content/accounts — auth+perm. List connected accounts. The
+// projection carries NO token field of any kind.
+exports.listAccounts = async (_req, res) => {
+  const accounts = await social.listAccounts();
+  res.json({ accounts });
+};
+
+// POST /api/admin/content/accounts/:channel/disconnect — auth+perm. Deactivate
+// the active account for a channel (the channel then falls back to outbox).
+exports.disconnectAccount = async (req, res) => {
+  const { channel } = req.params;
+  if (!SOCIAL_CHANNELS.includes(channel)) throw ApiError.badRequest('Unsupported channel');
+  const removed = await social.disconnect(channel);
+  res.json({ disconnected: removed });
 };
 
 // POST /api/admin/content/:id/draft — hand an idea/draft item to the LLM drafting

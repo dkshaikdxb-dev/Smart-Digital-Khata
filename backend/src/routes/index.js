@@ -26,8 +26,12 @@ router.use('/reports', require('./report.routes'));
 router.use('/analytics', require('./analytics.routes'));
 router.use('/insights', require('./insights.routes'));
 router.use('/notifications', require('./notification.routes'));
+// Mount the content desk BEFORE the general /admin router: the content desk owns
+// a PUBLIC OAuth callback (GET /admin/content/oauth/:channel/callback) that must
+// bypass the /admin router's blanket auth('admin') middleware. admin.routes
+// defines no /content paths, so nothing else changes for /admin/*.
+router.use('/admin/content', require('./content.routes')); // ADMIN: editorial content desk (content:manage) + PUBLIC oauth callback
 router.use('/admin', require('./admin.routes'));
-router.use('/admin/content', require('./content.routes')); // ADMIN: editorial content desk (content:manage)
 router.use('/webhooks', require('./webhook.routes'));
 router.use('/public', require('./public.routes'));
 

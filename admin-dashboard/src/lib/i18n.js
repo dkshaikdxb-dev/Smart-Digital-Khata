@@ -6676,6 +6676,19 @@ const CONTENT_EN = {
   'content.channel.whatsapp_tip': 'WhatsApp tip',
   'content.channel.reel': 'Reel',
   'content.channel.voice': 'Voice',
+  // Connections (Batch S) — real LinkedIn + X publishers via OAuth.
+  'content.connections': 'Connections',
+  'content.connectionsSub': 'Connect a social account to publish for real. Until then, publishing is simulated through the outbox.',
+  'content.connect': 'Connect',
+  'content.connecting': 'Opening…',
+  'content.disconnect': 'Disconnect',
+  'content.connected': 'Connected as {name}',
+  'content.notConfigured': 'Not configured — set the app credentials',
+  'content.notConnected': 'Configured — not connected',
+  'content.live': 'Live',
+  'content.simulated': 'Outbox (simulated)',
+  'content.connectedToast': '{channel} connected.',
+  'content.oauthError': 'Could not connect {channel}. Please try again.',
 };
 const CONTENT_HI = {
   'content.nav': 'कंटेंट',
@@ -6757,6 +6770,19 @@ const CONTENT_HI = {
   'content.channel.whatsapp_tip': 'व्हाट्सएप टिप',
   'content.channel.reel': 'रील',
   'content.channel.voice': 'वॉइस',
+  // कनेक्शन (Batch S) — OAuth से असली लिंक्डइन + X प्रकाशक।
+  'content.connections': 'कनेक्शन',
+  'content.connectionsSub': 'असली में प्रकाशित करने के लिए सोशल अकाउंट जोड़ें। तब तक प्रकाशन आउटबॉक्स के ज़रिए सिमुलेट होता है।',
+  'content.connect': 'जोड़ें',
+  'content.connecting': 'खुल रहा है…',
+  'content.disconnect': 'हटाएं',
+  'content.connected': '{name} के रूप में जुड़ा',
+  'content.notConfigured': 'कॉन्फ़िगर नहीं — ऐप क्रेडेंशियल सेट करें',
+  'content.notConnected': 'कॉन्फ़िगर — जुड़ा नहीं',
+  'content.live': 'लाइव',
+  'content.simulated': 'आउटबॉक्स (सिमुलेटेड)',
+  'content.connectedToast': '{channel} जुड़ गया।',
+  'content.oauthError': '{channel} नहीं जुड़ सका। कृपया फिर प्रयास करें।',
 };
 const CONTENT = {
   en: CONTENT_EN,

@@ -3,17 +3,25 @@ const { withTx } = require('../config/db');
 const { gateAllows } = require('../utils/content-workflow');
 
 // Scheduler/publisher for the content engine, with a PLUGGABLE per-channel
-// adapter interface. Right now EVERY channel uses the dependency-free OUTBOX
-// adapter, so the pipeline works end-to-end with no external creds or network:
-// "publishing" records the send to content_publish_log and stamps the item
-// published. When an operator provides real credentials, swap a channel's entry
-// in the `adapters` registry for a real adapter (see the TODO slots below).
+// adapter interface. Every channel has an always-available OUTBOX fallback; the
+// `linkedin` and `twitter` channels ALSO gain REAL OAuth publishers (Batch S)
+// that engage only when the operator has connected an account (see
+// content-social.service). With no credentials / no connected account a channel
+// keeps using the outbox, so the pipeline never breaks.
 //
 // The tier gate is RE-CHECKED here (belt-and-suspenders with the SQL WHERE) so a
 // Tier 1/2 item WITHOUT a recorded human approval can NEVER be published.
+//
+// publishDue runs CLAIM -> SEND -> FINALIZE: a short tx claims due, gate-cleared
+// rows (stamping publish_started_at); the network POST happens OUTSIDE any tx;
+// then a short tx records the outcome. This keeps a slow/flaky social API from
+// ever holding a row lock open.
 
-// Write one row to the publish log. A real adapter calls this with the true
-// result ('sent' | 'failed'); the outbox always records 'sent'.
+const MAX_PUBLISH_ATTEMPTS = 3;
+const STALE_CLAIM_MS = 15 * 60 * 1000; // reclaim a stuck in-flight item after 15 min
+
+// Write one row to the publish log. The publisher calls this in FINALIZE with the
+// adapter's true result ('sent' | 'failed'); the outbox result is always 'sent'.
 async function logPublish(client, { contentId, channel, adapter, result, externalRef, detail }) {
   await client.query(
     `INSERT INTO content_publish_log (content_id, channel, adapter, result, external_ref, detail)
@@ -23,40 +31,30 @@ async function logPublish(client, { contentId, channel, adapter, result, externa
 }
 
 // The OUTBOX adapter — the always-available fallback. It performs NO network
-// call: it mints a synthetic external_ref, records a 'sent' publish-log row, and
-// returns { externalRef }. This is the contract every real adapter implements.
-//
-// A real adapter's send() would: (1) POST the item to the channel's API, (2) log
-// the true 'sent'/'failed' result + the real external id, (3) return { externalRef }.
+// call and holds NO DB tx: it mints a synthetic external_ref and returns a
+// 'sent' result. The publisher's FINALIZE step writes the log row. This is the
+// contract every real adapter implements: send() returns
+// { result:'sent', externalRef, detail } or { result:'failed', detail }.
 const outboxAdapter = Object.freeze({
   name: 'outbox',
-  async send(item, ctx) {
-    const externalRef = `outbox:${randomUUID()}`;
-    await logPublish(ctx.client, {
-      contentId: item.id,
-      channel: item.channel,
-      adapter: 'outbox',
+  async send(item) {
+    return {
       result: 'sent',
-      externalRef,
+      externalRef: `outbox:${randomUUID()}`,
       detail: 'outbox — no live publisher configured',
-    });
-    return { externalRef };
+    };
   },
 });
 
-// Per-channel adapter registry. Every channel maps to the outbox adapter for now.
-// Replace an entry with a real adapter once credentials exist:
+// Per-channel SYNC default registry — every channel maps to the outbox adapter.
+// The async resolveAdapter() below swaps in a real social adapter at send time
+// when that channel has a connected account.
 //   TODO: real blog adapter — publish to the marketing site/CMS.
-//   TODO: real linkedin adapter — LinkedIn UGC/Posts API.
-//   TODO: real twitter adapter — X/Twitter API.
 //   TODO: real newsletter_community adapter — ESP broadcast (community list).
 //   TODO: real newsletter_ecosystem adapter — ESP broadcast (ecosystem list).
 //   TODO: real whatsapp_tip adapter — WhatsApp broadcast/template send.
 //   TODO: real reel adapter — Instagram/YouTube upload.
 //   TODO: real voice adapter — voice-note distribution.
-// Drafting copy is likewise pluggable and NOT built here:
-//   TODO: LLM draft agent — turn an approved brief into `body` (a Tier-gated,
-//         human-reviewed step; it must never move an item past 'in_review').
 const adapters = Object.freeze({
   blog: outboxAdapter,
   linkedin: outboxAdapter,
@@ -68,16 +66,28 @@ const adapters = Object.freeze({
   voice: outboxAdapter,
 });
 
+// The SYNC outbox default for a channel (kept for callers/tests that want the
+// dependency-free adapter without a DB check).
 function adapterFor(channel) {
   return adapters[channel] || outboxAdapter;
 }
 
-// publishDue(now) — publish every scheduled item that is due AND cleared by the
-// tier gate. The WHERE clause already excludes an unapproved Tier 1/2 item
-// (tier = 0 OR approved_at IS NOT NULL), and gateAllows() re-checks each row
-// defensively. Locked FOR UPDATE SKIP LOCKED so concurrent workers don't collide.
-// Returns { published }.
-async function publishDue(now = new Date()) {
+// resolveAdapter(channel) — the ASYNC resolver publishDue uses. Returns the REAL
+// social adapter when that channel is publishConfigured (creds + a connected
+// account), else the outbox adapter. Lazy-require avoids a load-time cycle.
+async function resolveAdapter(channel) {
+  const social = require('./content-social.service');
+  if (social.ADAPTERS[channel] && (await social.publishConfigured(channel))) {
+    return social.ADAPTERS[channel];
+  }
+  return adapterFor(channel);
+}
+
+// CLAIM — one short tx: select due + gate-cleared rows that are unclaimed (or
+// whose claim has gone stale) FOR UPDATE SKIP LOCKED, re-check the gate per row,
+// stamp publish_started_at + bump publish_attempts, and return the claimed rows.
+// The SQL WHERE already excludes an unapproved Tier 1/2 item.
+async function claimDue(now, staleBefore) {
   return withTx(async (client) => {
     const due = await client.query(
       `SELECT * FROM content_items
@@ -85,12 +95,13 @@ async function publishDue(now = new Date()) {
          AND scheduled_at IS NOT NULL
          AND scheduled_at <= $1
          AND (autonomy_tier = 0 OR approved_at IS NOT NULL)
+         AND (publish_started_at IS NULL OR publish_started_at < $2)
        ORDER BY scheduled_at ASC
        FOR UPDATE SKIP LOCKED`,
-      [now]
+      [now, staleBefore]
     );
 
-    let published = 0;
+    const claimed = [];
     for (const item of due.rows) {
       // Defensive re-enforcement of the human-approval gate. Should always pass
       // given the WHERE above; a failure here means SKIP (never publish).
@@ -102,30 +113,103 @@ async function publishDue(now = new Date()) {
       });
       if (!gate.ok) continue;
 
-      const adapter = adapterFor(item.channel);
-      const { externalRef } = await adapter.send(item, { client });
-
       await client.query(
         `UPDATE content_items
-         SET status = 'published', published_at = $1, external_ref = $2, updated_at = NOW()
-         WHERE id = $3`,
-        [now, externalRef, item.id]
+         SET publish_started_at = $1, publish_attempts = publish_attempts + 1, updated_at = NOW()
+         WHERE id = $2`,
+        [now, item.id]
       );
+      claimed.push({ ...item, publish_attempts: (item.publish_attempts || 0) + 1 });
+    }
+    return claimed;
+  });
+}
+
+// FINALIZE — one short tx per item: record the send outcome. On 'sent' the item
+// becomes published (+ log + system event). On 'failed' we log the failure and,
+// unless we have hit the attempt cap, CLEAR publish_started_at so a later tick
+// retries; at the cap we leave it claimed/failed.
+async function finalize(now, item, adapter, sendResult) {
+  return withTx(async (client) => {
+    if (sendResult.result === 'sent') {
+      await client.query(
+        `UPDATE content_items
+         SET status = 'published', published_at = $1, external_ref = $2,
+             publish_started_at = NULL, updated_at = NOW()
+         WHERE id = $3`,
+        [now, sendResult.externalRef || null, item.id]
+      );
+      await logPublish(client, {
+        contentId: item.id,
+        channel: item.channel,
+        adapter: adapter.name,
+        result: 'sent',
+        externalRef: sendResult.externalRef,
+        detail: sendResult.detail,
+      });
       await client.query(
         `INSERT INTO content_events (content_id, from_status, to_status, actor, actor_kind, note)
          VALUES ($1,'scheduled','published',NULL,'system',$2)`,
         [item.id, `published via ${adapter.name} adapter`]
       );
-      published += 1;
+      return 'published';
     }
-    return { published };
+
+    // Failed send.
+    await logPublish(client, {
+      contentId: item.id,
+      channel: item.channel,
+      adapter: adapter.name,
+      result: 'failed',
+      externalRef: null,
+      detail: sendResult.detail || 'send failed',
+    });
+    const attempts = item.publish_attempts || 0;
+    if (attempts < MAX_PUBLISH_ATTEMPTS) {
+      // Release the claim so a later tick retries.
+      await client.query(
+        `UPDATE content_items SET publish_started_at = NULL, updated_at = NOW() WHERE id = $1`,
+        [item.id]
+      );
+    }
+    // At the cap we leave publish_started_at set (claimed/failed) — no more auto
+    // retries until it goes stale; the failure is recorded in the publish log.
+    return 'failed';
   });
+}
+
+// publishDue(now, { httpFetch }) — publish every scheduled item that is due AND
+// cleared by the tier gate, via CLAIM -> SEND (outside any tx) -> FINALIZE. The
+// real social adapter is used when the channel is connected, else the outbox.
+// Returns { published, failed }.
+async function publishDue(now = new Date(), { httpFetch } = {}) {
+  const staleBefore = new Date(now.getTime() - STALE_CLAIM_MS);
+  const claimed = await claimDue(now, staleBefore);
+
+  let published = 0;
+  let failed = 0;
+  for (const item of claimed) {
+    // Resolve + send OUTSIDE any transaction — no row lock is held during I/O.
+    const adapter = await resolveAdapter(item.channel);
+    let sendResult;
+    try {
+      sendResult = await adapter.send(item, { httpFetch });
+    } catch (err) {
+      // A thrown error is treated as an ordinary failure (never a crash).
+      sendResult = { result: 'failed', detail: 'adapter threw during send' };
+    }
+    const outcome = await finalize(now, item, adapter, sendResult);
+    if (outcome === 'published') published += 1; else failed += 1;
+  }
+  return { published, failed };
 }
 
 module.exports = {
   adapters,
   outboxAdapter,
   adapterFor,
+  resolveAdapter,
   logPublish,
   publishDue,
+  MAX_PUBLISH_ATTEMPTS,
 };
