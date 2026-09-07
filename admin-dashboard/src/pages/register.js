@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { track, getAttribution } from '../lib/analytics';
 
 export default function Register() {
   const router = useRouter();
@@ -11,6 +12,12 @@ export default function Register() {
   const [invited, setInvited] = useState(false); // whether ref arrived from the URL
   const [error, setError] = useState('');
   const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  // First-party analytics: record that a sign-up was started (client-only).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try { track('register_start'); } catch (_) { /* never break the page */ }
+  }, []);
 
   // Capture ?ref= from the invite link (unobtrusive; never required).
   useEffect(() => {
@@ -26,7 +33,14 @@ export default function Register() {
     try {
       const body = { ...form };
       if (ref && ref.trim()) body.ref = ref.trim();
+      // First-touch attribution (UTM + referrer + anon session_id) so the
+      // backend can attribute this signup. Optional per the contract; omit-safe.
+      try {
+        const attribution = getAttribution();
+        if (attribution && Object.keys(attribution).length) body.attribution = attribution;
+      } catch (_) { /* never block registration on analytics */ }
       const r = await apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify(body) });
+      try { track('register_complete'); } catch (_) { /* never break the flow */ }
       window.localStorage.setItem('skhata_token', r.token);
       window.localStorage.setItem('skhata_role', r.user.role);
       router.push('/dashboard');

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { LANGS, COPY } from '../landing-copy';
+import { captureAttribution, track } from '../lib/analytics';
 
 // Public marketing landing shown at the site root to logged-OUT visitors.
 // A logged-in user never sees this: on mount we check localStorage and send
@@ -135,6 +136,16 @@ export default function Home() {
       setNlStatus('error');
     }
   }
+
+  // First-party analytics: capture first-touch attribution (UTM + referrer) and
+  // record the landing view once on mount. Client-only; all failures swallowed.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      captureAttribution();
+      track('landing_view');
+    } catch (_) { /* analytics must never break the page */ }
+  }, []);
 
   // Pull the admin-configured landing WhatsApp number at runtime; keep the
   // built-in default if it's unset or the request fails (never break the CTA).
@@ -413,13 +424,13 @@ export default function Home() {
                 <div className="ic">📱</div>
                 <h3>{t('getCustT')}</h3>
                 <p>{t('getCustP')}</p>
-                <a href={apkConsumer} target="_blank" rel="noopener noreferrer" className="btn btn-green">{t('getCustBtn')}</a>
+                <a href={apkConsumer} target="_blank" rel="noopener noreferrer" className="btn btn-green" onClick={() => { try { track('get_app_click', { app: 'consumer' }); } catch (_) { /* ignore */ } }}>{t('getCustBtn')}</a>
               </div>
               <div className="getcard">
                 <div className="ic">📱</div>
                 <h3>{t('getShopT')}</h3>
                 <p>{t('getShopP')}</p>
-                <a href={apkOwner} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">{t('getShopBtn')}</a>
+                <a href={apkOwner} target="_blank" rel="noopener noreferrer" className="btn btn-ghost" onClick={() => { try { track('get_app_click', { app: 'owner' }); } catch (_) { /* ignore */ } }}>{t('getShopBtn')}</a>
               </div>
             </div>
             <p className="getnote">{t('getNote')}</p>
