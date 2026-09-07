@@ -27,6 +27,33 @@ export default function Home() {
   const [hi, setHi] = useState(false);
   const [wa, setWa] = useState(buildWA(DEFAULT_WA_NUMBER));
 
+  // Newsletter subscribe (Batch T). Double opt-in: POST /subscribe records a
+  // pending subscriber and (when SMTP is configured server-side) e-mails a
+  // confirmation link. The response is always generic — we just show a
+  // "check your inbox" message and never learn whether the address existed.
+  const [nlEmail, setNlEmail] = useState('');
+  const [nlList, setNlList] = useState('community');
+  const [nlStatus, setNlStatus] = useState('idle'); // idle | sending | done | error
+
+  async function submitSubscribe(e) {
+    e.preventDefault();
+    const email = nlEmail.trim();
+    if (!email) return;
+    setNlStatus('sending');
+    try {
+      const r = await fetch(`${API_BASE}/api/public/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, list: nlList }),
+      });
+      if (!r.ok && r.status !== 202) throw new Error('failed');
+      setNlStatus('done');
+      setNlEmail('');
+    } catch (_) {
+      setNlStatus('error');
+    }
+  }
+
   // Pull the admin-configured landing WhatsApp number at runtime; keep the
   // built-in default if it's unset or the request fails (never break the CTA).
   useEffect(() => {
@@ -270,6 +297,60 @@ export default function Home() {
           </div>
         </section>
 
+        {/* NEWSLETTER */}
+        <section id="newsletter">
+          <div className="nlcard">
+            <div>
+              <span className="eyebrow">{hi ? 'न्यूज़लेटर' : 'Newsletter'}</span>
+              <h2 style={{ marginTop: 10 }}>{hi ? 'दुकानदारों के लिए टिप्स — सीधे आपके इनबॉक्स में' : 'Tips for dukaandaars — straight to your inbox'}</h2>
+              <p className="lede" style={{ marginTop: 10 }}>
+                {hi
+                  ? 'हर कुछ हफ़्तों में एक छोटा ईमेल — उधार वसूली, ऑनलाइन दुकान और आपकी भाषा में नए फ़ीचर। कभी भी अनसब्सक्राइब करें।'
+                  : 'A short e-mail every few weeks — collecting udhaar, your online shop, and new features in your language. Unsubscribe any time.'}
+              </p>
+            </div>
+            {nlStatus === 'done' ? (
+              <div className="nldone" role="status">
+                <span className="tick">✓</span>
+                <div>
+                  <b>{hi ? 'अपना इनबॉक्स देखें' : 'Check your inbox'}</b>
+                  <span>{hi ? 'पुष्टि के लिए हमने आपको एक लिंक भेजा है।' : 'We have sent you a link to confirm your subscription.'}</span>
+                </div>
+              </div>
+            ) : (
+              <form className="nlform" onSubmit={submitSubscribe}>
+                <div className="nlrow">
+                  <input
+                    type="email"
+                    required
+                    value={nlEmail}
+                    onChange={(e) => setNlEmail(e.target.value)}
+                    placeholder={hi ? 'आपका ईमेल' : 'your@email.com'}
+                    aria-label={hi ? 'ईमेल पता' : 'Email address'}
+                    className="nlinput"
+                  />
+                  <select
+                    value={nlList}
+                    onChange={(e) => setNlList(e.target.value)}
+                    aria-label={hi ? 'सूची' : 'List'}
+                    className="nlselect"
+                  >
+                    <option value="community">{hi ? 'दुकानदार' : 'Shopkeepers'}</option>
+                    <option value="ecosystem">{hi ? 'पार्टनर / वितरक' : 'Partners / distributors'}</option>
+                  </select>
+                  <button type="submit" className="btn btn-green" disabled={nlStatus === 'sending'}>
+                    {nlStatus === 'sending' ? (hi ? 'भेजा जा रहा…' : 'Sending…') : (hi ? 'सब्सक्राइब करें' : 'Subscribe')}
+                  </button>
+                </div>
+                {nlStatus === 'error' && (
+                  <p className="nlerr">{hi ? 'कुछ गड़बड़ हुई — कृपया फिर कोशिश करें।' : 'Something went wrong — please try again.'}</p>
+                )}
+                <p className="nlnote">{hi ? 'हम आपका ईमेल कभी नहीं बेचेंगे। डबल ऑप्ट-इन।' : 'We never sell your e-mail. Double opt-in — confirm before you receive anything.'}</p>
+              </form>
+            )}
+          </div>
+        </section>
+
         {/* FINAL CTA */}
         <section id="start">
           <div className="final">
@@ -289,7 +370,10 @@ export default function Home() {
         <div className="foot">
           <div className="brand"><span className="mark">ख</span> Smart Digital Khata</div>
           <div>हर दुकान, अब डिजिटल · Every shop, now digital</div>
-          <div>© Smart Digital Khata</div>
+          <div className="footlinks">
+            <a href="/blog" className="footlink">Blog</a>
+            <span>© Smart Digital Khata</span>
+          </div>
         </div>
       </footer>
 
@@ -450,14 +534,32 @@ export default function Home() {
         .final .note{margin-top:16px;color:var(--ink-soft);font-size:.88rem}
         .final a.link{color:var(--green-deep);font-weight:600;text-decoration:underline}
 
+        .nlcard{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:34px 30px;
+          display:grid;grid-template-columns:1fr .9fr;gap:26px;align-items:center;box-shadow:var(--shadow)}
+        .nlform{display:flex;flex-direction:column;gap:8px}
+        .nlrow{display:flex;gap:8px;flex-wrap:wrap}
+        .nlinput,.nlselect{font-family:var(--sans);font-size:.95rem;border:1px solid var(--line);border-radius:999px;
+          padding:11px 16px;background:var(--paper);color:var(--ink);min-width:0}
+        .nlinput{flex:1 1 180px}
+        .nlselect{flex:0 1 auto}
+        .nlform .btn{padding:11px 20px}
+        .nlnote{font-size:.78rem;color:var(--ink-soft);margin-top:2px}
+        .nlerr{font-size:.85rem;color:var(--red);margin-top:2px}
+        .nldone{display:flex;gap:12px;align-items:center;background:var(--green-bg);border:1px solid var(--line);
+          border-radius:var(--radius);padding:18px 20px}
+        .nldone .tick{width:34px;height:34px;border-radius:50%;background:var(--green);color:#fff;display:grid;
+          place-items:center;font-weight:800;flex:none}
+        .nldone b{display:block}.nldone span{color:var(--ink-soft);font-size:.9rem}
         footer{padding:34px 0 60px;color:var(--ink-soft);font-size:.86rem;border-top:1px solid var(--line)}
         .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+        .footlinks{display:flex;gap:16px;align-items:center}
+        .footlink{color:var(--green-deep);font-weight:600}
 
         @media(max-width:880px){
           .hero{grid-template-columns:1fr;gap:28px;padding:34px 0}
           .phone{order:-1}
           .pillars,.steps,.values,.costgrid,.econ{grid-template-columns:1fr}
-          .band{grid-template-columns:1fr}
+          .band,.nlcard{grid-template-columns:1fr}
           .values{grid-template-columns:1fr 1fr}
           .nav .btn-ghost{display:none}
         }

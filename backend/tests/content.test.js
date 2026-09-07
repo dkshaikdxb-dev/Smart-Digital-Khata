@@ -237,7 +237,10 @@ describe('tier gate — API side', () => {
 
 describe('tier gate — publisher (publishDue, called directly, no Redis)', () => {
   it('publishes a due Tier 0 item and an APPROVED Tier 1, SKIPS an unapproved Tier 1', async () => {
-    const tier0 = await insertItem({ channel: 'blog', autonomy_tier: 0, engine: 'record' });
+    // whatsapp_tip stays an OUTBOX channel (blog is now a real internal
+    // publisher — see content-blog.test.js), so it still exercises the outbox
+    // external_ref path this test asserts below.
+    const tier0 = await insertItem({ channel: 'whatsapp_tip', autonomy_tier: 0, engine: 'record' });
     const tier1ok = await insertItem({
       channel: 'linkedin', autonomy_tier: 1, engine: 'reach',
       approved_at: new Date(Date.now() - 120000).toISOString(), approved_by: superAdmin.id,

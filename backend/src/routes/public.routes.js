@@ -6,6 +6,7 @@ const customerCtrl = require('../controllers/customer.controller');
 const productCtrl = require('../controllers/product.controller');
 const discoveryCtrl = require('../controllers/discovery.controller');
 const configCtrl = require('../controllers/config.controller');
+const contentPublicCtrl = require('../controllers/content-public.controller');
 
 // Public runtime config for the marketing landing (safe values only).
 router.get('/config', asyncHandler(configCtrl.publicConfig));
@@ -28,5 +29,26 @@ const listSchema = Joi.object({
 
 router.get('/shops', validate(listSchema, 'query'), asyncHandler(discoveryCtrl.listShops));
 router.get('/shops/:shopId', asyncHandler(discoveryCtrl.getShop));
+
+// Content engine (Batch T) — the public marketing-site blog. Read-only, only
+// published posts, minimal fields on the list.
+router.get('/blog', asyncHandler(contentPublicCtrl.listBlog));
+router.get('/blog/:slug', asyncHandler(contentPublicCtrl.getBlog));
+
+// Content engine (Batch T) — newsletter double-opt-in. The subscribe body is
+// validated + email-checked; the confirm/unsubscribe links carry an opaque
+// token. None of these reveal whether an address already existed. Rate-limited
+// by the existing global /api limiter.
+const subscribeSchema = Joi.object({
+  email: Joi.string().trim().lowercase().email().max(320).required(),
+  list: Joi.string().valid('community', 'ecosystem').default('community'),
+});
+router.post(
+  '/newsletter/subscribe',
+  validate(subscribeSchema, 'body'),
+  asyncHandler(contentPublicCtrl.subscribeNewsletter)
+);
+router.get('/newsletter/confirm', asyncHandler(contentPublicCtrl.confirmNewsletter));
+router.get('/newsletter/unsubscribe', asyncHandler(contentPublicCtrl.unsubscribeNewsletter));
 
 module.exports = router;
