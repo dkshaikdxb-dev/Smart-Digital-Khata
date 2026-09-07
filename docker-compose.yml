@@ -67,6 +67,12 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
+      # Demo customer login: reveals the OTP in the request-otp response
+      # (dev_code) ONLY for these exact demo numbers, so a seeded demo customer
+      # can be logged in without SMS/WhatsApp. Defaults to one demo number;
+      # override/extend in .env. Never add real customer numbers. See
+      # docs/DEMO_ACCOUNTS.md.
+      DEMO_OTP_PHONES: ${DEMO_OTP_PHONES:-+919876100001}
     depends_on:
       postgres:
         condition: service_healthy

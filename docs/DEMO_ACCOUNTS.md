@@ -52,30 +52,36 @@ The consumer web PWA lets anyone browse shops with no account:
 - All listed shops: <https://khata.dadashaik.com/c/shops>
 - Sharma Kirana Store catalogue: <https://khata.dadashaik.com/c/shop/775c36cf-e150-4b4d-bc39-705aa31bec47>
 
-### Log in as a customer (OTP) without SMS
-To exercise khata + pay in the consumer app, enable a demo OTP number so the code
-is returned in the API response instead of being sent over SMS/WhatsApp:
+### Log in as a customer (OTP) — `+919876100001` works out of the box
+There is **no fixed OTP and no password** — each login uses a fresh random code.
+The seeded demo phone numbers are fake, so no SMS/WhatsApp reaches them; instead
+the code is **returned in the API response** (`dev_code`) for allow-listed demo
+numbers. **`+919876100001` is allow-listed by default** (via `DEMO_OTP_PHONES` in
+`docker-compose.yml`), so it works with no setup:
 
-1. Set the backend environment variable **`DEMO_OTP_PHONES`** to one or more demo
-   numbers, comma-separated, e.g.:
-
+1. Request a code:
    ```
-   DEMO_OTP_PHONES=+919876100001,+919876100002
+   POST /api/customer-auth/request-otp   { "phone": "+919876100001" }
+     → { "ok": true, "dev_code": "482913" }        # the code, right in the response
    ```
+2. Verify it to sign in:
+   ```
+   POST /api/customer-auth/verify-otp    { "phone": "+919876100001", "code": "482913" }
+     → { "token": "…", "customer_user": { … } }
+   ```
+The code is still a real, single-use, 5-minute, bcrypt-hashed OTP — only these
+exact demo numbers reveal it; real users are never affected.
 
-   This lives in the **deployment environment** (the server's backend env / your
-   Claude Code environment config), not in the repository. Restart the backend
-   after setting it.
-2. In the consumer app / PWA, request an OTP for that number
-   (`POST /api/customer-auth/request-otp`). For an allow-listed demo number the
-   plaintext OTP is **echoed back in the response** (it is still a real,
-   single-use, time-limited code — only these exact demo numbers are affected;
-   real users are untouched).
-3. Enter the code to sign in. Because the phone matches a seeded ledger customer,
-   you'll see that customer's khata.
+To allow-list more demo numbers, set/extend **`DEMO_OTP_PHONES`** (comma-separated
+E.164) in the deployment env (`.env`), which overrides the compose default, then
+restart the backend:
 
-> Security note: `DEMO_OTP_PHONES` is OFF by default and should only ever list
-> demo numbers. Do not add real customer numbers to it.
+```
+DEMO_OTP_PHONES=+919876100001,+919876100002
+```
+
+> Security note: only ever list **demo** numbers here. Never add a real customer's
+> number — it would expose their login code.
 
 ---
 
