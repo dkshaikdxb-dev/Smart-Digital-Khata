@@ -54,7 +54,14 @@ const createCodeSchema = Joi.object({
 const rewardRuleSchema = Joi.object({
   enabled: Joi.boolean(),
   amount_paise: Joi.number().integer().min(0).max(100000000),
+  referee_paise: Joi.number().integer().min(0).max(100000000),
+  mitra_paise: Joi.number().integer().min(0).max(100000000),
 }).min(1);
+
+// Flag/unflag a referral code as a Khata Mitra agent code.
+const setMitraSchema = Joi.object({
+  is_mitra: Joi.boolean().required(),
+});
 
 // auth guarantees role='admin'; loadAdminRole resolves the admin SUB-role onto
 // req.adminRole for requirePerm() and the controllers.
@@ -113,6 +120,7 @@ router.get('/referrals/overview', requirePerm('revenue:view'), asyncHandler(refe
 router.get('/referrals/reward-rule', requirePerm('revenue:view'), asyncHandler(referralCtrl.getRewardRule));
 router.patch('/referrals/reward-rule', requirePerm('settings:manage'), validate(rewardRuleSchema), asyncHandler(referralCtrl.setRewardRule));
 router.post('/referral-codes', requirePerm('settings:manage'), validate(createCodeSchema), asyncHandler(referralCtrl.createReferralCode));
+router.patch('/referral-codes/:id', requirePerm('settings:manage'), validate(setMitraSchema), asyncHandler(referralCtrl.setMitra));
 
 // Role-based CSV exports. Each is gated by the permission for the data it emits,
 // so a caller only downloads what their admin sub-role is allowed to see.

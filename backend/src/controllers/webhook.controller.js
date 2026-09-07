@@ -3,6 +3,7 @@ const razorpay = require('../services/razorpay.service');
 const whatsappInbound = require('../services/whatsapp-inbound.service');
 const settings = require('../config/settings');
 const { query, withTx } = require('../config/db');
+const { maybeActivateReferral } = require('../utils/referral');
 
 async function alreadyProcessed(id, channel) {
   if (!id) return false;
@@ -83,6 +84,13 @@ async function reconcilePayment(event) {
       );
     }
   });
+
+  // A khata settlement records a `upi` collection for the shop — activate its
+  // referral on the first one. AFTER the commit; never for a prepaid-order
+  // payment (which touches no khata). Swallows its own errors.
+  if (!order.order_id) {
+    await maybeActivateReferral(order.shop_id);
+  }
   return true;
 }
 

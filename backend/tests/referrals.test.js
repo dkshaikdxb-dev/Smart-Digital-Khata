@@ -60,7 +60,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Remove reward rule keys so we do not leak state into other suites.
-  await pool.query("DELETE FROM platform_settings WHERE key IN ('referral_reward_enabled','referral_reward_paise')");
+  await pool.query("DELETE FROM platform_settings WHERE key IN ('referral_reward_enabled','referral_reward_paise','referral_referee_paise','referral_mitra_paise')");
   // referrals / rewards cascade or SET NULL from codes; delete referrals then codes.
   await pool.query('DELETE FROM referrals WHERE code IN (SELECT code FROM referral_codes WHERE owner_user_id IN (SELECT id FROM users WHERE email = ANY($1)))', [emails]);
   await pool.query('DELETE FROM referral_codes WHERE created_by IN (SELECT id FROM users WHERE email = ANY($1)) OR owner_user_id IN (SELECT id FROM users WHERE email = ANY($1))', [emails]);
@@ -228,40 +228,213 @@ describe('consumer first login with a referral code', () => {
   });
 });
 
-describe('reward-rule accrual scaffolding', () => {
-  it('disabled → no accrual; enabled → an accrued row to the referrer', async () => {
-    // Ensure disabled.
-    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
-      .send({ enabled: false, amount_paise: 0 });
+describe('activation-triggered double-sided rewards', () => {
+  // Codes/ids reused by the admin overview assertions below.
+  let mitraCodeId;
 
-    const ra = await register('rwdA');
+  it('capture no longer accrues a reward at signup', async () => {
+    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
+      .send({ enabled: true, amount_paise: 5000, referee_paise: 3000, mitra_paise: 7000 });
+
+    const ra = await register('actA');
     const meA = await withToken(request(app).get('/api/me/referral'), ra.body.token);
     const codeA = meA.body.code;
     const codeIdA = (await pool.query('SELECT id FROM referral_codes WHERE code = $1', [codeA])).rows[0].id;
 
-    // Disabled: registering B with A's code accrues nothing.
-    const rbOff = await register('rwdBoff', { ref: codeA });
-    const off = await pool.query('SELECT COUNT(*)::int AS c FROM referral_rewards WHERE beneficiary_code_id = $1', [codeIdA]);
-    expect(off.rows[0].c).toBe(0);
-    expect(rbOff.status).toBe(201);
-
-    // Enable with 5000 paise.
-    const patch = await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
-      .send({ enabled: true, amount_paise: 5000 });
-    expect(patch.status).toBe(200);
-    expect(patch.body.enabled).toBe(true);
-    expect(patch.body.amount_paise).toBe(5000);
-
-    // Enabled: registering C with A's code writes one accrued reward of 5000.
-    const rc = await register('rwdC', { ref: codeA });
-    expect(rc.status).toBe(201);
-    const on = await pool.query(
-      `SELECT amount_paise, status FROM referral_rewards WHERE beneficiary_code_id = $1 ORDER BY created_at DESC LIMIT 1`,
+    // B registers via A's code — captured, but nothing accrues yet.
+    const rb = await register('actB', { ref: codeA });
+    expect(rb.status).toBe(201);
+    const afterCapture = await pool.query(
+      "SELECT COUNT(*)::int AS c FROM referral_rewards WHERE beneficiary_code_id = $1 AND status = 'accrued'",
       [codeIdA]
     );
-    expect(on.rowCount).toBe(1);
-    expect(Number(on.rows[0].amount_paise)).toBe(5000);
-    expect(on.rows[0].status).toBe('accrued');
+    expect(afterCapture.rows[0].c).toBe(0);
+    // And B's referral is not yet activated.
+    const notYet = await pool.query('SELECT activated_at FROM referrals WHERE referred_shop_id = $1', [rb.body.shop.id]);
+    expect(notYet.rows[0].activated_at).toBeNull();
+  });
+
+  it('first collection activates once and accrues referee + referrer; a second does not', async () => {
+    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
+      .send({ enabled: true, amount_paise: 5000, referee_paise: 3000, mitra_paise: 7000 });
+
+    const ra = await register('actRA');
+    const meA = await withToken(request(app).get('/api/me/referral'), ra.body.token);
+    const codeA = meA.body.code;
+    const codeIdA = (await pool.query('SELECT id FROM referral_codes WHERE code = $1', [codeA])).rows[0].id;
+
+    const rb = await register('actRB', { ref: codeA });
+    const shopB = rb.body.shop.id;
+    const ownerB = rb.body.user.id;
+
+    // First collection → activation.
+    const first = await referral.maybeActivateReferral(shopB);
+    expect(first.activated).toBe(true);
+    expect(first.rewarded).toBe(true);
+
+    const row = await pool.query('SELECT activated_at FROM referrals WHERE referred_shop_id = $1', [shopB]);
+    expect(row.rows[0].activated_at).not.toBeNull();
+
+    // Exactly one referrer (5000) reward to A, and one referee (3000) to B's own code.
+    const refReward = await pool.query(
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referrer' AND status = 'accrued'",
+      [codeIdA]
+    );
+    expect(refReward.rowCount).toBe(1);
+    expect(Number(refReward.rows[0].amount_paise)).toBe(5000);
+
+    const codeIdB = (await pool.query('SELECT id FROM referral_codes WHERE owner_user_id = $1', [ownerB])).rows[0].id;
+    const refereeReward = await pool.query(
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status = 'accrued'",
+      [codeIdB]
+    );
+    expect(refereeReward.rowCount).toBe(1);
+    expect(Number(refereeReward.rows[0].amount_paise)).toBe(3000);
+
+    // Total two reward rows for this referral.
+    const total = await pool.query(
+      'SELECT COUNT(*)::int AS c FROM referral_rewards WHERE referral_id = (SELECT id FROM referrals WHERE referred_shop_id = $1)',
+      [shopB]
+    );
+    expect(total.rows[0].c).toBe(2);
+
+    // Idempotent: a second collection accrues nothing more.
+    const second = await referral.maybeActivateReferral(shopB);
+    expect(second.activated).toBe(false);
+    const totalAgain = await pool.query(
+      'SELECT COUNT(*)::int AS c FROM referral_rewards WHERE referral_id = (SELECT id FROM referrals WHERE referred_shop_id = $1)',
+      [shopB]
+    );
+    expect(totalAgain.rows[0].c).toBe(2);
+
+    // B's participant payload reflects its own accrued balance + no activated downline yet.
+    const meB = await withToken(request(app).get('/api/me/referral'), rb.body.token);
+    expect(Number(meB.body.reward.accrued_paise)).toBe(3000);
+    expect(meB.body.counts.activated_total).toBe(0);
+
+    // A's payload shows one activated referral.
+    const meA2 = await withToken(request(app).get('/api/me/referral'), ra.body.token);
+    expect(meA2.body.counts.activated_total).toBe(1);
+    expect(Number(meA2.body.reward.accrued_paise)).toBe(5000);
+  });
+
+  it('a non-referred shop activates nothing', async () => {
+    const rx = await register('actX'); // no ref
+    const res = await referral.maybeActivateReferral(rx.body.shop.id);
+    expect(res.activated).toBe(false);
+    const rewards = await pool.query(
+      `SELECT COUNT(*)::int AS c FROM referral_rewards rr
+       JOIN referral_codes rc ON rc.id = rr.beneficiary_code_id
+       WHERE rc.owner_user_id = $1`,
+      [rx.body.user.id]
+    );
+    expect(rewards.rows[0].c).toBe(0);
+  });
+
+  it('rule disabled → activation stamps but accrues nothing', async () => {
+    const ra = await register('actDisA');
+    const meA = await withToken(request(app).get('/api/me/referral'), ra.body.token);
+    const rb = await register('actDisB', { ref: meA.body.code });
+
+    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
+      .send({ enabled: false });
+
+    const res = await referral.maybeActivateReferral(rb.body.shop.id);
+    expect(res.activated).toBe(true);
+    expect(res.rewarded).toBe(false);
+    const stamped = await pool.query('SELECT activated_at FROM referrals WHERE referred_shop_id = $1', [rb.body.shop.id]);
+    expect(stamped.rows[0].activated_at).not.toBeNull();
+    const rewards = await pool.query(
+      'SELECT COUNT(*)::int AS c FROM referral_rewards WHERE referral_id = (SELECT id FROM referrals WHERE referred_shop_id = $1)',
+      [rb.body.shop.id]
+    );
+    expect(rewards.rows[0].c).toBe(0);
+  });
+
+  it('first collection via the real transaction endpoint activates', async () => {
+    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
+      .send({ enabled: true, amount_paise: 5000, referee_paise: 3000, mitra_paise: 7000 });
+
+    const ra = await register('txnA');
+    const meA = await withToken(request(app).get('/api/me/referral'), ra.body.token);
+    const rb = await register('txnB', { ref: meA.body.code });
+
+    // Create a customer at B's shop, then record a cash collection via the API.
+    const cust = await withToken(request(app).post('/api/customers'), rb.body.token)
+      .send({ name: 'Ledger Cust', phone: nextPhone() });
+    expect([200, 201]).toContain(cust.status);
+    const customerId = cust.body.customer.id;
+
+    const tx = await withToken(request(app).post('/api/transactions'), rb.body.token)
+      .send({ customer_id: customerId, type: 'cash', amount: 1000 });
+    expect(tx.status).toBe(201);
+
+    const stamped = await pool.query('SELECT activated_at FROM referrals WHERE referred_shop_id = $1', [rb.body.shop.id]);
+    expect(stamped.rows[0].activated_at).not.toBeNull();
+  });
+
+  it('a Mitra code accrues mitra + referee (not referrer)', async () => {
+    await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
+      .send({ enabled: true, amount_paise: 5000, referee_paise: 3000, mitra_paise: 7000 });
+
+    // A field agent's code, flagged as a Khata Mitra.
+    const rm = await register('mitraM');
+    const meM = await withToken(request(app).get('/api/me/referral'), rm.body.token);
+    const codeM = meM.body.code;
+    mitraCodeId = (await pool.query('SELECT id FROM referral_codes WHERE code = $1', [codeM])).rows[0].id;
+
+    const flag = await withToken(request(app).patch(`/api/admin/referral-codes/${mitraCodeId}`), superAdmin.token)
+      .send({ is_mitra: true });
+    expect(flag.status).toBe(200);
+    expect(flag.body.referral_code.is_mitra).toBe(true);
+
+    const rn = await register('mitraN', { ref: codeM, source_channel: 'field' });
+    const shopN = rn.body.shop.id;
+    const ownerN = rn.body.user.id;
+
+    const res = await referral.maybeActivateReferral(shopN);
+    expect(res.activated).toBe(true);
+    expect(res.rewarded).toBe(true);
+
+    // A 'mitra' bounty (7000) to the Mitra code — and NO 'referrer' row.
+    const mitraReward = await pool.query(
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'mitra' AND status = 'accrued'",
+      [mitraCodeId]
+    );
+    expect(mitraReward.rowCount).toBe(1);
+    expect(Number(mitraReward.rows[0].amount_paise)).toBe(7000);
+    const referrerReward = await pool.query(
+      "SELECT COUNT(*)::int AS c FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referrer'",
+      [mitraCodeId]
+    );
+    expect(referrerReward.rows[0].c).toBe(0);
+
+    // The referee (N) still gets theirs.
+    const codeIdN = (await pool.query('SELECT id FROM referral_codes WHERE owner_user_id = $1', [ownerN])).rows[0].id;
+    const refereeReward = await pool.query(
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status = 'accrued'",
+      [codeIdN]
+    );
+    expect(refereeReward.rowCount).toBe(1);
+    expect(Number(refereeReward.rows[0].amount_paise)).toBe(3000);
+  });
+
+  it('overview exposes the funnel and a Mitra rollup', async () => {
+    const res = await withToken(request(app).get('/api/admin/referrals/overview'), superAdmin.token);
+    expect(res.status).toBe(200);
+    expect(res.body.funnel).toBeTruthy();
+    expect(typeof res.body.funnel.captured).toBe('number');
+    expect(typeof res.body.funnel.activated).toBe('number');
+    expect(res.body.funnel.captured).toBeGreaterThanOrEqual(res.body.funnel.activated);
+    expect(res.body.funnel.activated).toBeGreaterThan(0);
+
+    expect(Array.isArray(res.body.mitra)).toBe(true);
+    const codeM = (await pool.query('SELECT code FROM referral_codes WHERE id = $1', [mitraCodeId])).rows[0].code;
+    const row = res.body.mitra.find((m) => m.code === codeM);
+    expect(row).toBeTruthy();
+    expect(row.onboarded).toBeGreaterThanOrEqual(1);
+    expect(row.activated).toBeGreaterThanOrEqual(1);
+    expect(Number(row.bounty_accrued_paise)).toBe(7000);
 
     // reset for other suites
     await withToken(request(app).patch('/api/admin/referrals/reward-rule'), superAdmin.token)
