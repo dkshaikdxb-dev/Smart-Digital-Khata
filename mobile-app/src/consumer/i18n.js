@@ -97,6 +97,7 @@ const en = {
   'pay.cancelled': 'Payment not completed.',
 
   'shops.title': 'Discover shops',
+  'shops.heading': 'Shops near you',
   'shops.searchPlaceholder': 'Search shop or city',
   'shops.loading': 'Loading shops…',
   'shops.none': 'No shops found. Try a different search.',
@@ -258,6 +259,7 @@ const hi = {
   'pay.cancelled': 'भुगतान पूरा नहीं हुआ।',
 
   'shops.title': 'दुकानें खोजें',
+  'shops.heading': 'आपके पास की दुकानें',
   'shops.searchPlaceholder': 'दुकान या शहर खोजें',
   'shops.loading': 'दुकानें लोड हो रही हैं…',
   'shops.none': 'कोई दुकान नहीं मिली। दूसरी खोज आज़माएँ।',
@@ -419,6 +421,7 @@ const bn = {
   'pay.cancelled': 'পরিশোধ সম্পূর্ণ হয়নি।',
 
   'shops.title': 'দোকান খুঁজুন',
+  'shops.heading': 'আপনার কাছের দোকান',
   'shops.searchPlaceholder': 'দোকান বা শহর খুঁজুন',
   'shops.loading': 'দোকান লোড হচ্ছে…',
   'shops.none': 'কোনো দোকান পাওয়া যায়নি। অন্য খোঁজ করুন।',
@@ -580,6 +583,7 @@ const ta = {
   'pay.cancelled': 'செலுத்துதல் முடியவில்லை.',
 
   'shops.title': 'கடைகளைத் தேடு',
+  'shops.heading': 'உங்கள் அருகிலுள்ள கடைகள்',
   'shops.searchPlaceholder': 'கடை அல்லது ஊரைத் தேடு',
   'shops.loading': 'கடைகள் ஏற்றுகிறது…',
   'shops.none': 'கடை எதுவும் இல்லை. வேறு தேடலை முயற்சிக்கவும்.',
@@ -741,6 +745,7 @@ const te = {
   'pay.cancelled': 'చెల్లింపు పూర్తి కాలేదు.',
 
   'shops.title': 'దుకాణాలను కనుగొను',
+  'shops.heading': 'మీ దగ్గరి దుకాణాలు',
   'shops.searchPlaceholder': 'దుకాణం లేదా ఊరు వెతుకు',
   'shops.loading': 'దుకాణాలు లోడ్ అవుతున్నాయి…',
   'shops.none': 'దుకాణాలు దొరకలేదు. వేరే విధంగా వెతకండి.',
@@ -902,6 +907,7 @@ const kn = {
   'pay.cancelled': 'ಪಾವತಿ ಪೂರ್ಣಗೊಂಡಿಲ್ಲ.',
 
   'shops.title': 'ಅಂಗಡಿಗಳನ್ನು ಹುಡುಕಿ',
+  'shops.heading': 'ನಿಮ್ಮ ಹತ್ತಿರದ ಅಂಗಡಿಗಳು',
   'shops.searchPlaceholder': 'ಅಂಗಡಿ ಅಥವಾ ಊರು ಹುಡುಕಿ',
   'shops.loading': 'ಅಂಗಡಿಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ…',
   'shops.none': 'ಅಂಗಡಿಗಳು ಸಿಗಲಿಲ್ಲ. ಬೇರೆ ಹುಡುಕಾಟ ಪ್ರಯತ್ನಿಸಿ.',
@@ -1063,6 +1069,7 @@ const ml = {
   'pay.cancelled': 'പേയ്‌മെന്റ് പൂർത്തിയായില്ല.',
 
   'shops.title': 'കടകൾ കണ്ടെത്തുക',
+  'shops.heading': 'നിങ്ങളുടെ അടുത്തുള്ള കടകൾ',
   'shops.searchPlaceholder': 'കട അല്ലെങ്കിൽ നഗരം തിരയുക',
   'shops.loading': 'കടകൾ ലോഡ് ചെയ്യുന്നു…',
   'shops.none': 'കടകൾ കണ്ടെത്തിയില്ല. മറ്റൊരു തിരയൽ ശ്രമിക്കുക.',
@@ -1224,6 +1231,7 @@ const mr = {
   'pay.cancelled': 'भरणा पूर्ण झाला नाही.',
 
   'shops.title': 'दुकाने शोधा',
+  'shops.heading': 'तुमच्या जवळची दुकाने',
   'shops.searchPlaceholder': 'दुकान किंवा शहर शोधा',
   'shops.loading': 'दुकाने लोड होत आहेत…',
   'shops.none': 'कोणतीही दुकान मिळाली नाही. वेगळा शोध करा.',
@@ -1385,6 +1393,7 @@ const gu = {
   'pay.cancelled': 'ચૂકવણી પૂરી થઈ નથી.',
 
   'shops.title': 'દુકાનો શોધો',
+  'shops.heading': 'તમારી નજીકની દુકાનો',
   'shops.searchPlaceholder': 'દુકાન કે શહેર શોધો',
   'shops.loading': 'દુકાનો લોડ થઈ રહી છે…',
   'shops.none': 'કોઈ દુકાન મળી નહીં. બીજી શોધ કરો.',
@@ -1546,6 +1555,7 @@ const ur = {
   'pay.cancelled': 'ادائیگی مکمل نہیں ہوئی۔',
 
   'shops.title': 'دکانیں تلاش کریں',
+  'shops.heading': 'آپ کے قریب کی دکانیں',
   'shops.searchPlaceholder': 'دکان یا شہر تلاش کریں',
   'shops.loading': 'دکانیں لوڈ ہو رہی ہیں…',
   'shops.none': 'کوئی دکان نہیں ملی۔ دوسری تلاش آزمائیں۔',

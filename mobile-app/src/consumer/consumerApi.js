@@ -7,6 +7,23 @@ import * as SecureStore from 'expo-secure-store';
 // comes from the same expoConfig.extra.apiUrl the owner uses.
 const API_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:4000';
 
+// The API base the app talks to — exported so screens can resolve relative
+// asset paths (e.g. product images) against the same origin.
+export const API_BASE_URL = API_URL;
+
+// Resolve a product image_url for <Image>. It may be an absolute URL
+// (http/https — used as-is) or a backend-relative path like '/uploads/x.jpg'
+// (prefixed with the API base). Returns null for empty/missing values so the
+// caller can show a graceful placeholder instead of a broken image.
+export function resolveImageUrl(u) {
+  const s = u == null ? '' : String(u).trim();
+  if (!s) return null;
+  if (/^https?:\/\//i.test(s)) return s;
+  const base = API_URL.replace(/\/+$/, '');
+  const path = s.replace(/^\/+/, '');
+  return `${base}/${path}`;
+}
+
 // Distinct from the owner's 'skhata_token' — a consumer install stores its own.
 export const CONSUMER_TOKEN_KEY = 'skhata_consumer_token';
 
@@ -104,7 +121,7 @@ export const my = {
 
 // ---- Public (no auth) -----------------------------------------------------
 export const publicApi = {
-  // GET /api/public/shops?search=&city=&lat=&lng=&limit= -> { shops:[...] }
+  // GET /api/public/shops?search=&city=&lat=&lng=&lang=&limit= -> { shops:[...] }
   shops: (params = {}) => {
     const q = new URLSearchParams();
     if (params.search) q.set('search', String(params.search).trim());
@@ -113,11 +130,17 @@ export const publicApi = {
       q.set('lat', String(params.lat));
       q.set('lng', String(params.lng));
     }
+    // Selected app language — the API localizes names, English is the fallback.
+    if (params.lang) q.set('lang', String(params.lang));
     q.set('limit', String(params.limit || 50));
     return api.get(`/api/public/shops?${q.toString()}`).then((r) => r.data);
   },
-  // GET /api/public/shops/:shopId -> { shop:{...,products:[...]} }
-  shop: (shopId) => api.get(`/api/public/shops/${shopId}`).then((r) => r.data),
+  // GET /api/public/shops/:shopId?lang=<code> -> { shop:{...,products:[...]} }
+  // `lang` localizes product names (English fallback for unknown/blank).
+  shop: (shopId, lang) => {
+    const q = lang ? `?lang=${encodeURIComponent(String(lang))}` : '';
+    return api.get(`/api/public/shops/${shopId}${q}`).then((r) => r.data);
+  },
 };
 
 export default api;
