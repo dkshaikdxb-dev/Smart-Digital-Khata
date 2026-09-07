@@ -153,6 +153,9 @@ describe('voice + weekly keys are covered natively for all regional languages', 
     kn: /[ಀ-೿]/, // Kannada
     ml: /[ഀ-ൿ]/, // Malayalam
     ur: /[؀-ۿ]/, // Arabic (Urdu)
+    bn: /[ঀ-৿]/, // Bengali (Batch Y)
+    gu: /[઀-૿]/, // Gujarati (Batch Y)
+    mr: /[ऀ-ॿ]/, // Devanagari (Marathi, Batch Y)
   };
 
   // The 13 previously-missing keys and the tokens each MUST preserve.
