@@ -582,7 +582,7 @@ export default function Home() {
         .langpill .caret{font-size:.62rem;opacity:.8}
         .langlist{position:absolute;top:calc(100% + 6px);inset-inline-end:0;z-index:30;margin:0;padding:6px;list-style:none;
           background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-          min-width:190px;max-height:70vh;overflow:auto}
+          min-width:190px;max-width:calc(100vw - 24px);max-height:70vh;overflow:auto}
         .langlist li{margin:0}
         .langopt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:start;
           font-family:var(--sans);font-size:.98rem;color:var(--ink);background:transparent;border:0;border-radius:9px;
@@ -726,6 +726,10 @@ export default function Home() {
           .band,.nlcard{grid-template-columns:1fr}
           .values{grid-template-columns:1fr 1fr}
           .nav .btn-ghost{display:none}
+          /* On narrow screens the language trigger sits left-of-centre, so a
+             right-aligned menu overflows off the left edge. Anchor it to the
+             trigger's left instead so it opens rightward and stays on screen. */
+          .langlist{inset-inline-start:0;inset-inline-end:auto}
         }
         @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
       `}</style>
