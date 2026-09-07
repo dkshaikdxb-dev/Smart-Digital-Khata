@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const logger = require('../utils/logger');
 const whatsapp = require('./whatsapp.service');
+const { maybeActivateReferral } = require('../utils/referral');
 
 /**
  * Parses an inbound WhatsApp text message and turns it into a ledger entry.
@@ -89,6 +90,12 @@ async function processMessage(fromPhone, text) {
       [delta, customer.id]
     );
   });
+
+  // A `paid`/`upi` command records a cash/upi COLLECTION for this shop — activate
+  // its referral on the first one. AFTER the DB commit; swallows its own errors.
+  if (txType === 'cash' || txType === 'upi') {
+    await maybeActivateReferral(shop_id);
+  }
 
   const newBal = Number(customer.balance) + delta;
   await whatsapp.sendText(

@@ -1,6 +1,7 @@
 const { withTx, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const notifier = require('../services/notification.service');
+const { maybeActivateReferral } = require('../utils/referral');
 
 /**
  * Create a ledger entry.
@@ -116,6 +117,13 @@ exports.create = async (req, res) => {
   // for a genuinely new insert, never on an idempotent replay.
   if (!result.replayed) {
     notifier.onTransaction(req.user.shopId, result.customer, result.transaction).catch(() => {});
+  }
+
+  // A cash/upi row is a COLLECTION: activate this shop's referral on its first
+  // one. Runs AFTER the DB commit (never inside the balance-update tx) and
+  // swallows its own errors, so it can never roll back or break the collection.
+  if (!result.replayed && (type === 'cash' || type === 'upi')) {
+    await maybeActivateReferral(req.user.shopId);
   }
 
   res.status(201).json({ transaction: result.transaction, customer: result.customer });

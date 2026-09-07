@@ -1,5 +1,6 @@
 const { query } = require('../config/db');
 const settings = require('../config/settings');
+const ApiError = require('../utils/ApiError');
 const {
   getOrCreateCodeForUser,
   getOrCreateCodeForCustomer,
@@ -116,12 +117,26 @@ async function referralPayload(req, codeRow, principal) {
   const path = linkPathFor(codeRow);
   const referred = await referredList(codeRow.id);
   const referred_by = await referredByFor(principal);
+  // Accrued balance this code has earned (referrer + referee + mitra rewards),
+  // and how many of its referrals have activated (recorded a first collection).
+  const [accrued, activated] = await Promise.all([
+    query(
+      `SELECT COALESCE(SUM(amount_paise),0)::bigint AS s
+       FROM referral_rewards WHERE beneficiary_code_id = $1 AND status = 'accrued'`,
+      [codeRow.id]
+    ),
+    query(
+      'SELECT COUNT(*)::int AS c FROM referrals WHERE referral_code_id = $1 AND activated_at IS NOT NULL',
+      [codeRow.id]
+    ),
+  ]);
   return {
     code: codeRow.code,
     owner_type: codeRow.owner_type,
     link_path: path,
     link: origin ? `${origin}${path}` : path,
-    counts: { referred_total: referred.length },
+    counts: { referred_total: referred.length, activated_total: activated.rows[0].c },
+    reward: { accrued_paise: accrued.rows[0].s },
     referred,
     referred_by,
   };
@@ -214,7 +229,7 @@ exports.customerReferralChain = async (req, res) => {
 
 // GET /api/admin/referrals/overview
 exports.overview = async (_req, res) => {
-  const [byChannel, byType, top, totals, accrued] = await Promise.all([
+  const [byChannel, byType, top, totals, accrued, funnel, mitra] = await Promise.all([
     query(
       `SELECT COALESCE(source_channel, 'unknown') AS channel, COUNT(*)::int AS c
        FROM referrals GROUP BY COALESCE(source_channel, 'unknown') ORDER BY c DESC`
@@ -231,6 +246,28 @@ exports.overview = async (_req, res) => {
     ),
     query('SELECT COUNT(*)::int AS total_referrals FROM referrals'),
     query("SELECT COALESCE(SUM(amount_paise),0)::bigint AS s, COUNT(*)::int AS c FROM referral_rewards WHERE status = 'accrued'"),
+    // Acquisition funnel: everyone captured vs those who activated (first collection).
+    query(
+      `SELECT COUNT(*)::int AS captured,
+              COUNT(*) FILTER (WHERE activated_at IS NOT NULL)::int AS activated
+       FROM referrals`
+    ),
+    // Khata Mitra rollup: one row per is_mitra code with onboarding, activation
+    // and the bounty (its 'mitra' rewards) it has accrued.
+    query(
+      `SELECT rc.id, rc.code, rc.label, rc.owner_user_id, rc.owner_customer_id,
+              COUNT(r.id)::int AS onboarded,
+              COUNT(r.id) FILTER (WHERE r.activated_at IS NOT NULL)::int AS activated,
+              COALESCE((SELECT SUM(rr.amount_paise) FROM referral_rewards rr
+                        WHERE rr.beneficiary_code_id = rc.id
+                          AND rr.beneficiary_role = 'mitra'
+                          AND rr.status = 'accrued'), 0)::bigint AS bounty_accrued_paise
+       FROM referral_codes rc
+       LEFT JOIN referrals r ON r.referral_code_id = rc.id
+       WHERE rc.is_mitra = true
+       GROUP BY rc.id, rc.code, rc.label, rc.owner_user_id, rc.owner_customer_id
+       ORDER BY activated DESC, onboarded DESC, rc.created_at ASC`
+    ),
   ]);
 
   // Enrich top referrers with an owner label where the code has no explicit one.
@@ -246,12 +283,28 @@ exports.overview = async (_req, res) => {
     });
   }
 
+  // Enrich each Mitra row with an owner label where the code has none.
+  const mitraRollup = [];
+  for (const row of mitra.rows) {
+    let label = row.label;
+    if (!label) label = await labelForCode(row);
+    mitraRollup.push({
+      code: row.code,
+      label: label || null,
+      onboarded: row.onboarded,
+      activated: row.activated,
+      bounty_accrued_paise: row.bounty_accrued_paise,
+    });
+  }
+
   res.json({
     source_channel_mix: byChannel.rows,
     signups_by_type: byType.rows,
     top_referrers: topReferrers,
     totals: { total_referrals: totals.rows[0].total_referrals },
+    funnel: { captured: funnel.rows[0].captured, activated: funnel.rows[0].activated },
     reward: { accrued_total_paise: accrued.rows[0].s, accrued_count: accrued.rows[0].c },
+    mitra: mitraRollup,
   });
 };
 
@@ -275,19 +328,44 @@ exports.createReferralCode = async (req, res) => {
   });
 };
 
+// The double-sided + Mitra reward rule, projected for the API (keeps the legacy
+// `amount_paise` alias alongside the explicit referrer/referee/mitra amounts).
+function ruleView(rule) {
+  return {
+    enabled: rule.enabled,
+    amount_paise: rule.amount_paise,
+    referrer_paise: rule.referrer_paise,
+    referee_paise: rule.referee_paise,
+    mitra_paise: rule.mitra_paise,
+  };
+}
+
 // GET /api/admin/referrals/reward-rule
 exports.getRewardRule = async (_req, res) => {
-  const rule = await getRewardRule();
-  res.json({ enabled: rule.enabled, amount_paise: rule.amount_paise });
+  res.json(ruleView(await getRewardRule()));
 };
 
-// PATCH /api/admin/referrals/reward-rule  { enabled, amount_paise }
+// PATCH /api/admin/referrals/reward-rule  { enabled, amount_paise, referee_paise, mitra_paise }
 // Scaffolding only — stored in platform_settings; no payout is triggered.
+// `amount_paise` remains the referrer side (back-compat); old callers still work.
 exports.setRewardRule = async (req, res) => {
   const patch = {};
   if (req.body.enabled !== undefined) patch.referral_reward_enabled = req.body.enabled ? 'true' : 'false';
   if (req.body.amount_paise !== undefined) patch.referral_reward_paise = String(req.body.amount_paise);
+  if (req.body.referee_paise !== undefined) patch.referral_referee_paise = String(req.body.referee_paise);
+  if (req.body.mitra_paise !== undefined) patch.referral_mitra_paise = String(req.body.mitra_paise);
   await settings.setMany(patch);
-  const rule = await getRewardRule();
-  res.json({ enabled: rule.enabled, amount_paise: rule.amount_paise });
+  res.json(ruleView(await getRewardRule()));
+};
+
+// PATCH /api/admin/referral-codes/:id  { is_mitra: boolean }
+// Flag (or unflag) a code as a Khata Mitra agent code. Returns the code.
+exports.setMitra = async (req, res) => {
+  const r = await query(
+    `UPDATE referral_codes SET is_mitra = $2 WHERE id = $1
+     RETURNING id, code, owner_type, label, is_mitra, created_at`,
+    [req.params.id, req.body.is_mitra === true]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Referral code not found');
+  res.json({ referral_code: r.rows[0] });
 };
