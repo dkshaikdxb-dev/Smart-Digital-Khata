@@ -1,17 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform,
+  View, Text, Image, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { colors, sizes } from '../theme';
 import { Card, Field, Button, ErrorBanner, Empty } from '../components';
 import { money } from '../money';
-import { publicApi, my } from '../consumerApi';
+import { publicApi, my, resolveImageUrl } from '../consumerApi';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
 
 function gramsLabel(g) {
   const n = Number(g) || 0;
   return n % 1000 === 0 ? `${n / 1000} kg` : `${n} g`;
+}
+
+// Small line thumbnail; neutral placeholder when the item has no image.
+function LineThumb({ uri }) {
+  const [failed, setFailed] = useState(false);
+  if (uri && !failed) {
+    return <Image source={{ uri }} style={styles.lineThumb} resizeMode="cover" onError={() => setFailed(true)} />;
+  }
+  return (
+    <View style={[styles.lineThumb, styles.lineThumbPlaceholder]}>
+      <Text style={styles.lineThumbGlyph}>🛍️</Text>
+    </View>
+  );
 }
 
 // Priority 4 — review the in-memory cart and place the order via POST /my/orders.
@@ -135,6 +148,7 @@ export default function CartScreen({ navigation }) {
         <Card>
           {cart.lines.map((l) => (
             <View key={l.product_id} style={styles.line}>
+              <LineThumb uri={resolveImageUrl(l.image_url)} />
               <View style={styles.lineInfo}>
                 <Text style={styles.lineName}>{l.name}</Text>
                 <Text style={styles.lineSub}>
@@ -239,6 +253,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 8,
   },
+  lineThumb: { width: 44, height: 44, borderRadius: 10, backgroundColor: colors.cardAlt },
+  lineThumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  lineThumbGlyph: { fontSize: 20 },
   lineInfo: { flex: 1 },
   lineName: { color: colors.text, fontSize: 15, fontWeight: '600' },
   lineSub: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
