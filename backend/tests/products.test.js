@@ -172,7 +172,9 @@ describe('public catalog', () => {
     expect(ids).not.toContain(inactiveId);
     // Minimal fields only.
     const p = res.body.products.find((x) => x.id === activeId);
-    expect(Object.keys(p).sort()).toEqual(['description', 'id', 'image_url', 'name', 'price', 'unit']);
+    // search_text (the normalized all-language search blob) is now returned so
+    // the in-shop client filter can match aliases/romanized/native tokens.
+    expect(Object.keys(p).sort()).toEqual(['description', 'id', 'image_url', 'name', 'price', 'search_text', 'unit']);
   });
 
   it('does not expose another shop products', async () => {

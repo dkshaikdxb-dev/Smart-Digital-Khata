@@ -1,5 +1,15 @@
-const { query } = require('../config/db');
+const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { normalizeQuery } = require('../utils/search-normalize');
+
+// pg_trgm word-similarity threshold for single-word fuzzy recall (typos / noisy
+// ASR). `qn <% blob` is true when word_similarity(qn, blob) >= this. 0.6 (the
+// pg_trgm default) is too strict to catch a one-char slip ("namk" -> "namak");
+// 0.5 catches those while still rejecting unrelated words. Applied per-request
+// via SET LOCAL inside the search transaction, so it never leaks to other
+// queries on the pooled connection. It is a fixed server-side constant (never
+// user input), so it is safe as a numeric literal in the SET statement.
+const WORD_SIM_THRESHOLD = 0.5;
 
 // Languages the consumer catalogue can be viewed in. 'en' is the base language:
 // it uses the plain English products.name with NO i18n join, so the response
@@ -113,37 +123,84 @@ exports.searchProducts = async (req, res) => {
   const lang = resolveLang(req.query.lang);
   const localized = lang !== 'en';
 
+  // Normalize the query the SAME way products.search_text was built: lowercase,
+  // punctuation-stripped, colloquial units/number-words mapped ("1 kilo" ->
+  // "1 kg"). `tokens` drives a token-wise recall net; `qn` drives whole-phrase,
+  // trigram, and word-similarity (fuzzy) matching.
+  const { normalized: qn, tokens } = normalizeQuery(q);
+  const tokenPatterns = tokens.map((t) => `%${t}%`);
+
   const params = [];
 
-  // The raw search term is a bound parameter; the wildcards live in SQL text.
-  params.push(q);
-  const qIdx = `$${params.length}`;
-
-  // Localized name: for a non-'en' known lang, LEFT JOIN catalog_i18n on the
-  // stored English product name and SELECT COALESCE(cp.name, p.name); the term
-  // then matches EITHER the localized name or the base name. 'en' skips the
-  // join entirely (base behaviour, no localized column).
+  // Localized DISPLAY name (response only): for a non-'en' known lang, LEFT JOIN
+  // catalog_i18n on the stored English product name and SELECT
+  // COALESCE(cp.name, p.name). Matching itself happens over search_text (which
+  // already folds in every language's names/aliases), so a native/romanized term
+  // matches regardless of the requested display lang. 'en' skips the join.
   let nameSelect = 'p.name';
   let i18nJoin = '';
-  let nameMatch = `p.name ILIKE '%'||${qIdx}||'%'`;
   if (localized) {
     params.push(lang);
     const langIdx = `$${params.length}`;
     nameSelect = 'COALESCE(cp.name, p.name)';
     i18nJoin = `LEFT JOIN catalog_i18n cp
                   ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = ${langIdx}`;
-    nameMatch = `(p.name ILIKE '%'||${qIdx}||'%' OR cp.name ILIKE '%'||${qIdx}||'%')`;
   }
 
-  const where = ['p.is_active = true', 's.is_listed = true', nameMatch];
+  // The search blob, defensively COALESCEd to the name so a NULL search_text
+  // (unlinked/legacy row not yet backfilled) never breaks matching.
+  const blob = 'COALESCE(p.search_text, p.name)';
+
+  // Recall net + exact/alias-preferred rank. When the query normalizes to no
+  // tokens (e.g. all punctuation), fall back to the old name-ILIKE behaviour so
+  // the endpoint never 500s.
+  let matchClause;
+  let rankExact = 'false';
+  let rankSimilarity = '0';
+  if (tokens.length === 0) {
+    params.push(q);
+    const qIdx = `$${params.length}`;
+    matchClause = localized
+      ? `(p.name ILIKE '%'||${qIdx}||'%' OR cp.name ILIKE '%'||${qIdx}||'%')`
+      : `p.name ILIKE '%'||${qIdx}||'%'`;
+  } else {
+    params.push(qn);
+    const qnIdx = `$${params.length}`;
+    params.push(tokenPatterns);
+    const tokIdx = `$${params.length}`;
+    // Recall net (all inputs bound params):
+    //   1. whole-phrase substring       blob ILIKE '%qn%'
+    //   2. any single token substring   blob ILIKE ANY(tokenPatterns)
+    //   3. whole-string trigram-similar  p.search_text % qn
+    //   4. word-similar (fuzzy typo)     qn <% p.search_text  -> catches
+    //      "namk"/"saltt"/"namaak" where no correct token substring exists.
+    // (1)/(2) COALESCE to the name so a NULL/unbackfilled search_text is still
+    // found by name. (3)/(4) run against the BARE search_text column so the
+    // gin_trgm_ops index serves them (a NULL there simply isn't fuzzy-matched —
+    // the row stays findable by name via (1)/(2)); the `<%` threshold is the
+    // SET LOCAL value below.
+    matchClause = `(${blob} ILIKE '%'||${qnIdx}||'%'
+                    OR ${blob} ILIKE ANY(${tokIdx}::text[])
+                    OR p.search_text % ${qnIdx}
+                    OR ${qnIdx} <% p.search_text)`;
+    rankExact = `(${blob} ILIKE '%'||${qnIdx}||'%')`;
+    // Fuzzy rank: the better of whole-string similarity and word-similarity, so a
+    // single-word typo still sorts sensibly. Exact/alias stays PREFERRED via
+    // rankExact above.
+    rankSimilarity = `GREATEST(similarity(${blob}, ${qnIdx}), word_similarity(${qnIdx}, ${blob}))`;
+  }
+
+  const where = ['p.is_active = true', 's.is_listed = true', matchClause];
 
   if (city) {
     params.push(city);
     where.push(`s.city ILIKE '%'||$${params.length}||'%'`);
   }
 
+  // Rank exact/alias substring matches ABOVE fuzzy-only ones, then by trigram
+  // similarity, then distance (when supplied), then name.
   let distanceSelect = 'NULL AS distance_km';
-  let orderBy = 'name ASC';
+  let orderBy = `${rankExact} DESC, ${rankSimilarity} DESC, name ASC`;
   if (useDistance) {
     params.push(lat);
     const latIdx = `$${params.length}`;
@@ -152,14 +209,13 @@ exports.searchProducts = async (req, res) => {
     // latitude/longitude are unambiguous (only shops carries them). Cast to
     // double precision so pg returns a JS number, not a numeric string.
     distanceSelect = `CAST(ROUND(CAST(${haversineKm(latIdx, lngIdx)} AS numeric), 1) AS double precision) AS distance_km`;
-    orderBy = 'distance_km ASC NULLS LAST, name ASC';
+    orderBy = `${rankExact} DESC, ${rankSimilarity} DESC, distance_km ASC NULLS LAST, name ASC`;
   }
 
   params.push(limit);
   const limitIdx = `$${params.length}`;
 
-  const r = await query(
-    `SELECT p.id, ${nameSelect} AS name, p.price, p.unit, p.image_url, p.sold_by_weight,
+  const sql = `SELECT p.id, ${nameSelect} AS name, p.price, p.unit, p.image_url, p.sold_by_weight,
             s.id AS shop_id, s.name AS shop_name, s.city AS shop_city, s.area AS shop_area,
             s.offers_delivery, s.delivery_fee,
             ${distanceSelect}
@@ -168,9 +224,16 @@ exports.searchProducts = async (req, res) => {
        ${i18nJoin}
       WHERE ${where.join(' AND ')}
       ORDER BY ${orderBy}
-      LIMIT ${limitIdx}`,
-    params
-  );
+      LIMIT ${limitIdx}`;
+
+  // Run inside a (read-only) transaction so SET LOCAL scopes the word-similarity
+  // threshold to THIS query on THIS pooled connection — it is reset at COMMIT and
+  // never leaks to other requests. Only the fuzzy branch needs it; running the
+  // whole search in one tx is harmless for a single SELECT.
+  const r = await withTx(async (client) => {
+    await client.query(`SET LOCAL pg_trgm.word_similarity_threshold = ${WORD_SIM_THRESHOLD}`);
+    return client.query(sql, params);
+  });
 
   const products = r.rows.map((row) => {
     const shop = {
@@ -234,8 +297,12 @@ exports.getShop = async (req, res) => {
     i18nJoin = `LEFT JOIN catalog_i18n cp
                   ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2`;
   }
+  // search_text (the normalized all-language blob) is returned so the in-shop
+  // client filter can match aliases/romanized/native tokens; it is derived from
+  // public catalog + name data, not sensitive.
   const products = await query(
     `SELECT p.id, ${nameSelect} AS name, p.description, p.price, p.unit, p.sold_by_weight, p.image_url,
+            p.search_text,
             ci.category, ci.subcategory,
             ci.product AS base_product, ci.brand, ci.pack
        FROM products p

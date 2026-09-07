@@ -175,13 +175,15 @@ export default function ShopCatalog() {
   }, [products]);
 
   // Client-side filter over units: bounded list, so search + category are cheap.
-  // Search matches name AND (for catalog-linked rows) base_product + brand; a
-  // group stays visible if ANY of its variants matches.
+  // Search matches name AND (for catalog-linked rows) base_product + brand +
+  // search_text (the normalized all-language blob, so romanized/native/alias
+  // terms filter in-shop too); a group stays visible if ANY of its variants
+  // matches.
   const visibleUnits = useMemo(() => {
     const q = search.trim().toLowerCase();
     const matches = (p) => {
       if (!q) return true;
-      return [p.name, p.base_product, p.brand].some((f) =>
+      return [p.name, p.base_product, p.brand, p.search_text].some((f) =>
         String(f || '').toLowerCase().includes(q)
       );
     };

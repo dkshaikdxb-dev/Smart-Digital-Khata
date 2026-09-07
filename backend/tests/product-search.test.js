@@ -9,6 +9,7 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret_test_secret_test
 
 const app = require('../src/app');
 const { pool } = require('../src/config/db');
+const { refreshProductSearchText } = require('../src/utils/refresh-search-text');
 
 const withToken = (req, token) => req.set('Authorization', `Bearer ${token}`);
 
@@ -66,14 +67,25 @@ beforeAll(async () => {
   await withToken(request(app).post('/api/products'), tokenU)
     .send({ name: `${tag} Rice`, price: 5500, unit: 'kg' });
 
-  // Master hi translation for the listed Rice, so a lang=hi search for चावल
-  // matches via the localized name (COALESCE(cp.name, p.name)).
+  // Master catalog item + hi translation for the listed Rice. Search now matches
+  // over products.search_text (the normalized all-language blob), so the native
+  // term must be folded into that blob: link the product to a catalog_items row
+  // whose English `product` term carries the hi translation, then recompute
+  // search_text via the same helper the write path uses.
+  const ci = await pool.query(
+    `INSERT INTO catalog_items (product, unit, indicative_price, is_global)
+     VALUES ($1, 'kg', 5000, true) RETURNING id`,
+    [`${tag} Rice`]
+  );
+  const catalogItemId = ci.rows[0].id;
   await pool.query(
     `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review)
      VALUES ('product', $1, 'hi', $2, '', false)
      ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
     [`${tag} Rice`, `${tag} ${RICE_HI}`]
   );
+  await pool.query('UPDATE products SET catalog_item_id = $1 WHERE id = $2', [catalogItemId, riceId]);
+  await refreshProductSearchText(pool, riceId);
 }, 30000);
 
 afterAll(async () => {
@@ -81,6 +93,7 @@ afterAll(async () => {
     if (s) await pool.query('DELETE FROM shops WHERE id = $1', [s.id]);
   }
   await pool.query('DELETE FROM catalog_i18n WHERE term_en LIKE $1', [`${tag}%`]);
+  await pool.query('DELETE FROM catalog_items WHERE product LIKE $1', [`${tag}%`]);
   await pool.end();
 });
 
@@ -101,11 +114,12 @@ describe('GET /api/public/products/search', () => {
   });
 
   it('matches the base name and returns the product with its shop + paise price', async () => {
+    // The exact-phrase query recalls the shop's tag-sharing products (Rice +
+    // Sugar), but the exact whole-phrase match (Rice) ranks first.
     const res = await request(app).get(`/api/public/products/search?q=${encodeURIComponent(`${tag} Rice`)}`);
     expect(res.status).toBe(200);
-    expect(res.body.products).toHaveLength(1);
     const p = res.body.products[0];
-    expect(p.id).toBe(riceId);
+    expect(p.id).toBe(riceId); // exact/alias ranked at top
     expect(p.name).toBe(`${tag} Rice`);
     expect(p.price).toBe(5000); // integer paise, Number
     expect(p.unit).toBe('kg');
@@ -114,7 +128,8 @@ describe('GET /api/public/products/search', () => {
     expect(p.shop.area).toBe('Andheri');
     expect(p.shop.offers_delivery).toBe(false);
     expect(p.shop.delivery_fee).toBe(0);
-    // Minimal, non-sensitive product + shop shape.
+    // Minimal, non-sensitive product + shop shape (search_text is NOT exposed on
+    // the cross-shop search response — only on the in-shop catalog paths).
     expect(Object.keys(p).sort()).toEqual(
       ['id', 'image_url', 'name', 'price', 'shop', 'sold_by_weight', 'unit']
     );
@@ -123,21 +138,25 @@ describe('GET /api/public/products/search', () => {
     );
   });
 
-  it('matches a localized name when lang=hi (and not on the base path)', async () => {
+  it('matches a native-script term via search_text and localizes the name under lang=hi', async () => {
+    // The native term चावल is folded into the linked product's search_text, so it
+    // matches on BOTH the base and hi paths (search is language-agnostic). Under
+    // lang=hi the DISPLAY name is localized.
     const hi = await request(app).get(
       `/api/public/products/search?q=${encodeURIComponent(`${tag} ${RICE_HI}`)}&lang=hi`
     );
     expect(hi.status).toBe(200);
-    expect(hi.body.products).toHaveLength(1);
-    expect(hi.body.products[0].id).toBe(riceId);
+    expect(hi.body.products[0].id).toBe(riceId); // exact native phrase ranks first
     expect(hi.body.products[0].name).toBe(`${tag} ${RICE_HI}`); // localized name returned
 
-    // Without lang=hi the base English name has no चावल → no match.
+    // The base (en) path still MATCHES the product (search_text carries चावल),
+    // but returns the stored English display name.
     const base = await request(app).get(
       `/api/public/products/search?q=${encodeURIComponent(`${tag} ${RICE_HI}`)}`
     );
     expect(base.status).toBe(200);
-    expect(base.body.products).toHaveLength(0);
+    expect(base.body.products[0].id).toBe(riceId);
+    expect(base.body.products[0].name).toBe(`${tag} Rice`);
   });
 
   it('sorts nearest-first with a plausible distance_km when lat/lng supplied', async () => {
@@ -145,13 +164,14 @@ describe('GET /api/public/products/search', () => {
       `/api/public/products/search?q=${encodeURIComponent(`${tag} Rice`)}&lat=19.0760&lng=72.8777`
     );
     expect(res.status).toBe(200);
-    expect(res.body.products).toHaveLength(1);
-    expect(res.body.products[0].shop.distance_km).toBeLessThan(5);
+    const rice = res.body.products.find((p) => p.id === riceId);
+    expect(rice).toBeTruthy();
+    expect(rice.shop.distance_km).toBeLessThan(5);
   });
 
   it('returns [] for a non-matching q', async () => {
     const res = await request(app).get(
-      `/api/public/products/search?q=${encodeURIComponent(`${tag} nomatchxyz`)}`
+      `/api/public/products/search?q=${encodeURIComponent('bicycle chain lubricant xyz')}`
     );
     expect(res.status).toBe(200);
     expect(res.body.products).toEqual([]);

@@ -73,9 +73,10 @@ describe('GET /api/public/catalog/:shopId — localized names', () => {
     const byId = Object.fromEntries(res.body.products.map((p) => [p.id, p]));
     expect(byId[ricePid].name).toBe(RICE_HI);
     expect(byId[dalPid].name).toBe(`${tag} Plain Dal`); // English fallback
-    // Response shape unchanged (no extra keys).
+    // search_text (the normalized all-language search blob) is now returned so
+    // the in-shop client filter can match aliases/romanized/native tokens.
     expect(Object.keys(byId[ricePid]).sort())
-      .toEqual(['description', 'id', 'image_url', 'name', 'price', 'unit']);
+      .toEqual(['description', 'id', 'image_url', 'name', 'price', 'search_text', 'unit']);
   });
 
   it('lang=en and no lang return the raw English name', async () => {
@@ -102,9 +103,11 @@ describe('GET /api/public/shops/:shopId — localized names', () => {
     const byId = Object.fromEntries(res.body.shop.products.map((p) => [p.id, p]));
     expect(byId[ricePid].name).toBe(RICE_HI);
     expect(byId[dalPid].name).toBe(`${tag} Plain Dal`);
-    // Same public product keys as the en path (base_product/brand/pack null here).
+    // Same public product keys as the en path (base_product/brand/pack null here),
+    // plus search_text (the normalized all-language search blob) for the in-shop
+    // client filter.
     expect(Object.keys(byId[ricePid]).sort()).toEqual(
-      ['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'sold_by_weight', 'subcategory', 'unit']
+      ['base_product', 'brand', 'category', 'description', 'id', 'image_url', 'name', 'pack', 'price', 'search_text', 'sold_by_weight', 'subcategory', 'unit']
     );
   });
 
