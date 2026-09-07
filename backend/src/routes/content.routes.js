@@ -53,9 +53,11 @@ const transitionSchema = Joi.object({
 
 router.get('/', asyncHandler(ctrl.list));
 router.get('/summary', asyncHandler(ctrl.summary));
+router.get('/config', asyncHandler(ctrl.config));
 router.get('/:id', asyncHandler(ctrl.get));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.patch('/:id', validate(patchSchema), asyncHandler(ctrl.patch));
 router.post('/:id/transition', validate(transitionSchema), asyncHandler(ctrl.transition));
+router.post('/:id/draft', asyncHandler(ctrl.draft));
 
 module.exports = router;

@@ -61,6 +61,8 @@ export default function AdminContent() {
   const [scheduleAt, setScheduleAt] = useState('');
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const [draftingId, setDraftingId] = useState(null);
 
   const canManage = has('content:manage');
 
@@ -71,12 +73,14 @@ export default function AdminContent() {
       if (filters.status) qs.set('status', filters.status);
       if (filters.channel) qs.set('channel', filters.channel);
       if (filters.engine) qs.set('engine', filters.engine);
-      const [s, list] = await Promise.all([
+      const [s, list, cfg] = await Promise.all([
         apiFetch('/api/admin/content/summary'),
         apiFetch(`/api/admin/content${qs.toString() ? `?${qs}` : ''}`),
+        apiFetch('/api/admin/content/config').catch(() => ({ ai_drafting: false })),
       ]);
       setSummary(s);
       setItems(list.items || []);
+      setAiDrafting(Boolean(cfg && cfg.ai_drafting));
     } catch (e) { setError(e.message); }
   }, [filters]);
 
@@ -102,6 +106,23 @@ export default function AdminContent() {
       setMsg(t('content.created'));
       await load();
     } catch (e2) { setError(e2.message); }
+  }
+
+  // Hand an idea/draft item to the LLM drafting agent. The worker fills the body
+  // and moves it to 'draft' — never past the human gate. We poll a refresh so the
+  // desk shows the drafted body once the worker finishes.
+  async function draftWithAi(id) {
+    setError(''); setMsg('');
+    setDraftingId(id);
+    try {
+      await apiFetch(`/api/admin/content/${id}/draft`, { method: 'POST' });
+      setMsg(t('content.drafting'));
+      // Give the worker a moment, then refresh to pick up the drafted body.
+      setTimeout(() => { load().finally(() => setDraftingId(null)); }, 2500);
+    } catch (e) {
+      setDraftingId(null);
+      setError(e.message);
+    }
   }
 
   async function transition(id, to, extra = {}) {
@@ -156,6 +177,16 @@ export default function AdminContent() {
 
       <div className="card" style={{ background: 'var(--warn-bg, #fffbe6)', borderInlineStart: '4px solid #f59e0b' }}>
         {t('content.outboxNote')}
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <span style={{
+          display: 'inline-block', padding: '4px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700,
+          background: aiDrafting ? '#dcfce7' : '#f1f5f9',
+          color: aiDrafting ? '#166534' : '#475569',
+        }}>
+          {aiDrafting ? t('content.aiConnected') : t('content.aiNotConfigured')}
+        </span>
       </div>
 
       {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
@@ -275,6 +306,7 @@ export default function AdminContent() {
                     transition={transition}
                     scheduleId={scheduleId} setScheduleId={setScheduleId}
                     scheduleAt={scheduleAt} setScheduleAt={setScheduleAt} doSchedule={doSchedule}
+                    aiDrafting={aiDrafting} draftingId={draftingId} draftWithAi={draftWithAi}
                   />
                 ))}
               </tbody>
@@ -289,6 +321,7 @@ export default function AdminContent() {
 function ItemRow({
   item: it, t, editId, editForm, setEditForm, startEdit, saveEdit, cancelEdit,
   transition, scheduleId, setScheduleId, scheduleAt, setScheduleAt, doSchedule,
+  aiDrafting, draftingId, draftWithAi,
 }) {
   const editing = editId === it.id;
   const scheduling = scheduleId === it.id;
@@ -297,6 +330,9 @@ function ItemRow({
   const canArchive = it.status !== 'published' && it.status !== 'archived';
   const adv = advanceTarget(it.status);
   const canSchedule = it.status === 'approved' || (it.status === 'in_review' && it.autonomy_tier === 0);
+  // The drafting agent only accepts an idea or an existing draft (a re-draft).
+  const canDraftAi = it.status === 'idea' || it.status === 'draft';
+  const isDrafting = draftingId === it.id;
 
   return (
     <tr>
@@ -342,6 +378,16 @@ function ItemRow({
         ) : (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {canEdit && <button className="secondary" onClick={() => startEdit(it)}>{t('content.actEdit')}</button>}
+            {canDraftAi && (
+              <button
+                onClick={() => draftWithAi(it.id)}
+                disabled={!aiDrafting || isDrafting}
+                title={aiDrafting ? '' : t('content.aiNotConfigured')}
+                style={{ background: '#4338ca' }}
+              >
+                {isDrafting ? t('content.drafting') : t('content.draftWithAi')}
+              </button>
+            )}
             {adv && !terminal && it.status !== 'in_review' && (
               <button onClick={() => transition(it.id, adv)}>{t('content.actAdvance')}</button>
             )}

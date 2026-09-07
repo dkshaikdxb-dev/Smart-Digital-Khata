@@ -17,6 +17,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
     "axios": "^1.7.4",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.12.0",
