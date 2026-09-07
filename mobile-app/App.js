@@ -3,13 +3,12 @@ import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 
 import { AuthContext } from './src/AuthContext';
 import { auth } from './src/services/api';
-import ConsumerWebView from './src/screens/ConsumerWebView';
+import ConsumerApp from './src/consumer/ConsumerApp';
 
 import LoginScreen from './src/screens/LoginScreen';
 import AdminNoticeScreen from './src/screens/AdminNoticeScreen';
@@ -106,19 +105,6 @@ function OwnerTabs() {
       <Tab.Screen name="CustomersTab" component={CustomersStackScreen} options={{ title: 'Customers', tabBarIcon: tabIcon('👥') }} />
       <Tab.Screen name="MoreTab" component={MoreStackScreen} options={{ title: 'More', tabBarIcon: tabIcon('⋯') }} />
     </Tab.Navigator>
-  );
-}
-
-// Consumer flavor: a thin full-screen WebView shell of the live consumer PWA.
-// No NavigationContainer, no owner tabs, no auth — the PWA handles its own auth.
-function ConsumerApp() {
-  return (
-    <SafeAreaProvider>
-      <StatusBar style="light" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#0f172a' }}>
-        <ConsumerWebView />
-      </SafeAreaView>
-    </SafeAreaProvider>
   );
 }
 
