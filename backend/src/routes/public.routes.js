@@ -24,6 +24,7 @@ const listSchema = Joi.object({
   city: Joi.string().trim().max(120),
   lat: Joi.number().min(-90).max(90),
   lng: Joi.number().min(-180).max(180),
+  fulfillment: Joi.string().valid('pickup', 'delivery'),
   limit: Joi.number().integer(),
 });
 
