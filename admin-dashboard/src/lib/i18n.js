@@ -6641,6 +6641,11 @@ const CONTENT_EN = {
   'content.schedulePrompt': 'Publish time',
   'content.approveHint': 'Human gate: approving records you as the approver and unlocks scheduling.',
   'content.rejectNote': 'Reason (optional)',
+  // AI drafting agent (Batch R) — chrome only; the agent never crosses the gate.
+  'content.draftWithAi': 'Draft with AI',
+  'content.drafting': 'Drafting…',
+  'content.aiConnected': 'AI drafting: connected',
+  'content.aiNotConfigured': 'AI drafting: not configured — set ANTHROPIC_API_KEY + CONTENT_LLM_MODEL',
   // Tiers
   'content.tier.0': 'Tier 0 · auto-safe',
   'content.tier.1': 'Tier 1 · needs approval',
@@ -6721,6 +6726,11 @@ const CONTENT_HI = {
   'content.schedulePrompt': 'प्रकाशन समय',
   'content.approveHint': 'मानव गेट: मंज़ूरी देने पर आप अनुमोदक के रूप में दर्ज होते हैं और शेड्यूलिंग खुल जाती है।',
   'content.rejectNote': 'कारण (वैकल्पिक)',
+  // AI ड्राफ़्टिंग एजेंट (Batch R) — केवल क्रोम; एजेंट कभी गेट पार नहीं करता।
+  'content.draftWithAi': 'AI से ड्राफ़्ट करें',
+  'content.drafting': 'ड्राफ़्ट हो रहा है…',
+  'content.aiConnected': 'AI ड्राफ़्टिंग: जुड़ा हुआ',
+  'content.aiNotConfigured': 'AI ड्राफ़्टिंग: कॉन्फ़िगर नहीं — ANTHROPIC_API_KEY + CONTENT_LLM_MODEL सेट करें',
   'content.tier.0': 'टियर 0 · सुरक्षित',
   'content.tier.1': 'टियर 1 · मंज़ूरी ज़रूरी',
   'content.tier.2': 'टियर 2 · उच्च जाँच',

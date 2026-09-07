@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { canTransition, gateAllows, isStatus } = require('../utils/content-workflow');
+const drafter = require('../services/content-drafter.service');
 
 // Editor-in-chief review desk API. All routes are auth('admin') +
 // requirePerm('content:manage') (wired in content.routes.js). The SAFETY CORE —
@@ -140,6 +141,61 @@ exports.patch = async (req, res) => {
     params
   );
   res.json({ item: itemView(r.rows[0]) });
+};
+
+// GET /api/admin/content/config — the desk reads this to show whether AI
+// drafting is wired. Never exposes the key; just a boolean.
+exports.config = async (_req, res) => {
+  res.json({ ai_drafting: drafter.isConfigured() });
+};
+
+// POST /api/admin/content/:id/draft — hand an idea/draft item to the LLM drafting
+// agent. Config-gated (400 when unconfigured — no client is built, no network is
+// touched). Parks the item in 'drafting' (transition + human event) and enqueues
+// a `content.draft` job so the slow generation runs off the HTTP request. The
+// worker (drafter.runDraft) fills the body and moves it to 'draft' — and NEVER
+// past the human gate. Returns 202 with the parked item.
+exports.draft = async (req, res) => {
+  if (!drafter.isConfigured()) {
+    throw ApiError.badRequest('AI drafting is not configured');
+  }
+
+  const out = await withTx(async (client) => {
+    const cur = await client.query('SELECT * FROM content_items WHERE id = $1 FOR UPDATE', [req.params.id]);
+    if (!cur.rowCount) throw ApiError.notFound('Content item not found');
+    const item = cur.rows[0];
+    if (item.status !== 'idea' && item.status !== 'draft') {
+      throw ApiError.badRequest(`Cannot draft an item in status '${item.status}'`);
+    }
+    // Park an idea at 'drafting' so the desk shows progress; a re-draft of an
+    // existing 'draft' stays put (the worker refreshes its body in place). The
+    // agent NEVER advances past 'draft' — the human gate is untouched.
+    if (item.status === 'idea') {
+      await client.query(
+        `UPDATE content_items SET status = 'drafting', updated_at = NOW() WHERE id = $1`,
+        [req.params.id]
+      );
+      await client.query(
+        `INSERT INTO content_events (content_id, from_status, to_status, actor, actor_kind, note)
+         VALUES ($1,'idea','drafting',$2,'human','queued for AI drafting')`,
+        [req.params.id, req.user.sub]
+      );
+    }
+    const r = await client.query('SELECT * FROM content_items WHERE id = $1', [req.params.id]);
+    return r.rows[0];
+  });
+
+  // Enqueue the actual generation. Lazy-require so the queue/redis is only touched
+  // when drafting is genuinely used (app + tests never load BullMQ otherwise).
+  const { QUEUES } = require('../jobs');
+  await QUEUES.content.add('content.draft', { id: req.params.id }, {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 30_000 },
+    removeOnComplete: 100,
+    removeOnFail: 100,
+  });
+
+  res.status(202).json({ item: itemView(out) });
 };
 
 // POST /api/admin/content/:id/transition { to, note?, scheduled_at? } — the

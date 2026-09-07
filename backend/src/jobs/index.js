@@ -6,6 +6,7 @@ const notifier = require('../services/notification.service');
 const weekly = require('../services/weekly-summary.service');
 const publisher = require('../services/content-publisher.service');
 const strategist = require('../services/content-strategist.service');
+const drafter = require('../services/content-drafter.service');
 
 const QUEUES = {
   reminders: new Queue('reminders', { connection }),
@@ -84,6 +85,10 @@ function startWorkers() {
       // this queue. The tier gate is re-checked inside publishDue.
       if (job.name === 'content-publish') return publisher.publishDue();
       if (job.name === 'content-strategist') return strategist.runStrategist();
+      // On-demand LLM draft: fill an item's body and move it idea/drafting ->
+      // draft. On failure the item stays recoverable (still pre-'draft', body
+      // unset) so a retry is safe; nothing is ever auto-approved or published.
+      if (job.name === 'content.draft') return drafter.runDraft(job.data.id);
       return undefined;
     },
     { connection, concurrency: 1 }
