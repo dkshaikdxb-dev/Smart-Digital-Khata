@@ -21,6 +21,14 @@ import { LANGS, COPY } from '../landing-copy';
 // request fails — we use this built-in default, so the button always works.
 // NEXT_PUBLIC_WHATSAPP still overrides the default at build time.
 const DEFAULT_WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP || '919731422995';
+
+// Android install links for the two apps. Build URLs change with every EAS build,
+// so ops can swap them at runtime from Admin → Settings (served by
+// GET /api/public/config); until that loads — or if it's unset or the request
+// fails — these built-in defaults hold, so the buttons always work.
+// NEXT_PUBLIC_APK_* still override the defaults at build time.
+const APK_CONSUMER = process.env.NEXT_PUBLIC_APK_CONSUMER || 'https://expo.dev/accounts/dkshaikdxb/projects/smart-khata-consumer/builds/9214b2a0-e9e9-4924-b198-b3affea489a5';
+const APK_OWNER = process.env.NEXT_PUBLIC_APK_OWNER || 'https://expo.dev/accounts/dkshaikdxb/projects/smart-khata-owner/builds/8dc95f72-e111-460a-a741-12266870740b';
 const WA_TEXT = encodeURIComponent('नमस्ते! मुझे Smart Digital Khata शुरू करना है।');
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const buildWA = (number) =>
@@ -63,6 +71,8 @@ export default function Home() {
   const [lang, setLang] = useState('en');
   const [menuOpen, setMenuOpen] = useState(false);
   const [wa, setWa] = useState(buildWA(DEFAULT_WA_NUMBER));
+  const [apkConsumer, setApkConsumer] = useState(APK_CONSUMER);
+  const [apkOwner, setApkOwner] = useState(APK_OWNER);
   const menuRef = useRef(null);
 
   // Copy lookup for the active language, falling back to English if a key is
@@ -135,6 +145,8 @@ export default function Home() {
       .then((d) => {
         const n = d && d.landing_whatsapp ? String(d.landing_whatsapp).replace(/\D/g, '') : '';
         if (!cancelled && n) setWa(buildWA(n));
+        if (!cancelled && d && d.landing_apk_consumer) setApkConsumer(String(d.landing_apk_consumer));
+        if (!cancelled && d && d.landing_apk_owner) setApkOwner(String(d.landing_apk_owner));
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -389,6 +401,30 @@ export default function Home() {
             </div>
           </section>
 
+          {/* GET THE APP */}
+          <section>
+            <div className="center">
+              <span className="eyebrow">{t('getEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}>{t('getH2')}</h2>
+              <p className="lede">{t('getLede')}</p>
+            </div>
+            <div className="getapp">
+              <div className="getcard">
+                <div className="ic">📱</div>
+                <h3>{t('getCustT')}</h3>
+                <p>{t('getCustP')}</p>
+                <a href={apkConsumer} target="_blank" rel="noopener noreferrer" className="btn btn-green">{t('getCustBtn')}</a>
+              </div>
+              <div className="getcard">
+                <div className="ic">📱</div>
+                <h3>{t('getShopT')}</h3>
+                <p>{t('getShopP')}</p>
+                <a href={apkOwner} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">{t('getShopBtn')}</a>
+              </div>
+            </div>
+            <p className="getnote">{t('getNote')}</p>
+          </section>
+
           {/* NEWSLETTER */}
           <section id="newsletter">
             <div className="nlcard">
@@ -589,6 +625,17 @@ export default function Home() {
         .pill p{color:var(--ink-soft);font-size:.96rem}
         .pill .k{margin-top:2px;font-size:.85rem;color:var(--green-deep);font-weight:600}
 
+        .getapp{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:36px}
+        .getcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 22px;
+          display:flex;flex-direction:column;gap:12px;align-items:flex-start;box-shadow:var(--shadow)}
+        .getcard .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;
+          background:var(--green-bg)}
+        .getcard:nth-child(2) .ic{background:color-mix(in srgb,var(--haldi) 26%,transparent)}
+        .getcard h3{font-size:1.3rem}
+        .getcard p{color:var(--ink-soft);font-size:.96rem;flex:1 1 auto}
+        .getcard .btn{margin-top:4px}
+        .getnote{text-align:center;max-width:60ch;margin:22px auto 0;color:var(--ink-soft);font-size:.86rem}
+
         .costgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
         .cost{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:var(--radius);
           padding:24px 22px;box-shadow:var(--shadow)}
@@ -664,7 +711,7 @@ export default function Home() {
         @media(max-width:880px){
           .hero{grid-template-columns:1fr;gap:28px;padding:34px 0}
           .phone{order:-1}
-          .pillars,.steps,.values,.costgrid,.econ{grid-template-columns:1fr}
+          .pillars,.steps,.values,.costgrid,.econ,.getapp{grid-template-columns:1fr}
           .band,.nlcard{grid-template-columns:1fr}
           .values{grid-template-columns:1fr 1fr}
           .nav .btn-ghost{display:none}
