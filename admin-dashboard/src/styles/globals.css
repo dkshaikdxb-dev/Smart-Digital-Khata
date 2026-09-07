@@ -399,6 +399,11 @@ th { color: var(--muted); font-weight: 600; }
    (display:contents makes the wrapper box vanish so the gaps still apply). */
 .nav-owner-links { display: contents; }
 
+/* The top-nav language switcher (owner/staff): contents on desktop so the select
+   sits in the flex row exactly as before; hidden on mobile (below) where the
+   owner tab bar's "More" sheet carries the switcher instead. */
+.nav-lang-desktop { display: contents; }
+
 /* Owner bottom tab bar — mirrors the consumer .cpwa-tabbar, but scoped to the
    owner app and shown ONLY on narrow (mobile) widths. On desktop the top nav's
    full link row is shown instead and this bar is hidden. */
@@ -409,6 +414,8 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 768px) {
   /* Collapse the owner top-nav link wall; the bottom bar takes over. */
   .nav-owner-links { display: none; }
+  /* Hide the owner/staff top-nav switcher on mobile — the "More" sheet has one. */
+  .nav-lang-desktop { display: none; }
 
   .owner-tabbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
@@ -447,4 +454,12 @@ th { color: var(--muted); font-weight: 600; }
     font-size: 12px; font-weight: 600; text-align: center; line-height: 1.2;
   }
   .owner-more-item.active { border-color: var(--accent); color: var(--accent); }
+
+  /* Language row at the foot of the "More" sheet. */
+  .owner-more-lang {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid #334155;
+  }
+  .owner-more-lang-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .owner-more-lang .langswitch { max-width: 11rem; }
 }

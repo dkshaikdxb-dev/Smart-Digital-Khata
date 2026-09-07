@@ -62,7 +62,10 @@ export default function Nav() {
         </span>
       )}
       <span style={{ flex: 1 }} />
-      <LangSwitch />
+      {/* Language switcher. For owner/staff it is hidden on mobile (CSS) in favour
+          of the one inside the owner tab bar's "More" sheet, so it is never
+          doubled; admins have no tab bar, so theirs stays visible everywhere. */}
+      <span className={role && role !== 'admin' ? 'nav-lang-desktop' : ''}><LangSwitch /></span>
       <button className="secondary" onClick={logout}>{t('nav.logout')}</button>
       {/* Icon-first bottom tab bar — owner/staff only, mobile widths only (CSS). */}
       {role && role !== 'admin' && <OwnerTabBar showStaff={role === 'owner'} />}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import LangSwitch from './LangSwitch';
 import { useLang } from '../lib/i18n';
 
 // Icon-first bottom tab bar for shop OWNERS on mobile widths, mirroring the
@@ -66,6 +67,12 @@ export default function OwnerTabBar({ showStaff = true }) {
                   <span>{it.label}</span>
                 </Link>
               ))}
+            </div>
+            {/* Language control — the top-nav switcher is hidden on mobile, so this
+                is the owner's way to change language on a phone. */}
+            <div className="owner-more-lang">
+              <span className="owner-more-lang-label" aria-hidden="true">🌐 {t('acc.language')}</span>
+              <LangSwitch />
             </div>
           </div>
         </>
