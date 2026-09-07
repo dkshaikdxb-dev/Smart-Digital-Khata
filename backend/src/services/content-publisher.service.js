@@ -72,13 +72,27 @@ function adapterFor(channel) {
   return adapters[channel] || outboxAdapter;
 }
 
-// resolveAdapter(channel) — the ASYNC resolver publishDue uses. Returns the REAL
-// social adapter when that channel is publishConfigured (creds + a connected
-// account), else the outbox adapter. Lazy-require avoids a load-time cycle.
+// resolveAdapter(channel) — the ASYNC resolver publishDue uses. It consults each
+// config-gated adapter registry in turn and returns the first REAL adapter whose
+// channel is publishConfigured, else the always-available OUTBOX. Every registry
+// follows the SAME shape ({ ADAPTERS, publishConfigured }) so adding a publisher
+// is a localized edit. Lazy-require avoids a load-time cycle. Resolution order:
+//   - social (Batch S): linkedin/twitter — real when a connected account exists.
+//   - blog (Batch T): the `blog` channel — INTERNAL, always configured.
+//   - newsletter (Batch T): newsletter_* — real when SMTP is configured, else
+//     this falls through to the outbox (inert without SMTP).
+// This ONLY changes which adapter a channel resolves to; publishDue's
+// CLAIM->SEND->FINALIZE flow and the tier gate are untouched.
 async function resolveAdapter(channel) {
-  const social = require('./content-social.service');
-  if (social.ADAPTERS[channel] && (await social.publishConfigured(channel))) {
-    return social.ADAPTERS[channel];
+  const registries = [
+    require('./content-social.service'),
+    require('./content-blog.service'),
+    require('./content-newsletter.service'),
+  ];
+  for (const reg of registries) {
+    if (reg.ADAPTERS && reg.ADAPTERS[channel] && (await reg.publishConfigured(channel))) {
+      return reg.ADAPTERS[channel];
+    }
   }
   return adapterFor(channel);
 }

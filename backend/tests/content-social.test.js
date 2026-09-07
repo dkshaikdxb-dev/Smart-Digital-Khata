@@ -383,7 +383,9 @@ describe('publishDue with real adapters', () => {
   });
 
   it('with NO connection the channel falls back to the outbox adapter', async () => {
-    const item = await insertItem({ channel: 'blog', engine: 'record', autonomy_tier: 0, body: 'b' });
+    // whatsapp_tip is an OUTBOX-only channel (blog is now a real internal
+    // publisher — see content-blog.test.js), so it exercises the outbox fallback.
+    const item = await insertItem({ channel: 'whatsapp_tip', engine: 'record', autonomy_tier: 0, body: 'b' });
     const res = await publisher.publishDue(new Date(), { httpFetch: fetchMock([]) });
     expect(res.published).toBeGreaterThanOrEqual(1);
     const row = await pool.query('SELECT status, external_ref FROM content_items WHERE id=$1', [item.id]);
