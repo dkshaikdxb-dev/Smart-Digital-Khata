@@ -97,6 +97,107 @@ exports.listShops = async (req, res) => {
 };
 
 /**
+ * Public, unauthenticated: cross-shop product search. Finds ACTIVE products in
+ * LISTED shops whose name matches `q` (localized name OR base English name).
+ * Every value derived from user input — the search term `q` and the optional
+ * `city` — is passed ONLY as a bound parameter and wrapped with wildcards in
+ * SQL ('%'||$n||'%'); nothing user-supplied is ever interpolated into the query
+ * text, so the endpoint is injection-safe. Mirrors listShops: `is_listed`
+ * gating, optional lat/lng great-circle distance (nearest-first), and the
+ * catalog_i18n localization join used by getShop / publicCatalog.
+ */
+exports.searchProducts = async (req, res) => {
+  const { q, city, lat, lng } = req.query;
+  const useDistance = lat !== undefined && lng !== undefined;
+  const limit = Math.min(50, Math.max(1, req.query.limit || 30));
+  const lang = resolveLang(req.query.lang);
+  const localized = lang !== 'en';
+
+  const params = [];
+
+  // The raw search term is a bound parameter; the wildcards live in SQL text.
+  params.push(q);
+  const qIdx = `$${params.length}`;
+
+  // Localized name: for a non-'en' known lang, LEFT JOIN catalog_i18n on the
+  // stored English product name and SELECT COALESCE(cp.name, p.name); the term
+  // then matches EITHER the localized name or the base name. 'en' skips the
+  // join entirely (base behaviour, no localized column).
+  let nameSelect = 'p.name';
+  let i18nJoin = '';
+  let nameMatch = `p.name ILIKE '%'||${qIdx}||'%'`;
+  if (localized) {
+    params.push(lang);
+    const langIdx = `$${params.length}`;
+    nameSelect = 'COALESCE(cp.name, p.name)';
+    i18nJoin = `LEFT JOIN catalog_i18n cp
+                  ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = ${langIdx}`;
+    nameMatch = `(p.name ILIKE '%'||${qIdx}||'%' OR cp.name ILIKE '%'||${qIdx}||'%')`;
+  }
+
+  const where = ['p.is_active = true', 's.is_listed = true', nameMatch];
+
+  if (city) {
+    params.push(city);
+    where.push(`s.city ILIKE '%'||$${params.length}||'%'`);
+  }
+
+  let distanceSelect = 'NULL AS distance_km';
+  let orderBy = 'name ASC';
+  if (useDistance) {
+    params.push(lat);
+    const latIdx = `$${params.length}`;
+    params.push(lng);
+    const lngIdx = `$${params.length}`;
+    // latitude/longitude are unambiguous (only shops carries them). Cast to
+    // double precision so pg returns a JS number, not a numeric string.
+    distanceSelect = `CAST(ROUND(CAST(${haversineKm(latIdx, lngIdx)} AS numeric), 1) AS double precision) AS distance_km`;
+    orderBy = 'distance_km ASC NULLS LAST, name ASC';
+  }
+
+  params.push(limit);
+  const limitIdx = `$${params.length}`;
+
+  const r = await query(
+    `SELECT p.id, ${nameSelect} AS name, p.price, p.unit, p.image_url, p.sold_by_weight,
+            s.id AS shop_id, s.name AS shop_name, s.city AS shop_city, s.area AS shop_area,
+            s.offers_delivery, s.delivery_fee,
+            ${distanceSelect}
+       FROM products p
+       JOIN shops s ON s.id = p.shop_id
+       ${i18nJoin}
+      WHERE ${where.join(' AND ')}
+      ORDER BY ${orderBy}
+      LIMIT ${limitIdx}`,
+    params
+  );
+
+  const products = r.rows.map((row) => {
+    const shop = {
+      id: row.shop_id,
+      name: row.shop_name,
+      city: row.shop_city,
+      area: row.shop_area,
+      offers_delivery: row.offers_delivery,
+      delivery_fee: Number(row.delivery_fee),
+    };
+    // Drop distance_km entirely when it was not requested / not computable.
+    if (useDistance && row.distance_km !== null) shop.distance_km = row.distance_km;
+    return {
+      id: row.id,
+      name: row.name,
+      price: Number(row.price), // integer paise
+      unit: row.unit,
+      image_url: row.image_url,
+      sold_by_weight: row.sold_by_weight,
+      shop,
+    };
+  });
+
+  res.json({ products });
+};
+
+/**
  * Public, unauthenticated: a listed shop's public profile with its active
  * catalog (minimal fields). 404 if the shop does not exist OR is not listed —
  * unlisted shops are indistinguishable from unknown ones.
