@@ -22,11 +22,13 @@ const NEW_CODE = 'xx';
 afterAll(async () => {
   // Restore the seed state so the suite is re-runnable.
   await pool.query('DELETE FROM languages WHERE code = $1', [NEW_CODE]);
-  // Restore mr to its post-0033 baseline (active, in_review) so the suite is
-  // re-runnable against a shared DB. The activation test above re-stamps
-  // activated_at/by; clear them back to the migration's untouched state.
+  // Restore mr to its post-0034 baseline (active, audited) so the suite is
+  // re-runnable against a shared DB. Migration 0034 flipped ta/te/kn/ml/ur/
+  // bn/gu/mr from 'in_review' to 'audited' after the native-language QA pass;
+  // the activation test above re-stamps activated_at/by, so clear them back to
+  // the migration's untouched state.
   await pool.query(
-    `UPDATE languages SET is_active = true, activated_at = NULL, activated_by = NULL, audit_status = 'in_review'
+    `UPDATE languages SET is_active = true, activated_at = NULL, activated_by = NULL, audit_status = 'audited'
      WHERE code = 'mr'`
   );
   await pool.query("UPDATE languages SET is_active = true WHERE code = 'ta'");
