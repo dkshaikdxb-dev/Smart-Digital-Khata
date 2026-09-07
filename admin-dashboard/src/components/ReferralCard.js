@@ -6,6 +6,9 @@ import { useLang } from '../lib/i18n';
 // referred (with a short list), and who referred them. Used on both the owner
 // account page and the consumer account page — the only difference is the
 // `fetcher` passed in (apiFetch vs customerFetch), so the same UI serves both.
+// paise → ₹ with Indian grouping; tolerant of absent/zero (older payloads).
+const rupees = (paise) => `₹${(Number(paise || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 export default function ReferralCard({ fetcher, endpoint = '/api/me/referral' }) {
   const { t } = useLang();
   const [data, setData] = useState(null);
@@ -47,6 +50,10 @@ export default function ReferralCard({ fetcher, endpoint = '/api/me/referral' })
   if (!data) return (<div className="card">{t('common.loading')}</div>);
 
   const link = shareLink();
+  const counts = data.counts || {};
+  const referredTotal = Number(counts.referred_total) || 0;
+  const activatedTotal = Number(counts.activated_total) || 0;
+  const accruedPaise = (data.reward && data.reward.accrued_paise) || 0;
 
   return (
     <div className="card">
@@ -66,8 +73,17 @@ export default function ReferralCard({ fetcher, endpoint = '/api/me/referral' })
       </div>
       <div style={{ height: 14 }} />
 
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 }}>
+        <div>
+          <div className="muted">{t('ref.creditBalance')}</div>
+          <strong style={{ fontSize: 20, color: 'var(--accent)' }}>{rupees(accruedPaise)}</strong>
+        </div>
+      </div>
+
       <div className="muted">
-        {t('ref.referredCount', { n: data.counts ? data.counts.referred_total : 0 })}
+        {t('ref.referredCount', { n: referredTotal })}
+        {' · '}
+        {t('ref.activatedOf', { a: activatedTotal, n: referredTotal })}
       </div>
       {data.referred && data.referred.length > 0 ? (
         <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>

@@ -9,7 +9,18 @@ import { usePermissions } from '../../lib/adminPerms';
 // by type, top referrers, totals + accrued reward total, an offline
 // influencer-code creator, and the reward-rule scaffolding (toggle + amount —
 // accruals only, never a payout). Reads need revenue:view, writes settings:manage.
+//
+// REF-MVP layer: an activation funnel (captured → activated), a reward rule
+// extended to three ₹ amounts (referrer / referee / Mitra bounty), and a Khata
+// Mitra section — create a shareable Mitra code and a leaderboard of Mitras.
 const rupees = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
+// Compact ₹ with Indian grouping, used in the funnel/leaderboard bounty cells.
+const rupeesIn = (paise) => `₹${Math.round(Number(paise || 0) / 100).toLocaleString('en-IN')}`;
+const pct = (num, den) => {
+  const d = Number(den) || 0;
+  if (d <= 0) return '0%';
+  return `${Math.round((Number(num || 0) / d) * 100)}%`;
+};
 
 // A simple horizontal bar — no chart library needed.
 function Bars({ items, labelKey, valueKey }) {
@@ -34,10 +45,13 @@ export default function AdminReferrals() {
   const { t } = useLang();
   const { ready, has } = usePermissions();
   const [ov, setOv] = useState(null);
-  const [rule, setRule] = useState({ enabled: false, amount_paise: 0 });
-  const [ruleForm, setRuleForm] = useState({ enabled: false, amount_rupees: '0' });
+  const [rule, setRule] = useState({ enabled: false, amount_paise: 0, referee_paise: 0, mitra_paise: 0 });
+  const [ruleForm, setRuleForm] = useState({ enabled: false, referrer_rupees: '0', referee_rupees: '0', mitra_rupees: '0' });
   const [codeForm, setCodeForm] = useState({ label: '', owner_type: 'influencer' });
   const [newCode, setNewCode] = useState(null);
+  const [mitraForm, setMitraForm] = useState({ name: '', territory: '' });
+  const [newMitra, setNewMitra] = useState(null);
+  const [mitraCopied, setMitraCopied] = useState(false);
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -51,7 +65,12 @@ export default function AdminReferrals() {
       ]);
       setOv(o);
       setRule(r);
-      setRuleForm({ enabled: !!r.enabled, amount_rupees: String((Number(r.amount_paise) || 0) / 100) });
+      setRuleForm({
+        enabled: !!r.enabled,
+        referrer_rupees: String((Number(r.amount_paise) || 0) / 100),
+        referee_rupees: String((Number(r.referee_paise) || 0) / 100),
+        mitra_rupees: String((Number(r.mitra_paise) || 0) / 100),
+      });
     } catch (e) { setError(e.message); }
   }, []);
 
@@ -66,12 +85,19 @@ export default function AdminReferrals() {
     e.preventDefault();
     setError(''); setMsg('');
     try {
-      const amount_paise = Math.round((parseFloat(ruleForm.amount_rupees) || 0) * 100);
+      const amount_paise = Math.round((parseFloat(ruleForm.referrer_rupees) || 0) * 100);
+      const referee_paise = Math.round((parseFloat(ruleForm.referee_rupees) || 0) * 100);
+      const mitra_paise = Math.round((parseFloat(ruleForm.mitra_rupees) || 0) * 100);
       const r = await apiFetch('/api/admin/referrals/reward-rule', {
-        method: 'PATCH', body: JSON.stringify({ enabled: ruleForm.enabled, amount_paise }),
+        method: 'PATCH', body: JSON.stringify({ enabled: ruleForm.enabled, amount_paise, referee_paise, mitra_paise }),
       });
       setRule(r);
-      setRuleForm({ enabled: !!r.enabled, amount_rupees: String((Number(r.amount_paise) || 0) / 100) });
+      setRuleForm({
+        enabled: !!r.enabled,
+        referrer_rupees: String((Number(r.amount_paise) || 0) / 100),
+        referee_rupees: String((Number(r.referee_paise) || 0) / 100),
+        mitra_rupees: String((Number(r.mitra_paise) || 0) / 100),
+      });
       setMsg(t('ref.saved'));
     } catch (e2) { setError(e2.message); }
   }
@@ -89,7 +115,48 @@ export default function AdminReferrals() {
     } catch (e2) { setError(e2.message); }
   }
 
+  // Create a Khata Mitra: an 'other'-owned code (the allowed owner_type for an
+  // external agent per createCodeSchema), then flag it is_mitra. The territory
+  // note, if any, is folded into the label handed to the local agent.
+  async function createMitra(e) {
+    e.preventDefault();
+    setError(''); setMsg(''); setNewMitra(null); setMitraCopied(false);
+    try {
+      const name = (mitraForm.name || '').trim();
+      const territory = (mitraForm.territory || '').trim();
+      const label = territory ? `${name || t('ref.mitraTitle')} — ${territory}` : (name || null);
+      const created = await apiFetch('/api/admin/referral-codes', {
+        method: 'POST', body: JSON.stringify({ label, owner_type: 'other' }),
+      });
+      const rc = created.referral_code;
+      const flagged = await apiFetch(`/api/admin/referral-codes/${rc.id}`, {
+        method: 'PATCH', body: JSON.stringify({ is_mitra: true }),
+      });
+      setNewMitra((flagged && flagged.referral_code) || rc);
+      setMitraForm({ name: '', territory: '' });
+      await load();
+    } catch (e2) { setError(e2.message); }
+  }
+
+  async function copyMitra() {
+    if (!newMitra || !newMitra.code) return;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(newMitra.code);
+      } else if (typeof document !== 'undefined') {
+        const ta = document.createElement('textarea');
+        ta.value = newMitra.code; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+      }
+      setMitraCopied(true);
+      setTimeout(() => setMitraCopied(false), 1800);
+    } catch { /* clipboard blocked — the code is shown for manual copy */ }
+  }
+
   if (!ready) return (<Shell><div className="card">{t('common.loading')}</div></Shell>);
+
+  const funnel = (ov && ov.funnel) || { captured: 0, activated: 0 };
+  const mitra = (ov && Array.isArray(ov.mitra)) ? ov.mitra : [];
 
   return (
     <Shell>
@@ -103,6 +170,16 @@ export default function AdminReferrals() {
       <div className="grid">
         <div className="card"><div className="muted">{t('ref.totalReferrals')}</div><div className="kpi">{ov ? ov.totals.total_referrals : '—'}</div></div>
         <div className="card"><div className="muted">{t('ref.accruedTotal')}</div><div className="kpi" style={{ color: 'var(--accent)' }}>{ov ? rupees(ov.reward.accrued_total_paise) : '—'}</div><div className="muted">{ov ? t('ref.accruedCount', { n: ov.reward.accrued_count }) : ''}</div></div>
+      </div>
+
+      <div className="card">
+        <h3>{t('ref.funnelTitle')}</h3>
+        <div className="grid">
+          <div className="card"><div className="muted">{t('ref.funnelCaptured')}</div><div className="kpi">{ov ? funnel.captured : '—'}</div></div>
+          <div className="card"><div className="muted">{t('ref.funnelActivated')}</div><div className="kpi" style={{ color: 'var(--accent)' }}>{ov ? funnel.activated : '—'}</div></div>
+          <div className="card"><div className="muted">{t('ref.funnelRate')}</div><div className="kpi">{ov ? pct(funnel.activated, funnel.captured) : '—'}</div></div>
+        </div>
+        <div className="muted" style={{ marginTop: 8 }}>{t('ref.funnelNote')}</div>
       </div>
 
       <div className="card">
@@ -143,6 +220,59 @@ export default function AdminReferrals() {
         ) : <div className="muted">{t('ref.noData')}</div>}
       </div>
 
+      <div className="card">
+        <h3>{t('ref.mitraTitle')}</h3>
+        {canWrite && (
+          <>
+            <p className="muted">{t('ref.mitraCreateSubtitle')}</p>
+            <form onSubmit={createMitra} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <label className="muted">{t('ref.mitraName')}</label>
+                <input value={mitraForm.name} onChange={(e) => setMitraForm({ ...mitraForm, name: e.target.value })} placeholder={t('ref.mitraNamePlaceholder')} />
+              </div>
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <label className="muted">{t('ref.mitraTerritory')}</label>
+                <input value={mitraForm.territory} onChange={(e) => setMitraForm({ ...mitraForm, territory: e.target.value })} placeholder={t('ref.mitraTerritoryPlaceholder')} />
+              </div>
+              <button type="submit">{t('ref.mitraCreate')}</button>
+            </form>
+            {newMitra && (
+              <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <span>{t('ref.mitraCreated')}</span>
+                <code style={{ fontSize: 18, fontWeight: 700, letterSpacing: 1 }}>{newMitra.code}</code>
+                <button type="button" className="secondary" onClick={copyMitra}>{mitraCopied ? t('ref.copied') : t('ref.mitraCopy')}</button>
+              </div>
+            )}
+            <div style={{ height: 16 }} />
+          </>
+        )}
+        <h4 style={{ margin: '4px 0 8px' }}>{t('ref.mitraLeaderboard')}</h4>
+        {mitra.length > 0 ? (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead><tr style={{ textAlign: 'left' }}>
+              <th style={cell}>{t('ref.colCode')}</th>
+              <th style={cell}>{t('ref.mitraColName')}</th>
+              <th style={cell}>{t('ref.mitraColOnboarded')}</th>
+              <th style={cell}>{t('ref.mitraColActivated')}</th>
+              <th style={cell}>{t('ref.mitraColRate')}</th>
+              <th style={cell}>{t('ref.mitraColBounty')}</th>
+            </tr></thead>
+            <tbody>
+              {mitra.map((m) => (
+                <tr key={m.code} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                  <td style={cell}><code>{m.code}</code></td>
+                  <td style={cell}>{m.label || '—'}</td>
+                  <td style={cell}>{Number(m.onboarded) || 0}</td>
+                  <td style={cell}>{Number(m.activated) || 0}</td>
+                  <td style={cell}>{pct(m.activated, m.onboarded)}</td>
+                  <td style={cell}>{rupeesIn(m.bounty_accrued_paise)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : <div className="muted">{t('ref.mitraEmpty')}</div>}
+      </div>
+
       {canWrite && (
         <div className="card">
           <h3>{t('ref.createCodeTitle')}</h3>
@@ -179,13 +309,21 @@ export default function AdminReferrals() {
               {t('ref.rewardEnabled')}
             </label>
             <div>
-              <label className="muted">{t('ref.rewardAmount')}</label>
-              <input type="number" min="0" step="0.01" value={ruleForm.amount_rupees} onChange={(e) => setRuleForm({ ...ruleForm, amount_rupees: e.target.value })} style={{ width: 140 }} />
+              <label className="muted">{t('ref.rewardReferrer')}</label>
+              <input type="number" min="0" step="0.01" value={ruleForm.referrer_rupees} onChange={(e) => setRuleForm({ ...ruleForm, referrer_rupees: e.target.value })} style={{ width: 140 }} />
+            </div>
+            <div>
+              <label className="muted">{t('ref.rewardReferee')}</label>
+              <input type="number" min="0" step="0.01" value={ruleForm.referee_rupees} onChange={(e) => setRuleForm({ ...ruleForm, referee_rupees: e.target.value })} style={{ width: 140 }} />
+            </div>
+            <div>
+              <label className="muted">{t('ref.rewardMitra')}</label>
+              <input type="number" min="0" step="0.01" value={ruleForm.mitra_rupees} onChange={(e) => setRuleForm({ ...ruleForm, mitra_rupees: e.target.value })} style={{ width: 140 }} />
             </div>
             <button type="submit">{t('ref.saveRule')}</button>
           </form>
           <div className="muted" style={{ marginTop: 8 }}>
-            {t('ref.currentRule')}: {rule.enabled ? t('ref.on') : t('ref.off')} · {rupees(rule.amount_paise)}
+            {t('ref.currentRule')}: {rule.enabled ? t('ref.on') : t('ref.off')} · {t('ref.rewardReferrer')} {rupees(rule.amount_paise)} · {t('ref.rewardReferee')} {rupees(rule.referee_paise)} · {t('ref.rewardMitra')} {rupees(rule.mitra_paise)}
           </div>
         </div>
       )}
