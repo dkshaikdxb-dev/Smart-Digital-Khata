@@ -29,3 +29,7 @@ jobs:
             set -euo pipefail
             cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
             docker compose exec -T backend npm run import:catalog-i18n
+            # Fold the (re)imported names/aliases into products.search_text so the
+            # new localized/romanized aliases actually take effect in consumer
+            # product search. Idempotent; safe to re-run.
+            docker compose exec -T backend npm run refresh:search-text

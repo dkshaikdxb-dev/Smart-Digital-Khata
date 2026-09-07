@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
-import { useLang, canUseVoice, canReadAloud, languageCapability } from '../lib/i18n';
+import { useLang, canUseVoice, canReadAloud, useLanguageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
 
 // Owner Help "lane C" (Batch J): a voice "Ask" on the owner home. The owner taps
@@ -79,7 +79,7 @@ function fmtRupees(paise) {
 export default function AskShop() {
   const { t, lang } = useLang();
   const { listen, speak, listening, sttSupported, ttsSupported, ttsVoiceAvailable } = useSpeech();
-  const caps = languageCapability(lang);
+  const caps = useLanguageCapability(lang);
   const [answer, setAnswer] = useState('');
   const [active, setActive] = useState(false); // an ask session is in flight
 

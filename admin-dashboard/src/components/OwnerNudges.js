@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
-import { useLang, canReadAloud, languageCapability } from '../lib/i18n';
+import { useLang, canReadAloud, useLanguageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
 
 // Owner Help "lane A" (Phase F): the "Today at your shop" nudge cards on the
@@ -41,7 +41,8 @@ export default function OwnerNudges() {
   // Only offer read-aloud when the language can be read AND a real local voice
   // exists for it — otherwise the button would speak the wrong language (Batch B
   // capability + runtime voice detection).
-  const readAloudOk = ttsSupported && canReadAloud(lang, languageCapability(lang)) && ttsVoiceAvailable;
+  const caps = useLanguageCapability(lang);
+  const readAloudOk = ttsSupported && canReadAloud(lang, caps) && ttsVoiceAvailable;
   const [nudges, setNudges] = useState(null); // null = loading
   const [error, setError] = useState('');
 

@@ -7110,6 +7110,23 @@ export function canReadAloud(code, caps) {
   return !!(caps && caps.has_tts === true);
 }
 
+// Hook: the capability flags for `code`, re-rendering when the language registry
+// resolves (or changes). Mic/read-aloud sites use this instead of calling
+// languageCapability() once per render, so a voice control that was hidden under
+// the pre-registry default (all false) appears as soon as the real has_* flags
+// load — without waiting for some other re-render. SSR/first paint uses the safe
+// built-in default, so hydration never mismatches.
+export function useLanguageCapability(code) {
+  const [caps, setCaps] = useState(() => languageCapability(code));
+  useEffect(() => {
+    setCaps(languageCapability(code));
+    const on = () => setCaps(languageCapability(code));
+    window.addEventListener(ACTIVE_EVENT, on);
+    return () => window.removeEventListener(ACTIVE_EVENT, on);
+  }, [code]);
+  return caps;
+}
+
 export function getLang() {
   if (typeof window === 'undefined') return 'en';
   try {

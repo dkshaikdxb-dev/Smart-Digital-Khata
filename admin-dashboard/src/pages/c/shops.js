@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch } from '../../lib/customerApi';
-import { useLang, canUseVoice, languageCapability } from '../../lib/i18n';
+import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
 
 // Flipkart-style quick-browse categories. The label is localized; the search
@@ -27,7 +27,7 @@ export default function DiscoverShops() {
   const { sttSupported, listening, listen } = useSpeech();
   // Hide the mic for languages the browser can't reliably recognize (it would
   // otherwise mis-hear them as en-IN) — capability comes from Batch B's helper.
-  const voiceOk = sttSupported && canUseVoice(lang, languageCapability(lang));
+  const voiceOk = sttSupported && canUseVoice(lang, useLanguageCapability(lang));
   const [productQ, setProductQ] = useState(''); // top product-search bar
   const [search, setSearch] = useState('');
   const [shops, setShops] = useState([]);

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
 import { publicFetch } from '../../lib/customerApi';
-import { useLang, canUseVoice, languageCapability } from '../../lib/i18n';
+import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
 
 // Cross-shop product search (Flipkart-style). Backed by the public endpoint
@@ -18,7 +18,7 @@ export default function ProductSearch() {
   const { t, lang } = useLang();
   const { sttSupported, listening, listen } = useSpeech();
   // Hide the mic for languages the browser can't reliably recognize (Batch B).
-  const voiceOk = sttSupported && canUseVoice(lang, languageCapability(lang));
+  const voiceOk = sttSupported && canUseVoice(lang, useLanguageCapability(lang));
 
   const [q, setQ] = useState('');
   const [products, setProducts] = useState([]);

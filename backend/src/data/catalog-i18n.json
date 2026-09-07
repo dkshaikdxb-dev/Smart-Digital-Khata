@@ -5,7 +5,7 @@
     "translations": {
       "hi": {
         "name": "खाद्य पदार्थ",
-        "aliases": "khadya khana food",
+        "aliases": "khadya khana food padartha",
         "needs_review": false
       },
       "ta": {
@@ -15,12 +15,12 @@
       },
       "te": {
         "name": "ఆహారం",
-        "aliases": "aaharam food",
+        "aliases": "aaharam food aharam",
         "needs_review": false
       },
       "kn": {
         "name": "ಆಹಾರ",
-        "aliases": "aahara food",
+        "aliases": "aahara food ahara",
         "needs_review": false
       },
       "ml": {
@@ -41,7 +41,7 @@
     "translations": {
       "hi": {
         "name": "ताज़ा खाद्य",
-        "aliases": "",
+        "aliases": "taja khadya",
         "needs_review": false
       },
       "ta": {
@@ -51,17 +51,17 @@
       },
       "te": {
         "name": "తాజా ఆహారం",
-        "aliases": "",
+        "aliases": "taja aharam",
         "needs_review": false
       },
       "kn": {
         "name": "ತಾಜಾ ಆಹಾರ",
-        "aliases": "",
+        "aliases": "taja ahara",
         "needs_review": false
       },
       "ml": {
         "name": "പുതിയ ഭക്ഷണം",
-        "aliases": "",
+        "aliases": "putiya bhakshanam",
         "needs_review": false
       },
       "ur": {
@@ -77,7 +77,7 @@
     "translations": {
       "hi": {
         "name": "घरेलू सामान",
-        "aliases": "gharelu household",
+        "aliases": "gharelu household samana",
         "needs_review": false
       },
       "ta": {
@@ -87,17 +87,17 @@
       },
       "te": {
         "name": "ఇంటి సామాను",
-        "aliases": "",
+        "aliases": "imti samanu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮನೆಯ ವಸ್ತುಗಳು",
-        "aliases": "",
+        "aliases": "maneya vastugalu",
         "needs_review": false
       },
       "ml": {
         "name": "വീട്ടുസാധനങ്ങൾ",
-        "aliases": "",
+        "aliases": "vittusadhananna",
         "needs_review": false
       },
       "ur": {
@@ -113,7 +113,7 @@
     "translations": {
       "hi": {
         "name": "व्यक्तिगत देखभाल",
-        "aliases": "",
+        "aliases": "vyaktigata dekhabhala",
         "needs_review": false
       },
       "ta": {
@@ -123,17 +123,17 @@
       },
       "te": {
         "name": "వ్యక్తిగత సంరక్షణ",
-        "aliases": "",
+        "aliases": "vyaktigata samrakshana",
         "needs_review": false
       },
       "kn": {
         "name": "ವೈಯಕ್ತಿಕ ಆರೈಕೆ",
-        "aliases": "",
+        "aliases": "vaiyaktika araike",
         "needs_review": false
       },
       "ml": {
         "name": "വ്യക്തിഗത പരിചരണം",
-        "aliases": "",
+        "aliases": "vyaktigata paricaranam",
         "needs_review": false
       },
       "ur": {
@@ -149,7 +149,7 @@
     "translations": {
       "hi": {
         "name": "पेय पदार्थ",
-        "aliases": "",
+        "aliases": "peya padartha",
         "needs_review": false
       },
       "ta": {
@@ -159,17 +159,17 @@
       },
       "te": {
         "name": "పానీయాలు",
-        "aliases": "",
+        "aliases": "paniyalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಪಾನೀಯಗಳು",
-        "aliases": "",
+        "aliases": "paniyagalu",
         "needs_review": false
       },
       "ml": {
         "name": "പാനീയങ്ങൾ",
-        "aliases": "",
+        "aliases": "paniyanna",
         "needs_review": false
       },
       "ur": {
@@ -185,7 +185,7 @@
     "translations": {
       "hi": {
         "name": "नाश्ता",
-        "aliases": "",
+        "aliases": "nashta",
         "needs_review": false
       },
       "ta": {
@@ -195,17 +195,17 @@
       },
       "te": {
         "name": "అల్పాహారం",
-        "aliases": "",
+        "aliases": "alpaharam",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಳಗಿನ ಉಪಾಹಾರ",
-        "aliases": "",
+        "aliases": "belagina upahara",
         "needs_review": false
       },
       "ml": {
         "name": "പ്രഭാതഭക്ഷണം",
-        "aliases": "",
+        "aliases": "prabhatabhakshanam",
         "needs_review": false
       },
       "ur": {
@@ -221,7 +221,7 @@
     "translations": {
       "hi": {
         "name": "सफ़ाई",
-        "aliases": "",
+        "aliases": "sapha",
         "needs_review": false
       },
       "ta": {
@@ -231,17 +231,17 @@
       },
       "te": {
         "name": "శుభ్రత",
-        "aliases": "",
+        "aliases": "shubhrata",
         "needs_review": false
       },
       "kn": {
         "name": "ಸ್ವಚ್ಛತೆ",
-        "aliases": "",
+        "aliases": "svacchate",
         "needs_review": false
       },
       "ml": {
         "name": "ശുചീകരണം",
-        "aliases": "",
+        "aliases": "shucikaranam",
         "needs_review": false
       },
       "ur": {
@@ -257,7 +257,7 @@
     "translations": {
       "hi": {
         "name": "सफ़ाई के उपकरण",
-        "aliases": "",
+        "aliases": "sapha upakarana",
         "needs_review": false
       },
       "ta": {
@@ -267,17 +267,17 @@
       },
       "te": {
         "name": "శుభ్రపరిచే పరికరాలు",
-        "aliases": "",
+        "aliases": "shubhraparice parikaralu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸ್ವಚ್ಛತೆ ಉಪಕರಣಗಳು",
-        "aliases": "",
+        "aliases": "svacchate upakaranagalu",
         "needs_review": false
       },
       "ml": {
         "name": "ശുചീകരണ ഉപകരണങ്ങൾ",
-        "aliases": "",
+        "aliases": "shucikarana upakarananna",
         "needs_review": false
       },
       "ur": {
@@ -293,7 +293,7 @@
     "translations": {
       "hi": {
         "name": "खाद्य तेल",
-        "aliases": "",
+        "aliases": "khadya tela",
         "needs_review": false
       },
       "ta": {
@@ -303,17 +303,17 @@
       },
       "te": {
         "name": "వంట నూనె",
-        "aliases": "",
+        "aliases": "vamta nune",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಡುಗೆ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "aduge enne",
         "needs_review": false
       },
       "ml": {
         "name": "പാചക എണ്ണ",
-        "aliases": "",
+        "aliases": "pacaka enna",
         "needs_review": false
       },
       "ur": {
@@ -329,7 +329,7 @@
     "translations": {
       "hi": {
         "name": "डेयरी उत्पाद",
-        "aliases": "",
+        "aliases": "deyari utpada",
         "needs_review": false
       },
       "ta": {
@@ -339,17 +339,17 @@
       },
       "te": {
         "name": "పాల ఉత్పత్తులు",
-        "aliases": "",
+        "aliases": "pala utpattulu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಾಲಿನ ಉತ್ಪನ್ನಗಳು",
-        "aliases": "",
+        "aliases": "halina utpannagalu",
         "needs_review": false
       },
       "ml": {
         "name": "പാൽ ഉൽപ്പന്നങ്ങൾ",
-        "aliases": "",
+        "aliases": "ppannanna",
         "needs_review": false
       },
       "ur": {
@@ -365,7 +365,7 @@
     "translations": {
       "hi": {
         "name": "दाल और दलहन",
-        "aliases": "",
+        "aliases": "dala aura dalahana",
         "needs_review": false
       },
       "ta": {
@@ -375,17 +375,17 @@
       },
       "te": {
         "name": "పప్పు ధాన్యాలు",
-        "aliases": "",
+        "aliases": "pappu dhanyalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೇಳೆಕಾಳುಗಳು",
-        "aliases": "",
+        "aliases": "belekalugalu",
         "needs_review": false
       },
       "ml": {
         "name": "പയർ വർഗ്ഗങ്ങൾ",
-        "aliases": "",
+        "aliases": "paya gganna",
         "needs_review": false
       },
       "ur": {
@@ -401,7 +401,7 @@
     "translations": {
       "hi": {
         "name": "बर्तन धुलाई",
-        "aliases": "",
+        "aliases": "bartana dhulai",
         "needs_review": false
       },
       "ta": {
@@ -411,17 +411,17 @@
       },
       "te": {
         "name": "గిన్నెలు కడగడం",
-        "aliases": "",
+        "aliases": "ginnelu kadagadam",
         "needs_review": false
       },
       "kn": {
         "name": "ಪಾತ್ರೆ ತೊಳೆಯುವುದು",
-        "aliases": "",
+        "aliases": "patre toleyuvudu",
         "needs_review": false
       },
       "ml": {
         "name": "പാത്രം കഴുകൽ",
-        "aliases": "",
+        "aliases": "patram kaluka",
         "needs_review": false
       },
       "ur": {
@@ -437,7 +437,7 @@
     "translations": {
       "hi": {
         "name": "महिला स्वच्छता",
-        "aliases": "",
+        "aliases": "mahila svacchata",
         "needs_review": false
       },
       "ta": {
@@ -447,17 +447,17 @@
       },
       "te": {
         "name": "మహిళా పరిశుభ్రత",
-        "aliases": "",
+        "aliases": "mahila parishubhrata",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಹಿಳಾ ನೈರ್ಮಲ್ಯ",
-        "aliases": "",
+        "aliases": "mahila nairmalya",
         "needs_review": false
       },
       "ml": {
         "name": "സ്ത്രീ ശുചിത്വം",
-        "aliases": "",
+        "aliases": "stri shucitvam",
         "needs_review": false
       },
       "ur": {
@@ -473,7 +473,7 @@
     "translations": {
       "hi": {
         "name": "खाद्य सामग्री",
-        "aliases": "",
+        "aliases": "khadya samagri",
         "needs_review": false
       },
       "ta": {
@@ -483,17 +483,17 @@
       },
       "te": {
         "name": "ఆహార పదార్థాలు",
-        "aliases": "",
+        "aliases": "ahara padarthalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಆಹಾರ ಪದಾರ್ಥಗಳು",
-        "aliases": "",
+        "aliases": "ahara padarthagalu",
         "needs_review": false
       },
       "ml": {
         "name": "ഭക്ഷ്യവസ്തുക്കൾ",
-        "aliases": "",
+        "aliases": "bhakshyavastukka",
         "needs_review": false
       },
       "ur": {
@@ -509,7 +509,7 @@
     "translations": {
       "hi": {
         "name": "फल",
-        "aliases": "",
+        "aliases": "phala",
         "needs_review": false
       },
       "ta": {
@@ -519,17 +519,17 @@
       },
       "te": {
         "name": "పండ్లు",
-        "aliases": "",
+        "aliases": "pamdlu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಣ್ಣುಗಳು",
-        "aliases": "",
+        "aliases": "hannugalu",
         "needs_review": false
       },
       "ml": {
         "name": "പഴങ്ങൾ",
-        "aliases": "",
+        "aliases": "palanna",
         "needs_review": false
       },
       "ur": {
@@ -545,7 +545,7 @@
     "translations": {
       "hi": {
         "name": "अनाज",
-        "aliases": "",
+        "aliases": "anaja",
         "needs_review": false
       },
       "ta": {
@@ -555,17 +555,17 @@
       },
       "te": {
         "name": "ధాన్యాలు",
-        "aliases": "",
+        "aliases": "dhanyalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಧಾನ್ಯಗಳು",
-        "aliases": "",
+        "aliases": "dhanyagalu",
         "needs_review": false
       },
       "ml": {
         "name": "ധാന്യങ്ങൾ",
-        "aliases": "",
+        "aliases": "dhanyanna",
         "needs_review": false
       },
       "ur": {
@@ -581,7 +581,7 @@
     "translations": {
       "hi": {
         "name": "बालों की देखभाल",
-        "aliases": "",
+        "aliases": "balom dekhabhala",
         "needs_review": false
       },
       "ta": {
@@ -591,17 +591,17 @@
       },
       "te": {
         "name": "జుట్టు సంరక్షణ",
-        "aliases": "",
+        "aliases": "juttu samrakshana",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೂದಲ ಆರೈಕೆ",
-        "aliases": "",
+        "aliases": "kudala araike",
         "needs_review": false
       },
       "ml": {
         "name": "മുടി പരിചരണം",
-        "aliases": "",
+        "aliases": "muti paricaranam",
         "needs_review": false
       },
       "ur": {
@@ -617,7 +617,7 @@
     "translations": {
       "hi": {
         "name": "हाथ की स्वच्छता",
-        "aliases": "",
+        "aliases": "hatha svacchata",
         "needs_review": false
       },
       "ta": {
@@ -627,17 +627,17 @@
       },
       "te": {
         "name": "చేతి పరిశుభ్రత",
-        "aliases": "",
+        "aliases": "ceti parishubhrata",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೈ ನೈರ್ಮಲ್ಯ",
-        "aliases": "",
+        "aliases": "kai nairmalya",
         "needs_review": false
       },
       "ml": {
         "name": "കൈ ശുചിത്വം",
-        "aliases": "",
+        "aliases": "kai shucitvam",
         "needs_review": false
       },
       "ur": {
@@ -653,7 +653,7 @@
     "translations": {
       "hi": {
         "name": "रसोई का सामान",
-        "aliases": "",
+        "aliases": "rasoi samana",
         "needs_review": false
       },
       "ta": {
@@ -663,17 +663,17 @@
       },
       "te": {
         "name": "వంటగది సామాను",
-        "aliases": "",
+        "aliases": "vamtagadi samanu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಡುಗೆಮನೆ ಸಾಮಾನು",
-        "aliases": "",
+        "aliases": "adugemane samanu",
         "needs_review": false
       },
       "ml": {
         "name": "അടുക്കള സാധനങ്ങൾ",
-        "aliases": "",
+        "aliases": "atukkala sadhananna",
         "needs_review": false
       },
       "ur": {
@@ -689,7 +689,7 @@
     "translations": {
       "hi": {
         "name": "कपड़े धुलाई",
-        "aliases": "",
+        "aliases": "kapada dhulai",
         "needs_review": false
       },
       "ta": {
@@ -699,17 +699,17 @@
       },
       "te": {
         "name": "బట్టల ఉతుకుడు",
-        "aliases": "",
+        "aliases": "battala utukudu",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಟ್ಟೆ ಒಗೆತ",
-        "aliases": "",
+        "aliases": "batte ogeta",
         "needs_review": false
       },
       "ml": {
         "name": "തുണി അലക്ക്",
-        "aliases": "",
+        "aliases": "tuni alakk",
         "needs_review": false
       },
       "ur": {
@@ -725,7 +725,7 @@
     "translations": {
       "hi": {
         "name": "मोटे अनाज",
-        "aliases": "",
+        "aliases": "mote anaja",
         "needs_review": false
       },
       "ta": {
@@ -735,17 +735,17 @@
       },
       "te": {
         "name": "చిరుధాన్యాలు",
-        "aliases": "",
+        "aliases": "cirudhanyalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಿರಿಧಾನ್ಯಗಳು",
-        "aliases": "",
+        "aliases": "siridhanyagalu",
         "needs_review": false
       },
       "ml": {
         "name": "ചെറുധാന്യങ്ങൾ",
-        "aliases": "",
+        "aliases": "cerudhanyanna",
         "needs_review": false
       },
       "ur": {
@@ -761,7 +761,7 @@
     "translations": {
       "hi": {
         "name": "सूखे मेवे",
-        "aliases": "",
+        "aliases": "sukhe meve",
         "needs_review": false
       },
       "ur": {
@@ -777,7 +777,7 @@
     "translations": {
       "hi": {
         "name": "दांतों की देखभाल",
-        "aliases": "",
+        "aliases": "damtom dekhabhala",
         "needs_review": false
       },
       "ta": {
@@ -787,17 +787,17 @@
       },
       "te": {
         "name": "దంత సంరక్షణ",
-        "aliases": "",
+        "aliases": "damta samrakshana",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಲ್ಲಿನ ಆರೈಕೆ",
-        "aliases": "",
+        "aliases": "hallina araike",
         "needs_review": false
       },
       "ml": {
         "name": "ദന്ത പരിചരണം",
-        "aliases": "",
+        "aliases": "danta paricaranam",
         "needs_review": false
       },
       "ur": {
@@ -813,7 +813,7 @@
     "translations": {
       "hi": {
         "name": "कागज़ के उत्पाद",
-        "aliases": "",
+        "aliases": "kagaja utpada",
         "needs_review": false
       },
       "ur": {
@@ -829,7 +829,7 @@
     "translations": {
       "hi": {
         "name": "कीट नियंत्रण",
-        "aliases": "",
+        "aliases": "kita niyamtrana",
         "needs_review": false
       },
       "ta": {
@@ -839,17 +839,17 @@
       },
       "te": {
         "name": "కీటక నియంత్రణ",
-        "aliases": "",
+        "aliases": "kitaka niyamtrana",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೀಟ ನಿಯಂತ್ರಣ",
-        "aliases": "",
+        "aliases": "kita niyamtrana",
         "needs_review": false
       },
       "ml": {
         "name": "കീട നിയന്ത്രണം",
-        "aliases": "",
+        "aliases": "kita niyantranam",
         "needs_review": false
       },
       "ur": {
@@ -865,7 +865,7 @@
     "translations": {
       "hi": {
         "name": "अचार",
-        "aliases": "",
+        "aliases": "acara",
         "needs_review": false
       },
       "ta": {
@@ -875,17 +875,17 @@
       },
       "te": {
         "name": "ఊరగాయ",
-        "aliases": "",
+        "aliases": "uragaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಉಪ್ಪಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "uppinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "അച്ചാർ",
-        "aliases": "",
+        "aliases": "acca",
         "needs_review": false
       },
       "ur": {
@@ -901,7 +901,7 @@
     "translations": {
       "hi": {
         "name": "चावल",
-        "aliases": "chawal chaawal rice",
+        "aliases": "chawal chaawal rice cavala",
         "needs_review": false
       },
       "ta": {
@@ -937,7 +937,7 @@
     "translations": {
       "hi": {
         "name": "त्वचा की देखभाल",
-        "aliases": "",
+        "aliases": "tvaca dekhabhala",
         "needs_review": false
       },
       "ta": {
@@ -947,17 +947,17 @@
       },
       "te": {
         "name": "చర్మ సంరక్షణ",
-        "aliases": "",
+        "aliases": "carma samrakshana",
         "needs_review": false
       },
       "kn": {
         "name": "ಚರ್ಮದ ಆರೈಕೆ",
-        "aliases": "",
+        "aliases": "carmada araike",
         "needs_review": false
       },
       "ml": {
         "name": "ത്വക്ക് പരിചരണം",
-        "aliases": "",
+        "aliases": "tvakk paricaranam",
         "needs_review": false
       },
       "ur": {
@@ -973,7 +973,7 @@
     "translations": {
       "hi": {
         "name": "स्नैक्स",
-        "aliases": "",
+        "aliases": "snaiksa",
         "needs_review": false
       },
       "ta": {
@@ -983,17 +983,17 @@
       },
       "te": {
         "name": "చిరుతిండి",
-        "aliases": "",
+        "aliases": "cirutimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ತಿಂಡಿ",
-        "aliases": "",
+        "aliases": "timdi",
         "needs_review": false
       },
       "ml": {
         "name": "ലഘുഭക്ഷണം",
-        "aliases": "",
+        "aliases": "laghubhakshanam",
         "needs_review": false
       },
       "ur": {
@@ -1019,17 +1019,17 @@
       },
       "te": {
         "name": "మసాలాలు",
-        "aliases": "",
+        "aliases": "masalalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಸಾಲೆ",
-        "aliases": "",
+        "aliases": "masale",
         "needs_review": false
       },
       "ml": {
         "name": "മസാല",
-        "aliases": "",
+        "aliases": "masala",
         "needs_review": false
       },
       "ur": {
@@ -1045,7 +1045,7 @@
     "translations": {
       "hi": {
         "name": "मिठास",
-        "aliases": "",
+        "aliases": "mithasa",
         "needs_review": false
       },
       "ur": {
@@ -1061,7 +1061,7 @@
     "translations": {
       "hi": {
         "name": "चाय और कॉफ़ी",
-        "aliases": "",
+        "aliases": "caya aura pha",
         "needs_review": false
       },
       "ta": {
@@ -1071,17 +1071,17 @@
       },
       "te": {
         "name": "టీ మరియు కాఫీ",
-        "aliases": "",
+        "aliases": "mariyu kaphi",
         "needs_review": false
       },
       "kn": {
         "name": "ಚಹಾ ಮತ್ತು ಕಾಫಿ",
-        "aliases": "",
+        "aliases": "caha mattu kaphi",
         "needs_review": false
       },
       "ml": {
         "name": "ചായയും കാപ്പിയും",
-        "aliases": "",
+        "aliases": "cayayum kappiyum",
         "needs_review": false
       },
       "ur": {
@@ -1097,7 +1097,7 @@
     "translations": {
       "hi": {
         "name": "सब्ज़ियां",
-        "aliases": "sabzi sabziyan",
+        "aliases": "sabzi sabziyan sabja iyam",
         "needs_review": false
       },
       "ta": {
@@ -1107,17 +1107,17 @@
       },
       "te": {
         "name": "కూరగాయలు",
-        "aliases": "",
+        "aliases": "kuragayalu",
         "needs_review": false
       },
       "kn": {
         "name": "ತರಕಾರಿಗಳు",
-        "aliases": "",
+        "aliases": "tarakarigala",
         "needs_review": false
       },
       "ml": {
         "name": "പച്ചക്കറികൾ",
-        "aliases": "",
+        "aliases": "paccakkarika",
         "needs_review": false
       },
       "ur": {
@@ -1133,7 +1133,7 @@
     "translations": {
       "hi": {
         "name": "गेहूं और आटा",
-        "aliases": "atta gehu",
+        "aliases": "atta gehu gehum aura ata",
         "needs_review": false
       },
       "ta": {
@@ -1143,17 +1143,17 @@
       },
       "te": {
         "name": "గోధుమ పిండి",
-        "aliases": "",
+        "aliases": "godhuma pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಗೋಧಿ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "godhi hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ഗോതമ്പ് പൊടി",
-        "aliases": "",
+        "aliases": "gotamp poti",
         "needs_review": false
       },
       "ur": {
@@ -1169,7 +1169,7 @@
     "translations": {
       "hi": {
         "name": "अजवाइन",
-        "aliases": "ajwain",
+        "aliases": "ajwain ajavaina",
         "needs_review": false
       },
       "ta": {
@@ -1179,17 +1179,17 @@
       },
       "te": {
         "name": "వాము",
-        "aliases": "",
+        "aliases": "vamu",
         "needs_review": false
       },
       "kn": {
         "name": "ಓಮ",
-        "aliases": "",
+        "aliases": "oma",
         "needs_review": false
       },
       "ml": {
         "name": "അയമോദകം",
-        "aliases": "",
+        "aliases": "ayamodakam",
         "needs_review": false
       },
       "ur": {
@@ -1205,7 +1205,7 @@
     "translations": {
       "hi": {
         "name": "बादाम",
-        "aliases": "badam",
+        "aliases": "badam badama",
         "needs_review": false
       },
       "ta": {
@@ -1215,17 +1215,17 @@
       },
       "te": {
         "name": "బాదం",
-        "aliases": "",
+        "aliases": "badam",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಾದಾಮಿ",
-        "aliases": "",
+        "aliases": "badami",
         "needs_review": false
       },
       "ml": {
         "name": "ബദാം",
-        "aliases": "",
+        "aliases": "badam",
         "needs_review": false
       },
       "ur": {
@@ -1241,7 +1241,7 @@
     "translations": {
       "hi": {
         "name": "अमचूर",
-        "aliases": "",
+        "aliases": "amacura",
         "needs_review": false
       },
       "ur": {
@@ -1257,7 +1257,7 @@
     "translations": {
       "hi": {
         "name": "सेब",
-        "aliases": "seb",
+        "aliases": "seb seba",
         "needs_review": false
       },
       "ta": {
@@ -1267,17 +1267,17 @@
       },
       "te": {
         "name": "ఆపిల్",
-        "aliases": "",
+        "aliases": "apil",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೇಬು",
-        "aliases": "",
+        "aliases": "sebu",
         "needs_review": false
       },
       "ml": {
         "name": "ആപ്പിൾ",
-        "aliases": "",
+        "aliases": "appi",
         "needs_review": false
       },
       "ur": {
@@ -1293,7 +1293,7 @@
     "translations": {
       "hi": {
         "name": "बाजरे का आटा",
-        "aliases": "",
+        "aliases": "bajare ata",
         "needs_review": false
       },
       "ta": {
@@ -1303,17 +1303,17 @@
       },
       "te": {
         "name": "సజ్జ పిండి",
-        "aliases": "",
+        "aliases": "sajja pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಜ್ಜೆ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "sajje hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ബജ്റ പൊടി",
-        "aliases": "",
+        "aliases": "bajra poti",
         "needs_review": false
       },
       "ur": {
@@ -1339,17 +1339,17 @@
       },
       "te": {
         "name": "అరటిపండు",
-        "aliases": "",
+        "aliases": "aratipamdu",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಾಳೆಹಣ್ಣು",
-        "aliases": "",
+        "aliases": "balehannu",
         "needs_review": false
       },
       "ml": {
         "name": "വാഴപ്പഴം",
-        "aliases": "",
+        "aliases": "valappalam",
         "needs_review": false
       },
       "ur": {
@@ -1365,7 +1365,7 @@
     "translations": {
       "hi": {
         "name": "बासमती चावल",
-        "aliases": "",
+        "aliases": "basamati cavala",
         "needs_review": false
       },
       "ta": {
@@ -1375,17 +1375,17 @@
       },
       "te": {
         "name": "బాస్మతి బియ్యం",
-        "aliases": "",
+        "aliases": "basmati biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಾಸ್ಮತಿ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "basmati akki",
         "needs_review": false
       },
       "ml": {
         "name": "ബാസ്മതി അരി",
-        "aliases": "",
+        "aliases": "basmati ari",
         "needs_review": false
       },
       "ur": {
@@ -1401,7 +1401,7 @@
     "translations": {
       "hi": {
         "name": "नहाने का साबुन",
-        "aliases": "sabun soap",
+        "aliases": "sabun soap nahane sabuna",
         "needs_review": false
       },
       "ta": {
@@ -1411,17 +1411,17 @@
       },
       "te": {
         "name": "స్నానం సబ్బు",
-        "aliases": "",
+        "aliases": "snanam sabbu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸ್ನಾನದ ಸಾಬೂನು",
-        "aliases": "",
+        "aliases": "snanada sabunu",
         "needs_review": false
       },
       "ml": {
         "name": "കുളിസോപ്പ്",
-        "aliases": "",
+        "aliases": "kulisopp",
         "needs_review": false
       },
       "ur": {
@@ -1437,7 +1437,7 @@
     "translations": {
       "hi": {
         "name": "तेज़ पत्ता",
-        "aliases": "",
+        "aliases": "teja patta",
         "needs_review": false
       },
       "ta": {
@@ -1447,12 +1447,12 @@
       },
       "te": {
         "name": "బిర్యానీ ఆకు",
-        "aliases": "",
+        "aliases": "biryani aku",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಿರಿಯಾನಿ ಎಲೆ",
-        "aliases": "",
+        "aliases": "biriyani ele",
         "needs_review": false
       },
       "ur": {
@@ -1468,7 +1468,7 @@
     "translations": {
       "hi": {
         "name": "सेम",
-        "aliases": "",
+        "aliases": "sema",
         "needs_review": false
       },
       "ta": {
@@ -1478,12 +1478,12 @@
       },
       "te": {
         "name": "బీన్స్",
-        "aliases": "",
+        "aliases": "bins",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೀನ್ಸ್",
-        "aliases": "",
+        "aliases": "bins",
         "needs_review": false
       },
       "ml": {
@@ -1504,7 +1504,7 @@
     "translations": {
       "hi": {
         "name": "चुकंदर",
-        "aliases": "chukandar",
+        "aliases": "chukandar cukamdara",
         "needs_review": false
       },
       "ta": {
@@ -1514,17 +1514,17 @@
       },
       "te": {
         "name": "బీట్‌రూట్",
-        "aliases": "",
+        "aliases": "bit rut",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೀಟ್‌ರೂಟ್",
-        "aliases": "",
+        "aliases": "bit rut",
         "needs_review": false
       },
       "ml": {
         "name": "ബീറ്റ്റൂട്ട്",
-        "aliases": "",
+        "aliases": "birrrutt",
         "needs_review": false
       },
       "ur": {
@@ -1540,7 +1540,7 @@
     "translations": {
       "hi": {
         "name": "बेसन",
-        "aliases": "besan",
+        "aliases": "besan besana",
         "needs_review": false
       },
       "ta": {
@@ -1550,17 +1550,17 @@
       },
       "te": {
         "name": "శనగపిండి",
-        "aliases": "",
+        "aliases": "shanagapimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಡಲೆ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "kadale hittu",
         "needs_review": false
       },
       "ml": {
         "name": "കടലമാവ്",
-        "aliases": "",
+        "aliases": "katalamav",
         "needs_review": false
       },
       "ur": {
@@ -1576,7 +1576,7 @@
     "translations": {
       "hi": {
         "name": "बिरयानी मसाला",
-        "aliases": "",
+        "aliases": "birayani masala",
         "needs_review": false
       },
       "ta": {
@@ -1586,17 +1586,17 @@
       },
       "te": {
         "name": "బిర్యానీ మసాలా",
-        "aliases": "",
+        "aliases": "biryani masala",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಿರಿಯಾನಿ ಮಸಾಲಾ",
-        "aliases": "",
+        "aliases": "biriyani masala",
         "needs_review": false
       },
       "ml": {
         "name": "ബിരിയാണി മസാല",
-        "aliases": "",
+        "aliases": "biriyani masala",
         "needs_review": false
       },
       "ur": {
@@ -1622,17 +1622,17 @@
       },
       "te": {
         "name": "కాకరకాయ",
-        "aliases": "",
+        "aliases": "kakarakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಾಗಲಕಾಯಿ",
-        "aliases": "",
+        "aliases": "hagalakayi",
         "needs_review": false
       },
       "ml": {
         "name": "പാവയ്ക്ക",
-        "aliases": "",
+        "aliases": "pavaykka",
         "needs_review": false
       },
       "ur": {
@@ -1648,7 +1648,7 @@
     "translations": {
       "hi": {
         "name": "काली मिर्च",
-        "aliases": "kali mirch",
+        "aliases": "kali mirch mirca",
         "needs_review": false
       },
       "ta": {
@@ -1658,17 +1658,17 @@
       },
       "te": {
         "name": "మిరియాలు",
-        "aliases": "",
+        "aliases": "miriyalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಕರಿಮೆಣಸು",
-        "aliases": "",
+        "aliases": "karimenasu",
         "needs_review": false
       },
       "ml": {
         "name": "കുരുമുളക്",
-        "aliases": "",
+        "aliases": "kurumulak",
         "needs_review": false
       },
       "ur": {
@@ -1694,17 +1694,17 @@
       },
       "te": {
         "name": "సొరకాయ",
-        "aliases": "",
+        "aliases": "sorakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೋರೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "sorekayi",
         "needs_review": false
       },
       "ml": {
         "name": "ചുരയ്ക്ക",
-        "aliases": "",
+        "aliases": "curaykka",
         "needs_review": false
       },
       "ur": {
@@ -1720,7 +1720,7 @@
     "translations": {
       "hi": {
         "name": "बैंगन",
-        "aliases": "baingan",
+        "aliases": "baingan baimgana",
         "needs_review": false
       },
       "ta": {
@@ -1730,17 +1730,17 @@
       },
       "te": {
         "name": "వంకాయ",
-        "aliases": "",
+        "aliases": "vamkaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಬದನೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "badanekayi",
         "needs_review": false
       },
       "ml": {
         "name": "വഴുതന",
-        "aliases": "",
+        "aliases": "valutana",
         "needs_review": false
       },
       "ur": {
@@ -1756,7 +1756,7 @@
     "translations": {
       "hi": {
         "name": "झाड़ू",
-        "aliases": "jhadu",
+        "aliases": "jhadu jhada",
         "needs_review": false
       },
       "ta": {
@@ -1766,17 +1766,17 @@
       },
       "te": {
         "name": "చీపురు",
-        "aliases": "",
+        "aliases": "cipuru",
         "needs_review": false
       },
       "kn": {
         "name": "ಪೊರಕೆ",
-        "aliases": "",
+        "aliases": "porake",
         "needs_review": false
       },
       "ml": {
         "name": "ചൂല്",
-        "aliases": "",
+        "aliases": "cul",
         "needs_review": false
       },
       "ur": {
@@ -1792,7 +1792,7 @@
     "translations": {
       "hi": {
         "name": "मक्खन",
-        "aliases": "makkhan",
+        "aliases": "makkhan makkhana",
         "needs_review": false
       },
       "ta": {
@@ -1802,17 +1802,17 @@
       },
       "te": {
         "name": "వెన్న",
-        "aliases": "",
+        "aliases": "venna",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "benne",
         "needs_review": false
       },
       "ml": {
         "name": "വെണ്ണ",
-        "aliases": "",
+        "aliases": "venna",
         "needs_review": false
       },
       "ur": {
@@ -1828,7 +1828,7 @@
     "translations": {
       "hi": {
         "name": "पत्ता गोभी",
-        "aliases": "",
+        "aliases": "patta gobhi",
         "needs_review": false
       },
       "ta": {
@@ -1838,17 +1838,17 @@
       },
       "te": {
         "name": "క్యాబేజీ",
-        "aliases": "",
+        "aliases": "kyabeji",
         "needs_review": false
       },
       "kn": {
         "name": "ಎಲೆಕೋಸು",
-        "aliases": "",
+        "aliases": "elekosu",
         "needs_review": false
       },
       "ml": {
         "name": "കാബേജ്",
-        "aliases": "",
+        "aliases": "kabej",
         "needs_review": false
       },
       "ur": {
@@ -1864,7 +1864,7 @@
     "translations": {
       "hi": {
         "name": "शिमला मिर्च",
-        "aliases": "",
+        "aliases": "shimala mirca",
         "needs_review": false
       },
       "ta": {
@@ -1874,17 +1874,17 @@
       },
       "te": {
         "name": "క్యాప్సికం",
-        "aliases": "",
+        "aliases": "kyapsikam",
         "needs_review": false
       },
       "kn": {
         "name": "ದೊಣ್ಣೆ ಮೆಣಸಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "donne menasinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "കാപ്സിക്കം",
-        "aliases": "",
+        "aliases": "kapsikkam",
         "needs_review": false
       },
       "ur": {
@@ -1900,7 +1900,7 @@
     "translations": {
       "hi": {
         "name": "इलायची",
-        "aliases": "elaichi",
+        "aliases": "elaichi ilayaci",
         "needs_review": false
       },
       "ta": {
@@ -1910,17 +1910,17 @@
       },
       "te": {
         "name": "యాలకులు",
-        "aliases": "",
+        "aliases": "yalakulu",
         "needs_review": false
       },
       "kn": {
         "name": "ಏಲಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "elakki",
         "needs_review": false
       },
       "ml": {
         "name": "ഏലക്ക",
-        "aliases": "",
+        "aliases": "elakka",
         "needs_review": false
       },
       "ur": {
@@ -1936,7 +1936,7 @@
     "translations": {
       "hi": {
         "name": "गाजर",
-        "aliases": "gajar",
+        "aliases": "gajar gajara",
         "needs_review": false
       },
       "ta": {
@@ -1946,17 +1946,17 @@
       },
       "te": {
         "name": "క్యారెట్",
-        "aliases": "",
+        "aliases": "kyaret",
         "needs_review": false
       },
       "kn": {
         "name": "ಗಜ್ಜರಿ",
-        "aliases": "",
+        "aliases": "gajjari",
         "needs_review": false
       },
       "ml": {
         "name": "കാരറ്റ്",
-        "aliases": "",
+        "aliases": "kararr",
         "needs_review": false
       },
       "ur": {
@@ -1982,17 +1982,17 @@
       },
       "te": {
         "name": "జీడిపప్పు",
-        "aliases": "",
+        "aliases": "jidipappu",
         "needs_review": false
       },
       "kn": {
         "name": "ಗೋಡಂಬಿ",
-        "aliases": "",
+        "aliases": "godambi",
         "needs_review": false
       },
       "ml": {
         "name": "കശുവണ്ടി",
-        "aliases": "",
+        "aliases": "kashuvanti",
         "needs_review": false
       },
       "ur": {
@@ -2008,7 +2008,7 @@
     "translations": {
       "hi": {
         "name": "फूल गोभी",
-        "aliases": "",
+        "aliases": "phula gobhi",
         "needs_review": false
       },
       "ta": {
@@ -2018,17 +2018,17 @@
       },
       "te": {
         "name": "కాలీఫ్లవర్",
-        "aliases": "",
+        "aliases": "kaliphlavar",
         "needs_review": false
       },
       "kn": {
         "name": "ಹೂಕೋಸು",
-        "aliases": "",
+        "aliases": "hukosu",
         "needs_review": false
       },
       "ml": {
         "name": "കോളിഫ്ലവർ",
-        "aliases": "",
+        "aliases": "koliphlava",
         "needs_review": false
       },
       "ur": {
@@ -2044,7 +2044,7 @@
     "translations": {
       "hi": {
         "name": "चाट मसाला",
-        "aliases": "",
+        "aliases": "cata masala",
         "needs_review": false
       },
       "ta": {
@@ -2054,17 +2054,17 @@
       },
       "te": {
         "name": "చాట్ మసాలా",
-        "aliases": "",
+        "aliases": "cat masala",
         "needs_review": false
       },
       "kn": {
         "name": "ಚಾಟ್ ಮಸಾಲಾ",
-        "aliases": "",
+        "aliases": "cat masala",
         "needs_review": false
       },
       "ml": {
         "name": "ചാട്ട് മസാല",
-        "aliases": "",
+        "aliases": "catt masala",
         "needs_review": false
       },
       "ur": {
@@ -2080,7 +2080,7 @@
     "translations": {
       "hi": {
         "name": "चना दाल",
-        "aliases": "chana dal",
+        "aliases": "chana dal cana dala",
         "needs_review": false
       },
       "ta": {
@@ -2090,17 +2090,17 @@
       },
       "te": {
         "name": "శనగపప్పు",
-        "aliases": "",
+        "aliases": "shanagapappu",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಡಲೆ ಬೇಳೆ",
-        "aliases": "",
+        "aliases": "kadale bele",
         "needs_review": false
       },
       "ml": {
         "name": "കടലപ്പരിപ്പ്",
-        "aliases": "",
+        "aliases": "katalapparipp",
         "needs_review": false
       },
       "ur": {
@@ -2116,7 +2116,7 @@
     "translations": {
       "hi": {
         "name": "चपाती",
-        "aliases": "chapati roti",
+        "aliases": "chapati roti capati",
         "needs_review": false
       },
       "ta": {
@@ -2126,17 +2126,17 @@
       },
       "te": {
         "name": "చపాతీ",
-        "aliases": "",
+        "aliases": "capati",
         "needs_review": false
       },
       "kn": {
         "name": "ಚಪಾತಿ",
-        "aliases": "",
+        "aliases": "capati",
         "needs_review": false
       },
       "ml": {
         "name": "ചപ്പാത്തി",
-        "aliases": "",
+        "aliases": "cappatti",
         "needs_review": false
       },
       "ur": {
@@ -2152,7 +2152,7 @@
     "translations": {
       "hi": {
         "name": "चिकन मसाला",
-        "aliases": "",
+        "aliases": "cikana masala",
         "needs_review": false
       },
       "ta": {
@@ -2162,17 +2162,17 @@
       },
       "te": {
         "name": "చికెన్ మసాలా",
-        "aliases": "",
+        "aliases": "ciken masala",
         "needs_review": false
       },
       "kn": {
         "name": "ಚಿಕನ್ ಮಸಾಲಾ",
-        "aliases": "",
+        "aliases": "cikan masala",
         "needs_review": false
       },
       "ml": {
         "name": "ചിക്കൻ മസാല",
-        "aliases": "",
+        "aliases": "cikka masala",
         "needs_review": false
       },
       "ur": {
@@ -2188,7 +2188,7 @@
     "translations": {
       "hi": {
         "name": "दालचीनी",
-        "aliases": "dalchini",
+        "aliases": "dalchini dalacini",
         "needs_review": false
       },
       "ta": {
@@ -2198,17 +2198,17 @@
       },
       "te": {
         "name": "దాల్చిన చెక్క",
-        "aliases": "",
+        "aliases": "dalcina cekka",
         "needs_review": false
       },
       "kn": {
         "name": "ದಾಲ್ಚಿನ್ನಿ",
-        "aliases": "",
+        "aliases": "dalcinni",
         "needs_review": false
       },
       "ml": {
         "name": "കറുവപ്പട്ട",
-        "aliases": "",
+        "aliases": "karuvappatta",
         "needs_review": false
       },
       "ur": {
@@ -2224,7 +2224,7 @@
     "translations": {
       "hi": {
         "name": "लौंग",
-        "aliases": "laung",
+        "aliases": "laung laumga",
         "needs_review": false
       },
       "ta": {
@@ -2234,17 +2234,17 @@
       },
       "te": {
         "name": "లవంగాలు",
-        "aliases": "",
+        "aliases": "lavamgalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಲವಂಗ",
-        "aliases": "",
+        "aliases": "lavamga",
         "needs_review": false
       },
       "ml": {
         "name": "ഗ്രാമ്പൂ",
-        "aliases": "",
+        "aliases": "grampu",
         "needs_review": false
       },
       "ur": {
@@ -2260,7 +2260,7 @@
     "translations": {
       "hi": {
         "name": "नारियल तेल",
-        "aliases": "",
+        "aliases": "nariyala tela",
         "needs_review": false
       },
       "ta": {
@@ -2270,17 +2270,17 @@
       },
       "te": {
         "name": "కొబ్బరి నూనె",
-        "aliases": "",
+        "aliases": "kobbari nune",
         "needs_review": false
       },
       "kn": {
         "name": "ತೆಂಗಿನ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "temgina enne",
         "needs_review": false
       },
       "ml": {
         "name": "വെളിച്ചെണ്ണ",
-        "aliases": "",
+        "aliases": "veliccenna",
         "needs_review": false
       },
       "ur": {
@@ -2296,7 +2296,7 @@
     "translations": {
       "hi": {
         "name": "नारियल पानी",
-        "aliases": "",
+        "aliases": "nariyala pani",
         "needs_review": false
       },
       "ta": {
@@ -2306,17 +2306,17 @@
       },
       "te": {
         "name": "కొబ్బరి నీళ్లు",
-        "aliases": "",
+        "aliases": "kobbari nillu",
         "needs_review": false
       },
       "kn": {
         "name": "ಎಳನೀರು",
-        "aliases": "",
+        "aliases": "elaniru",
         "needs_review": false
       },
       "ml": {
         "name": "കരിക്കിൻ വെള്ളം",
-        "aliases": "",
+        "aliases": "karikki vellam",
         "needs_review": false
       },
       "ur": {
@@ -2342,17 +2342,17 @@
       },
       "te": {
         "name": "కొత్తిమీర",
-        "aliases": "",
+        "aliases": "kottimira",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೊತ್ತಂಬರಿ ಸೊಪ್ಪು",
-        "aliases": "",
+        "aliases": "kottambari soppu",
         "needs_review": false
       },
       "ml": {
         "name": "മല്ലിയില",
-        "aliases": "",
+        "aliases": "malliyila",
         "needs_review": false
       },
       "ur": {
@@ -2368,7 +2368,7 @@
     "translations": {
       "hi": {
         "name": "धनिया पाउडर",
-        "aliases": "",
+        "aliases": "dhaniya paudara",
         "needs_review": false
       },
       "ta": {
@@ -2378,17 +2378,17 @@
       },
       "te": {
         "name": "ధనియాల పొడి",
-        "aliases": "",
+        "aliases": "dhaniyala podi",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೊತ್ತಂಬರಿ ಪುಡಿ",
-        "aliases": "",
+        "aliases": "kottambari pudi",
         "needs_review": false
       },
       "ml": {
         "name": "മല്ലിപ്പൊടി",
-        "aliases": "",
+        "aliases": "mallippoti",
         "needs_review": false
       },
       "ur": {
@@ -2404,7 +2404,7 @@
     "translations": {
       "hi": {
         "name": "खीरा",
-        "aliases": "kheera",
+        "aliases": "kheera khira",
         "needs_review": false
       },
       "ta": {
@@ -2414,17 +2414,17 @@
       },
       "te": {
         "name": "దోసకాయ",
-        "aliases": "",
+        "aliases": "dosakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೌತೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "sautekayi",
         "needs_review": false
       },
       "ml": {
         "name": "വെള്ളരിക്ക",
-        "aliases": "",
+        "aliases": "vellarikka",
         "needs_review": false
       },
       "ur": {
@@ -2440,7 +2440,7 @@
     "translations": {
       "hi": {
         "name": "जीरा",
-        "aliases": "jeera",
+        "aliases": "jeera jira",
         "needs_review": false
       },
       "ta": {
@@ -2450,17 +2450,17 @@
       },
       "te": {
         "name": "జీలకర్ర",
-        "aliases": "",
+        "aliases": "jilakarra",
         "needs_review": false
       },
       "kn": {
         "name": "ಜೀರಿಗೆ",
-        "aliases": "",
+        "aliases": "jirige",
         "needs_review": false
       },
       "ml": {
         "name": "ജീരകം",
-        "aliases": "",
+        "aliases": "jirakam",
         "needs_review": false
       },
       "ur": {
@@ -2486,17 +2486,17 @@
       },
       "te": {
         "name": "పెరుగు",
-        "aliases": "",
+        "aliases": "perugu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೊಸರು",
-        "aliases": "",
+        "aliases": "mosaru",
         "needs_review": false
       },
       "ml": {
         "name": "തൈര്",
-        "aliases": "",
+        "aliases": "tair",
         "needs_review": false
       },
       "ur": {
@@ -2512,7 +2512,7 @@
     "translations": {
       "hi": {
         "name": "करी पत्ता",
-        "aliases": "",
+        "aliases": "kari patta",
         "needs_review": false
       },
       "ta": {
@@ -2522,17 +2522,17 @@
       },
       "te": {
         "name": "కరివేపాకు",
-        "aliases": "",
+        "aliases": "karivepaku",
         "needs_review": false
       },
       "kn": {
         "name": "ಕರಿಬೇವು",
-        "aliases": "",
+        "aliases": "karibevu",
         "needs_review": false
       },
       "ml": {
         "name": "കറിവേപ്പില",
-        "aliases": "",
+        "aliases": "kariveppila",
         "needs_review": false
       },
       "ur": {
@@ -2548,7 +2548,7 @@
     "translations": {
       "hi": {
         "name": "दलिया",
-        "aliases": "dalia",
+        "aliases": "dalia daliya",
         "needs_review": false
       },
       "ta": {
@@ -2558,17 +2558,17 @@
       },
       "te": {
         "name": "గోధుమ రవ్వ",
-        "aliases": "",
+        "aliases": "godhuma ravva",
         "needs_review": false
       },
       "kn": {
         "name": "ಗೋಧಿ ನುಚ್ಚು",
-        "aliases": "",
+        "aliases": "godhi nuccu",
         "needs_review": false
       },
       "ml": {
         "name": "ഗോതമ്പ് നുറുക്ക്",
-        "aliases": "",
+        "aliases": "gotamp nurukk",
         "needs_review": false
       },
       "ur": {
@@ -2584,7 +2584,7 @@
     "translations": {
       "hi": {
         "name": "देसी घी",
-        "aliases": "ghee ghi",
+        "aliases": "ghee ghi desi",
         "needs_review": false
       },
       "ta": {
@@ -2594,17 +2594,17 @@
       },
       "te": {
         "name": "దేశీ నెయ్యి",
-        "aliases": "",
+        "aliases": "deshi neyyi",
         "needs_review": false
       },
       "kn": {
         "name": "ದೇಸಿ ತುಪ್ಪ",
-        "aliases": "",
+        "aliases": "desi tuppa",
         "needs_review": false
       },
       "ml": {
         "name": "ദേശി നെയ്യ്",
-        "aliases": "",
+        "aliases": "deshi neyy",
         "needs_review": false
       },
       "ur": {
@@ -2620,7 +2620,7 @@
     "translations": {
       "hi": {
         "name": "सूखा नारियल",
-        "aliases": "",
+        "aliases": "sukha nariyala",
         "needs_review": false
       },
       "ta": {
@@ -2630,17 +2630,17 @@
       },
       "te": {
         "name": "ఎండు కొబ్బరి",
-        "aliases": "",
+        "aliases": "emdu kobbari",
         "needs_review": false
       },
       "kn": {
         "name": "ಒಣ ಕೊಬ್ಬರಿ",
-        "aliases": "",
+        "aliases": "ona kobbari",
         "needs_review": false
       },
       "ml": {
         "name": "ഉണക്ക തേങ്ങ",
-        "aliases": "",
+        "aliases": "unakka tenna",
         "needs_review": false
       },
       "ur": {
@@ -2656,7 +2656,7 @@
     "translations": {
       "hi": {
         "name": "कपड़े धोने का लिक्विड",
-        "aliases": "",
+        "aliases": "kapada dhone likvida",
         "needs_review": false
       },
       "ur": {
@@ -2672,7 +2672,7 @@
     "translations": {
       "hi": {
         "name": "कपड़े धोने का पाउडर",
-        "aliases": "",
+        "aliases": "kapada dhone paudara",
         "needs_review": false
       },
       "ur": {
@@ -2688,7 +2688,7 @@
     "translations": {
       "hi": {
         "name": "डोसा बैटर",
-        "aliases": "",
+        "aliases": "dosa baitara",
         "needs_review": false
       },
       "ta": {
@@ -2698,17 +2698,17 @@
       },
       "te": {
         "name": "దోస పిండి",
-        "aliases": "",
+        "aliases": "dosa pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ದೋಸೆ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "dose hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ദോശ മാവ്",
-        "aliases": "",
+        "aliases": "dosha mav",
         "needs_review": false
       },
       "ur": {
@@ -2724,7 +2724,7 @@
     "translations": {
       "hi": {
         "name": "सहजन",
-        "aliases": "",
+        "aliases": "sahajana",
         "needs_review": false
       },
       "ta": {
@@ -2734,17 +2734,17 @@
       },
       "te": {
         "name": "మునగకాయ",
-        "aliases": "",
+        "aliases": "munagakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ನುಗ್ಗೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "nuggekayi",
         "needs_review": false
       },
       "ml": {
         "name": "മുരിങ്ങയ്ക്ക",
-        "aliases": "",
+        "aliases": "murinnaykka",
         "needs_review": false
       },
       "ur": {
@@ -2760,7 +2760,7 @@
     "translations": {
       "hi": {
         "name": "सौंफ",
-        "aliases": "saunf",
+        "aliases": "saunf saumpha",
         "needs_review": false
       },
       "ta": {
@@ -2770,17 +2770,17 @@
       },
       "te": {
         "name": "సోంపు",
-        "aliases": "",
+        "aliases": "sompu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೋಂಪು",
-        "aliases": "",
+        "aliases": "sompu",
         "needs_review": false
       },
       "ml": {
         "name": "പെരുംജീരകം",
-        "aliases": "",
+        "aliases": "perumjirakam",
         "needs_review": false
       },
       "ur": {
@@ -2796,7 +2796,7 @@
     "translations": {
       "hi": {
         "name": "मेथी दाना",
-        "aliases": "",
+        "aliases": "methi dana",
         "needs_review": false
       },
       "ta": {
@@ -2806,17 +2806,17 @@
       },
       "te": {
         "name": "మెంతులు",
-        "aliases": "",
+        "aliases": "memtulu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೆಂತ್ಯ",
-        "aliases": "",
+        "aliases": "memtya",
         "needs_review": false
       },
       "ml": {
         "name": "ഉലുവ",
-        "aliases": "",
+        "aliases": "uluva",
         "needs_review": false
       },
       "ur": {
@@ -2832,7 +2832,7 @@
     "translations": {
       "hi": {
         "name": "फ़िल्टर कॉफ़ी",
-        "aliases": "",
+        "aliases": "pha iltara",
         "needs_review": false
       },
       "ta": {
@@ -2842,17 +2842,17 @@
       },
       "te": {
         "name": "ఫిల్టర్ కాఫీ",
-        "aliases": "",
+        "aliases": "philtar kaphi",
         "needs_review": false
       },
       "kn": {
         "name": "ಫಿಲ್ಟರ್ ಕಾಫಿ",
-        "aliases": "",
+        "aliases": "philtar kaphi",
         "needs_review": false
       },
       "ml": {
         "name": "ഫിൽട്ടർ കാപ്പി",
-        "aliases": "",
+        "aliases": "phi tta kappi",
         "needs_review": false
       },
       "ur": {
@@ -2868,7 +2868,7 @@
     "translations": {
       "hi": {
         "name": "अलसी",
-        "aliases": "alsi",
+        "aliases": "alsi alasi",
         "needs_review": false
       },
       "ta": {
@@ -2878,12 +2878,12 @@
       },
       "te": {
         "name": "అవిసె గింజలు",
-        "aliases": "",
+        "aliases": "avise gimjalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಗಸೆ ಬೀಜ",
-        "aliases": "",
+        "aliases": "agase bija",
         "needs_review": false
       },
       "ur": {
@@ -2899,7 +2899,7 @@
     "translations": {
       "hi": {
         "name": "फलों का रस",
-        "aliases": "",
+        "aliases": "phalom rasa",
         "needs_review": false
       },
       "ta": {
@@ -2909,17 +2909,17 @@
       },
       "te": {
         "name": "పండ్ల రసం",
-        "aliases": "",
+        "aliases": "pamdla rasam",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಣ್ಣಿನ ರಸ",
-        "aliases": "",
+        "aliases": "hannina rasa",
         "needs_review": false
       },
       "ml": {
         "name": "പഴച്ചാറ്",
-        "aliases": "",
+        "aliases": "palaccar",
         "needs_review": false
       },
       "ur": {
@@ -2935,7 +2935,7 @@
     "translations": {
       "hi": {
         "name": "फुल क्रीम दूध",
-        "aliases": "",
+        "aliases": "phula krima dudha",
         "needs_review": false
       },
       "ta": {
@@ -2945,17 +2945,17 @@
       },
       "te": {
         "name": "ఫుల్ క్రీమ్ పాలు",
-        "aliases": "",
+        "aliases": "phul krim palu",
         "needs_review": false
       },
       "kn": {
         "name": "ಫುಲ್ ಕ್ರೀಂ ಹಾಲು",
-        "aliases": "",
+        "aliases": "phul krim halu",
         "needs_review": false
       },
       "ml": {
         "name": "ഫുൾ ക്രീം പാൽ",
-        "aliases": "",
+        "aliases": "phu krim",
         "needs_review": false
       },
       "ur": {
@@ -2971,7 +2971,7 @@
     "translations": {
       "hi": {
         "name": "गरम मसाला",
-        "aliases": "",
+        "aliases": "garama masala",
         "needs_review": false
       },
       "ta": {
@@ -2981,17 +2981,17 @@
       },
       "te": {
         "name": "గరం మసాలా",
-        "aliases": "",
+        "aliases": "garam masala",
         "needs_review": false
       },
       "kn": {
         "name": "ಗರಂ ಮಸಾಲಾ",
-        "aliases": "",
+        "aliases": "garam masala",
         "needs_review": false
       },
       "ml": {
         "name": "ഗരം മസാല",
-        "aliases": "",
+        "aliases": "garam masala",
         "needs_review": false
       },
       "ur": {
@@ -3007,7 +3007,7 @@
     "translations": {
       "hi": {
         "name": "कचरा बैग",
-        "aliases": "",
+        "aliases": "kacara baiga",
         "needs_review": false
       },
       "ta": {
@@ -3017,12 +3017,12 @@
       },
       "te": {
         "name": "చెత్త సంచులు",
-        "aliases": "",
+        "aliases": "cetta samculu",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಸದ ಚೀಲ",
-        "aliases": "",
+        "aliases": "kasada cila",
         "needs_review": false
       },
       "ur": {
@@ -3038,7 +3038,7 @@
     "translations": {
       "hi": {
         "name": "लहसुन",
-        "aliases": "lahsun",
+        "aliases": "lahsun lahasuna",
         "needs_review": false
       },
       "ta": {
@@ -3048,17 +3048,17 @@
       },
       "te": {
         "name": "వెల్లుల్లి",
-        "aliases": "",
+        "aliases": "vellulli",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಳ್ಳುಳ್ಳಿ",
-        "aliases": "",
+        "aliases": "bellulli",
         "needs_review": false
       },
       "ml": {
         "name": "വെളുത്തുള്ളി",
-        "aliases": "",
+        "aliases": "veluttulli",
         "needs_review": false
       },
       "ur": {
@@ -3074,7 +3074,7 @@
     "translations": {
       "hi": {
         "name": "अदरक",
-        "aliases": "adrak",
+        "aliases": "adrak adaraka",
         "needs_review": false
       },
       "ta": {
@@ -3084,17 +3084,17 @@
       },
       "te": {
         "name": "అల్లం",
-        "aliases": "",
+        "aliases": "allam",
         "needs_review": false
       },
       "kn": {
         "name": "ಶುಂಠಿ",
-        "aliases": "",
+        "aliases": "shumthi",
         "needs_review": false
       },
       "ml": {
         "name": "ഇഞ്ചി",
-        "aliases": "",
+        "aliases": "inci",
         "needs_review": false
       },
       "ur": {
@@ -3110,7 +3110,7 @@
     "translations": {
       "hi": {
         "name": "अदरक का अचार",
-        "aliases": "",
+        "aliases": "adaraka acara",
         "needs_review": false
       },
       "ta": {
@@ -3120,17 +3120,17 @@
       },
       "te": {
         "name": "అల్లం ఊరగాయ",
-        "aliases": "",
+        "aliases": "allam uragaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಶುಂಠಿ ಉಪ್ಪಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "shumthi uppinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "ഇഞ്ചി അച്ചാർ",
-        "aliases": "",
+        "aliases": "inci acca",
         "needs_review": false
       },
       "ur": {
@@ -3146,7 +3146,7 @@
     "translations": {
       "hi": {
         "name": "अंगूर",
-        "aliases": "angoor",
+        "aliases": "angoor amgura",
         "needs_review": false
       },
       "ta": {
@@ -3156,17 +3156,17 @@
       },
       "te": {
         "name": "ద్రాక్ష",
-        "aliases": "",
+        "aliases": "draksha",
         "needs_review": false
       },
       "kn": {
         "name": "ದ್ರಾಕ್ಷಿ",
-        "aliases": "",
+        "aliases": "drakshi",
         "needs_review": false
       },
       "ml": {
         "name": "മുന്തിരി",
-        "aliases": "",
+        "aliases": "muntiri",
         "needs_review": false
       },
       "ur": {
@@ -3182,7 +3182,7 @@
     "translations": {
       "hi": {
         "name": "हरी मिर्च",
-        "aliases": "hari mirch",
+        "aliases": "hari mirch mirca",
         "needs_review": false
       },
       "ta": {
@@ -3192,17 +3192,17 @@
       },
       "te": {
         "name": "పచ్చిమిర్చి",
-        "aliases": "",
+        "aliases": "paccimirci",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಸಿ ಮೆಣಸಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "hasi menasinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "പച്ചമുളക്",
-        "aliases": "",
+        "aliases": "paccamulak",
         "needs_review": false
       },
       "ur": {
@@ -3218,7 +3218,7 @@
     "translations": {
       "hi": {
         "name": "साबुत मूंग",
-        "aliases": "",
+        "aliases": "sabuta mumga",
         "needs_review": false
       },
       "ta": {
@@ -3228,17 +3228,17 @@
       },
       "te": {
         "name": "పెసలు",
-        "aliases": "",
+        "aliases": "pesalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹೆಸರುಕಾಳು",
-        "aliases": "",
+        "aliases": "hesarukalu",
         "needs_review": false
       },
       "ml": {
         "name": "ചെറുപയർ",
-        "aliases": "",
+        "aliases": "cerupaya",
         "needs_review": false
       },
       "ur": {
@@ -3254,7 +3254,7 @@
     "translations": {
       "hi": {
         "name": "हरी मटर",
-        "aliases": "",
+        "aliases": "hari matara",
         "needs_review": false
       },
       "ta": {
@@ -3264,17 +3264,17 @@
       },
       "te": {
         "name": "పచ్చి బఠానీ",
-        "aliases": "",
+        "aliases": "pacci bathani",
         "needs_review": false
       },
       "kn": {
         "name": "ಹಸಿ ಬಟಾಣಿ",
-        "aliases": "",
+        "aliases": "hasi batani",
         "needs_review": false
       },
       "ml": {
         "name": "പച്ച പട്ടാണി",
-        "aliases": "",
+        "aliases": "pacca pattani",
         "needs_review": false
       },
       "ur": {
@@ -3290,7 +3290,7 @@
     "translations": {
       "hi": {
         "name": "ग्रीन टी",
-        "aliases": "",
+        "aliases": "grina",
         "needs_review": false
       },
       "ur": {
@@ -3306,7 +3306,7 @@
     "translations": {
       "hi": {
         "name": "मूंगफली का तेल",
-        "aliases": "",
+        "aliases": "mumgaphali tela",
         "needs_review": false
       },
       "ta": {
@@ -3316,17 +3316,17 @@
       },
       "te": {
         "name": "వేరుశనగ నూనె",
-        "aliases": "",
+        "aliases": "verushanaga nune",
         "needs_review": false
       },
       "kn": {
         "name": "ಶೇಂಗಾ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "shemga enne",
         "needs_review": false
       },
       "ml": {
         "name": "കപ്പലണ്ടി എണ്ണ",
-        "aliases": "",
+        "aliases": "kappalanti enna",
         "needs_review": false
       },
       "ur": {
@@ -3342,7 +3342,7 @@
     "translations": {
       "hi": {
         "name": "अमरूद",
-        "aliases": "amrood",
+        "aliases": "amrood amaruda",
         "needs_review": false
       },
       "ta": {
@@ -3352,17 +3352,17 @@
       },
       "te": {
         "name": "జామపండు",
-        "aliases": "",
+        "aliases": "jamapamdu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೀಬೆಹಣ್ಣು",
-        "aliases": "",
+        "aliases": "sibehannu",
         "needs_review": false
       },
       "ml": {
         "name": "പേരയ്ക്ക",
-        "aliases": "",
+        "aliases": "peraykka",
         "needs_review": false
       },
       "ur": {
@@ -3378,7 +3378,7 @@
     "translations": {
       "hi": {
         "name": "बालों का तेल",
-        "aliases": "",
+        "aliases": "balom tela",
         "needs_review": false
       },
       "ta": {
@@ -3388,17 +3388,17 @@
       },
       "te": {
         "name": "జుట్టు నూనె",
-        "aliases": "",
+        "aliases": "juttu nune",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೂದಲ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "kudala enne",
         "needs_review": false
       },
       "ml": {
         "name": "തലയെണ്ണ",
-        "aliases": "",
+        "aliases": "talayenna",
         "needs_review": false
       },
       "ur": {
@@ -3414,7 +3414,7 @@
     "translations": {
       "hi": {
         "name": "हींग",
-        "aliases": "hing",
+        "aliases": "hing himga",
         "needs_review": false
       },
       "ta": {
@@ -3424,17 +3424,17 @@
       },
       "te": {
         "name": "ఇంగువ",
-        "aliases": "",
+        "aliases": "imguva",
         "needs_review": false
       },
       "kn": {
         "name": "ಇಂಗು",
-        "aliases": "",
+        "aliases": "imgu",
         "needs_review": false
       },
       "ml": {
         "name": "കായം",
-        "aliases": "",
+        "aliases": "kayam",
         "needs_review": false
       },
       "ur": {
@@ -3450,7 +3450,7 @@
     "translations": {
       "hi": {
         "name": "शहद",
-        "aliases": "shahad",
+        "aliases": "shahad shahada",
         "needs_review": false
       },
       "ta": {
@@ -3460,12 +3460,12 @@
       },
       "te": {
         "name": "తేనె",
-        "aliases": "",
+        "aliases": "tene",
         "needs_review": false
       },
       "kn": {
         "name": "ಜೇನುತುಪ್ಪ",
-        "aliases": "",
+        "aliases": "jenutuppa",
         "needs_review": false
       },
       "ml": {
@@ -3486,7 +3486,7 @@
     "translations": {
       "hi": {
         "name": "इडली बैटर",
-        "aliases": "",
+        "aliases": "idali baitara",
         "needs_review": false
       },
       "ta": {
@@ -3496,17 +3496,17 @@
       },
       "te": {
         "name": "ఇడ్లీ పిండి",
-        "aliases": "",
+        "aliases": "idli pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಇಡ್ಲಿ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "idli hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ഇഡ്ലി മാവ്",
-        "aliases": "",
+        "aliases": "idli mav",
         "needs_review": false
       },
       "ur": {
@@ -3522,7 +3522,7 @@
     "translations": {
       "hi": {
         "name": "इडली चावल",
-        "aliases": "",
+        "aliases": "idali cavala",
         "needs_review": false
       },
       "ta": {
@@ -3532,17 +3532,17 @@
       },
       "te": {
         "name": "ఇడ్లీ బియ్యం",
-        "aliases": "",
+        "aliases": "idli biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಇಡ್ಲಿ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "idli akki",
         "needs_review": false
       },
       "ml": {
         "name": "ഇഡ്ലി അരി",
-        "aliases": "",
+        "aliases": "idli ari",
         "needs_review": false
       },
       "ur": {
@@ -3558,7 +3558,7 @@
     "translations": {
       "hi": {
         "name": "इंस्टेंट कॉफ़ी",
-        "aliases": "",
+        "aliases": "imstemta pha",
         "needs_review": false
       },
       "ur": {
@@ -3574,7 +3574,7 @@
     "translations": {
       "hi": {
         "name": "गुड़",
-        "aliases": "gud gur",
+        "aliases": "gud gur guda",
         "needs_review": false
       },
       "ta": {
@@ -3584,17 +3584,17 @@
       },
       "te": {
         "name": "బెల్లం",
-        "aliases": "",
+        "aliases": "bellam",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಲ್ಲ",
-        "aliases": "",
+        "aliases": "bella",
         "needs_review": false
       },
       "ml": {
         "name": "ശർക്കര",
-        "aliases": "",
+        "aliases": "sha kkara",
         "needs_review": false
       },
       "ur": {
@@ -3610,7 +3610,7 @@
     "translations": {
       "hi": {
         "name": "ज्वार का आटा",
-        "aliases": "",
+        "aliases": "jvara ata",
         "needs_review": false
       },
       "ta": {
@@ -3620,17 +3620,17 @@
       },
       "te": {
         "name": "జొన్న పిండి",
-        "aliases": "",
+        "aliases": "jonna pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಜೋಳದ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "jolada hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ചോളപ്പൊടി",
-        "aliases": "",
+        "aliases": "colappoti",
         "needs_review": false
       },
       "ur": {
@@ -3646,7 +3646,7 @@
     "translations": {
       "hi": {
         "name": "काबुली चना",
-        "aliases": "chhole chole",
+        "aliases": "chhole chole kabuli cana",
         "needs_review": false
       },
       "ta": {
@@ -3656,17 +3656,17 @@
       },
       "te": {
         "name": "కాబూలీ శనగ",
-        "aliases": "",
+        "aliases": "kabuli shanaga",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಾಬೂಲಿ ಕಡಲೆ",
-        "aliases": "",
+        "aliases": "kabuli kadale",
         "needs_review": false
       },
       "ml": {
         "name": "വെള്ളക്കടല",
-        "aliases": "",
+        "aliases": "vellakkatala",
         "needs_review": false
       },
       "ur": {
@@ -3682,7 +3682,7 @@
     "translations": {
       "hi": {
         "name": "काला चना",
-        "aliases": "",
+        "aliases": "kala cana",
         "needs_review": false
       },
       "ta": {
@@ -3692,17 +3692,17 @@
       },
       "te": {
         "name": "నల్ల శనగలు",
-        "aliases": "",
+        "aliases": "nalla shanagalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಪ್ಪು ಕಡಲೆ",
-        "aliases": "",
+        "aliases": "kappu kadale",
         "needs_review": false
       },
       "ml": {
         "name": "കറുത്ത കടല",
-        "aliases": "",
+        "aliases": "karutta katala",
         "needs_review": false
       },
       "ur": {
@@ -3718,7 +3718,7 @@
     "translations": {
       "hi": {
         "name": "कसूरी मेथी",
-        "aliases": "",
+        "aliases": "kasuri methi",
         "needs_review": false
       },
       "ta": {
@@ -3728,17 +3728,17 @@
       },
       "te": {
         "name": "కసూరి మెంతి",
-        "aliases": "",
+        "aliases": "kasuri memti",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಸೂರಿ ಮೆಂತ್ಯ",
-        "aliases": "",
+        "aliases": "kasuri memtya",
         "needs_review": false
       },
       "ml": {
         "name": "കസൂരി മേത്തി",
-        "aliases": "",
+        "aliases": "kasuri metti",
         "needs_review": false
       },
       "ur": {
@@ -3754,7 +3754,7 @@
     "translations": {
       "hi": {
         "name": "कोकम",
-        "aliases": "",
+        "aliases": "kokama",
         "needs_review": false
       },
       "ur": {
@@ -3770,7 +3770,7 @@
     "translations": {
       "hi": {
         "name": "कोलम चावल",
-        "aliases": "",
+        "aliases": "kolama cavala",
         "needs_review": false
       },
       "ta": {
@@ -3780,17 +3780,17 @@
       },
       "te": {
         "name": "కొలం బియ్యం",
-        "aliases": "",
+        "aliases": "kolam biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೊಲಂ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "kolam akki",
         "needs_review": false
       },
       "ml": {
         "name": "കോലം അരി",
-        "aliases": "",
+        "aliases": "kolam ari",
         "needs_review": false
       },
       "ur": {
@@ -3806,7 +3806,7 @@
     "translations": {
       "hi": {
         "name": "भिंडी",
-        "aliases": "bhindi",
+        "aliases": "bhindi bhimdi",
         "needs_review": false
       },
       "ta": {
@@ -3816,17 +3816,17 @@
       },
       "te": {
         "name": "బెండకాయ",
-        "aliases": "",
+        "aliases": "bemdakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಂಡೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "bemdekayi",
         "needs_review": false
       },
       "ml": {
         "name": "വെണ്ടയ്ക്ക",
-        "aliases": "",
+        "aliases": "ventaykka",
         "needs_review": false
       },
       "ur": {
@@ -3852,17 +3852,17 @@
       },
       "te": {
         "name": "నిమ్మకాయ",
-        "aliases": "",
+        "aliases": "nimmakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ನಿಂಬೆಹಣ್ಣು",
-        "aliases": "",
+        "aliases": "nimbehannu",
         "needs_review": false
       },
       "ml": {
         "name": "നാരങ്ങ",
-        "aliases": "",
+        "aliases": "naranna",
         "needs_review": false
       },
       "ur": {
@@ -3878,7 +3878,7 @@
     "translations": {
       "hi": {
         "name": "नींबू का अचार",
-        "aliases": "",
+        "aliases": "nimbu acara",
         "needs_review": false
       },
       "ta": {
@@ -3888,17 +3888,17 @@
       },
       "te": {
         "name": "నిమ్మకాయ ఊరగాయ",
-        "aliases": "",
+        "aliases": "nimmakaya uragaya",
         "needs_review": false
       },
       "kn": {
         "name": "ನಿಂಬೆ ಉಪ್ಪಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "nimbe uppinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "നാരങ്ങ അച്ചാർ",
-        "aliases": "",
+        "aliases": "naranna acca",
         "needs_review": false
       },
       "ur": {
@@ -3914,7 +3914,7 @@
     "translations": {
       "hi": {
         "name": "लोबिया",
-        "aliases": "lobia",
+        "aliases": "lobia lobiya",
         "needs_review": false
       },
       "ta": {
@@ -3924,17 +3924,17 @@
       },
       "te": {
         "name": "అలసందలు",
-        "aliases": "",
+        "aliases": "alasamdalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಲಸಂದೆ",
-        "aliases": "",
+        "aliases": "alasamde",
         "needs_review": false
       },
       "ml": {
         "name": "വൻപയർ",
-        "aliases": "",
+        "aliases": "paya",
         "needs_review": false
       },
       "ur": {
@@ -3960,17 +3960,17 @@
       },
       "te": {
         "name": "మైదా",
-        "aliases": "",
+        "aliases": "maida",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೈದಾ",
-        "aliases": "",
+        "aliases": "maida",
         "needs_review": false
       },
       "ml": {
         "name": "മൈദ",
-        "aliases": "",
+        "aliases": "maida",
         "needs_review": false
       },
       "ur": {
@@ -3986,7 +3986,7 @@
     "translations": {
       "hi": {
         "name": "आम",
-        "aliases": "aam",
+        "aliases": "aam ama",
         "needs_review": false
       },
       "ta": {
@@ -3996,17 +3996,17 @@
       },
       "te": {
         "name": "మామిడిపండు",
-        "aliases": "",
+        "aliases": "mamidipamdu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಾವಿನಹಣ್ಣು",
-        "aliases": "",
+        "aliases": "mavinahannu",
         "needs_review": false
       },
       "ml": {
         "name": "മാമ്പഴം",
-        "aliases": "",
+        "aliases": "mampalam",
         "needs_review": false
       },
       "ur": {
@@ -4022,7 +4022,7 @@
     "translations": {
       "hi": {
         "name": "आम का अचार",
-        "aliases": "",
+        "aliases": "ama acara",
         "needs_review": false
       },
       "ta": {
@@ -4032,17 +4032,17 @@
       },
       "te": {
         "name": "మామిడికాయ ఊరగాయ",
-        "aliases": "",
+        "aliases": "mamidikaya uragaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಾವಿನಕಾಯಿ ಉಪ್ಪಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "mavinakayi uppinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "മാങ്ങ അച്ചാർ",
-        "aliases": "",
+        "aliases": "manna acca",
         "needs_review": false
       },
       "ur": {
@@ -4058,7 +4058,7 @@
     "translations": {
       "hi": {
         "name": "मसूर दाल",
-        "aliases": "masoor dal",
+        "aliases": "masoor dal masura dala",
         "needs_review": false
       },
       "ta": {
@@ -4068,17 +4068,17 @@
       },
       "te": {
         "name": "మసూర్ పప్పు",
-        "aliases": "",
+        "aliases": "masur pappu",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಸೂರ್ ಬೇಳೆ",
-        "aliases": "",
+        "aliases": "masur bele",
         "needs_review": false
       },
       "ml": {
         "name": "മസൂർ പരിപ്പ്",
-        "aliases": "",
+        "aliases": "masu paripp",
         "needs_review": false
       },
       "ur": {
@@ -4094,7 +4094,7 @@
     "translations": {
       "hi": {
         "name": "माचिस",
-        "aliases": "machis",
+        "aliases": "machis macisa",
         "needs_review": false
       },
       "ta": {
@@ -4104,17 +4104,17 @@
       },
       "te": {
         "name": "అగ్గిపెట్టె",
-        "aliases": "",
+        "aliases": "aggipette",
         "needs_review": false
       },
       "kn": {
         "name": "ಬೆಂಕಿಪೊಟ್ಟಣ",
-        "aliases": "",
+        "aliases": "bemkipottana",
         "needs_review": false
       },
       "ml": {
         "name": "തീപ്പെട്ടി",
-        "aliases": "",
+        "aliases": "tippetti",
         "needs_review": false
       },
       "ur": {
@@ -4130,7 +4130,7 @@
     "translations": {
       "hi": {
         "name": "मटकी",
-        "aliases": "",
+        "aliases": "mataki",
         "needs_review": false
       },
       "ur": {
@@ -4146,7 +4146,7 @@
     "translations": {
       "hi": {
         "name": "मट्टा चावल",
-        "aliases": "",
+        "aliases": "matta cavala",
         "needs_review": false
       },
       "ta": {
@@ -4156,17 +4156,17 @@
       },
       "te": {
         "name": "మట్టా బియ్యం",
-        "aliases": "",
+        "aliases": "matta biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಟ್ಟಾ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "matta akki",
         "needs_review": false
       },
       "ml": {
         "name": "മട്ട അരി",
-        "aliases": "",
+        "aliases": "matta ari",
         "needs_review": false
       },
       "ur": {
@@ -4182,7 +4182,7 @@
     "translations": {
       "hi": {
         "name": "मेथी",
-        "aliases": "",
+        "aliases": "methi",
         "needs_review": false
       },
       "ta": {
@@ -4192,17 +4192,17 @@
       },
       "te": {
         "name": "మెంతికూర",
-        "aliases": "",
+        "aliases": "memtikura",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೆಂತ್ಯ ಸೊಪ್ಪು",
-        "aliases": "",
+        "aliases": "memtya soppu",
         "needs_review": false
       },
       "ml": {
         "name": "ഉലുവയില",
-        "aliases": "",
+        "aliases": "uluvayila",
         "needs_review": false
       },
       "ur": {
@@ -4228,17 +4228,17 @@
       },
       "te": {
         "name": "పుదీనా",
-        "aliases": "",
+        "aliases": "pudina",
         "needs_review": false
       },
       "kn": {
         "name": "ಪುದೀನ",
-        "aliases": "",
+        "aliases": "pudina",
         "needs_review": false
       },
       "ml": {
         "name": "പുതിന",
-        "aliases": "",
+        "aliases": "putina",
         "needs_review": false
       },
       "ur": {
@@ -4254,7 +4254,7 @@
     "translations": {
       "hi": {
         "name": "पुदीना चटनी",
-        "aliases": "",
+        "aliases": "pudina catani",
         "needs_review": false
       },
       "ta": {
@@ -4264,17 +4264,17 @@
       },
       "te": {
         "name": "పుదీనా చట్నీ",
-        "aliases": "",
+        "aliases": "pudina catni",
         "needs_review": false
       },
       "kn": {
         "name": "ಪುದೀನ ಚಟ್ನಿ",
-        "aliases": "",
+        "aliases": "pudina catni",
         "needs_review": false
       },
       "ml": {
         "name": "പുതിന ചട്ണി",
-        "aliases": "",
+        "aliases": "putina catni",
         "needs_review": false
       },
       "ur": {
@@ -4290,7 +4290,7 @@
     "translations": {
       "hi": {
         "name": "मिला-जुला अचार",
-        "aliases": "",
+        "aliases": "mila jula acara",
         "needs_review": false
       },
       "ta": {
@@ -4300,17 +4300,17 @@
       },
       "te": {
         "name": "మిశ్రమ ఊరగాయ",
-        "aliases": "",
+        "aliases": "mishrama uragaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಿಶ್ರ ಉಪ್ಪಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "mishra uppinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "മിക്സഡ് അച്ചാർ",
-        "aliases": "",
+        "aliases": "miksad acca",
         "needs_review": false
       },
       "ur": {
@@ -4326,7 +4326,7 @@
     "translations": {
       "hi": {
         "name": "मूंग दाल",
-        "aliases": "moong dal",
+        "aliases": "moong dal mumga dala",
         "needs_review": false
       },
       "ta": {
@@ -4336,17 +4336,17 @@
       },
       "te": {
         "name": "పెసర పప్పు",
-        "aliases": "",
+        "aliases": "pesara pappu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹೆಸರು ಬೇಳೆ",
-        "aliases": "",
+        "aliases": "hesaru bele",
         "needs_review": false
       },
       "ml": {
         "name": "ചെറുപയർ പരിപ്പ്",
-        "aliases": "",
+        "aliases": "cerupaya paripp",
         "needs_review": false
       },
       "ur": {
@@ -4362,7 +4362,7 @@
     "translations": {
       "hi": {
         "name": "मौसंबी",
-        "aliases": "",
+        "aliases": "mausambi",
         "needs_review": false
       },
       "ta": {
@@ -4372,17 +4372,17 @@
       },
       "te": {
         "name": "బత్తాయి",
-        "aliases": "",
+        "aliases": "battayi",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೂಸಂಬಿ",
-        "aliases": "",
+        "aliases": "musambi",
         "needs_review": false
       },
       "ml": {
         "name": "മുസംബി",
-        "aliases": "",
+        "aliases": "musambi",
         "needs_review": false
       },
       "ur": {
@@ -4398,7 +4398,7 @@
     "translations": {
       "hi": {
         "name": "मच्छर कॉइल",
-        "aliases": "",
+        "aliases": "macchara ila",
         "needs_review": false
       },
       "ta": {
@@ -4408,17 +4408,17 @@
       },
       "te": {
         "name": "దోమల చుట్ట",
-        "aliases": "",
+        "aliases": "domala cutta",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೊಳ್ಳೆ ಸುರುಳಿ",
-        "aliases": "",
+        "aliases": "solle suruli",
         "needs_review": false
       },
       "ml": {
         "name": "കൊതുക് തിരി",
-        "aliases": "",
+        "aliases": "kotuk tiri",
         "needs_review": false
       },
       "ur": {
@@ -4434,7 +4434,7 @@
     "translations": {
       "hi": {
         "name": "मोठ",
-        "aliases": "",
+        "aliases": "motha",
         "needs_review": false
       },
       "ur": {
@@ -4450,7 +4450,7 @@
     "translations": {
       "hi": {
         "name": "मल्टीग्रेन आटा",
-        "aliases": "",
+        "aliases": "maltigrena ata",
         "needs_review": false
       },
       "ur": {
@@ -4466,7 +4466,7 @@
     "translations": {
       "hi": {
         "name": "मशरूम",
-        "aliases": "",
+        "aliases": "masharuma",
         "needs_review": false
       },
       "ta": {
@@ -4476,12 +4476,12 @@
       },
       "te": {
         "name": "పుట్టగొడుగు",
-        "aliases": "",
+        "aliases": "puttagodugu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಣಬೆ",
-        "aliases": "",
+        "aliases": "anabe",
         "needs_review": false
       },
       "ml": {
@@ -4502,7 +4502,7 @@
     "translations": {
       "hi": {
         "name": "सरसों का तेल",
-        "aliases": "",
+        "aliases": "sarasom tela",
         "needs_review": false
       },
       "ta": {
@@ -4512,17 +4512,17 @@
       },
       "te": {
         "name": "ఆవనూనె",
-        "aliases": "",
+        "aliases": "avanune",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಾಸಿವೆ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "sasive enne",
         "needs_review": false
       },
       "ml": {
         "name": "കടുകെണ്ണ",
-        "aliases": "",
+        "aliases": "katukenna",
         "needs_review": false
       },
       "ur": {
@@ -4538,7 +4538,7 @@
     "translations": {
       "hi": {
         "name": "सरसों",
-        "aliases": "rai sarson",
+        "aliases": "rai sarson sarasom",
         "needs_review": false
       },
       "ta": {
@@ -4548,17 +4548,17 @@
       },
       "te": {
         "name": "ఆవాలు",
-        "aliases": "",
+        "aliases": "avalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಾಸಿವೆ",
-        "aliases": "",
+        "aliases": "sasive",
         "needs_review": false
       },
       "ml": {
         "name": "കടുക്",
-        "aliases": "",
+        "aliases": "katuk",
         "needs_review": false
       },
       "ur": {
@@ -4574,7 +4574,7 @@
     "translations": {
       "hi": {
         "name": "ओट्स",
-        "aliases": "oats jai",
+        "aliases": "oats jai otsa",
         "needs_review": false
       },
       "ur": {
@@ -4590,7 +4590,7 @@
     "translations": {
       "hi": {
         "name": "जैतून का तेल",
-        "aliases": "",
+        "aliases": "jaituna tela",
         "needs_review": false
       },
       "ta": {
@@ -4600,17 +4600,17 @@
       },
       "te": {
         "name": "ఆలివ్ నూనె",
-        "aliases": "",
+        "aliases": "aliv nune",
         "needs_review": false
       },
       "kn": {
         "name": "ಆಲಿವ್ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "aliv enne",
         "needs_review": false
       },
       "ml": {
         "name": "ഒലിവ് എണ്ണ",
-        "aliases": "",
+        "aliases": "oliv enna",
         "needs_review": false
       },
       "ur": {
@@ -4626,7 +4626,7 @@
     "translations": {
       "hi": {
         "name": "प्याज़",
-        "aliases": "pyaz pyaaz",
+        "aliases": "pyaz pyaaz pyaja",
         "needs_review": false
       },
       "ta": {
@@ -4636,17 +4636,17 @@
       },
       "te": {
         "name": "ఉల్లిపాయ",
-        "aliases": "",
+        "aliases": "ullipaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಈರುಳ್ಳಿ",
-        "aliases": "",
+        "aliases": "irulli",
         "needs_review": false
       },
       "ml": {
         "name": "സവാള",
-        "aliases": "",
+        "aliases": "savala",
         "needs_review": false
       },
       "ur": {
@@ -4662,7 +4662,7 @@
     "translations": {
       "hi": {
         "name": "संतरा",
-        "aliases": "santra",
+        "aliases": "santra samtara",
         "needs_review": false
       },
       "ta": {
@@ -4672,17 +4672,17 @@
       },
       "te": {
         "name": "నారింజ",
-        "aliases": "",
+        "aliases": "narimja",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಿತ್ತಳೆ",
-        "aliases": "",
+        "aliases": "kittale",
         "needs_review": false
       },
       "ml": {
         "name": "ഓറഞ്ച്",
-        "aliases": "",
+        "aliases": "oranc",
         "needs_review": false
       },
       "ur": {
@@ -4698,7 +4698,7 @@
     "translations": {
       "hi": {
         "name": "पनीर",
-        "aliases": "paneer",
+        "aliases": "paneer panira",
         "needs_review": false
       },
       "ta": {
@@ -4708,17 +4708,17 @@
       },
       "te": {
         "name": "పనీర్",
-        "aliases": "",
+        "aliases": "panir",
         "needs_review": false
       },
       "kn": {
         "name": "ಪನೀರ್",
-        "aliases": "",
+        "aliases": "panir",
         "needs_review": false
       },
       "ml": {
         "name": "പനീർ",
-        "aliases": "",
+        "aliases": "pani",
         "needs_review": false
       },
       "ur": {
@@ -4744,17 +4744,17 @@
       },
       "te": {
         "name": "బొప్పాయి",
-        "aliases": "",
+        "aliases": "boppayi",
         "needs_review": false
       },
       "kn": {
         "name": "ಪಪ್ಪಾಯಿ",
-        "aliases": "",
+        "aliases": "pappayi",
         "needs_review": false
       },
       "ml": {
         "name": "പപ്പായ",
-        "aliases": "",
+        "aliases": "pappaya",
         "needs_review": false
       },
       "ur": {
@@ -4780,17 +4780,17 @@
       },
       "te": {
         "name": "పరాఠా",
-        "aliases": "",
+        "aliases": "paratha",
         "needs_review": false
       },
       "kn": {
         "name": "ಪರೋಟಾ",
-        "aliases": "",
+        "aliases": "parota",
         "needs_review": false
       },
       "ml": {
         "name": "പൊറോട്ട",
-        "aliases": "",
+        "aliases": "porotta",
         "needs_review": false
       },
       "ur": {
@@ -4806,7 +4806,7 @@
     "translations": {
       "hi": {
         "name": "मूंगफली",
-        "aliases": "moongphali",
+        "aliases": "moongphali mumgaphali",
         "needs_review": false
       },
       "ta": {
@@ -4816,17 +4816,17 @@
       },
       "te": {
         "name": "వేరుశనగ",
-        "aliases": "",
+        "aliases": "verushanaga",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಡಲೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "kadalekayi",
         "needs_review": false
       },
       "ml": {
         "name": "കപ്പലണ്ടി",
-        "aliases": "",
+        "aliases": "kappalanti",
         "needs_review": false
       },
       "ur": {
@@ -4842,7 +4842,7 @@
     "translations": {
       "hi": {
         "name": "अनानास",
-        "aliases": "",
+        "aliases": "ananasa",
         "needs_review": false
       },
       "ta": {
@@ -4852,17 +4852,17 @@
       },
       "te": {
         "name": "అనాస",
-        "aliases": "",
+        "aliases": "anasa",
         "needs_review": false
       },
       "kn": {
         "name": "ಅನಾನಸ್",
-        "aliases": "",
+        "aliases": "ananas",
         "needs_review": false
       },
       "ml": {
         "name": "കൈതച്ചക്ക",
-        "aliases": "",
+        "aliases": "kaitaccakka",
         "needs_review": false
       },
       "ur": {
@@ -4888,17 +4888,17 @@
       },
       "te": {
         "name": "అటుకులు",
-        "aliases": "",
+        "aliases": "atukulu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅವಲಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "avalakki",
         "needs_review": false
       },
       "ml": {
         "name": "അവൽ",
-        "aliases": "",
+        "aliases": "ava",
         "needs_review": false
       },
       "ur": {
@@ -4914,7 +4914,7 @@
     "translations": {
       "hi": {
         "name": "अनार",
-        "aliases": "anar",
+        "aliases": "anar anara",
         "needs_review": false
       },
       "ta": {
@@ -4924,17 +4924,17 @@
       },
       "te": {
         "name": "దానిమ్మ",
-        "aliases": "",
+        "aliases": "danimma",
         "needs_review": false
       },
       "kn": {
         "name": "ದಾಳಿಂಬೆ",
-        "aliases": "",
+        "aliases": "dalimbe",
         "needs_review": false
       },
       "ml": {
         "name": "മാതളം",
-        "aliases": "",
+        "aliases": "matalam",
         "needs_review": false
       },
       "ur": {
@@ -4950,7 +4950,7 @@
     "translations": {
       "hi": {
         "name": "पोन्नी चावल",
-        "aliases": "",
+        "aliases": "ponni cavala",
         "needs_review": false
       },
       "ta": {
@@ -4960,17 +4960,17 @@
       },
       "te": {
         "name": "పొన్ని బియ్యం",
-        "aliases": "",
+        "aliases": "ponni biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಪೊನ್ನಿ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "ponni akki",
         "needs_review": false
       },
       "ml": {
         "name": "പൊന്നി അരി",
-        "aliases": "",
+        "aliases": "ponni ari",
         "needs_review": false
       },
       "ur": {
@@ -4996,17 +4996,17 @@
       },
       "te": {
         "name": "బంగాళాదుంప",
-        "aliases": "",
+        "aliases": "bamgaladumpa",
         "needs_review": false
       },
       "kn": {
         "name": "ಆಲೂಗಡ್ಡೆ",
-        "aliases": "",
+        "aliases": "alugadde",
         "needs_review": false
       },
       "ml": {
         "name": "ഉരുളക്കിഴങ്ങ്",
-        "aliases": "",
+        "aliases": "urulakkilann",
         "needs_review": false
       },
       "ur": {
@@ -5032,17 +5032,17 @@
       },
       "te": {
         "name": "గుమ్మడికాయ",
-        "aliases": "",
+        "aliases": "gummadikaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಕುಂಬಳಕಾಯಿ",
-        "aliases": "",
+        "aliases": "kumbalakayi",
         "needs_review": false
       },
       "ml": {
         "name": "മത്തങ്ങ",
-        "aliases": "",
+        "aliases": "mattanna",
         "needs_review": false
       },
       "ur": {
@@ -5058,7 +5058,7 @@
     "translations": {
       "hi": {
         "name": "मूली",
-        "aliases": "mooli",
+        "aliases": "mooli muli",
         "needs_review": false
       },
       "ta": {
@@ -5068,17 +5068,17 @@
       },
       "te": {
         "name": "ముల్లంగి",
-        "aliases": "",
+        "aliases": "mullamgi",
         "needs_review": false
       },
       "kn": {
         "name": "ಮೂಲಂಗಿ",
-        "aliases": "",
+        "aliases": "mulamgi",
         "needs_review": false
       },
       "ml": {
         "name": "മുള്ളങ്കി",
-        "aliases": "",
+        "aliases": "mullanki",
         "needs_review": false
       },
       "ur": {
@@ -5094,7 +5094,7 @@
     "translations": {
       "hi": {
         "name": "रागी का आटा",
-        "aliases": "",
+        "aliases": "ragi ata",
         "needs_review": false
       },
       "ta": {
@@ -5104,17 +5104,17 @@
       },
       "te": {
         "name": "రాగి పిండి",
-        "aliases": "",
+        "aliases": "ragi pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ರಾಗಿ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "ragi hittu",
         "needs_review": false
       },
       "ml": {
         "name": "റാഗി പൊടി",
-        "aliases": "",
+        "aliases": "ragi poti",
         "needs_review": false
       },
       "ur": {
@@ -5130,7 +5130,7 @@
     "translations": {
       "hi": {
         "name": "किशमिश",
-        "aliases": "kishmish",
+        "aliases": "kishmish kishamisha",
         "needs_review": false
       },
       "ta": {
@@ -5140,17 +5140,17 @@
       },
       "te": {
         "name": "ఎండు ద్రాక్ష",
-        "aliases": "",
+        "aliases": "emdu draksha",
         "needs_review": false
       },
       "kn": {
         "name": "ಒಣ ದ್ರಾಕ್ಷಿ",
-        "aliases": "",
+        "aliases": "ona drakshi",
         "needs_review": false
       },
       "ml": {
         "name": "ഉണക്കമുന്തിരി",
-        "aliases": "",
+        "aliases": "unakkamuntiri",
         "needs_review": false
       },
       "ur": {
@@ -5166,7 +5166,7 @@
     "translations": {
       "hi": {
         "name": "चितरा राजमा",
-        "aliases": "",
+        "aliases": "citara rajama",
         "needs_review": false
       },
       "ta": {
@@ -5176,17 +5176,17 @@
       },
       "te": {
         "name": "చిత్ర రాజ్మా",
-        "aliases": "",
+        "aliases": "citra rajma",
         "needs_review": false
       },
       "kn": {
         "name": "ಚಿತ್ರಾ ರಾಜ್ಮಾ",
-        "aliases": "",
+        "aliases": "citra rajma",
         "needs_review": false
       },
       "ml": {
         "name": "ചിത്ര രാജ്മ",
-        "aliases": "",
+        "aliases": "citra rajma",
         "needs_review": false
       },
       "ur": {
@@ -5202,7 +5202,7 @@
     "translations": {
       "hi": {
         "name": "लाल राजमा",
-        "aliases": "",
+        "aliases": "lala rajama",
         "needs_review": false
       },
       "ta": {
@@ -5212,17 +5212,17 @@
       },
       "te": {
         "name": "ఎర్ర రాజ్మా",
-        "aliases": "",
+        "aliases": "erra rajma",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೆಂಪು ರಾಜ್ಮಾ",
-        "aliases": "",
+        "aliases": "kempu rajma",
         "needs_review": false
       },
       "ml": {
         "name": "ചുവന്ന രാജ്മ",
-        "aliases": "",
+        "aliases": "cuvanna rajma",
         "needs_review": false
       },
       "ur": {
@@ -5238,7 +5238,7 @@
     "translations": {
       "hi": {
         "name": "रसम पाउडर",
-        "aliases": "",
+        "aliases": "rasama paudara",
         "needs_review": false
       },
       "ta": {
@@ -5248,17 +5248,17 @@
       },
       "te": {
         "name": "రసం పొడి",
-        "aliases": "",
+        "aliases": "rasam podi",
         "needs_review": false
       },
       "kn": {
         "name": "ರಸಂ ಪುಡಿ",
-        "aliases": "",
+        "aliases": "rasam pudi",
         "needs_review": false
       },
       "ml": {
         "name": "രസം പൊടി",
-        "aliases": "",
+        "aliases": "rasam poti",
         "needs_review": false
       },
       "ur": {
@@ -5274,7 +5274,7 @@
     "translations": {
       "hi": {
         "name": "कच्चा केला",
-        "aliases": "",
+        "aliases": "kacca kela",
         "needs_review": false
       },
       "ta": {
@@ -5284,17 +5284,17 @@
       },
       "te": {
         "name": "అరటికాయ",
-        "aliases": "",
+        "aliases": "aratikaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಬಾಳೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "balekayi",
         "needs_review": false
       },
       "ml": {
         "name": "വാഴക്ക",
-        "aliases": "",
+        "aliases": "valakka",
         "needs_review": false
       },
       "ur": {
@@ -5310,7 +5310,7 @@
     "translations": {
       "hi": {
         "name": "कच्चा आम",
-        "aliases": "",
+        "aliases": "kacca ama",
         "needs_review": false
       },
       "ta": {
@@ -5320,17 +5320,17 @@
       },
       "te": {
         "name": "మామిడికాయ",
-        "aliases": "",
+        "aliases": "mamidikaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಮಾವಿನಕಾಯಿ",
-        "aliases": "",
+        "aliases": "mavinakayi",
         "needs_review": false
       },
       "ml": {
         "name": "മാങ്ങ",
-        "aliases": "",
+        "aliases": "manna",
         "needs_review": false
       },
       "ur": {
@@ -5346,7 +5346,7 @@
     "translations": {
       "hi": {
         "name": "रेज़र",
-        "aliases": "ustra razor",
+        "aliases": "ustra razor reja",
         "needs_review": false
       },
       "ur": {
@@ -5362,7 +5362,7 @@
     "translations": {
       "hi": {
         "name": "लाल मिर्च पाउडर",
-        "aliases": "lal mirch",
+        "aliases": "lal mirch lala mirca paudara",
         "needs_review": false
       },
       "ta": {
@@ -5372,17 +5372,17 @@
       },
       "te": {
         "name": "ఎర్ర కారం",
-        "aliases": "",
+        "aliases": "erra karam",
         "needs_review": false
       },
       "kn": {
         "name": "ಕೆಂಪು ಮೆಣಸಿನ ಪುಡಿ",
-        "aliases": "",
+        "aliases": "kempu menasina pudi",
         "needs_review": false
       },
       "ml": {
         "name": "മുളകുപൊടി",
-        "aliases": "",
+        "aliases": "mulakupoti",
         "needs_review": false
       },
       "ur": {
@@ -5398,7 +5398,7 @@
     "translations": {
       "hi": {
         "name": "चावल का आटा",
-        "aliases": "",
+        "aliases": "cavala ata",
         "needs_review": false
       },
       "ta": {
@@ -5408,17 +5408,17 @@
       },
       "te": {
         "name": "బియ్యప్పిండి",
-        "aliases": "",
+        "aliases": "biyyappimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಅಕ್ಕಿ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "akki hittu",
         "needs_review": false
       },
       "ml": {
         "name": "അരിപ്പൊടി",
-        "aliases": "",
+        "aliases": "arippoti",
         "needs_review": false
       },
       "ur": {
@@ -5434,7 +5434,7 @@
     "translations": {
       "hi": {
         "name": "तोरई",
-        "aliases": "turai",
+        "aliases": "turai torai",
         "needs_review": false
       },
       "ta": {
@@ -5444,17 +5444,17 @@
       },
       "te": {
         "name": "బీరకాయ",
-        "aliases": "",
+        "aliases": "birakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಹೀರೆಕಾಯಿ",
-        "aliases": "",
+        "aliases": "hirekayi",
         "needs_review": false
       },
       "ml": {
         "name": "പീച്ചിങ്ങ",
-        "aliases": "",
+        "aliases": "piccinna",
         "needs_review": false
       },
       "ur": {
@@ -5470,7 +5470,7 @@
     "translations": {
       "hi": {
         "name": "भुना चना",
-        "aliases": "",
+        "aliases": "bhuna cana",
         "needs_review": false
       },
       "ta": {
@@ -5480,17 +5480,17 @@
       },
       "te": {
         "name": "వేయించిన శనగలు",
-        "aliases": "",
+        "aliases": "veyimcina shanagalu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹುರಿಗಡಲೆ",
-        "aliases": "",
+        "aliases": "hurigadale",
         "needs_review": false
       },
       "ml": {
         "name": "പൊരി കടല",
-        "aliases": "",
+        "aliases": "pori katala",
         "needs_review": false
       },
       "ur": {
@@ -5516,17 +5516,17 @@
       },
       "te": {
         "name": "సగ్గుబియ్యం",
-        "aliases": "",
+        "aliases": "saggubiyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಬ್ಬಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "sabbakki",
         "needs_review": false
       },
       "ml": {
         "name": "ചവ്വരി",
-        "aliases": "",
+        "aliases": "cavvari",
         "needs_review": false
       },
       "ur": {
@@ -5542,7 +5542,7 @@
     "translations": {
       "hi": {
         "name": "सांबर पाउडर",
-        "aliases": "",
+        "aliases": "sambara paudara",
         "needs_review": false
       },
       "ta": {
@@ -5552,17 +5552,17 @@
       },
       "te": {
         "name": "సాంబార్ పొడి",
-        "aliases": "",
+        "aliases": "sambar podi",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಾಂಬಾರ್ ಪುಡಿ",
-        "aliases": "",
+        "aliases": "sambar pudi",
         "needs_review": false
       },
       "ml": {
         "name": "സാമ്പാർ പൊടി",
-        "aliases": "",
+        "aliases": "sampa poti",
         "needs_review": false
       },
       "ur": {
@@ -5578,7 +5578,7 @@
     "translations": {
       "hi": {
         "name": "शैम्पू",
-        "aliases": "",
+        "aliases": "shaimpu",
         "needs_review": false
       },
       "ta": {
@@ -5588,17 +5588,17 @@
       },
       "te": {
         "name": "షాంపూ",
-        "aliases": "",
+        "aliases": "shampu",
         "needs_review": false
       },
       "kn": {
         "name": "ಶಾಂಪೂ",
-        "aliases": "",
+        "aliases": "shampu",
         "needs_review": false
       },
       "ml": {
         "name": "ഷാംപൂ",
-        "aliases": "",
+        "aliases": "shampu",
         "needs_review": false
       },
       "ur": {
@@ -5614,7 +5614,7 @@
     "translations": {
       "hi": {
         "name": "शरबती आटा",
-        "aliases": "",
+        "aliases": "sharabati ata",
         "needs_review": false
       },
       "ur": {
@@ -5630,7 +5630,7 @@
     "translations": {
       "hi": {
         "name": "शेविंग क्रीम",
-        "aliases": "",
+        "aliases": "shevimga krima",
         "needs_review": false
       },
       "ur": {
@@ -5646,7 +5646,7 @@
     "translations": {
       "hi": {
         "name": "सोना मसूरी चावल",
-        "aliases": "",
+        "aliases": "sona masuri cavala",
         "needs_review": false
       },
       "ta": {
@@ -5656,17 +5656,17 @@
       },
       "te": {
         "name": "సోనా మసూరి బియ్యం",
-        "aliases": "",
+        "aliases": "sona masuri biyyam",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ",
-        "aliases": "",
+        "aliases": "sona masuri akki",
         "needs_review": false
       },
       "ml": {
         "name": "സോന മസൂരി അരി",
-        "aliases": "",
+        "aliases": "sona masuri ari",
         "needs_review": false
       },
       "ur": {
@@ -5682,7 +5682,7 @@
     "translations": {
       "hi": {
         "name": "सूजी",
-        "aliases": "sooji rava",
+        "aliases": "sooji rava suji",
         "needs_review": false
       },
       "ta": {
@@ -5692,17 +5692,17 @@
       },
       "te": {
         "name": "రవ్వ",
-        "aliases": "",
+        "aliases": "ravva",
         "needs_review": false
       },
       "kn": {
         "name": "ರವೆ",
-        "aliases": "",
+        "aliases": "rave",
         "needs_review": false
       },
       "ml": {
         "name": "റവ",
-        "aliases": "",
+        "aliases": "rava",
         "needs_review": false
       },
       "ur": {
@@ -5718,7 +5718,7 @@
     "translations": {
       "hi": {
         "name": "पालक",
-        "aliases": "palak",
+        "aliases": "palak palaka",
         "needs_review": false
       },
       "ta": {
@@ -5728,17 +5728,17 @@
       },
       "te": {
         "name": "పాలకూర",
-        "aliases": "",
+        "aliases": "palakura",
         "needs_review": false
       },
       "kn": {
         "name": "ಪಾಲಕ್ ಸೊಪ್ಪು",
-        "aliases": "",
+        "aliases": "palak soppu",
         "needs_review": false
       },
       "ml": {
         "name": "ചീര",
-        "aliases": "",
+        "aliases": "cira",
         "needs_review": false
       },
       "ur": {
@@ -5754,7 +5754,7 @@
     "translations": {
       "hi": {
         "name": "चीनी",
-        "aliases": "chini shakkar cheeni",
+        "aliases": "chini shakkar cheeni cini",
         "needs_review": false
       },
       "ta": {
@@ -5764,7 +5764,7 @@
       },
       "te": {
         "name": "చక్కెర",
-        "aliases": "chakkera",
+        "aliases": "chakkera cakkera",
         "needs_review": false
       },
       "kn": {
@@ -5774,7 +5774,7 @@
       },
       "ml": {
         "name": "പഞ്ചസാര",
-        "aliases": "panchasara",
+        "aliases": "panchasara pancasara",
         "needs_review": false
       },
       "ur": {
@@ -5790,7 +5790,7 @@
     "translations": {
       "hi": {
         "name": "सूरजमुखी तेल",
-        "aliases": "",
+        "aliases": "surajamukhi tela",
         "needs_review": false
       },
       "ta": {
@@ -5800,17 +5800,17 @@
       },
       "te": {
         "name": "సూర్యకాంతి నూనె",
-        "aliases": "",
+        "aliases": "suryakamti nune",
         "needs_review": false
       },
       "kn": {
         "name": "ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ",
-        "aliases": "",
+        "aliases": "suryakamti enne",
         "needs_review": false
       },
       "ml": {
         "name": "സൂര്യകാന്തി എണ്ണ",
-        "aliases": "",
+        "aliases": "suryakanti enna",
         "needs_review": false
       },
       "ur": {
@@ -5826,7 +5826,7 @@
     "translations": {
       "hi": {
         "name": "मीठा मक्का",
-        "aliases": "",
+        "aliases": "mitha makka",
         "needs_review": false
       },
       "ta": {
@@ -5836,17 +5836,17 @@
       },
       "te": {
         "name": "తీపి మొక్కజొన్న",
-        "aliases": "",
+        "aliases": "tipi mokkajonna",
         "needs_review": false
       },
       "kn": {
         "name": "ಸಿಹಿ ಜೋಳ",
-        "aliases": "",
+        "aliases": "sihi jola",
         "needs_review": false
       },
       "ml": {
         "name": "മധുര ചോളം",
-        "aliases": "",
+        "aliases": "madhura colam",
         "needs_review": false
       },
       "ur": {
@@ -5862,7 +5862,7 @@
     "translations": {
       "hi": {
         "name": "इमली",
-        "aliases": "imli",
+        "aliases": "imli imali",
         "needs_review": false
       },
       "ta": {
@@ -5872,17 +5872,17 @@
       },
       "te": {
         "name": "చింతపండు",
-        "aliases": "",
+        "aliases": "cimtapamdu",
         "needs_review": false
       },
       "kn": {
         "name": "ಹುಣಸೆಹಣ್ಣು",
-        "aliases": "",
+        "aliases": "hunasehannu",
         "needs_review": false
       },
       "ml": {
         "name": "പുളി",
-        "aliases": "",
+        "aliases": "puli",
         "needs_review": false
       },
       "ur": {
@@ -5898,7 +5898,7 @@
     "translations": {
       "hi": {
         "name": "चाय पत्ती",
-        "aliases": "chai chaay tea",
+        "aliases": "chai chaay tea caya patti",
         "needs_review": false
       },
       "ta": {
@@ -5908,17 +5908,17 @@
       },
       "te": {
         "name": "తేయాకు",
-        "aliases": "tea chai",
+        "aliases": "tea chai teyaku",
         "needs_review": false
       },
       "kn": {
         "name": "ಟೀ ಪುಡಿ",
-        "aliases": "tea chai",
+        "aliases": "tea chai pudi",
         "needs_review": false
       },
       "ml": {
         "name": "തേയില",
-        "aliases": "tea chai",
+        "aliases": "tea chai teyila",
         "needs_review": false
       },
       "ur": {
@@ -5934,7 +5934,7 @@
     "translations": {
       "hi": {
         "name": "टमाटर",
-        "aliases": "tamatar",
+        "aliases": "tamatar tamatara",
         "needs_review": false
       },
       "ta": {
@@ -5944,17 +5944,17 @@
       },
       "te": {
         "name": "టమాటా",
-        "aliases": "",
+        "aliases": "tamata",
         "needs_review": false
       },
       "kn": {
         "name": "ಟೊಮೇಟೊ",
-        "aliases": "",
+        "aliases": "tometo",
         "needs_review": false
       },
       "ml": {
         "name": "തക്കാളി",
-        "aliases": "",
+        "aliases": "takkali",
         "needs_review": false
       },
       "ur": {
@@ -5970,7 +5970,7 @@
     "translations": {
       "hi": {
         "name": "टोंड दूध",
-        "aliases": "",
+        "aliases": "tomda dudha",
         "needs_review": false
       },
       "ta": {
@@ -5980,12 +5980,12 @@
       },
       "te": {
         "name": "టోన్డ్ పాలు",
-        "aliases": "",
+        "aliases": "tond palu",
         "needs_review": false
       },
       "kn": {
         "name": "ಟೋನ್ಡ್ ಹಾಲು",
-        "aliases": "",
+        "aliases": "tond halu",
         "needs_review": false
       },
       "ml": {
@@ -6006,7 +6006,7 @@
     "translations": {
       "hi": {
         "name": "तूर दाल",
-        "aliases": "toor dal arhar",
+        "aliases": "toor dal arhar tura dala",
         "needs_review": false
       },
       "ta": {
@@ -6016,17 +6016,17 @@
       },
       "te": {
         "name": "కందిపప్పు",
-        "aliases": "",
+        "aliases": "kamdipappu",
         "needs_review": false
       },
       "kn": {
         "name": "ತೊಗರಿ ಬೇಳೆ",
-        "aliases": "",
+        "aliases": "togari bele",
         "needs_review": false
       },
       "ml": {
         "name": "തുവരപ്പരിപ്പ്",
-        "aliases": "",
+        "aliases": "tuvarapparipp",
         "needs_review": false
       },
       "ur": {
@@ -6042,7 +6042,7 @@
     "translations": {
       "hi": {
         "name": "टूथब्रश",
-        "aliases": "",
+        "aliases": "tuthabrasha",
         "needs_review": false
       },
       "ur": {
@@ -6058,7 +6058,7 @@
     "translations": {
       "hi": {
         "name": "टूथपेस्ट",
-        "aliases": "manjan toothpaste",
+        "aliases": "manjan toothpaste tuthapesta",
         "needs_review": false
       },
       "ta": {
@@ -6068,17 +6068,17 @@
       },
       "te": {
         "name": "టూత్‌పేస్ట్",
-        "aliases": "",
+        "aliases": "tut pest",
         "needs_review": false
       },
       "kn": {
         "name": "ಟೂತ್‌ಪೇಸ್ಟ್",
-        "aliases": "",
+        "aliases": "tut pest",
         "needs_review": false
       },
       "ml": {
         "name": "ടൂത്ത്പേസ്റ്റ്",
-        "aliases": "",
+        "aliases": "tuttpesrr",
         "needs_review": false
       },
       "ur": {
@@ -6104,17 +6104,17 @@
       },
       "te": {
         "name": "పసుపు",
-        "aliases": "",
+        "aliases": "pasupu",
         "needs_review": false
       },
       "kn": {
         "name": "ಅರಿಶಿನ ಪುಡಿ",
-        "aliases": "",
+        "aliases": "arishina pudi",
         "needs_review": false
       },
       "ml": {
         "name": "മഞ്ഞൾ പൊടി",
-        "aliases": "",
+        "aliases": "manna poti",
         "needs_review": false
       },
       "ur": {
@@ -6130,7 +6130,7 @@
     "translations": {
       "hi": {
         "name": "धुली उड़द दाल",
-        "aliases": "",
+        "aliases": "dhuli uda dala",
         "needs_review": false
       },
       "ta": {
@@ -6140,17 +6140,17 @@
       },
       "te": {
         "name": "మినప్పప్పు",
-        "aliases": "",
+        "aliases": "minappappu",
         "needs_review": false
       },
       "kn": {
         "name": "ಉದ್ದಿನ ಬೇಳೆ",
-        "aliases": "",
+        "aliases": "uddina bele",
         "needs_review": false
       },
       "ml": {
         "name": "ഉഴുന്ന് പരിപ്പ്",
-        "aliases": "",
+        "aliases": "ulunn paripp",
         "needs_review": false
       },
       "ur": {
@@ -6166,7 +6166,7 @@
     "translations": {
       "hi": {
         "name": "साबुत उड़द",
-        "aliases": "",
+        "aliases": "sabuta uda",
         "needs_review": false
       },
       "ta": {
@@ -6176,17 +6176,17 @@
       },
       "te": {
         "name": "మినుములు",
-        "aliases": "",
+        "aliases": "minumulu",
         "needs_review": false
       },
       "kn": {
         "name": "ಇಡೀ ಉದ್ದು",
-        "aliases": "",
+        "aliases": "idi uddu",
         "needs_review": false
       },
       "ml": {
         "name": "മുഴു ഉഴുന്ന്",
-        "aliases": "",
+        "aliases": "mulu ulunn",
         "needs_review": false
       },
       "ur": {
@@ -6212,17 +6212,17 @@
       },
       "te": {
         "name": "సేమియా",
-        "aliases": "",
+        "aliases": "semiya",
         "needs_review": false
       },
       "kn": {
         "name": "ಶಾವಿಗೆ",
-        "aliases": "",
+        "aliases": "shavige",
         "needs_review": false
       },
       "ml": {
         "name": "സേമിയ",
-        "aliases": "",
+        "aliases": "semiya",
         "needs_review": false
       },
       "ur": {
@@ -6238,12 +6238,12 @@
     "translations": {
       "hi": {
         "name": "सिरका",
-        "aliases": "sirka",
+        "aliases": "sirka siraka",
         "needs_review": false
       },
       "ml": {
         "name": "വിനാഗിരി",
-        "aliases": "",
+        "aliases": "vinagiri",
         "needs_review": false
       },
       "ur": {
@@ -6259,7 +6259,7 @@
     "translations": {
       "hi": {
         "name": "तरबूज़",
-        "aliases": "tarbooz",
+        "aliases": "tarbooz tarabuja",
         "needs_review": false
       },
       "ta": {
@@ -6269,17 +6269,17 @@
       },
       "te": {
         "name": "పుచ్చకాయ",
-        "aliases": "",
+        "aliases": "puccakaya",
         "needs_review": false
       },
       "kn": {
         "name": "ಕಲ್ಲಂಗಡಿ",
-        "aliases": "",
+        "aliases": "kallamgadi",
         "needs_review": false
       },
       "ml": {
         "name": "തണ്ണിമത്തൻ",
-        "aliases": "",
+        "aliases": "tannimatta",
         "needs_review": false
       },
       "ur": {
@@ -6295,7 +6295,7 @@
     "translations": {
       "hi": {
         "name": "गेहूं का आटा",
-        "aliases": "atta gehu",
+        "aliases": "atta gehu gehum ata",
         "needs_review": false
       },
       "ta": {
@@ -6305,17 +6305,17 @@
       },
       "te": {
         "name": "గోధుమ పిండి",
-        "aliases": "",
+        "aliases": "godhuma pimdi",
         "needs_review": false
       },
       "kn": {
         "name": "ಗೋಧಿ ಹಿಟ್ಟು",
-        "aliases": "",
+        "aliases": "godhi hittu",
         "needs_review": false
       },
       "ml": {
         "name": "ഗോതമ്പ് പൊടി",
-        "aliases": "",
+        "aliases": "gotamp poti",
         "needs_review": false
       },
       "ur": {
