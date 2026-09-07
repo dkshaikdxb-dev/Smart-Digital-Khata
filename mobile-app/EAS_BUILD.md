@@ -6,10 +6,28 @@ the `APP_FLAVOR` env var (wired per profile in `eas.json`):
 | Flavor     | App name                | Android package                     | What it is                                   |
 | ---------- | ----------------------- | ----------------------------------- | -------------------------------------------- |
 | `owner`    | Smart Khata — Shop      | `com.smartdigitalkhata.owner`       | The existing native shop-owner app           |
-| `consumer` | Smart Khata — Customer  | `com.smartdigitalkhata.consumer`    | A thin WebView shell of the consumer PWA     |
+| `consumer` | Smart Khata — Customer  | `com.smartdigitalkhata.consumer`    | The native consumer app (khata, pay, discover, orders) |
 
-The consumer app just loads the already-live PWA at `https://khata.dadashaik.com/c`.
+The consumer app is a native experience (OTP login, khata + pay, shop discovery,
+cart/orders, account) in 8 Indian languages, hitting the live API.
 Android is the first target; iOS is left configured but deferred (see the bottom).
+
+## Build via GitHub Actions (recommended — no local setup)
+
+The `.github/workflows/eas-build.yml` workflow builds an installable **APK** on
+Expo's servers, on demand. **Play Store publishing is not set up yet** — this
+produces sideloadable APKs only (no AAB, no `eas submit`, no Google Play account
+needed).
+
+One-time:
+1. Create an Expo access token → https://expo.dev/settings/access-tokens
+2. Repo → Settings → Secrets and variables → Actions → add secret **`EXPO_TOKEN`**
+   (paste the token). Never commit it.
+3. First build creates the EAS project; copy the project id it prints and add it as
+   an Actions **variable** `EAS_PROJECT_ID` so later builds link non-interactively.
+
+Then: Actions tab → **EAS Build (Android APK)** → Run workflow → pick `consumer` or
+`owner`. The installable `.apk` URL appears in the run log (and on expo.dev → Builds).
 
 ## Prerequisites
 
