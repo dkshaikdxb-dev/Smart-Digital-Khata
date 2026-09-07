@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
-import { useLang } from '../lib/i18n';
+import { useLang, canReadAloud, languageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
 
 // Owner Help "lane A" (Phase F): the "Today at your shop" nudge cards on the
@@ -14,7 +14,9 @@ import { useSpeech } from '../lib/useSpeech';
 // The cards themselves are DECOUPLED from speech support: they always render
 // whenever there are nudges, so the widget still appears in an Android WebView
 // (which usually lacks window.speechSynthesis). ONLY the read-aloud controls (the
-// Play/Pause toggle and the per-row 🔊 buttons) are gated on `ttsSupported`.
+// Play/Pause toggle and the per-row 🔊 buttons) are gated — on TTS support AND a
+// real local voice for the language, so a language with no voice never offers a
+// button that would speak the wrong language.
 
 // tone → a calm colour (not an alarm). good=green, attention=amber, info=neutral.
 const TONE_COLOR = {
@@ -34,8 +36,12 @@ function fmtRupees(paise) {
 
 export default function OwnerNudges() {
   const router = useRouter();
-  const { t } = useLang();
-  const { speak, pause, speaking, ttsSupported } = useSpeech();
+  const { t, lang } = useLang();
+  const { speak, pause, speaking, ttsSupported, ttsVoiceAvailable } = useSpeech();
+  // Only offer read-aloud when the language can be read AND a real local voice
+  // exists for it — otherwise the button would speak the wrong language (Batch B
+  // capability + runtime voice detection).
+  const readAloudOk = ttsSupported && canReadAloud(lang, languageCapability(lang)) && ttsVoiceAvailable;
   const [nudges, setNudges] = useState(null); // null = loading
   const [error, setError] = useState('');
 
@@ -77,7 +83,7 @@ export default function OwnerNudges() {
           <h3 style={{ margin: 0 }}>{t('own.todayTitle')}</h3>
           <div className="muted">{t('own.subtitle')}</div>
         </div>
-        {ttsSupported && nudges && nudges.length > 0 && (
+        {readAloudOk && nudges && nudges.length > 0 && (
           <div style={{ display: 'flex', gap: 8 }}>
             {speaking ? (
               <button type="button" onClick={pause}>⏸ {t('own.pause')}</button>
@@ -124,7 +130,7 @@ export default function OwnerNudges() {
                     </a>
                   )}
                 </div>
-                {ttsSupported && (
+                {readAloudOk && (
                   <button
                     type="button"
                     className="secondary"

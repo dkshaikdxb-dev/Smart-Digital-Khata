@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch } from '../../lib/customerApi';
-import { useLang } from '../../lib/i18n';
+import { useLang, canUseVoice, languageCapability } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
 
 // Flipkart-style quick-browse categories. The label is localized; the search
@@ -23,8 +23,11 @@ const CATEGORIES = [
 // (/c/products); voice is available on both that bar and the directory search.
 export default function DiscoverShops() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { sttSupported, listening, listen } = useSpeech();
+  // Hide the mic for languages the browser can't reliably recognize (it would
+  // otherwise mis-hear them as en-IN) — capability comes from Batch B's helper.
+  const voiceOk = sttSupported && canUseVoice(lang, languageCapability(lang));
   const [productQ, setProductQ] = useState(''); // top product-search bar
   const [search, setSearch] = useState('');
   const [shops, setShops] = useState([]);
@@ -110,7 +113,7 @@ export default function DiscoverShops() {
             value={productQ}
             onChange={(e) => setProductQ(e.target.value)}
           />
-          {sttSupported && (
+          {voiceOk && (
             <button
               type="button"
               className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
@@ -145,7 +148,7 @@ export default function DiscoverShops() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {sttSupported && (
+          {voiceOk && (
             <button
               type="button"
               className={`secondary cpwa-mic${listening ? ' listening' : ''}`}

@@ -37,6 +37,45 @@ export function isRtl(lang) {
   return RTL_LANGS.has(lang);
 }
 
+// Offline-safe, static voice-capability defaults per language. Web-Speech ASR/TTS
+// coverage varies wildly by device and the browser will happily mis-recognize an
+// unsupported language as en-IN, so this table marks ONLY the languages the app
+// confidently drives (those it sets a real BCP-47 recognition/synthesis tag for).
+// A language absent here — or one newly activated from the registry — defaults to
+// voice OFF, so a mic is HIDDEN rather than mis-hearing speech, and read-aloud is
+// not offered for a language with no real voice. Runtime detection in useSpeech
+// (ttsVoiceAvailable, via speechSynthesis.getVoices()) gates read-aloud further on
+// an actually-present local voice. These helpers are pure and never touch the
+// network, so they are safe on first render and fully offline.
+const VOICE_CAPS = {
+  en: { has_asr: true, has_tts: true },
+  hi: { has_asr: true, has_tts: true },
+  ta: { has_asr: true, has_tts: true },
+  te: { has_asr: true, has_tts: true },
+  kn: { has_asr: true, has_tts: true },
+  ml: { has_asr: true, has_tts: true },
+  ur: { has_asr: true, has_tts: true },
+};
+
+// The voice capability record for a language code. Unknown codes default OFF.
+export function languageCapability(code) {
+  const c = VOICE_CAPS[code];
+  return c ? { ...c } : { has_asr: false, has_tts: false };
+}
+
+// Pure: may this language use speech-to-text (mic)? Pass the caps record from
+// languageCapability(code) if you already have it; otherwise it is derived.
+export function canUseVoice(code, caps) {
+  const c = caps || languageCapability(code);
+  return !!(c && c.has_asr);
+}
+
+// Pure: may this language use text-to-speech (read-aloud)? See canUseVoice.
+export function canReadAloud(code, caps) {
+  const c = caps || languageCapability(code);
+  return !!(c && c.has_tts);
+}
+
 const DICT = {
   en: {
     'nav.dashboard': 'Dashboard',

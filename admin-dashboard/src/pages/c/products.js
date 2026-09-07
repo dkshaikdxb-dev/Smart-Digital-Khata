@@ -4,7 +4,7 @@ import Link from 'next/link';
 import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
 import { publicFetch } from '../../lib/customerApi';
-import { useLang } from '../../lib/i18n';
+import { useLang, canUseVoice, languageCapability } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
 
 // Cross-shop product search (Flipkart-style). Backed by the public endpoint
@@ -17,6 +17,8 @@ export default function ProductSearch() {
   const router = useRouter();
   const { t, lang } = useLang();
   const { sttSupported, listening, listen } = useSpeech();
+  // Hide the mic for languages the browser can't reliably recognize (Batch B).
+  const voiceOk = sttSupported && canUseVoice(lang, languageCapability(lang));
 
   const [q, setQ] = useState('');
   const [products, setProducts] = useState([]);
@@ -93,7 +95,7 @@ export default function ProductSearch() {
           placeholder={t('c.searchProductsAll')}
           aria-label={t('c.searchProductsAll')}
         />
-        {sttSupported && (
+        {voiceOk && (
           <button
             type="button"
             className={`secondary cpwa-mic${listening ? ' listening' : ''}`}

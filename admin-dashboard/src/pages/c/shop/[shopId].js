@@ -5,7 +5,7 @@ import CustomerShell, { money } from '../../../components/CustomerShell';
 import ProductThumb from '../../../components/ProductThumb';
 import { publicFetch } from '../../../lib/customerApi';
 import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineTotalPaise } from '../../../lib/customerCart';
-import { useLang } from '../../../lib/i18n';
+import { useLang, canUseVoice, languageCapability } from '../../../lib/i18n';
 import { useSpeech } from '../../../lib/useSpeech';
 
 // Quick-pick weight chips (grams) offered for loose/weighed items.
@@ -26,8 +26,10 @@ function gramsLabel(g) {
 // stepper and checkout all operate on the resolved concrete product unchanged.
 export default function ShopCatalog() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const { sttSupported, listening, listen } = useSpeech();
+  // Hide the mic for languages the browser can't reliably recognize (Batch B).
+  const voiceOk = sttSupported && canUseVoice(lang, languageCapability(lang));
   const { shopId } = router.query;
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
@@ -257,7 +259,7 @@ export default function ShopCatalog() {
               placeholder={t('c.searchProducts')}
               aria-label={t('c.searchProducts')}
             />
-            {sttSupported && (
+            {voiceOk && (
               <button
                 type="button"
                 className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
