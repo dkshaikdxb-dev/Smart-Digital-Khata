@@ -224,7 +224,11 @@ th { color: var(--muted); font-weight: 600; }
 
 /* Status badges & timeline */
 .cpwa-badge-ok { background: rgba(34,197,94,0.2); color: var(--c-accent-ink); }
-.cpwa-badge-warn { background: rgba(234,179,8,0.2); color: #eab308; }
+/* Warn pill: darker amber text on the light theme (AA on the translucent tint),
+   bright amber on dark. Scoped like the other cpwa theme blocks. */
+.cpwa-badge-warn { background: rgba(234,179,8,0.2); color: #a16207; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cpwa-badge-warn { color: #eab308; } }
+:root[data-theme="dark"] .cpwa-badge-warn { color: #eab308; }
 .cpwa-badge-danger { background: rgba(239,68,68,0.2); color: var(--c-danger); }
 .cpwa-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
 .cpwa-tl-step { display: flex; align-items: center; gap: 12px; padding: 6px 0; color: var(--c-muted); }

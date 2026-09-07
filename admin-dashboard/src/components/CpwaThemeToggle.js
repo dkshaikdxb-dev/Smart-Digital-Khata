@@ -22,6 +22,15 @@ function readEffectiveTheme() {
   return 'light';
 }
 
+// Keep the mobile browser chrome (address bar / status area) in step with the
+// theme — the light page must not sit under a dark status bar. Matches the cpwa
+// --c-bg values for each theme.
+function applyThemeColor(theme) {
+  if (typeof document === 'undefined') return;
+  const color = theme === 'dark' ? '#0f172a' : '#f6f8fa';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
+}
+
 // Sun icon — shown when the app is dark (tap to switch to light).
 function SunIcon() {
   return (
@@ -53,7 +62,9 @@ export default function CpwaThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    setTheme(readEffectiveTheme());
+    const eff = readEffectiveTheme();
+    setTheme(eff);
+    applyThemeColor(eff); // align the status-bar chrome with the effective theme on load
   }, []);
 
   const toggle = () => {
@@ -66,6 +77,7 @@ export default function CpwaThemeToggle() {
     } catch (e) {
       /* storage blocked — the in-memory toggle still works for this session */
     }
+    applyThemeColor(next);
     setTheme(next);
   };
 
