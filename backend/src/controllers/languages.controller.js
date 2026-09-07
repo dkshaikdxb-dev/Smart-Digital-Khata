@@ -15,7 +15,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // Only ACTIVE languages, minimal fields, ordered by sort_order. Cache-friendly.
 exports.publicList = async (_req, res) => {
   const r = await query(
-    `SELECT code, label, english_name, rtl, sort_order
+    `SELECT code, label, english_name, rtl, sort_order,
+            has_ui, has_catalogue, has_search, has_asr, has_tts, has_translit, has_nmt
        FROM languages
       WHERE is_active = true
       ORDER BY sort_order, code`
@@ -32,7 +33,8 @@ exports.publicList = async (_req, res) => {
 exports.adminList = async (_req, res) => {
   const r = await query(
     `SELECT code, label, english_name, rtl, is_active, audit_status,
-            sort_order, activated_at, activated_by, created_at, updated_at
+            sort_order, activated_at, activated_by, created_at, updated_at,
+            has_ui, has_catalogue, has_search, has_asr, has_tts, has_translit, has_nmt
        FROM languages
       ORDER BY sort_order, code`
   );
