@@ -25,6 +25,65 @@ export const LANGUAGES = [
   { code: 'ur', label: 'اردو' },
 ];
 
+// ---------------------------------------------------------------------------
+// Per-language capability map (STATIC, offline-first).
+//
+// This mirrors the server-side language registry BY HAND — there is deliberately
+// NO network fetch here so the picker is honest even offline. When coverage
+// changes on the server, update this map to match. Sources of truth to keep in
+// sync with:
+//   - admin-dashboard/src/lib/useSpeech.js  — BCP-47 ASR/TTS (voice) coverage
+//   - the server `catalog_i18n` catalogue-translation coverage
+//
+// `catalogue` = a shop catalogue is served translated in this language.
+// `voice`     = ASR/TTS (BCP-47) is available for this language.
+//
+// All 10 languages above have fully authored UI strings, but bn/gu/mr have NO
+// translated catalogue and NO voice — they are UI-only today, so they are marked
+// { catalogue: false, voice: false } and surfaced in the picker with a "(beta)"
+// suffix (still fully selectable). NOTE: the native app has no voice/mic UI yet;
+// `voice` here is a forward-looking guard so any future native voice gates on
+// langHasVoice() from day one.
+export const LANG_CAPS = {
+  en: { catalogue: true, voice: true },
+  hi: { catalogue: true, voice: true },
+  bn: { catalogue: false, voice: false },
+  ta: { catalogue: true, voice: true },
+  te: { catalogue: true, voice: true },
+  kn: { catalogue: true, voice: true },
+  ml: { catalogue: true, voice: true },
+  mr: { catalogue: false, voice: false },
+  gu: { catalogue: false, voice: false },
+  ur: { catalogue: true, voice: true },
+};
+
+// Pure capability helpers. Default to false for any unknown/unlisted code, so a
+// newly added language is treated as capability-less until it is added above.
+export function langHasCatalogue(code) {
+  const caps = LANG_CAPS[code];
+  return !!(caps && caps.catalogue);
+}
+
+// Future native voice UI should gate on langHasVoice(code) exactly like the
+// PWA's canUseVoice. There is NO voice in the native app today; this is the
+// forward-looking guard only.
+export function langHasVoice(code) {
+  const caps = LANG_CAPS[code];
+  return !!(caps && caps.voice);
+}
+
+// Beta marker derived from catalogue coverage: a language with no translated
+// catalogue is "beta" (UI-only). Pickers append a localized "(beta)" suffix to
+// these labels but keep them fully selectable.
+export function isBetaLang(code) {
+  return !langHasCatalogue(code);
+}
+
+// Convenience set of the beta (UI-only) language codes, derived from LANG_CAPS.
+export const BETA_LANGS = new Set(
+  LANGUAGES.map((l) => l.code).filter((code) => isBetaLang(code)),
+);
+
 const en = {
   'app.name': 'Smart Digital Khata',
   'common.loading': 'Loading…',
@@ -192,6 +251,9 @@ const en = {
   'account.language': 'Language',
   'account.logout': 'Log out',
   'account.logoutConfirm': 'Log out of Smart Digital Khata?',
+
+  // Suffix appended to picker labels of UI-only (no catalogue) languages.
+  'login.betaSuffix': ' (beta)',
 };
 
 const hi = {
@@ -361,6 +423,7 @@ const hi = {
   'account.language': 'भाषा',
   'account.logout': 'लॉग आउट',
   'account.logoutConfirm': 'स्मार्ट डिजिटल खाता से लॉग आउट करें?',
+  'login.betaSuffix': ' (बीटा)',
 };
 
 const bn = {
@@ -530,6 +593,7 @@ const bn = {
   'account.language': 'ভাষা',
   'account.logout': 'লগ আউট',
   'account.logoutConfirm': 'Smart Digital Khata থেকে লগ আউট করবেন?',
+  'login.betaSuffix': ' (বিটা)',
 };
 
 const ta = {
@@ -699,6 +763,7 @@ const ta = {
   'account.language': 'மொழி',
   'account.logout': 'வெளியேறு',
   'account.logoutConfirm': 'Smart Digital Khata-விலிருந்து வெளியேறவா?',
+  'login.betaSuffix': ' (பீட்டா)',
 };
 
 const te = {
@@ -868,6 +933,7 @@ const te = {
   'account.language': 'భాష',
   'account.logout': 'లాగ్ అవుట్',
   'account.logoutConfirm': 'Smart Digital Khata నుండి లాగ్ అవుట్ చేయాలా?',
+  'login.betaSuffix': ' (బీటా)',
 };
 
 const kn = {
@@ -1037,6 +1103,7 @@ const kn = {
   'account.language': 'ಭಾಷೆ',
   'account.logout': 'ಲಾಗ್ ಔಟ್',
   'account.logoutConfirm': 'Smart Digital Khata ನಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಬೇಕೆ?',
+  'login.betaSuffix': ' (ಬೀಟಾ)',
 };
 
 const ml = {
@@ -1206,6 +1273,7 @@ const ml = {
   'account.language': 'ഭാഷ',
   'account.logout': 'ലോഗ് ഔട്ട്',
   'account.logoutConfirm': 'Smart Digital Khata യിൽ നിന്ന് ലോഗ് ഔട്ട് ചെയ്യണോ?',
+  'login.betaSuffix': ' (ബീറ്റ)',
 };
 
 const mr = {
@@ -1375,6 +1443,7 @@ const mr = {
   'account.language': 'भाषा',
   'account.logout': 'लॉग आउट',
   'account.logoutConfirm': 'Smart Digital Khata मधून लॉग आउट करायचे?',
+  'login.betaSuffix': ' (बीटा)',
 };
 
 const gu = {
@@ -1544,6 +1613,7 @@ const gu = {
   'account.language': 'ભાષા',
   'account.logout': 'લોગ આઉટ',
   'account.logoutConfirm': 'Smart Digital Khata માંથી લોગ આઉટ કરવું?',
+  'login.betaSuffix': ' (બીટા)',
 };
 
 const ur = {
@@ -1713,6 +1783,7 @@ const ur = {
   'account.language': 'زبان',
   'account.logout': 'لاگ آؤٹ',
   'account.logoutConfirm': 'Smart Digital Khata سے لاگ آؤٹ کریں؟',
+  'login.betaSuffix': ' (بیٹا)',
 };
 
 // Every language below is fully authored (translated), matching en's key set.
