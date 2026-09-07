@@ -24,6 +24,7 @@ router.use('/subscriptions', require('./subscription.routes'));
 router.use('/summaries', require('./summary.routes'));
 router.use('/reports', require('./report.routes'));
 router.use('/analytics', require('./analytics.routes'));
+router.use('/events', require('./events.routes')); // PUBLIC: anonymous product-event ingest
 router.use('/insights', require('./insights.routes'));
 router.use('/notifications', require('./notification.routes'));
 // Mount the content desk BEFORE the general /admin router: the content desk owns

@@ -6,6 +6,16 @@ const { captureReferral } = require('../utils/referral');
 
 const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
+// Truncate a signup-attribution string to its column cap, or null when
+// absent/blank. Mirrors the ingest truncation rules so a shop's signup_*
+// columns and analytics_events rows stay consistent.
+function attrStr(v, max) {
+  if (typeof v !== 'string') return null;
+  const s = v.trim();
+  if (!s) return null;
+  return s.length > max ? s.slice(0, max) : s;
+}
+
 function signToken(user) {
   return jwt.sign(
     {
@@ -30,6 +40,18 @@ exports.register = async (req, res) => {
 
   const hash = await bcrypt.hash(password, SALT);
 
+  // Optional analytics attribution — persisted onto the new shop's signup_*
+  // columns (truncated per the contract). Absent/omitted → all NULL, which is
+  // exactly the pre-existing behaviour.
+  const a = (req.body.attribution && typeof req.body.attribution === 'object') ? req.body.attribution : {};
+  const attribution = {
+    utm_source: attrStr(a.utm_source, 120),
+    utm_medium: attrStr(a.utm_medium, 120),
+    utm_campaign: attrStr(a.utm_campaign, 120),
+    referrer_host: attrStr(a.referrer_host, 190),
+    session_id: attrStr(a.session_id, 64),
+  };
+
   const result = await withTx(async (client) => {
     const userRes = await client.query(
       `INSERT INTO users (name, email, phone, password_hash, role)
@@ -40,10 +62,13 @@ exports.register = async (req, res) => {
     const user = userRes.rows[0];
 
     const shopRes = await client.query(
-      `INSERT INTO shops (owner_id, name, notification_mode, plan)
-       VALUES ($1,$2,'smart','free')
+      `INSERT INTO shops (owner_id, name, notification_mode, plan,
+         signup_utm_source, signup_utm_medium, signup_utm_campaign,
+         signup_referrer_host, signup_session_id)
+       VALUES ($1,$2,'smart','free',$3,$4,$5,$6,$7)
        RETURNING id, name, notification_mode, plan`,
-      [user.id, shopName]
+      [user.id, shopName, attribution.utm_source, attribution.utm_medium,
+        attribution.utm_campaign, attribution.referrer_host, attribution.session_id]
     );
     const shop = shopRes.rows[0];
 
