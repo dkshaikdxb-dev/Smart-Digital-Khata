@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { LANGS, COPY } from '../landing-copy';
 
 // Public marketing landing shown at the site root to logged-OUT visitors.
 // A logged-in user never sees this: on mount we check localStorage and send
 // owners/staff to /dashboard and platform admins to /admin. The owner dashboard
 // itself now lives at /dashboard (see pages/dashboard.js).
 //
-// The page carries its own EN/HI copy (as approved in the concept) — this is a
-// deliberate, self-contained marketing surface and does NOT use the app i18n
-// system. Both light and dark themes render from the token structure below.
+// The page carries its own copy (as approved in the concept) — a deliberate,
+// self-contained marketing surface that does NOT use the app i18n system. All
+// visible strings live in ../landing-copy.js (COPY[lang][key]) so the visitor can
+// switch between English and nine Indian languages from the nav. English stays
+// intentionally code-switched (including the hero); every other language renders
+// the page fully in that language. Both light and dark themes render from the
+// token structure below.
 
 // WhatsApp CTA target. The number is editable at runtime from Admin → Settings
 // (served by GET /api/public/config); until that loads — or if it's unset or the
@@ -21,11 +26,78 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const buildWA = (number) =>
   number ? 'https://wa.me/' + number + '?text=' + WA_TEXT : '/register';
 
+const LANG_KEY = 'skhata_landing_lang';
+
+// Renders a copy string, turning the lightweight inline tokens carried in the
+// dictionary into real React nodes — no dangerouslySetInnerHTML. Supported:
+// [b]..[/b] bold, [em]..[/em] emphasis, [dn]..[/dn] a Devanagari accent span
+// (the code-switched EN hero), [link]..[/link] the "already live" link, and
+// [br] a hard line break.
+function Rich({ text }) {
+  const parts = String(text == null ? '' : text).split('[br]');
+  const out = [];
+  parts.forEach((part, pi) => {
+    if (pi > 0) out.push(<br key={'br' + pi} />);
+    const re = /\[(b|em|dn|link)\]([\s\S]*?)\[\/\1\]/g;
+    let last = 0;
+    let m;
+    let i = 0;
+    while ((m = re.exec(part)) !== null) {
+      if (m.index > last) out.push(part.slice(last, m.index));
+      const key = pi + '-' + i;
+      i += 1;
+      if (m[1] === 'b') out.push(<b key={key}>{m[2]}</b>);
+      else if (m[1] === 'em') out.push(<em key={key}>{m[2]}</em>);
+      else if (m[1] === 'dn') out.push(<span className="devnag" key={key}>{m[2]}</span>);
+      else out.push(<a className="link" href="/" key={key}>{m[2]}</a>);
+      last = m.index + m[0].length;
+    }
+    if (last < part.length) out.push(part.slice(last));
+  });
+  return <>{out}</>;
+}
+
 export default function Home() {
   const router = useRouter();
   const [redirecting, setRedirecting] = useState(true);
-  const [hi, setHi] = useState(false);
+  const [lang, setLang] = useState('en');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [wa, setWa] = useState(buildWA(DEFAULT_WA_NUMBER));
+  const menuRef = useRef(null);
+
+  // Copy lookup for the active language, falling back to English if a key is
+  // ever missing (it never is — key parity is asserted) so the UI never blanks.
+  const t = (k) => (COPY[lang] && COPY[lang][k] != null ? COPY[lang][k] : COPY.en[k]);
+  const dir = lang === 'ur' ? 'rtl' : 'ltr';
+  const current = LANGS.find((l) => l.code === lang) || LANGS[0];
+
+  function chooseLang(code) {
+    setLang(code);
+    try { window.localStorage.setItem(LANG_KEY, code); } catch (_) { /* ignore */ }
+    setMenuOpen(false);
+  }
+
+  // Restore the visitor's stored language preference (default: English).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const v = window.localStorage.getItem(LANG_KEY);
+      if (v && COPY[v]) setLang(v);
+    } catch (_) { /* ignore */ }
+  }, []);
+
+  // Close the language menu on outside click or Escape.
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    function onDoc(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); }
+    function onKey(e) { if (e.key === 'Escape') setMenuOpen(false); }
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   // Newsletter subscribe (Batch T). Double opt-in: POST /subscribe records a
   // pending subscriber and (when SMTP is configured server-side) e-mails a
@@ -94,13 +166,6 @@ export default function Home() {
     );
   }
 
-  const heroH1 = hi
-    ? 'आपकी दुकान का खाता — अब फ़ोन में। और यह आपके पैसे भी दिलाता है।'
-    : null;
-  const heroSub = hi
-    ? 'डिजिटल उधार खाता, WhatsApp रिमाइंडर जो जल्दी वसूली कराएँ, और एक ऑनलाइन दुकान जहाँ से ग्राहक ऑर्डर करें — आपकी भाषा में, किसी भी फ़ोन पर, शुरू करना मुफ़्त।'
-    : null;
-
   return (
     <>
       <Head>
@@ -123,259 +188,283 @@ export default function Home() {
         />
       </Head>
 
-      <header>
-        <nav className="nav">
-          <div className="brand"><span className="mark">ख</span> Smart Digital Khata</div>
-          <div className="nav-cta">
-            <button className="langpill" onClick={() => setHi((v) => !v)} aria-label="Toggle language">
-              {hi ? 'EN / हिन्दी' : 'हिन्दी / EN'}
-            </button>
-            <a href="/login" className="btn btn-ghost">Sign in</a>
-            <a href="/register" className="btn btn-green">Start free</a>
-          </div>
-        </nav>
-      </header>
-
-      <main className="wrap">
-        {/* HERO */}
-        <section className="hero" style={{ borderTop: 0 }}>
-          <div>
-            <span className="flag"><span className="bars" /> Made for Bharat · towns &amp; villages</span>
-            <h1>
-              {hi ? heroH1 : (
-                <>
-                  <span className="devnag">आपकी दुकान का खाता —</span> now on your phone. And it gets you <em>paid.</em>
-                </>
-              )}
-            </h1>
-            <p className="sub">
-              {hi ? heroSub : (
-                <>
-                  A digital <b>udhaar</b> ledger, WhatsApp reminders that collect faster, and a shopfront your customers can order from — in your language, on any phone, free to start.
-                </>
-              )}
-            </p>
-            <div className="cta">
-              <a href={wa} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
-              <a href="/register" className="btn btn-green">मुफ़्त साइन अप · Sign up free</a>
-            </div>
-            <div className="trust">
-              <span><b>2G</b> पर चले</span><span className="d">·</span>
-              <span><b>7</b> भाषाएँ</span><span className="d">·</span>
-              <span>कंप्यूटर नहीं चाहिए</span><span className="d">·</span>
-              <span><b>Free</b> to start</span>
-            </div>
-          </div>
-          <div className="phone" aria-label="The Khata app: a customer's udhaar and a WhatsApp reminder">
-            <div className="scr">
-              <div className="bar"><span>9:41</span><span>📶 2G · ▮▮▮</span></div>
-              <div className="title">आज का हिसाब</div>
-              <div className="row"><div><div className="nm">सीता देवी</div><div className="ph">+91 98765 •••01</div></div><div className="amt owe">₹560 बाकी</div></div>
-              <div className="row"><div><div className="nm">रमेश कुमार</div><div className="ph">+91 98765 •••02</div></div><div className="amt paid">₹0 जमा</div></div>
-              <div className="wabubble">नमस्ते सीता जी 🙏 आपका ₹560 बाकी है। यहाँ से चुकाएँ 👉<span className="t">भेजा गया ✓✓</span></div>
-            </div>
-          </div>
-        </section>
-
-        {/* PROBLEM */}
-        <section>
-          <div className="center">
-            <span className="eyebrow">The problem every dukaandaar knows</span>
-            <h2 style={{ marginTop: 12 }}>The paper bahi-khata forgets. Customers forget.<br />And that is <em>your</em> money walking out the door.</h2>
-            <p className="lede">Loose pages, faded pencil, “yaad nahi kitna baaki tha.” Chasing dues is awkward and slow — so a little is lost at every counter, every month. Smart Digital Khata turns that register into a memory that never fades and a reminder that does the asking for you.</p>
-          </div>
-        </section>
-
-        {/* COST OF MANUAL WORK */}
-        <section>
-          <div className="center">
-            <span className="eyebrow">The cost of the paper register</span>
-            <h2 style={{ marginTop: 12 }}>Small losses, every single day,<br />add up to real money.</h2>
-            <p className="lede">A faded page. A customer who “bhool gaya.” A reminder never sent because it felt awkward. None of it feels big on the day — but count it across a year of counters and it's a serious hole in a hard-earned income.</p>
-          </div>
-          <div className="costgrid">
-            <div className="cost">
-              <div className="big">~₹14,600</div>
-              <div className="cl">lost in a year if just <b>₹40 of udhaar a day</b> slips through — forgotten, unread, or never chased.</div>
-            </div>
-            <div className="cost">
-              <div className="big">3–5 hrs</div>
-              <div className="cl">a week spent adding up the bahi-khata by hand — time that could serve customers or rest.</div>
-            </div>
-            <div className="cost">
-              <div className="big">Awkward</div>
-              <div className="cl">asking a neighbour for money face-to-face. So many dues are quietly written off.</div>
-            </div>
-          </div>
-          <p className="illus">Illustrative — every shop is different. The point isn't the exact number; it's that manual work leaks money and time, quietly, every day. Smart Digital Khata plugs the leak.</p>
-        </section>
-
-        {/* PILLARS */}
-        <section>
-          <div className="center"><span className="eyebrow">What you get</span><h2 style={{ marginTop: 12 }}>Three things, one simple app</h2></div>
-          <div className="pillars">
-            <div className="pill">
-              <div className="ic">📗</div>
-              <h3>Digital khata that pays you back</h3>
-              <p>Record udhaar in seconds. Automatic WhatsApp &amp; SMS reminders — in the customer's own language — get you paid faster. Cash, UPI or online, all settled in one place.</p>
-              <div className="k">Get paid, not just tracked →</div>
-            </div>
-            <div className="pill">
-              <div className="ic">🛒</div>
-              <h3>Your shop, discoverable</h3>
-              <p>A shopfront customers can browse and order from — you choose pickup, free delivery or a delivery charge. Local commerce for your galli, not a metro q-commerce app.</p>
-              <div className="k">New customers, on your terms →</div>
-            </div>
-            <div className="pill">
-              <div className="ic">🗣️</div>
-              <h3>Truly made for Bharat</h3>
-              <p>Seven languages with voice read-aloud, a 1,600-item catalogue in your language, and it works offline on 2G — on the everyday phone already in your pocket. No KYC to begin.</p>
-              <div className="k">Your language, your phone →</div>
-            </div>
-          </div>
-        </section>
-
-        {/* POSITIONING BAND */}
-        <section>
-          <div className="band">
-            <div>
-              <span className="eyebrow" style={{ color: '#eafff0' }}>Where we belong</span>
-              <h2 style={{ marginTop: 10 }}>Built for B &amp; C towns and villages — <br />not the metros.</h2>
-              <p className="q">Regional-first, lite, and yours. The shopkeeper stays in charge — this is a tool that respects how a kirana already works, and quietly makes it stronger. Not disruption. Digitisation with dignity.</p>
-            </div>
-            <div className="stats">
-              <div className="stat"><b>7</b><span>languages, incl. Hindi, Tamil, Telugu, Kannada, Malayalam &amp; Urdu</span></div>
-              <div className="stat"><b>1,600+</b><span>ready grocery items in your language</span></div>
-              <div className="stat"><b>Offline</b><span>works and syncs on flaky 2G</span></div>
-              <div className="stat"><b>₹0</b><span>to start — no card, no computer</span></div>
-            </div>
-          </div>
-        </section>
-
-        {/* LOCAL ECONOMY / EMPOWERMENT */}
-        <section>
-          <div className="center">
-            <span className="eyebrow">The bigger picture</span>
-            <h2 style={{ marginTop: 12 }}>Digitise one dukaan, and something<br />bigger happens to the whole town.</h2>
-            <p className="lede">A kirana shop isn't just a business — it's the trust, the credit, and the daily lifeline of a mohalla. When it grows stronger, the neighbourhood grows with it.</p>
-          </div>
-          <div className="econ">
-            <div className="ec"><div className="ei">🏘️</div><h3>Money stays in the village</h3><p>Customers buy from the shop down the lane, not a warehouse two cities away. The margin — and the livelihood — stays local instead of leaving town.</p></div>
-            <div className="ec"><div className="ei">🔄</div><h3>Cash flow comes back to life</h3><p>Udhaar collected faster is working capital unstuck. The shopkeeper can restock sooner, extend fair credit, and keep serving neighbours through lean months.</p></div>
-            <div className="ec"><div className="ei">🗣️</div><h3>Dignity in your own language</h3><p>A shopkeeper who never touched English software now runs a modern business in Tamil, Telugu, Hindi or Urdu — reading it, hearing it, understood by it. Digital inclusion that actually includes.</p></div>
-            <div className="ec"><div className="ei">🛡️</div><h3>The corner shop stays viable</h3><p>Against big chains and metro apps, the trusted local kirana gets the same modern tools — on the phone it already owns. The shop your family knows, future-proofed.</p></div>
-          </div>
-          <p className="econ-line">Every reminder paid, every order fulfilled, every rupee that stays in town — that's a village economy getting a little stronger, one khata at a time.</p>
-        </section>
-
-        {/* STEPS */}
-        <section>
-          <div className="center"><span className="eyebrow">How it works</span><h2 style={{ marginTop: 12 }}>Live in five minutes</h2></div>
-          <div className="steps">
-            <div className="step"><div className="n">01</div><h3>Sign up with your mobile</h3><p>Just your phone number and a password or PIN. Change your number later without losing your khata.</p></div>
-            <div className="step"><div className="n">02</div><h3>Add customers &amp; items</h3><p>Type them in, or pick from the 1,600-item catalogue shown in your language. Set your own prices.</p></div>
-            <div className="step"><div className="n">03</div><h3>Record, remind, sell</h3><p>Note udhaar, let WhatsApp chase the dues, and take orders from your shopfront. See it all on one screen.</p></div>
-          </div>
-        </section>
-
-        {/* LANGUAGES */}
-        <section>
-          <div className="center">
-            <span className="eyebrow">आपकी भाषा में</span>
-            <h2 style={{ marginTop: 12 }}>The whole app speaks your language</h2>
-            <p className="lede">And when your state's language is ready, we switch it on — after a native speaker has checked every word.</p>
-          </div>
-          <div className="langs">
-            <span className="lang">हिन्दी</span><span className="lang">தமிழ்</span><span className="lang">తెలుగు</span>
-            <span className="lang">ಕನ್ನಡ</span><span className="lang">മലയാളം</span><span className="lang">اردو</span><span className="lang">English</span>
-          </div>
-          <div className="values">
-            <div className="val"><span className="c">✓</span><div><b>Your data is yours.</b> <span>No selling, no spam. Export your khata any time.</span></div></div>
-            <div className="val"><span className="c">✓</span><div><b>No heavy app.</b> <span>Small download, opens fast, kind to your data pack.</span></div></div>
-            <div className="val"><span className="c">✓</span><div><b>Free to start.</b> <span>Upgrade only when it's clearly earning for you.</span></div></div>
-            <div className="val"><span className="c">✓</span><div><b>You stay in control.</b> <span>You decide prices, delivery, reminders — always.</span></div></div>
-          </div>
-        </section>
-
-        {/* NEWSLETTER */}
-        <section id="newsletter">
-          <div className="nlcard">
-            <div>
-              <span className="eyebrow">{hi ? 'न्यूज़लेटर' : 'Newsletter'}</span>
-              <h2 style={{ marginTop: 10 }}>{hi ? 'दुकानदारों के लिए टिप्स — सीधे आपके इनबॉक्स में' : 'Tips for dukaandaars — straight to your inbox'}</h2>
-              <p className="lede" style={{ marginTop: 10 }}>
-                {hi
-                  ? 'हर कुछ हफ़्तों में एक छोटा ईमेल — उधार वसूली, ऑनलाइन दुकान और आपकी भाषा में नए फ़ीचर। कभी भी अनसब्सक्राइब करें।'
-                  : 'A short e-mail every few weeks — collecting udhaar, your online shop, and new features in your language. Unsubscribe any time.'}
-              </p>
-            </div>
-            {nlStatus === 'done' ? (
-              <div className="nldone" role="status">
-                <span className="tick">✓</span>
-                <div>
-                  <b>{hi ? 'अपना इनबॉक्स देखें' : 'Check your inbox'}</b>
-                  <span>{hi ? 'पुष्टि के लिए हमने आपको एक लिंक भेजा है।' : 'We have sent you a link to confirm your subscription.'}</span>
-                </div>
-              </div>
-            ) : (
-              <form className="nlform" onSubmit={submitSubscribe}>
-                <div className="nlrow">
-                  <input
-                    type="email"
-                    required
-                    value={nlEmail}
-                    onChange={(e) => setNlEmail(e.target.value)}
-                    placeholder={hi ? 'आपका ईमेल' : 'your@email.com'}
-                    aria-label={hi ? 'ईमेल पता' : 'Email address'}
-                    className="nlinput"
-                  />
-                  <select
-                    value={nlList}
-                    onChange={(e) => setNlList(e.target.value)}
-                    aria-label={hi ? 'सूची' : 'List'}
-                    className="nlselect"
-                  >
-                    <option value="community">{hi ? 'दुकानदार' : 'Shopkeepers'}</option>
-                    <option value="ecosystem">{hi ? 'पार्टनर / वितरक' : 'Partners / distributors'}</option>
-                  </select>
-                  <button type="submit" className="btn btn-green" disabled={nlStatus === 'sending'}>
-                    {nlStatus === 'sending' ? (hi ? 'भेजा जा रहा…' : 'Sending…') : (hi ? 'सब्सक्राइब करें' : 'Subscribe')}
-                  </button>
-                </div>
-                {nlStatus === 'error' && (
-                  <p className="nlerr">{hi ? 'कुछ गड़बड़ हुई — कृपया फिर कोशिश करें।' : 'Something went wrong — please try again.'}</p>
+      <div dir={dir} className="page">
+        <header>
+          <nav className="nav">
+            <div className="brand"><span className="mark">ख</span> Smart Digital Khata</div>
+            <div className="nav-cta">
+              <div className="langmenu" ref={menuRef}>
+                <button
+                  type="button"
+                  className="langpill"
+                  aria-haspopup="listbox"
+                  aria-expanded={menuOpen}
+                  aria-label={t('langMenuLabel')}
+                  onClick={() => setMenuOpen((v) => !v)}
+                >
+                  <span className="globe" aria-hidden="true">🌐</span>
+                  <span lang={current.code}>{current.label}</span>
+                  <span className="caret" aria-hidden="true">▾</span>
+                </button>
+                {menuOpen && (
+                  <ul className="langlist" role="listbox" aria-label={t('langMenuLabel')}>
+                    {LANGS.map((l) => (
+                      <li key={l.code} role="option" aria-selected={l.code === lang}>
+                        <button
+                          type="button"
+                          className={'langopt' + (l.code === lang ? ' active' : '')}
+                          onClick={() => chooseLang(l.code)}
+                          lang={l.code}
+                        >
+                          <span>{l.label}</span>
+                          {l.code === lang && <span className="ok" aria-hidden="true">✓</span>}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-                <p className="nlnote">{hi ? 'हम आपका ईमेल कभी नहीं बेचेंगे। डबल ऑप्ट-इन।' : 'We never sell your e-mail. Double opt-in — confirm before you receive anything.'}</p>
-              </form>
-            )}
-          </div>
-        </section>
-
-        {/* FINAL CTA */}
-        <section id="start">
-          <div className="final">
-            <span className="eyebrow">Aaj se shuru karein</span>
-            <h2 style={{ marginTop: 12 }}>Give your shop a memory that never forgets.</h2>
-            <p className="lede" style={{ maxWidth: '52ch', marginInline: 'auto' }}>Thousands of counters across Bharat run on udhaar. Make yours run on Smart Digital Khata — free to begin, in your language, today.</p>
-            <div className="cta">
-              <a href={wa} className="btn btn-wa">🟢 WhatsApp पर शुरू करें</a>
-              <a href="/register" className="btn btn-green">मुफ़्त साइन अप · Sign up free</a>
+              </div>
+              <a href="/login" className="btn btn-ghost">{t('navSignIn')}</a>
+              <a href="/register" className="btn btn-green">{t('navStartFree')}</a>
             </div>
-            <p className="note">Already live at <a className="link" href="/">khata.dadashaik.com</a> · works on any Android phone</p>
-          </div>
-        </section>
-      </main>
+          </nav>
+        </header>
 
-      <footer className="wrap">
-        <div className="foot">
-          <div className="brand"><span className="mark">ख</span> Smart Digital Khata</div>
-          <div>हर दुकान, अब डिजिटल · Every shop, now digital</div>
-          <div className="footlinks">
-            <a href="/blog" className="footlink">Blog</a>
-            <span>© Smart Digital Khata</span>
+        <main className="wrap">
+          {/* HERO */}
+          <section className="hero" style={{ borderTop: 0 }}>
+            <div>
+              <span className="flag"><span className="bars" /> {t('heroFlag')}</span>
+              <h1><Rich text={t('heroH1')} /></h1>
+              <p className="sub"><Rich text={t('heroSub')} /></p>
+              <div className="cta">
+                <a href={wa} className="btn btn-wa">{t('ctaWa')}</a>
+                <a href="/register" className="btn btn-green">{t('ctaSignup')}</a>
+              </div>
+              <div className="trust">
+                <span><Rich text={t('trust2g')} /></span><span className="d">·</span>
+                <span><Rich text={t('trustLangs')} /></span><span className="d">·</span>
+                <span>{t('trustNoPc')}</span><span className="d">·</span>
+                <span><Rich text={t('trustFree')} /></span>
+              </div>
+            </div>
+            <div className="phone" aria-label="The Khata app: a customer's udhaar and a WhatsApp reminder">
+              <div className="scr">
+                <div className="bar"><span>9:41</span><span>📶 2G · ▮▮▮</span></div>
+                <div className="title">{t('phTitle')}</div>
+                <div className="row"><div><div className="nm">{t('phName1')}</div><div className="ph">+91 98765 •••01</div></div><div className="amt owe">{t('phAmt1')}</div></div>
+                <div className="row"><div><div className="nm">{t('phName2')}</div><div className="ph">+91 98765 •••02</div></div><div className="amt paid">{t('phAmt2')}</div></div>
+                <div className="wabubble">{t('phBubble')}<span className="t">{t('phSent')}</span></div>
+              </div>
+            </div>
+          </section>
+
+          {/* PROBLEM */}
+          <section>
+            <div className="center">
+              <span className="eyebrow">{t('probEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}><Rich text={t('probH2')} /></h2>
+              <p className="lede">{t('probLede')}</p>
+            </div>
+          </section>
+
+          {/* COST OF MANUAL WORK */}
+          <section>
+            <div className="center">
+              <span className="eyebrow">{t('costEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}><Rich text={t('costH2')} /></h2>
+              <p className="lede">{t('costLede')}</p>
+            </div>
+            <div className="costgrid">
+              <div className="cost">
+                <div className="big">{t('cost1Big')}</div>
+                <div className="cl"><Rich text={t('cost1Cl')} /></div>
+              </div>
+              <div className="cost">
+                <div className="big">{t('cost2Big')}</div>
+                <div className="cl">{t('cost2Cl')}</div>
+              </div>
+              <div className="cost">
+                <div className="big">{t('cost3Big')}</div>
+                <div className="cl">{t('cost3Cl')}</div>
+              </div>
+            </div>
+            <p className="illus">{t('costIllus')}</p>
+          </section>
+
+          {/* PILLARS */}
+          <section>
+            <div className="center"><span className="eyebrow">{t('pillEyebrow')}</span><h2 style={{ marginTop: 12 }}>{t('pillH2')}</h2></div>
+            <div className="pillars">
+              <div className="pill">
+                <div className="ic">📗</div>
+                <h3>{t('pill1H3')}</h3>
+                <p>{t('pill1P')}</p>
+                <div className="k">{t('pill1K')}</div>
+              </div>
+              <div className="pill">
+                <div className="ic">🛒</div>
+                <h3>{t('pill2H3')}</h3>
+                <p>{t('pill2P')}</p>
+                <div className="k">{t('pill2K')}</div>
+              </div>
+              <div className="pill">
+                <div className="ic">🗣️</div>
+                <h3>{t('pill3H3')}</h3>
+                <p>{t('pill3P')}</p>
+                <div className="k">{t('pill3K')}</div>
+              </div>
+            </div>
+          </section>
+
+          {/* POSITIONING BAND */}
+          <section>
+            <div className="band">
+              <div>
+                <span className="eyebrow" style={{ color: '#eafff0' }}>{t('bandEyebrow')}</span>
+                <h2 style={{ marginTop: 10 }}><Rich text={t('bandH2')} /></h2>
+                <p className="q">{t('bandQ')}</p>
+              </div>
+              <div className="stats">
+                <div className="stat"><b>{t('bandStat1B')}</b><span>{t('bandStat1S')}</span></div>
+                <div className="stat"><b>{t('bandStat2B')}</b><span>{t('bandStat2S')}</span></div>
+                <div className="stat"><b>{t('bandStat3B')}</b><span>{t('bandStat3S')}</span></div>
+                <div className="stat"><b>{t('bandStat4B')}</b><span>{t('bandStat4S')}</span></div>
+              </div>
+            </div>
+          </section>
+
+          {/* LOCAL ECONOMY / EMPOWERMENT */}
+          <section>
+            <div className="center">
+              <span className="eyebrow">{t('econEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}><Rich text={t('econH2')} /></h2>
+              <p className="lede">{t('econLede')}</p>
+            </div>
+            <div className="econ">
+              <div className="ec"><div className="ei">🏘️</div><h3>{t('ec1H3')}</h3><p>{t('ec1P')}</p></div>
+              <div className="ec"><div className="ei">🔄</div><h3>{t('ec2H3')}</h3><p>{t('ec2P')}</p></div>
+              <div className="ec"><div className="ei">🗣️</div><h3>{t('ec3H3')}</h3><p>{t('ec3P')}</p></div>
+              <div className="ec"><div className="ei">🛡️</div><h3>{t('ec4H3')}</h3><p>{t('ec4P')}</p></div>
+            </div>
+            <p className="econ-line">{t('econLine')}</p>
+          </section>
+
+          {/* STEPS */}
+          <section>
+            <div className="center"><span className="eyebrow">{t('stepsEyebrow')}</span><h2 style={{ marginTop: 12 }}>{t('stepsH2')}</h2></div>
+            <div className="steps">
+              <div className="step"><div className="n">01</div><h3>{t('step1H3')}</h3><p>{t('step1P')}</p></div>
+              <div className="step"><div className="n">02</div><h3>{t('step2H3')}</h3><p>{t('step2P')}</p></div>
+              <div className="step"><div className="n">03</div><h3>{t('step3H3')}</h3><p>{t('step3P')}</p></div>
+            </div>
+          </section>
+
+          {/* LANGUAGES */}
+          <section>
+            <div className="center">
+              <span className="eyebrow">{t('langEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}>{t('langH2')}</h2>
+              <p className="lede">{t('langLede')}</p>
+            </div>
+            <div className="langs">
+              {LANGS.map((l) => (
+                <button
+                  key={l.code}
+                  type="button"
+                  className={'lang' + (l.code === lang ? ' active' : '')}
+                  onClick={() => chooseLang(l.code)}
+                  lang={l.code}
+                  aria-pressed={l.code === lang}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+            <div className="values">
+              <div className="val"><span className="c">✓</span><div><b>{t('val1B')}</b> <span>{t('val1S')}</span></div></div>
+              <div className="val"><span className="c">✓</span><div><b>{t('val2B')}</b> <span>{t('val2S')}</span></div></div>
+              <div className="val"><span className="c">✓</span><div><b>{t('val3B')}</b> <span>{t('val3S')}</span></div></div>
+              <div className="val"><span className="c">✓</span><div><b>{t('val4B')}</b> <span>{t('val4S')}</span></div></div>
+            </div>
+          </section>
+
+          {/* NEWSLETTER */}
+          <section id="newsletter">
+            <div className="nlcard">
+              <div>
+                <span className="eyebrow">{t('nlEyebrow')}</span>
+                <h2 style={{ marginTop: 10 }}>{t('nlH2')}</h2>
+                <p className="lede" style={{ marginTop: 10 }}>{t('nlLede')}</p>
+              </div>
+              {nlStatus === 'done' ? (
+                <div className="nldone" role="status">
+                  <span className="tick">✓</span>
+                  <div>
+                    <b>{t('nlDoneT')}</b>
+                    <span>{t('nlDoneS')}</span>
+                  </div>
+                </div>
+              ) : (
+                <form className="nlform" onSubmit={submitSubscribe}>
+                  <div className="nlrow">
+                    <input
+                      type="email"
+                      required
+                      value={nlEmail}
+                      onChange={(e) => setNlEmail(e.target.value)}
+                      placeholder={t('nlPlaceholder')}
+                      aria-label={t('nlAriaEmail')}
+                      className="nlinput"
+                    />
+                    <select
+                      value={nlList}
+                      onChange={(e) => setNlList(e.target.value)}
+                      aria-label={t('nlAriaList')}
+                      className="nlselect"
+                    >
+                      <option value="community">{t('nlOptCommunity')}</option>
+                      <option value="ecosystem">{t('nlOptEcosystem')}</option>
+                    </select>
+                    <button type="submit" className="btn btn-green" disabled={nlStatus === 'sending'}>
+                      {nlStatus === 'sending' ? t('nlSending') : t('nlSubmit')}
+                    </button>
+                  </div>
+                  {nlStatus === 'error' && (
+                    <p className="nlerr">{t('nlError')}</p>
+                  )}
+                  <p className="nlnote">{t('nlNote')}</p>
+                </form>
+              )}
+            </div>
+          </section>
+
+          {/* FINAL CTA */}
+          <section id="start">
+            <div className="final">
+              <span className="eyebrow">{t('finalEyebrow')}</span>
+              <h2 style={{ marginTop: 12 }}>{t('finalH2')}</h2>
+              <p className="lede" style={{ maxWidth: '52ch', marginInline: 'auto' }}>{t('finalLede')}</p>
+              <div className="cta">
+                <a href={wa} className="btn btn-wa">{t('ctaWa')}</a>
+                <a href="/register" className="btn btn-green">{t('ctaSignup')}</a>
+              </div>
+              <p className="note"><Rich text={t('finalNote')} /></p>
+            </div>
+          </section>
+        </main>
+
+        <footer className="wrap">
+          <div className="foot">
+            <div className="brand"><span className="mark">ख</span> Smart Digital Khata</div>
+            <div>{t('footTagline')}</div>
+            <div className="footlinks">
+              <a href="/blog" className="footlink">{t('footBlog')}</a>
+              <span>{t('footCopy')}</span>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
 
       <style jsx global>{`
         :root{
@@ -438,8 +527,22 @@ export default function Home() {
         .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
         .btn-wa{background:#25D366;color:#04310f}
         .nav .btn{padding:9px 15px;font-size:.9rem}
+
+        .langmenu{position:relative}
         .langpill{font-size:.8rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:6px 12px;
-          background:var(--card);cursor:pointer;font-family:var(--sans)}
+          background:var(--card);cursor:pointer;font-family:var(--sans);display:inline-flex;align-items:center;gap:6px}
+        .langpill .globe{font-size:.9rem}
+        .langpill .caret{font-size:.62rem;opacity:.8}
+        .langlist{position:absolute;top:calc(100% + 6px);inset-inline-end:0;z-index:30;margin:0;padding:6px;list-style:none;
+          background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+          min-width:190px;max-height:70vh;overflow:auto}
+        .langlist li{margin:0}
+        .langopt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:start;
+          font-family:var(--sans);font-size:.98rem;color:var(--ink);background:transparent;border:0;border-radius:9px;
+          padding:9px 12px;cursor:pointer}
+        .langopt:hover{background:var(--paper-2)}
+        .langopt.active{color:var(--green-deep);font-weight:700;background:var(--green-bg)}
+        .langopt .ok{color:var(--green);font-weight:800}
 
         .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding:52px 0 40px}
         .hero .flag{display:inline-flex;align-items:center;gap:9px;font-size:.82rem;color:var(--ink-soft);
@@ -521,7 +624,10 @@ export default function Home() {
 
         .langs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:26px}
         .lang{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-weight:600;
-          font-size:1.02rem}
+          font-size:1.02rem;font-family:var(--sans);color:var(--ink);cursor:pointer;transition:transform .12s ease,border-color .12s ease}
+        .lang:hover{border-color:var(--green)}
+        .lang:active{transform:translateY(1px)}
+        .lang.active{background:var(--green);color:#fff;border-color:var(--green)}
 
         .values{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px}
         .val{display:flex;gap:11px;align-items:flex-start;font-size:.95rem}
