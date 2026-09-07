@@ -27,6 +27,7 @@ router.use('/analytics', require('./analytics.routes'));
 router.use('/insights', require('./insights.routes'));
 router.use('/notifications', require('./notification.routes'));
 router.use('/admin', require('./admin.routes'));
+router.use('/admin/content', require('./content.routes')); // ADMIN: editorial content desk (content:manage)
 router.use('/webhooks', require('./webhook.routes'));
 router.use('/public', require('./public.routes'));
 

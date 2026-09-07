@@ -4,11 +4,14 @@ const logger = require('../utils/logger');
 const { query } = require('../config/db');
 const notifier = require('../services/notification.service');
 const weekly = require('../services/weekly-summary.service');
+const publisher = require('../services/content-publisher.service');
+const strategist = require('../services/content-strategist.service');
 
 const QUEUES = {
   reminders: new Queue('reminders', { connection }),
   summaries: new Queue('summaries', { connection }),
   weekly: new Queue('weekly', { connection }),
+  content: new Queue('content', { connection }),
 };
 
 async function enqueueDailyReminders() {
@@ -72,6 +75,20 @@ function startWorkers() {
     { connection, concurrency: 1 }
   );
 
+  new Worker(
+    'content',
+    async (job) => {
+      // Two repeatable ticks drive the content engine. Both call the service
+      // directly (no fan-out), and the services are Redis-free so they are
+      // unit-tested by calling publishDue()/runStrategist() straight, not via
+      // this queue. The tier gate is re-checked inside publishDue.
+      if (job.name === 'content-publish') return publisher.publishDue();
+      if (job.name === 'content-strategist') return strategist.runStrategist();
+      return undefined;
+    },
+    { connection, concurrency: 1 }
+  );
+
   scheduleRecurring().catch((e) => logger.error({ err: e.message }, 'scheduleRecurring failed'));
 }
 
@@ -122,6 +139,30 @@ async function scheduleRecurring() {
       removeOnFail: 100,
     }
   );
+  // Content engine ticks. Publisher every 15 minutes → publishDue() sends any
+  // due, gate-cleared scheduled items through the channel adapter. Strategist
+  // weekly (Mon 8am IST) → runStrategist() seeds fresh briefs from live metrics.
+  await QUEUES.content.add(
+    'content-publish',
+    {},
+    {
+      repeat: { pattern: '*/15 * * * *', tz: process.env.TZ || 'Asia/Kolkata' }, // every 15 min
+      jobId: 'content-publish',
+      removeOnComplete: 100,
+      removeOnFail: 100,
+    }
+  );
+  await QUEUES.content.add(
+    'content-strategist',
+    {},
+    {
+      repeat: { pattern: '0 8 * * 1', tz: process.env.TZ || 'Asia/Kolkata' }, // Mon 8am IST
+      jobId: 'content-strategist',
+      removeOnComplete: 100,
+      removeOnFail: 100,
+    }
+  );
+
   // Touch QueueEvents so BullMQ wires up event streams
   new QueueEvents('reminders', { connection });
 }
