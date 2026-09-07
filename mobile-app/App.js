@@ -3,10 +3,13 @@ import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 
 import { AuthContext } from './src/AuthContext';
 import { auth } from './src/services/api';
+import ConsumerWebView from './src/screens/ConsumerWebView';
 
 import LoginScreen from './src/screens/LoginScreen';
 import AdminNoticeScreen from './src/screens/AdminNoticeScreen';
@@ -106,7 +109,20 @@ function OwnerTabs() {
   );
 }
 
-export default function App() {
+// Consumer flavor: a thin full-screen WebView shell of the live consumer PWA.
+// No NavigationContainer, no owner tabs, no auth — the PWA handles its own auth.
+function ConsumerApp() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0f172a' }}>
+        <ConsumerWebView />
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
+function OwnerApp() {
   // 'out' = signed out, 'owner' = owner tabs, 'admin' = web-console notice.
   const [status, setStatus] = useState('out');
 
@@ -131,4 +147,9 @@ export default function App() {
       </NavigationContainer>
     </AuthContext.Provider>
   );
+}
+
+export default function App() {
+  const flavor = Constants.expoConfig?.extra?.flavor || 'owner';
+  return flavor === 'consumer' ? <ConsumerApp /> : <OwnerApp />;
 }
