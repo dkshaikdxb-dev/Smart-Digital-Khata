@@ -36,6 +36,82 @@ const LAST = ['Kumar','Sharma','Verma','Gupta','Patel','Reddy','Khan','Iyer','Si
 function pick(arr, i) { return arr[i % arr.length]; }
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
+// Marker note on the recent demo collections so re-runs can converge (delete +
+// re-insert) instead of piling up rows.
+const RECENT_COLLECTION_NOTE = 'demo recent collection';
+
+/**
+ * Post-loop polish for the demo dataset. Idempotent and safe to re-run on top of
+ * already-seeded (skipped) shops:
+ *   1. LIST all 10 demo shops (is_listed = true) with a placeholder city/area
+ *      when blank, so GET /api/public/shops surfaces every demo store.
+ *   2. Seed a few cash/upi COLLECTION transactions dated in the last 7 days for
+ *      each demo shop, so owner Insights shows non-zero Collections + a non-zero
+ *      collection rate (and a referred shop can "activate"). Money in paise.
+ */
+async function finalizeDemoShops() {
+  // Three collections spread across the last 6 days (well inside the 7-day
+  // Insights window): cash, upi, cash.
+  const RECENT = [
+    { daysAgo: 1, method: 'cash', amount: 35000 },
+    { daysAgo: 3, method: 'upi', amount: 22000 },
+    { daysAgo: 5, method: 'cash', amount: 18000 },
+  ];
+
+  for (let s = 1; s <= 10; s++) {
+    const nn = String(s).padStart(2, '0');
+    const email = `store${nn}@demo.local`;
+    const owner = await pool.query('SELECT shop_id FROM users WHERE email = $1', [email]);
+    if (!owner.rowCount || !owner.rows[0].shop_id) continue;
+    const shopId = owner.rows[0].shop_id;
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 1. List the shop in the public directory (with a sensible default
+      //    location so the geo directory can place it), without clobbering any
+      //    real values already set.
+      await client.query(
+        `UPDATE shops
+            SET is_listed = true,
+                city = COALESCE(NULLIF(city, ''), 'Bengaluru'),
+                area = COALESCE(NULLIF(area, ''), 'MG Road')
+          WHERE id = $1`,
+        [shopId]
+      );
+
+      // 2. Refresh this shop's recent demo collections (idempotent via marker).
+      const cust = await client.query(
+        'SELECT id FROM customers WHERE shop_id = $1 ORDER BY created_at ASC LIMIT 1',
+        [shopId]
+      );
+      if (cust.rowCount) {
+        const custId = cust.rows[0].id;
+        await client.query(
+          'DELETE FROM transactions WHERE shop_id = $1 AND note = $2',
+          [shopId, RECENT_COLLECTION_NOTE]
+        );
+        for (const p of RECENT) {
+          // type = method (cash|upi) marks it a collection; amount in paise.
+          await client.query(
+            `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source, created_at)
+             VALUES ($1,$2,$3,$4,$3,$5,'manual', NOW() - ($6 || ' days')::interval)`,
+            [shopId, custId, p.method, p.amount, RECENT_COLLECTION_NOTE, p.daysAgo]
+          );
+        }
+      }
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+}
+
 async function seedDemo() {
   const credentials = [];
   let customerSeq = 0;
@@ -123,6 +199,10 @@ async function seedDemo() {
     }
   }
 
+  // Post-loop polish — runs for ALL demo shops (freshly seeded OR skipped/
+  // existing) so re-running the seed converges. Idempotent.
+  await finalizeDemoShops();
+
   console.log('\n================ STORE OWNER LOGINS ================');
   console.log('Email                 | Password          | Shop');
   console.log('----------------------|-------------------|---------------------------');
@@ -132,7 +212,15 @@ async function seedDemo() {
   console.log('====================================================');
   console.log('Customers have no logins by design (WhatsApp-side only).');
   console.log('Their demo phones: +919876100001 .. +919876100100');
-  await pool.end();
+  return credentials;
 }
 
-seedDemo().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { seedDemo, finalizeDemoShops };
+
+// Only run (and own the pool lifecycle) when invoked directly as a script — when
+// required from a test the pool must stay open for the rest of the suite.
+if (require.main === module) {
+  seedDemo()
+    .then(() => pool.end())
+    .catch((e) => { console.error(e); pool.end().finally(() => process.exit(1)); });
+}

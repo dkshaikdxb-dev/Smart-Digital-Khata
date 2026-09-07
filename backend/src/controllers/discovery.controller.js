@@ -1,6 +1,21 @@
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
+// Languages the consumer catalogue can be viewed in. 'en' is the base language:
+// it uses the plain English products.name with NO i18n join, so the response
+// shape and behaviour are exactly as before. Any other known lang LEFT JOINs
+// catalog_i18n for a localized product name (English fallback). Mirrors
+// catalog.controller's resolveLang (owner catalogue) so both paths agree.
+const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
+
+// Resolve ?lang= to a known language, defaulting to 'en'. Unknown/absent values
+// fall back to 'en' (base behaviour) rather than erroring — the public
+// catalogue must always render.
+function resolveLang(raw) {
+  const lang = (raw || '').trim().toLowerCase();
+  return KNOWN_LANGS.has(lang) ? lang : 'en';
+}
+
 // Great-circle distance (km) between the query point and a shop's coords, via
 // the haversine formula (Earth radius 6371 km). Returns NULL when the shop has
 // no latitude/longitude (arithmetic with NULL yields NULL), so unlocated shops
@@ -101,15 +116,33 @@ exports.getShop = async (req, res) => {
 
   // category/subcategory come from the linked base catalog item (LEFT JOIN, so
   // custom / unlinked products get null for both). Keep the existing fields.
+  //
+  // Consumer localization (⑥, additive): when ?lang != en, LEFT JOIN
+  // catalog_i18n on the stored English product name and return
+  // COALESCE(cp.name, p.name) AS name — the localized name when a master
+  // translation exists, else the raw stored (English/base) name. Only the `name`
+  // VALUE changes; the response shape (same keys) is identical to the en path.
+  const lang = resolveLang(req.query.lang);
+  const localized = lang !== 'en';
+  const params = [shopId];
+  let nameSelect = 'p.name';
+  let i18nJoin = '';
+  if (localized) {
+    params.push(lang); // $2
+    nameSelect = 'COALESCE(cp.name, p.name)';
+    i18nJoin = `LEFT JOIN catalog_i18n cp
+                  ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2`;
+  }
   const products = await query(
-    `SELECT p.id, p.name, p.description, p.price, p.unit, p.sold_by_weight, p.image_url,
+    `SELECT p.id, ${nameSelect} AS name, p.description, p.price, p.unit, p.sold_by_weight, p.image_url,
             ci.category, ci.subcategory,
             ci.product AS base_product, ci.brand, ci.pack
        FROM products p
        LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
+       ${i18nJoin}
       WHERE p.shop_id = $1 AND p.is_active = true
       ORDER BY p.created_at DESC, p.id DESC`,
-    [shopId]
+    params
   );
 
   res.json({ shop: { ...shop.rows[0], products: products.rows } });
