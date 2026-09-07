@@ -10,6 +10,7 @@ const referralCtrl = require('../controllers/referral.controller');
 const exportCtrl = require('../controllers/admin-export.controller');
 const dashboardCtrl = require('../controllers/dashboard.controller');
 const distributorCtrl = require('../controllers/distributor.controller');
+const analyticsCtrl = require('../controllers/admin-analytics.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -68,6 +69,11 @@ router.get('/me', asyncHandler(ctrl.me));
 // caller's admin sub-role may see (via hasPermission on req.adminRole) and
 // derives insights from just those. auth('admin') already blocks non-admins.
 router.get('/dashboard', asyncHandler(dashboardCtrl.dashboard));
+
+// Acquisition funnel (Analytics Phase 1). Read-only aggregation over the signup
+// cohort + anonymous events. Gated with shops:view (growth/acquisition data, no
+// money), like the dashboard's growth section.
+router.get('/analytics/funnel', requirePerm('shops:view'), asyncHandler(analyticsCtrl.funnel));
 
 // Platform overview + shop directory (read).
 router.get('/stats', requirePerm('shops:view'), asyncHandler(ctrl.stats));

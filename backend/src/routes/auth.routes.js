@@ -31,6 +31,16 @@ const registerSchema = Joi.object({
   // referral code never blocks registration.
   ref: Joi.string().max(64).allow('', null),
   source_channel: Joi.string().max(64).allow('', null),
+  // Optional analytics attribution (Phase Analytics). Persisted onto the new
+  // shop's signup_* columns. Unknown keys stripped; all fields optional strings.
+  // Backward compatible: callers that omit `attribution` behave exactly as today.
+  attribution: Joi.object({
+    session_id: Joi.string().allow('', null),
+    utm_source: Joi.string().allow('', null),
+    utm_medium: Joi.string().allow('', null),
+    utm_campaign: Joi.string().allow('', null),
+    referrer_host: Joi.string().allow('', null),
+  }).unknown(false),
 });
 
 // The login identifier arrives in the `email` field but may be an email
