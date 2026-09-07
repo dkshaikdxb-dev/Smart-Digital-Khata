@@ -4,6 +4,16 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* No-flash theme: apply a STORED consumer preference before first paint.
+            With no stored pref, no data-theme is set and the consumer PWA follows
+            the device via prefers-color-scheme. The owner dashboard ignores the
+            .cpwa tokens and its bare :root stays dark regardless. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();",
+          }}
+        />
         <meta name="application-name" content="Smart Digital Khata" />
         <meta name="description" content="Manage your kirana credit ledger and collect dues faster over WhatsApp." />
         {/* The web manifest is chosen per-area in _app.js: the owner app and the

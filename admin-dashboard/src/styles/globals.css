@@ -72,47 +72,99 @@ th { color: var(--muted); font-weight: 600; }
 
 /* ==========================================================================
    Customer PWA (F3) — mobile-first, scoped under .cpwa so it never touches the
-   owner dashboard. Reuses the existing tokens/colors above.
+   owner dashboard.
+
+   Theming: the consumer app is light by default and follows the device
+   preference, with a manual toggle (see CpwaThemeToggle). All theme-aware
+   tokens are scoped to .cpwa (as a descendant of :root[data-theme] /
+   prefers-color-scheme) so the owner dashboard's bare :root tokens are NEVER
+   touched and stay dark. Four blocks: light default, dark-when-device-prefers-
+   dark-and-not-forced-light, dark-forced, light-forced.
    ========================================================================== */
-.cpwa { min-height: 100vh; background: var(--bg); }
+/* LIGHT = default */
+.cpwa {
+  color-scheme: light;
+  --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
+  --c-text:#0f172a; --c-muted:#64748b; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#15803d;
+  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
+}
+/* DARK when the device prefers dark AND the user hasn't forced light */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cpwa {
+    color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#26344a;
+    --c-border-strong:#334155; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
+    --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
+    --c-overlay:rgba(0,0,0,.55);
+  }
+}
+/* DARK forced by the toggle */
+:root[data-theme="dark"] .cpwa {
+  color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#26344a;
+  --c-border-strong:#334155; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
+  --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
+  --c-overlay:rgba(0,0,0,.55);
+}
+/* LIGHT forced by the toggle (redundant with base but wins over the media block) */
+:root[data-theme="light"] .cpwa {
+  color-scheme:light; --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
+  --c-text:#0f172a; --c-muted:#64748b; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#15803d;
+  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
+}
+
+.cpwa { min-height: 100vh; background: var(--c-bg); color: var(--c-text); }
+
+/* Base controls re-themed inside the consumer app (colors only, layout intact).
+   The global button/input/.card rules above use the owner (dark) tokens; these
+   overrides point them at the .cpwa tokens so light mode renders correctly. */
+.cpwa button { color: var(--c-on-accent); }
+.cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
+.cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-border-strong); color: var(--c-text); }
 .cpwa-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 .cpwa-topbar {
   position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px;
   padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
-  background: var(--bg); border-bottom: 1px solid #334155;
+  background: var(--c-bg); border-bottom: 1px solid var(--c-border-strong);
 }
 .cpwa-topbar h1 { margin: 0; font-size: 18px; }
 .cpwa-back { padding: 4px 12px; font-size: 20px; line-height: 1; }
 .cpwa-main { flex: 1; padding: 16px; padding-bottom: 24px; }
 .cpwa-main.has-tabs { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
-.cpwa .card { margin-bottom: 12px; }
+.cpwa .card { margin-bottom: 12px; background: var(--c-surface); box-shadow: var(--c-shadow); }
+
+/* Small theme toggle button in the consumer topbar (colors from tokens). */
+.cpwa-theme-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0; border-radius: 8px;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); line-height: 0; flex: 0 0 auto;
+}
 
 /* Bottom tab bar */
 .cpwa-tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
   max-width: 480px; margin: 0 auto;
   display: grid; grid-template-columns: repeat(4, 1fr);
-  background: var(--card); border-top: 1px solid #334155;
+  background: var(--c-surface); border-top: 1px solid var(--c-border-strong);
   padding-bottom: env(safe-area-inset-bottom);
 }
 .cpwa-tabbar a, .cpwa-tabbar button {
-  background: none; border: none; color: var(--muted); font-weight: 600;
+  background: none; border: none; color: var(--c-muted); font-weight: 600;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 10px 4px 8px; font-size: 11px; cursor: pointer;
 }
-.cpwa-tabbar a.active { color: var(--accent); }
+.cpwa-tabbar a.active { color: var(--c-accent-ink); }
 .cpwa-tab-ico { font-size: 20px; line-height: 1; }
 
 /* Forms & feedback */
-.cpwa-label { display: block; font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
-.cpwa-error { color: var(--danger); font-size: 14px; margin-top: 10px; }
+.cpwa-label { display: block; font-size: 13px; color: var(--c-muted); font-weight: 600; margin-bottom: 6px; }
+.cpwa-error { color: var(--c-danger); font-size: 14px; margin-top: 10px; }
 .cpwa-devhint {
   margin-top: 10px; padding: 8px 12px; border-radius: 8px;
-  background: #0b1220; border: 1px dashed #334155; font-size: 13px; color: var(--muted);
+  background: var(--c-surface-2); border: 1px dashed var(--c-border-strong); font-size: 13px; color: var(--c-muted);
 }
 .cpwa-textarea {
   width: 100%; min-height: 72px; padding: 10px 12px; border-radius: 8px;
-  border: 1px solid #334155; background: #0b1220; color: var(--text); font-size: 16px; font-family: inherit;
+  border: 1px solid var(--c-border-strong); background: var(--c-surface-2); color: var(--c-text); font-size: 16px; font-family: inherit;
 }
 .cpwa-row { display: flex; gap: 10px; align-items: center; }
 .cpwa-row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -120,8 +172,8 @@ th { color: var(--muted); font-weight: 600; }
 
 /* Segmented control */
 .cpwa-seg { display: flex; gap: 8px; }
-.cpwa-seg button { flex: 1; background: #334155; color: var(--text); }
-.cpwa-seg button.active { background: var(--accent); color: #000; }
+.cpwa-seg button { flex: 1; background: var(--c-border-strong); color: var(--c-text); }
+.cpwa-seg button.active { background: var(--c-accent); color: var(--c-on-accent); }
 
 /* Hero / empty states */
 .cpwa-hero { text-align: center; }
@@ -135,7 +187,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-shopcard-body { flex: 1; min-width: 0; }
 .cpwa-shopcard-name { font-weight: 700; font-size: 16px; }
 .cpwa-shopcard-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-weight: 600; }
-.cpwa-chev { color: var(--muted); font-size: 22px; }
+.cpwa-chev { color: var(--c-muted); font-size: 22px; }
 
 /* Product rows + steppers */
 .cpwa-product { display: flex; align-items: center; gap: 12px; }
@@ -148,11 +200,11 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-qty { min-width: 20px; text-align: center; font-weight: 700; }
 
 /* Cart lines */
-.cpwa-cart-line { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #334155; }
+.cpwa-cart-line { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--c-border-strong); }
 .cpwa-cart-line:last-of-type { border-bottom: none; }
 .cpwa-cart-line-info { flex: 1; min-width: 0; }
 .cpwa-cart-line-total { min-width: 72px; text-align: right; font-weight: 700; }
-.cpwa-subtotal { margin-top: 12px; padding-top: 12px; border-top: 1px solid #334155; font-size: 16px; }
+.cpwa-subtotal { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--c-border-strong); font-size: 16px; }
 
 /* Persistent cart / action bar (sits at the bottom, above the tab bar area) */
 .cpwa-cartbar {
@@ -160,31 +212,31 @@ th { color: var(--muted); font-weight: 600; }
   max-width: 480px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom));
-  background: var(--card); border-top: 1px solid #334155;
+  background: var(--c-surface); border-top: 1px solid var(--c-border-strong);
 }
-.cpwa-cartbar-count { font-size: 12px; color: var(--muted); }
+.cpwa-cartbar-count { font-size: 12px; color: var(--c-muted); }
 .cpwa-cartbar-total { font-size: 18px; font-weight: 700; }
 .cpwa-cartbar-btn {
-  background: var(--accent); color: #000; font-weight: 700; border: none;
+  background: var(--c-accent); color: var(--c-on-accent); font-weight: 700; border: none;
   padding: 12px 18px; border-radius: 10px; font-size: 15px;
 }
-.cpwa-btn-danger { width: 100%; background: var(--danger); color: #fff; }
+.cpwa-btn-danger { width: 100%; background: var(--c-danger); color: #fff; }
 
 /* Status badges & timeline */
-.cpwa-badge-ok { background: rgba(34,197,94,0.2); color: var(--accent); }
+.cpwa-badge-ok { background: rgba(34,197,94,0.2); color: var(--c-accent-ink); }
 .cpwa-badge-warn { background: rgba(234,179,8,0.2); color: #eab308; }
-.cpwa-badge-danger { background: rgba(239,68,68,0.2); color: var(--danger); }
+.cpwa-badge-danger { background: rgba(239,68,68,0.2); color: var(--c-danger); }
 .cpwa-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
-.cpwa-tl-step { display: flex; align-items: center; gap: 12px; padding: 6px 0; color: var(--muted); }
-.cpwa-tl-dot { width: 12px; height: 12px; border-radius: 50%; background: #334155; flex: none; }
-.cpwa-tl-step.done { color: var(--text); }
-.cpwa-tl-step.done .cpwa-tl-dot { background: var(--accent); }
+.cpwa-tl-step { display: flex; align-items: center; gap: 12px; padding: 6px 0; color: var(--c-muted); }
+.cpwa-tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c-border-strong); flex: none; }
+.cpwa-tl-step.done { color: var(--c-text); }
+.cpwa-tl-step.done .cpwa-tl-dot { background: var(--c-accent); }
 .cpwa-tl-step.current { font-weight: 700; font-size: 16px; }
-.cpwa-tl-step.current .cpwa-tl-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); }
-.cpwa-tl-step.cancelled { color: var(--danger); font-weight: 700; }
-.cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--danger); }
+.cpwa-tl-step.current .cpwa-tl-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-accent) 30%, transparent); }
+.cpwa-tl-step.cancelled { color: var(--c-danger); font-weight: 700; }
+.cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--c-danger); }
 /* The one thing the customer is waiting for, on the orders list. */
-.cpwa-order-next { margin-top: 4px; font-weight: 600; color: var(--accent); }
+.cpwa-order-next { margin-top: 4px; font-weight: 600; color: var(--c-accent-ink); }
 
 /* Owner order-detail stepper — a compact horizontal progress row. Reached
    stages are filled by rank; the current one is highlighted. */
@@ -207,7 +259,7 @@ th { color: var(--muted); font-weight: 600; }
 }
 .langswitch:focus, .cpwa-lang:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .langswitch option, .cpwa-lang option { color: #000; }
-.cpwa-lang { padding: 5px 24px 5px 9px; font-size: 12px; }
+.cpwa-lang { padding: 5px 24px 5px 9px; font-size: 12px; background-color: var(--c-surface); color: var(--c-text); border-color: var(--c-border-strong); }
 
 /* Product thumbnails (customer) + cart tab badge. Added for the image + cart
    work; the 5th tab widens the customer tab bar from 4 to 5 columns. */
@@ -219,7 +271,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tab-badge {
   position: absolute; top: -6px; left: 100%; transform: translateX(-55%);
   min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
-  background: var(--accent); color: #000; font-size: 10px; font-weight: 800;
+  background: var(--c-accent); color: var(--c-on-accent); font-size: 10px; font-weight: 800;
   line-height: 16px; text-align: center; box-sizing: border-box;
 }
 
@@ -237,7 +289,7 @@ th { color: var(--muted); font-weight: 600; }
    tap targets, each language in its own script. */
 .cpwa-langgate {
   position: fixed; inset: 0; z-index: 100;
-  background: var(--bg);
+  background: var(--c-bg);
   display: flex; align-items: center; justify-content: center;
   padding: 24px; padding-top: calc(24px + env(safe-area-inset-top));
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
@@ -246,14 +298,14 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-langgate-card { width: 100%; max-width: 420px; text-align: center; }
 .cpwa-langgate-ico { font-size: 48px; line-height: 1; }
 .cpwa-langgate-title { font-size: 22px; margin: 12px 0 20px; line-height: 1.35; }
-.cpwa-langgate-title span { display: block; font-size: 15px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.cpwa-langgate-title span { display: block; font-size: 15px; color: var(--c-muted); font-weight: 600; margin-top: 4px; }
 .cpwa-langgate-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .cpwa-langgate-btn {
-  background: var(--card); color: var(--text);
-  border: 1px solid #334155; border-radius: 12px;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); border-radius: 12px;
   padding: 18px 12px; font-size: 20px; font-weight: 700; min-height: 64px;
 }
-.cpwa-langgate-btn:active { border-color: var(--accent); }
+.cpwa-langgate-btn:active { border-color: var(--c-accent); }
 
 /* Owner catalog range-management: section tabs, browse list, inline price.
    Scoped under .cat-* so it never affects other pages. */
@@ -286,12 +338,12 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-chips { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
 .cpwa-chip {
   flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
-  background: #334155; color: var(--text); border: 1px solid #334155; cursor: pointer; white-space: nowrap;
+  background: var(--c-border-strong); color: var(--c-text); border: 1px solid var(--c-border-strong); cursor: pointer; white-space: nowrap;
 }
-.cpwa-chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.cpwa-chip.active { background: var(--c-accent); color: var(--c-on-accent); border-color: var(--c-accent); }
 
 /* Order/cart grand total line */
-.cpwa-total { margin-top: 8px; padding-top: 10px; border-top: 1px solid #334155; font-size: 16px; }
+.cpwa-total { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--c-border-strong); font-size: 16px; }
 
 /* Variant group card (customer shop page): a product row on top, then one chip
    row per selectable dimension (brand, size). Reuses .cpwa-product for the top
@@ -301,7 +353,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-vcard-top { align-items: flex-start; }
 .cpwa-vcard-sub { font-size: 13px; margin-top: 2px; }
 .cpwa-variant-row { margin-top: 10px; }
-.cpwa-variant-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+.cpwa-variant-label { display: block; font-size: 12px; font-weight: 600; color: var(--c-muted); }
 .cpwa-variant-row .cpwa-chips { margin-top: 6px; }
 
 /* ---- Cash payment: let the three payment options wrap on a narrow phone ---- */
@@ -376,7 +428,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-weight-line strong { margin-left: auto; }
 .cpwa-weight-remove { flex: 0 0 auto; }
 .cpwa-cart-weight { display: flex; align-items: center; gap: 6px; }
-.cpwa-weight-tag { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.cpwa-weight-tag { font-size: 13px; color: var(--c-muted); white-space: nowrap; }
 
 /* ==========================================================================
    Batch H2 — icon-first owner navigation, spoken FAQ, meaning-colored balances.
