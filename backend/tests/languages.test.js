@@ -22,8 +22,11 @@ const NEW_CODE = 'xx';
 afterAll(async () => {
   // Restore the seed state so the suite is re-runnable.
   await pool.query('DELETE FROM languages WHERE code = $1', [NEW_CODE]);
+  // Restore mr to its post-0033 baseline (active, in_review) so the suite is
+  // re-runnable against a shared DB. The activation test above re-stamps
+  // activated_at/by; clear them back to the migration's untouched state.
   await pool.query(
-    `UPDATE languages SET is_active = false, activated_at = NULL, activated_by = NULL, audit_status = 'pending'
+    `UPDATE languages SET is_active = true, activated_at = NULL, activated_by = NULL, audit_status = 'in_review'
      WHERE code = 'mr'`
   );
   await pool.query("UPDATE languages SET is_active = true WHERE code = 'ta'");
@@ -41,12 +44,13 @@ describe('public GET /api/public/languages', () => {
     expect(Array.isArray(langs)).toBe(true);
 
     const codes = langs.map((l) => l.code);
-    // The 7 currently-live languages are active.
-    for (const c of ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']) {
+    // The currently-live languages are active. Batch Y activated bn/gu/mr
+    // (migration 0033) alongside the original 7, so they are shown too.
+    for (const c of ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur', 'bn', 'gu', 'mr']) {
       expect(codes).toContain(c);
     }
-    // Staged capacity languages are NOT shown until activated.
-    for (const c of ['mr', 'bn', 'gu', 'pa', 'or', 'as']) {
+    // The remaining staged capacity languages are NOT shown until activated.
+    for (const c of ['pa', 'or', 'as']) {
       expect(codes).not.toContain(c);
     }
 
