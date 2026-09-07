@@ -14,6 +14,11 @@
 //   audit:view        read the moderation audit log
 //   revenue:view      see revenue / billing figures
 //   settings:manage   change platform settings / a shop's plan (billing)
+//   content:manage    run the editorial content pipeline — the "editor-in-chief"
+//                     review desk: create/edit content items, and (crucially)
+//                     APPROVE them (the human gate that lets a Tier 1/2 item ever
+//                     be scheduled/published). Held by the ops/growth role that
+//                     already owns platform settings (finance), plus super.
 
 const ALL = Object.freeze([
   'shops:view',
@@ -26,6 +31,7 @@ const ALL = Object.freeze([
   'audit:view',
   'revenue:view',
   'settings:manage',
+  'content:manage',
 ]);
 
 // Role → permission list. Kept as plain arrays for readability; wrapped in Sets
@@ -63,6 +69,9 @@ const ROLE_PERMS = Object.freeze({
     'revenue:view',
     'settings:manage',
     'audit:view',
+    // Growth/ops also runs the editorial content pipeline (the role that owns
+    // platform settings owns the newsroom). super inherits it via ALL.
+    'content:manage',
   ],
 });
 
