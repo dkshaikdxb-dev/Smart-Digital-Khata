@@ -14,6 +14,16 @@ try {
 const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
+// Languages the consumer catalogue can be viewed in. 'en' is the base language:
+// no i18n join, response unchanged. Any other known lang LEFT JOINs catalog_i18n
+// for a localized product name (English fallback). Mirrors catalog.controller's
+// resolveLang (owner catalogue) so every consumer path localizes consistently.
+const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
+function resolveLang(raw) {
+  const lang = (raw || '').trim().toLowerCase();
+  return KNOWN_LANGS.has(lang) ? lang : 'en';
+}
+
 // Columns safe to return in JSON — never the raw image_data BYTEA blob.
 const PRODUCT_PUBLIC_COLS =
   'id, shop_id, name, description, price, unit, sold_by_weight, is_active, image_url, image_mime, image_updated_at, created_at, updated_at';
@@ -106,12 +116,29 @@ exports.publicCatalog = async (req, res) => {
   const shop = await query('SELECT name FROM shops WHERE id = $1', [shopId]);
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
-  const r = await query(
-    `SELECT id, name, description, price, unit, image_url
-     FROM products WHERE shop_id = $1 AND is_active = true
-     ORDER BY created_at DESC, id DESC`,
-    [shopId]
-  );
+  // Consumer localization (⑥, additive): when ?lang != en, LEFT JOIN
+  // catalog_i18n on the stored English product name and return
+  // COALESCE(cp.name, p.name) AS name — localized when a master translation
+  // exists, else the raw English/base name. Only the `name` VALUE changes; the
+  // response shape (id,name,description,price,unit,image_url) is unchanged.
+  const lang = resolveLang(req.query.lang);
+  const localized = lang !== 'en';
+  const params = [shopId];
+  let sql;
+  if (localized) {
+    params.push(lang); // $2
+    sql = `SELECT p.id, COALESCE(cp.name, p.name) AS name, p.description, p.price, p.unit, p.image_url
+             FROM products p
+             LEFT JOIN catalog_i18n cp
+               ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2
+            WHERE p.shop_id = $1 AND p.is_active = true
+            ORDER BY p.created_at DESC, p.id DESC`;
+  } else {
+    sql = `SELECT id, name, description, price, unit, image_url
+             FROM products WHERE shop_id = $1 AND is_active = true
+             ORDER BY created_at DESC, id DESC`;
+  }
+  const r = await query(sql, params);
   res.json({ shop_name: shop.rows[0].name, products: r.rows });
 };
 
