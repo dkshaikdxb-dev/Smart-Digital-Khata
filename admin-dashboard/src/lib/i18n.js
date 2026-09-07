@@ -58,6 +58,10 @@ const DICT = {
     'ctab.khata': 'Khata',
     'ctab.logout': 'Logout',
     'ctab.account': 'Account',
+    // Suffix appended to a picker option for an active language that has no
+    // localized catalogue yet (has_catalogue=false) — a minimal, honest hint,
+    // NOT a disable. See LangSwitch.js / CustomerLangGate.js.
+    'lang.betaSuffix': ' (beta)',
   },
   hi: {
     'nav.dashboard': 'डैशबोर्ड',
@@ -79,6 +83,7 @@ const DICT = {
     'ctab.khata': 'खाता',
     'ctab.logout': 'लॉग आउट',
     'ctab.account': 'अकाउंट',
+    'lang.betaSuffix': ' (बीटा)',
   },
   ta: {
     'nav.dashboard': 'டாஷ்போர்டு',
@@ -100,6 +105,7 @@ const DICT = {
     'ctab.khata': 'கணக்கு',
     'ctab.logout': 'வெளியேறு',
     'ctab.account': 'என் கணக்கு',
+    'lang.betaSuffix': ' (பீட்டா)',
   },
   te: {
     'nav.dashboard': 'డాష్‌బోర్డ్',
@@ -121,6 +127,7 @@ const DICT = {
     'ctab.khata': 'ఖాతా',
     'ctab.logout': 'లాగ్ అవుట్',
     'ctab.account': 'నా ఖాతా',
+    'lang.betaSuffix': ' (బీటా)',
   },
   kn: {
     'nav.dashboard': 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
@@ -142,6 +149,7 @@ const DICT = {
     'ctab.khata': 'ಖಾತೆ',
     'ctab.logout': 'ಲಾಗ್ ಔಟ್',
     'ctab.account': 'ನನ್ನ ಖಾತೆ',
+    'lang.betaSuffix': ' (ಬೀಟಾ)',
   },
   ml: {
     'nav.dashboard': 'ഡാഷ്‌ബോർഡ്',
@@ -163,6 +171,7 @@ const DICT = {
     'ctab.khata': 'കണക്ക്',
     'ctab.logout': 'ലോഗ് ഔട്ട്',
     'ctab.account': 'എന്റെ അക്കൗണ്ട്',
+    'lang.betaSuffix': ' (ബീറ്റ)',
   },
   ur: {
     'nav.dashboard': 'ڈیش بورڈ',
@@ -184,6 +193,7 @@ const DICT = {
     'ctab.khata': 'کھاتہ',
     'ctab.logout': 'لاگ آؤٹ',
     'ctab.account': 'اکاؤنٹ',
+    'lang.betaSuffix': ' (بیٹا)',
   },
 };
 
@@ -7015,6 +7025,16 @@ export async function loadActiveLanguages() {
       name: l.label,
       label: l.label,
       rtl: !!l.rtl,
+      // Per-dimension capability flags from the registry (migration 0039). The
+      // picker/mic gate off these instead of assuming a shown language supports
+      // everything. Coerced to real booleans; missing (older API) → false.
+      has_ui: !!l.has_ui,
+      has_catalogue: !!l.has_catalogue,
+      has_search: !!l.has_search,
+      has_asr: !!l.has_asr,
+      has_tts: !!l.has_tts,
+      has_translit: !!l.has_translit,
+      has_nmt: !!l.has_nmt,
     }));
     if (typeof window !== 'undefined') window.dispatchEvent(new Event(ACTIVE_EVENT));
   } catch {
@@ -7040,6 +7060,49 @@ export function useActiveLanguages() {
     return () => window.removeEventListener(ACTIVE_EVENT, on);
   }, []);
   return list;
+}
+
+// Built-in capability fallback used before the registry resolves (or offline).
+// The current built-in LANGS all have translated UI + localized search, so we
+// default those two true for a KNOWN built-in code and everything else false —
+// nothing (voice, catalogue) is claimed until the registry confirms it. An
+// unknown code gets an all-false object so a caller never reads `undefined`.
+const CAP_KEYS = ['has_ui', 'has_catalogue', 'has_search', 'has_asr', 'has_tts', 'has_translit', 'has_nmt'];
+function defaultCapability(code) {
+  const known = LANGS.some((l) => l.code === code);
+  const caps = {};
+  for (const k of CAP_KEYS) caps[k] = false;
+  if (known) {
+    caps.has_ui = true;
+    caps.has_search = true;
+  }
+  return caps;
+}
+
+// The per-dimension capability flags for a language code, read from the active
+// registry when loaded, else a SAFE built-in default (see defaultCapability).
+// Always returns an object with every has_* key present, so callers can read a
+// flag without guarding for undefined.
+export function languageCapability(code) {
+  const found = getActiveLanguages().find((l) => l.code === code);
+  if (found && CAP_KEYS.some((k) => k in found)) {
+    const caps = {};
+    for (const k of CAP_KEYS) caps[k] = !!found[k];
+    return caps;
+  }
+  return defaultCapability(code);
+}
+
+// Pure voice-gating helpers for Batch C (mic + read-aloud) to consume, so the
+// mic/speaker only appear for a language that actually has a real ASR/TTS tag
+// (see has_asr/has_tts, seeded from useSpeech.js's BCP47 map). `caps` is the
+// object from languageCapability(code); `code` is accepted for a future
+// per-code override and to keep the call sites self-documenting.
+export function canUseVoice(code, caps) {
+  return !!(caps && caps.has_asr === true);
+}
+export function canReadAloud(code, caps) {
+  return !!(caps && caps.has_tts === true);
 }
 
 export function getLang() {

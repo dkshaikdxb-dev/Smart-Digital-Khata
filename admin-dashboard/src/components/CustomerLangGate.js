@@ -1,4 +1,4 @@
-import { setLang, useActiveLanguages } from '../lib/i18n';
+import { setLang, useActiveLanguages, translate } from '../lib/i18n';
 
 // First-open language chooser for the customer app. Shown full-screen the very
 // first time someone opens any /c page and has not yet picked a language, so a
@@ -31,7 +31,13 @@ export default function CustomerLangGate({ onDone }) {
               dir={l.rtl ? 'rtl' : 'ltr'}
               onClick={() => pick(l.code)}
             >
-              {l.name}
+              {/* An honest " (beta)"-style suffix for an ACTIVE language with no
+                  localized catalogue yet (has_catalogue === false, from the
+                  registry), localized in the language's own script. Checked
+                  `=== false` so the built-in LANGS fallback (no capability flags
+                  before the registry loads) shows no spurious suffix. The
+                  language stays fully selectable — never removed or disabled. */}
+              {l.has_catalogue === false ? `${l.name}${translate(l.code, 'lang.betaSuffix')}` : l.name}
             </button>
           ))}
         </div>
