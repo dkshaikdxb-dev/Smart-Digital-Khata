@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import SUPPLY from './i18nSupply';
 
 // Lightweight i18n for the owner dashboard + customer PWA. Nav chrome and page
@@ -7410,7 +7410,7 @@ export function useLang() {
   const [lang, setLangState] = useState('en');
   // Bumped whenever overrides load/change: the lang is unchanged but the
   // resolved strings are, so a distinct state value forces a re-render.
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     setLangState(getLang());
     const on = () => setLangState(getLang());
@@ -7428,5 +7428,11 @@ export function useLang() {
     setLang(code);
     setLangState(DICT[code] ? code : 'en');
   };
-  return { lang, setLang: change, t: (key, vars) => translate(lang, key, vars) };
+  // `t` MUST be referentially stable across renders — components put it in
+  // useEffect dependency arrays (e.g. ReferralCard, the account pages). A fresh
+  // function each render made those effects re-run every render, turning their
+  // fetches into an infinite loop that tripped the API rate limit (HTTP 503).
+  // Memoize on [lang, tick] so `t` changes only when the language or overrides do.
+  const t = useCallback((key, vars) => translate(lang, key, vars), [lang, tick]);
+  return { lang, setLang: change, t };
 }
