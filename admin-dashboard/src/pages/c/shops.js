@@ -48,6 +48,9 @@ export default function DiscoverShops() {
         q.set('lng', String(loc.lng));
       }
       if (ful) q.set('fulfillment', ful);
+      // Localized shop NAMES: ask the directory for names in the chosen language
+      // (the API COALESCEs the native shop_name_i18n row with the English name).
+      if (lang && lang !== 'en') q.set('lang', lang);
       q.set('limit', '50');
       const r = await publicFetch(`/api/public/shops?${q.toString()}`);
       setShops(r.shops || r.items || []);
@@ -60,8 +63,11 @@ export default function DiscoverShops() {
   }
 
   useEffect(() => {
-    load('', null, '');
-  }, []);
+    // Reload on mount and whenever the language changes, so switching language
+    // re-fetches shop names in the new script. Keeps any active filters.
+    load(search, coords, fulfillment);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   function onSearch(e) {
     e.preventDefault();
