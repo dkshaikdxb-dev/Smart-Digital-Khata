@@ -2,7 +2,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { withTx, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
 const { captureReferral } = require('../utils/referral');
+const { reseedShopName } = require('../utils/shop-name-i18n');
 
 const SALT = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
 
@@ -76,6 +78,19 @@ exports.register = async (req, res) => {
 
     return { user: { ...user, shop_id: shop.id }, shop };
   });
+
+  // Native-language shop-name localization (batch SHOPNAME). Auto-seed
+  // shop_name_i18n from the new shop's English name, so a customer viewing the
+  // shop in hi/ta/te/kn/ml sees a native name immediately (English fallback
+  // otherwise). Best-effort and STRICTLY non-blocking: it runs in its own
+  // transaction after the account commit, and any failure is swallowed so it can
+  // never fail signup. Awaited only so the localized rows exist by the time the
+  // 201 is returned.
+  try {
+    await withTx((client) => reseedShopName(client, result.shop.id, shopName));
+  } catch (e) {
+    logger.warn(`shop-name-i18n auto-seed on signup failed (non-blocking): ${e.message}`);
+  }
 
   // Onboarding-source attribution (Phase D). Best-effort and non-blocking: a
   // missing/invalid/self/duplicate referral never affects the created account.

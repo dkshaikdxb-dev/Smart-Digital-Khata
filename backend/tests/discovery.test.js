@@ -424,3 +424,87 @@ describe('GET /public/shops/:shopId — localized base_product (variant-group na
     }
   });
 });
+
+// Localized SHOP NAME (batch SHOPNAME): a shop_name_i18n hi row makes the shop's
+// own name render in Hindi under ?lang=hi across getShop, listShops and
+// searchProducts, while en / no-lang return the raw English name.
+describe('localized shop name (shop_name_i18n)', () => {
+  const SHOP_NAME_HI = 'डिस्को हिंदी स्टोर';
+
+  beforeAll(async () => {
+    // Set a KNOWN hi row for listedA (UPSERT overrides any auto-seeded one).
+    await pool.query(
+      `INSERT INTO shop_name_i18n (shop_id, lang, name, source, needs_review)
+       VALUES ($1, 'hi', $2, 'owner', false)
+       ON CONFLICT (shop_id, lang) DO UPDATE SET name = EXCLUDED.name, source = 'owner'`,
+      [listedA.id, SHOP_NAME_HI]
+    );
+  });
+
+  it('getShop?lang=hi returns the localized shop name; en/no-lang the English one', async () => {
+    const hi = await request(app).get(`/api/public/shops/${listedA.id}?lang=hi`);
+    expect(hi.status).toBe(200);
+    expect(hi.body.shop.name).toBe(SHOP_NAME_HI);
+
+    for (const url of [`/api/public/shops/${listedA.id}`, `/api/public/shops/${listedA.id}?lang=en`]) {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(200);
+      expect(res.body.shop.name).toBe(listedA.name);
+    }
+  });
+
+  it('listShops?lang=hi localizes the shop name; en/no-lang the English one', async () => {
+    const hi = await request(app).get(`/api/public/shops?city=${CITY}&lang=hi`);
+    expect(hi.status).toBe(200);
+    expect(hi.body.shops.find((s) => s.id === listedA.id).name).toBe(SHOP_NAME_HI);
+
+    const en = await request(app).get(`/api/public/shops?city=${CITY}`);
+    expect(en.status).toBe(200);
+    expect(en.body.shops.find((s) => s.id === listedA.id).name).toBe(listedA.name);
+  });
+
+  it('searchProducts?lang=hi localizes shop_name; en/no-lang the English one', async () => {
+    const hi = await request(app).get(`/api/public/products/search?q=Atta&lang=hi&city=${CITY}`);
+    expect(hi.status).toBe(200);
+    const hiHit = hi.body.products.find((p) => p.shop.id === listedA.id);
+    expect(hiHit).toBeDefined();
+    expect(hiHit.shop.name).toBe(SHOP_NAME_HI);
+
+    const en = await request(app).get(`/api/public/products/search?q=Atta&city=${CITY}`);
+    expect(en.status).toBe(200);
+    const enHit = en.body.products.find((p) => p.shop.id === listedA.id);
+    expect(enHit).toBeDefined();
+    expect(enHit.shop.name).toBe(listedA.name);
+  });
+});
+
+// Auto-seed on signup (batch SHOPNAME): registering a shop populates
+// shop_name_i18n with 'auto' rows for the render languages. Assert at least the
+// hi row exists and is non-empty.
+describe('shop_name_i18n auto-seed on signup', () => {
+  it('creates a non-empty hi row for a freshly registered shop', async () => {
+    const uniq = `${Date.now()}`.slice(-9);
+    const reg = await request(app).post('/api/auth/register').send({
+      name: 'AutoSeed Owner',
+      email: `autoseed_${uniq}@test.local`,
+      phone: `+9198${uniq}`,
+      password: 'password123',
+      shopName: 'Sri Balaji General Stores',
+    });
+    expect(reg.status).toBe(201);
+    const shopId = reg.body.shop.id;
+    try {
+      const rows = await pool.query(
+        `SELECT lang, name, source FROM shop_name_i18n WHERE shop_id = $1 AND lang = 'hi'`,
+        [shopId]
+      );
+      expect(rows.rowCount).toBe(1);
+      expect(rows.rows[0].name.length).toBeGreaterThan(0);
+      expect(rows.rows[0].source).toBe('auto');
+      // Deterministic hybrid rendering for this known name.
+      expect(rows.rows[0].name).toBe('श्री बलजि जनरल स्टोर');
+    } finally {
+      await pool.query('DELETE FROM shops WHERE id = $1', [shopId]);
+    }
+  });
+});

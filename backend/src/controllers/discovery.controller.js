@@ -46,8 +46,22 @@ exports.listShops = async (req, res) => {
   const { search, city, lat, lng, fulfillment } = req.query;
   const useDistance = lat !== undefined && lng !== undefined;
   const limit = Math.min(100, Math.max(1, req.query.limit || 50));
+  const lang = resolveLang(req.query.lang);
+  const localized = lang !== 'en';
 
   const params = [];
+
+  // Localized SHOP name (batch SHOPNAME): for a non-'en' lang, LEFT JOIN
+  // shop_name_i18n and return COALESCE(sn.name, s.name). Search filter and
+  // ordering stay on the raw English s.name (a stable key). en path: no join.
+  let nameSelect = 's.name';
+  let nameJoin = '';
+  if (localized) {
+    params.push(lang);
+    nameSelect = 'COALESCE(sn.name, s.name)';
+    nameJoin = `LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $${params.length}`;
+  }
+
   const where = ['s.is_listed = true'];
 
   if (search) {
@@ -83,12 +97,13 @@ exports.listShops = async (req, res) => {
   const limitIdx = `$${params.length}`;
 
   const r = await query(
-    `SELECT s.id, s.name, s.city, s.area,
+    `SELECT s.id, ${nameSelect} AS name, s.city, s.area,
             s.offers_pickup, s.offers_delivery, s.delivery_fee,
             (SELECT COUNT(*) FROM products p
               WHERE p.shop_id = s.id AND p.is_active = true)::int AS product_count,
             ${distanceSelect}
        FROM shops s
+       ${nameJoin}
       WHERE ${where.join(' AND ')}
       ORDER BY ${orderBy}
       LIMIT ${limitIdx}`,
@@ -147,13 +162,20 @@ exports.searchProducts = async (req, res) => {
   // already folds in every language's names/aliases), so a native/romanized term
   // matches regardless of the requested display lang. 'en' skips the join.
   let nameSelect = 'p.name';
+  // Localized SHOP name (batch SHOPNAME): COALESCE(sn.name, s.name) via a
+  // shop_name_i18n join that reuses the SAME lang bind param as the product
+  // i18n join. en path: raw s.name, no join.
+  let shopNameSelect = 's.name';
   let i18nJoin = '';
   if (localized) {
     params.push(lang);
     const langIdx = `$${params.length}`;
     nameSelect = 'COALESCE(cp.name, p.name)';
+    shopNameSelect = 'COALESCE(sn.name, s.name)';
     i18nJoin = `LEFT JOIN catalog_i18n cp
-                  ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = ${langIdx}`;
+                  ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = ${langIdx}
+                LEFT JOIN shop_name_i18n sn
+                  ON sn.shop_id = s.id AND sn.lang = ${langIdx}`;
   }
 
   // The search blob, defensively COALESCEd to the name so a NULL search_text
@@ -225,7 +247,7 @@ exports.searchProducts = async (req, res) => {
   const limitIdx = `$${params.length}`;
 
   const sql = `SELECT p.id, ${nameSelect} AS name, p.price, p.unit, p.image_url, p.sold_by_weight,
-            s.id AS shop_id, s.name AS shop_name, s.city AS shop_city, s.area AS shop_area,
+            s.id AS shop_id, ${shopNameSelect} AS shop_name, s.city AS shop_city, s.area AS shop_area,
             s.offers_delivery, s.delivery_fee,
             ${distanceSelect}
        FROM products p
@@ -278,12 +300,32 @@ exports.getShop = async (req, res) => {
   const { shopId } = req.params;
   if (!/^[0-9a-f-]{36}$/i.test(shopId)) throw ApiError.notFound('Shop not found');
 
+  // Resolve the display language up front: it now governs the SHOP name too
+  // (batch SHOPNAME), not just the per-product localization further down.
+  const lang = resolveLang(req.query.lang);
+  const localized = lang !== 'en';
+
+  // Localized SHOP name (batch SHOPNAME): for a non-'en' lang, LEFT JOIN
+  // shop_name_i18n and return COALESCE(sn.name, s.name) — the native name when a
+  // row exists, else the raw English name (always the fallback). Only the `name`
+  // VALUE changes; the response shape is identical to the en path, which skips
+  // the join entirely.
+  const shopParams = [shopId];
+  let shopNameSelect = 's.name';
+  let shopNameJoin = '';
+  if (localized) {
+    shopParams.push(lang); // $2
+    shopNameSelect = 'COALESCE(sn.name, s.name)';
+    shopNameJoin = 'LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $2';
+  }
   const shop = await query(
-    `SELECT id, name, city, area,
-            offers_pickup, offers_delivery, delivery_fee, free_delivery_min,
-            delivery_min_order, delivery_radius_km, delivery_hours
-       FROM shops WHERE id = $1 AND is_listed = true`,
-    [shopId]
+    `SELECT s.id, ${shopNameSelect} AS name, s.city, s.area,
+            s.offers_pickup, s.offers_delivery, s.delivery_fee, s.free_delivery_min,
+            s.delivery_min_order, s.delivery_radius_km, s.delivery_hours
+       FROM shops s
+       ${shopNameJoin}
+      WHERE s.id = $1 AND s.is_listed = true`,
+    shopParams
   );
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
@@ -295,8 +337,7 @@ exports.getShop = async (req, res) => {
   // COALESCE(cp.name, p.name) AS name — the localized name when a master
   // translation exists, else the raw stored (English/base) name. Only the `name`
   // VALUE changes; the response shape (same keys) is identical to the en path.
-  const lang = resolveLang(req.query.lang);
-  const localized = lang !== 'en';
+  // (`lang` / `localized` were resolved above for the shop-name localization.)
   const params = [shopId];
   let nameSelect = 'p.name';
   // Description also localizes off the same master term (batch DESCLOC): when a
