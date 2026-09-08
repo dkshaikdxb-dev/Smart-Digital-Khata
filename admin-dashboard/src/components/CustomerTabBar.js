@@ -6,8 +6,9 @@ import { useLang } from '../lib/i18n';
 
 // Fixed bottom tab bar for the logged-in customer pages. Mobile-first, sits
 // inside the `.cpwa` wrapper so its styles are scoped and never touch the
-// owner app. Tabs: Shops / Cart / Orders / Khata / Account. Logout now lives
-// INSIDE the Account page.
+// owner app. Tabs: Shops / Products / Cart / Orders / Khata / Account. Products
+// deep-links to the cross-shop product search so discovery entries sit together.
+// Logout now lives INSIDE the Account page.
 export default function CustomerTabBar() {
   const router = useRouter();
   const { t } = useLang();
@@ -35,10 +36,14 @@ export default function CustomerTabBar() {
   const isActive = (base) => path === base || path.startsWith(base + '/');
 
   return (
-    <nav className="cpwa-tabbar cpwa-tabbar-5" aria-label="Customer navigation">
+    <nav className="cpwa-tabbar cpwa-tabbar-6" aria-label="Customer navigation">
       <Link href="/c/shops" className={isActive('/c/shops') || isActive('/c/shop') ? 'active' : ''}>
         <span className="cpwa-tab-ico">🏪</span>
         <span>{t('ctab.shops')}</span>
+      </Link>
+      <Link href="/c/products" className={isActive('/c/products') ? 'active' : ''}>
+        <span className="cpwa-tab-ico">🔍</span>
+        <span>{t('ctab.products')}</span>
       </Link>
       <Link href="/c/cart" className={isActive('/c/cart') ? 'active' : ''}>
         <span className="cpwa-tab-ico cpwa-tab-badgewrap">

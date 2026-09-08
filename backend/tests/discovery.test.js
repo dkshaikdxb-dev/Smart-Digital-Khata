@@ -139,10 +139,11 @@ describe('GET /public/shops', () => {
     const a = res.body.shops.find((s) => s.id === listedA.id);
     expect(a.product_count).toBe(2);
     // Minimal, non-sensitive fields only; no distance without lat/lng.
-    // Fulfillment badge fields (M7) added: offers_delivery + delivery_fee.
+    // Fulfillment badge fields added: offers_pickup + offers_delivery + delivery_fee.
     expect(Object.keys(a).sort()).toEqual(
-      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'product_count']
+      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'offers_pickup', 'product_count']
     );
+    expect(a.offers_pickup).toBe(true);
     expect(a.offers_delivery).toBe(false);
     expect(a.delivery_fee).toBe(0);
   });
@@ -178,6 +179,52 @@ describe('GET /public/shops', () => {
     const res = await request(app).get(`/api/public/shops?city=${CITY}&limit=1`);
     expect(res.status).toBe(200);
     expect(res.body.shops).toHaveLength(1);
+  });
+});
+
+describe('GET /public/shops?fulfillment (pickup/delivery filter)', () => {
+  // A offers pickup only (default); B offers delivery only. This lets each
+  // filter discriminate one seeded shop from the other.
+  beforeAll(async () => {
+    await pool.query(
+      'UPDATE shops SET offers_pickup = true, offers_delivery = false WHERE id = $1',
+      [listedA.id]
+    );
+    await pool.query(
+      'UPDATE shops SET offers_pickup = false, offers_delivery = true WHERE id = $1',
+      [listedB.id]
+    );
+  });
+
+  it('returns offers_pickup in the shop object', async () => {
+    const res = await request(app).get(`/api/public/shops?city=${CITY}`);
+    expect(res.status).toBe(200);
+    const a = res.body.shops.find((s) => s.id === listedA.id);
+    expect(a).toBeDefined();
+    expect(a.offers_pickup).toBe(true);
+  });
+
+  it('fulfillment=pickup returns only shops that offer pickup', async () => {
+    const res = await request(app).get(`/api/public/shops?city=${CITY}&fulfillment=pickup`);
+    expect(res.status).toBe(200);
+    const ids = res.body.shops.map((s) => s.id);
+    expect(ids).toContain(listedA.id);
+    expect(ids).not.toContain(listedB.id);
+    expect(res.body.shops.every((s) => s.offers_pickup === true)).toBe(true);
+  });
+
+  it('fulfillment=delivery returns only shops that offer delivery', async () => {
+    const res = await request(app).get(`/api/public/shops?city=${CITY}&fulfillment=delivery`);
+    expect(res.status).toBe(200);
+    const ids = res.body.shops.map((s) => s.id);
+    expect(ids).toContain(listedB.id);
+    expect(ids).not.toContain(listedA.id);
+    expect(res.body.shops.every((s) => s.offers_delivery === true)).toBe(true);
+  });
+
+  it('rejects an invalid fulfillment value with 400', async () => {
+    const res = await request(app).get(`/api/public/shops?city=${CITY}&fulfillment=teleport`);
+    expect(res.status).toBe(400);
   });
 });
 

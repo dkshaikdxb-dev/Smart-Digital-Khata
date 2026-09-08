@@ -43,7 +43,7 @@ const haversineKm = ($lat, $lng) =>
  * distance_km and results are ordered nearest-first; otherwise ordered by name.
  */
 exports.listShops = async (req, res) => {
-  const { search, city, lat, lng } = req.query;
+  const { search, city, lat, lng, fulfillment } = req.query;
   const useDistance = lat !== undefined && lng !== undefined;
   const limit = Math.min(100, Math.max(1, req.query.limit || 50));
 
@@ -57,6 +57,14 @@ exports.listShops = async (req, res) => {
   if (city) {
     params.push(`%${city}%`);
     where.push(`s.city ILIKE $${params.length}`);
+  }
+  // Fulfillment filter: these are FIXED column predicates on a Joi-validated
+  // enum ('pickup'|'delivery'), never string-interpolated user input, so no
+  // bind parameter is needed or wanted here.
+  if (fulfillment === 'pickup') {
+    where.push('s.offers_pickup = true');
+  } else if (fulfillment === 'delivery') {
+    where.push('s.offers_delivery = true');
   }
 
   let distanceSelect = 'NULL AS distance_km';
@@ -76,7 +84,7 @@ exports.listShops = async (req, res) => {
 
   const r = await query(
     `SELECT s.id, s.name, s.city, s.area,
-            s.offers_delivery, s.delivery_fee,
+            s.offers_pickup, s.offers_delivery, s.delivery_fee,
             (SELECT COUNT(*) FROM products p
               WHERE p.shop_id = s.id AND p.is_active = true)::int AS product_count,
             ${distanceSelect}
@@ -95,7 +103,8 @@ exports.listShops = async (req, res) => {
       city: row.city,
       area: row.area,
       product_count: row.product_count,
-      // Delivery badge for the directory (delivery_fee in paise).
+      // Fulfillment badges for the directory (delivery_fee in paise).
+      offers_pickup: row.offers_pickup,
       offers_delivery: row.offers_delivery,
       delivery_fee: Number(row.delivery_fee),
     };

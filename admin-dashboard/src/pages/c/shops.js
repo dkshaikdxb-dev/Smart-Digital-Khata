@@ -35,8 +35,9 @@ export default function DiscoverShops() {
   const [error, setError] = useState('');
   const [coords, setCoords] = useState(null); // { lat, lng }
   const [locating, setLocating] = useState(false);
+  const [fulfillment, setFulfillment] = useState(''); // '' | 'pickup' | 'delivery'
 
-  async function load(term, loc) {
+  async function load(term, loc, ful) {
     setLoading(true);
     setError('');
     try {
@@ -46,6 +47,7 @@ export default function DiscoverShops() {
         q.set('lat', String(loc.lat));
         q.set('lng', String(loc.lng));
       }
+      if (ful) q.set('fulfillment', ful);
       q.set('limit', '50');
       const r = await publicFetch(`/api/public/shops?${q.toString()}`);
       setShops(r.shops || r.items || []);
@@ -58,12 +60,18 @@ export default function DiscoverShops() {
   }
 
   useEffect(() => {
-    load('', null);
+    load('', null, '');
   }, []);
 
   function onSearch(e) {
     e.preventDefault();
-    load(search, coords);
+    load(search, coords, fulfillment);
+  }
+
+  // Switch the pickup/delivery filter and re-query. '' means All (no filter).
+  function onFilter(next) {
+    setFulfillment(next);
+    load(search, coords, next);
   }
 
   // Navigate to the cross-shop product search for a term (bar submit, voice, or
@@ -90,7 +98,7 @@ export default function DiscoverShops() {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setCoords(loc);
         setLocating(false);
-        load(search, loc);
+        load(search, loc, fulfillment);
       },
       (err) => {
         setLocating(false);
@@ -152,7 +160,7 @@ export default function DiscoverShops() {
             <button
               type="button"
               className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
-              onClick={() => listen((tx) => { setSearch(tx); load(tx, coords); })}
+              onClick={() => listen((tx) => { setSearch(tx); load(tx, coords, fulfillment); })}
               aria-label={t('voice.listen')}
               title={listening ? t('voice.listening') : t('voice.listen')}
             >
@@ -165,6 +173,25 @@ export default function DiscoverShops() {
           <button type="button" className="secondary" onClick={useMyLocation} disabled={locating}>
             {locating ? t('c.locating') : coords ? t('c.nearby') : t('c.useMyLocation')}
           </button>
+        </div>
+        {/* Fulfillment filter: All / Pickup / Delivery. Re-queries the directory
+            with the fulfillment param; the active chip is highlighted. */}
+        <div className="cpwa-chips" role="group" aria-label={t('c.filterAll')} style={{ marginTop: 10 }}>
+          {[
+            { value: '', label: t('c.filterAll') },
+            { value: 'pickup', label: t('c.pickup') },
+            { value: 'delivery', label: t('c.delivery') },
+          ].map((f) => (
+            <button
+              key={f.value || 'all'}
+              type="button"
+              className={`cpwa-chip${fulfillment === f.value ? ' active' : ''}`}
+              aria-pressed={fulfillment === f.value}
+              onClick={() => onFilter(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </form>
 

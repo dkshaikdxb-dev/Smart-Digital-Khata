@@ -271,6 +271,13 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-product .pthumb-fallback,
 .cpwa-product img { align-self: flex-start; }
 .cpwa-tabbar-5 { grid-template-columns: repeat(5, 1fr); }
+.cpwa-tabbar-6 { grid-template-columns: repeat(6, 1fr); }
+/* Keep the 6-up consumer labels on one line at narrow widths (~65px/tab at
+   390px) without shrinking the tab font — clip with an ellipsis if a localized
+   label runs long. Scoped to the 6-tab bar so the owner/5-tab bars are untouched. */
+.cpwa-tabbar-6 a span:last-child, .cpwa-tabbar-6 button span:last-child {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .cpwa-tab-badgewrap { position: relative; display: inline-flex; }
 .cpwa-tab-badge {
   position: absolute; top: -6px; left: 100%; transform: translateX(-55%);
