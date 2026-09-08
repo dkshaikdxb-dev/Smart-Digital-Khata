@@ -322,5 +322,30 @@ exports.getShop = async (req, res) => {
     params
   );
 
-  res.json({ shop: { ...shop.rows[0], products: products.rows } });
+  const body = { ...shop.rows[0], products: products.rows };
+
+  // Localized category labels (additive): the per-product `category` stays the
+  // raw English catalog term — it is the stable FILTER KEY the client sends
+  // back — but the chip UI needs a native-script LABEL for it. For a non-'en'
+  // lang, look up this shop's distinct categories in catalog_i18n
+  // (term_type='category') and return a { <englishCategory>: <localizedName> }
+  // map, COALESCEing each entry to its own English term when no translation
+  // exists. Omitted entirely on the 'en' path (and when the shop has no
+  // categorized products), so the en response shape is unchanged.
+  if (localized) {
+    const cats = [...new Set(products.rows.map((p) => p.category).filter(Boolean))];
+    if (cats.length) {
+      const labels = await query(
+        `SELECT term_en, name FROM catalog_i18n
+          WHERE term_type = 'category' AND lang = $1 AND term_en = ANY($2::text[])`,
+        [lang, cats]
+      );
+      const byEn = new Map(labels.rows.map((r) => [r.term_en, r.name]));
+      const category_labels = {};
+      for (const c of cats) category_labels[c] = byEn.get(c) || c; // COALESCE to English
+      body.category_labels = category_labels;
+    }
+  }
+
+  res.json({ shop: body });
 };

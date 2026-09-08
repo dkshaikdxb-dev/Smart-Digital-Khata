@@ -28,6 +28,12 @@ let CITY;
 let listedA; let tokenA;
 let listedB; let tokenB;
 let unlisted; let tokenU;
+// A dedicated shop exercising getShop's localized `category_labels` map: one
+// product linked to a base catalog_item carrying a run-unique category, with a
+// hi translation of that category seeded into catalog_i18n.
+let catShop; let tokenCat;
+let CATEGORY;
+const CATEGORY_HI = 'खाद्य पदार्थ';
 
 beforeAll(async () => {
   const uniq = Date.now().toString().slice(-9);
@@ -62,11 +68,37 @@ beforeAll(async () => {
     .send({ name: 'Discontinued', price: 9000, unit: 'kg' });
   await withToken(request(app).patch(`/api/products/${inactive.body.product.id}`), tokenA)
     .send({ is_active: false });
+
+  // Category-localization fixture: a separate LISTED shop (kept out of CITY so
+  // the browse/distance tests are unaffected) with ONE product linked to a base
+  // catalog_item that carries a run-unique category, plus a hi translation of
+  // that category. getShop?lang=hi should surface it as category_labels[CATEGORY].
+  const cat = await register('DiscCat', `${uniq}3`.slice(-9));
+  catShop = cat.shop; tokenCat = cat.token;
+  CATEGORY = `Food${uniq}`;
+  await pool.query('UPDATE shops SET is_listed = true WHERE id = $1', [catShop.id]);
+  const catProd = await withToken(request(app).post('/api/products'), tokenCat)
+    .send({ name: `Cat Rice ${uniq}`, price: 5000, unit: 'kg' });
+  const ci = await pool.query(
+    `INSERT INTO catalog_items (category, product, is_global) VALUES ($1, $2, true) RETURNING id`,
+    [CATEGORY, `Cat Rice ${uniq}`]
+  );
+  await pool.query('UPDATE products SET catalog_item_id = $1 WHERE id = $2', [ci.rows[0].id, catProd.body.product.id]);
+  await pool.query(
+    `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review)
+     VALUES ('category', $1, 'hi', $2, '', false)
+     ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
+    [CATEGORY, CATEGORY_HI]
+  );
 }, 30000);
 
 afterAll(async () => {
-  for (const s of [listedA, listedB, unlisted]) {
+  for (const s of [listedA, listedB, unlisted, catShop]) {
     if (s) await pool.query('DELETE FROM shops WHERE id = $1', [s.id]);
+  }
+  if (CATEGORY) {
+    await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'category' AND term_en = $1`, [CATEGORY]);
+    await pool.query('DELETE FROM catalog_items WHERE category = $1', [CATEGORY]);
   }
   await pool.end();
 });
@@ -265,5 +297,25 @@ describe('GET /public/shops/:shopId', () => {
   it('404s for an unknown shop', async () => {
     const res = await request(app).get('/api/public/shops/00000000-0000-0000-0000-000000000000');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /public/shops/:shopId — localized category_labels', () => {
+  it('lang=hi returns a category_labels map localizing the shop categories', async () => {
+    const res = await request(app).get(`/api/public/shops/${catShop.id}?lang=hi`);
+    expect(res.status).toBe(200);
+    expect(res.body.shop.category_labels).toBeDefined();
+    // The category is localized to its catalog_i18n hi translation...
+    expect(res.body.shop.category_labels[CATEGORY]).toBe(CATEGORY_HI);
+    // ...while the per-product `category` stays the raw English FILTER KEY.
+    expect(res.body.shop.products[0].category).toBe(CATEGORY);
+  });
+
+  it('en (and no lang) returns no localized category_labels', async () => {
+    for (const url of [`/api/public/shops/${catShop.id}`, `/api/public/shops/${catShop.id}?lang=en`]) {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(200);
+      expect(res.body.shop.category_labels).toBeUndefined();
+    }
   });
 });

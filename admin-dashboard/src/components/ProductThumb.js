@@ -83,6 +83,12 @@ export default function ProductThumb({ product, size = 56 }) {
         justifyContent: 'center',
         fontSize: Math.round(size * 0.5),
         lineHeight: 1,
+        // Theme-token colours (colour only — radius/size/layout unchanged). Inside
+        // the customer PWA (.cpwa) these resolve light on the light theme; the
+        // hardcoded fallbacks keep the previous dark tile everywhere the tokens
+        // are undefined (e.g. the owner catalog).
+        background: 'var(--c-surface-2, #0b1220)',
+        border: '1px solid var(--c-border, #26344a)',
       }}
     >
       {categoryEmoji(product && product.name)}

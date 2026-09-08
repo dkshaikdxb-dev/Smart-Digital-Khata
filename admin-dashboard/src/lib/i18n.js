@@ -112,7 +112,9 @@ const DICT = {
     'ctab.orders': 'ஆர்டர்கள்',
     'ctab.khata': 'கணக்கு',
     'ctab.logout': 'வெளியேறு',
-    'ctab.account': 'என் கணக்கு',
+    // Distinct "profile" word so this tab reads differently from ctab.khata
+    // ('கணக்கு'); the old 'என் கணக்கு' collided with the ledger tab.
+    'ctab.account': 'சுயவிவரம்',
     'lang.betaSuffix': ' (பீட்டா)',
   },
   te: {
@@ -135,7 +137,9 @@ const DICT = {
     'ctab.orders': 'ఆర్డర్‌లు',
     'ctab.khata': 'ఖాతా',
     'ctab.logout': 'లాగ్ అవుట్',
-    'ctab.account': 'నా ఖాతా',
+    // Distinct "profile" word so this tab reads differently from ctab.khata
+    // ('ఖాతా'); the old 'నా ఖాతా' collided with the ledger tab.
+    'ctab.account': 'ప్రొఫైల్',
     'lang.betaSuffix': ' (బీటా)',
   },
   kn: {
@@ -158,7 +162,9 @@ const DICT = {
     'ctab.orders': 'ಆರ್ಡರ್‌ಗಳು',
     'ctab.khata': 'ಖಾತೆ',
     'ctab.logout': 'ಲಾಗ್ ಔಟ್',
-    'ctab.account': 'ನನ್ನ ಖಾತೆ',
+    // Distinct "profile" word so this tab reads differently from ctab.khata
+    // ('ಖಾತೆ'); the old 'ನನ್ನ ಖಾತೆ' collided with the ledger tab.
+    'ctab.account': 'ಪ್ರೊಫೈಲ್',
     'lang.betaSuffix': ' (ಬೀಟಾ)',
   },
   ml: {
