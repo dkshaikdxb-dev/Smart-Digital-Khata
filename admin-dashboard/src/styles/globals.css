@@ -254,6 +254,75 @@ th { color: var(--muted); font-weight: 600; }
 }
 
 /* ==========================================================================
+   CONSUMER PROMO BAND (batch ADS5) — the sponsored slider on the home screen,
+   between search and categories. A horizontal scroll-snap track (peek of the
+   next slide) with a dots row. Every colour is a --c-* token so it reskins in
+   Light/Dark/Warm and both layouts; layout uses logical properties so it mirrors
+   correctly in RTL (Urdu). Emoji glyphs + optional lazy image — no new assets.
+   ========================================================================== */
+.cpwa-promo { margin-bottom: 12px; }
+.cpwa-promo-track {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-block: 2px; padding-inline: 2px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.cpwa-promo-track::-webkit-scrollbar { display: none; }
+.cpwa-promo-slide {
+  scroll-snap-align: start; flex: 0 0 86%; max-width: 460px;
+  display: flex; align-items: center; gap: 12px; position: relative;
+  text-align: start; padding: 14px; border-radius: 14px; cursor: pointer;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); box-shadow: var(--c-shadow);
+}
+.cpwa-promo-slide:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+.cpwa-promo-badge {
+  position: absolute; inset-block-start: 8px; inset-inline-end: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--c-surface-2); color: var(--c-muted); border: 1px solid var(--c-border);
+}
+.cpwa-promo-media {
+  flex: 0 0 auto; width: 72px; height: 72px; border-radius: 12px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-surface-2); border: 1px solid var(--c-border);
+}
+.cpwa-promo-glyph { font-size: 34px; line-height: 1; }
+.cpwa-promo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cpwa-promo-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-inline-end: 56px; }
+.cpwa-promo-offer { font-size: 20px; font-weight: 800; line-height: 1.1; color: var(--c-accent-ink); }
+.cpwa-promo-title {
+  font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--c-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cpwa-promo-sub {
+  font-size: 13px; color: var(--c-muted); line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cpwa-promo-adv { font-size: 11px; color: var(--c-muted); margin-top: 2px; }
+/* Style A (offer): a filled accent tile with a big offer line. */
+.cpwa-promo--offer .cpwa-promo-media {
+  background: color-mix(in srgb, var(--c-accent) 20%, var(--c-surface)); border-color: var(--c-accent);
+}
+/* Style D (festival): bolder, full-tile accent wash. */
+.cpwa-promo--festival {
+  background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface)); border-color: var(--c-accent);
+}
+.cpwa-promo--festival .cpwa-promo-media {
+  background: color-mix(in srgb, var(--c-accent) 26%, var(--c-surface)); border-color: var(--c-accent);
+}
+.cpwa-promo--festival .cpwa-promo-title { font-size: 17px; font-weight: 800; }
+.cpwa-promo-dots {
+  display: flex; justify-content: center; gap: 7px; margin-top: 8px;
+}
+.cpwa-promo-dot {
+  width: 8px; height: 8px; padding: 0; border-radius: 999px; cursor: pointer;
+  background: var(--c-border-strong); border: none;
+}
+.cpwa-promo-dot.active { background: var(--c-accent); }
+.cpwa-promo-dot:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+@media (max-width: 640px) { .cpwa-promo-slide { flex-basis: 88%; } }
+
+/* ==========================================================================
    HOOK DEFAULTS — inert in the STANDARD layout.
    These leading elements exist in the markup on every render so a single
    component tree serves both layouts, but they are hidden unless the Gaon

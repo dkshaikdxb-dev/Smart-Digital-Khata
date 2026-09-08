@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import CustomerShell from '../../components/CustomerShell';
+import CpwaPromoSlider from '../../components/CpwaPromoSlider';
 import { publicFetch } from '../../lib/customerApi';
 import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
@@ -153,6 +154,10 @@ export default function DiscoverShops() {
           ))}
         </div>
       </form>
+
+      {/* Sponsored promo band (batch ADS5): search → promo → categories. It
+          self-hides when there are no live promos for the shopper's location. */}
+      <CpwaPromoSlider />
 
       <form onSubmit={onSearch} className="card cpwa-search">
         <div className="cpwa-search-voice">
