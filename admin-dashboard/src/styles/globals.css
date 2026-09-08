@@ -85,38 +85,66 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa {
   color-scheme: light;
   --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
-  --c-text:#0f172a; --c-muted:#64748b; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#15803d;
+  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#0f7233;
   --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
 }
 /* DARK when the device prefers dark AND the user hasn't forced light */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .cpwa {
-    color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#26344a;
-    --c-border-strong:#334155; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
+    color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#33435c;
+    --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
     --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
     --c-overlay:rgba(0,0,0,.55);
   }
 }
 /* DARK forced by the toggle */
 :root[data-theme="dark"] .cpwa {
-  color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#26344a;
-  --c-border-strong:#334155; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
+  color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#33435c;
+  --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
   --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
   --c-overlay:rgba(0,0,0,.55);
 }
 /* LIGHT forced by the toggle (redundant with base but wins over the media block) */
 :root[data-theme="light"] .cpwa {
   color-scheme:light; --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
-  --c-text:#0f172a; --c-muted:#64748b; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#15803d;
+  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#0f7233;
   --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
+}
+
+/* GAON BAZAAR — a warm paper + kirana-green skin selected by data-theme="gaon".
+   Palette-only reskin through the SAME --c-* token names, so every .cpwa
+   component reskins automatically. It has its own warm LIGHT (base, applied when
+   the device is not in dark mode) and warm DARK (media block). Scoped to
+   :root[data-theme="gaon"] .cpwa ONLY — the owner dashboard's bare :root has no
+   gaon entry and is untouched. */
+/* GAON LIGHT — default for the gaon theme (and when the device prefers light) */
+:root[data-theme="gaon"] .cpwa {
+  color-scheme:light; --c-bg:#FBF6EB; --c-surface:#FFFFFF; --c-surface-2:#F3EBDC; --c-border:#EADFC9; --c-border-strong:#D8C9AB;
+  --c-text:#241F17; --c-muted:#736A58; --c-accent:#157A3A; --c-on-accent:#FFFFFF; --c-accent-ink:#136A33;
+  --c-danger:#B23A2E; --c-danger-bg:rgba(178,58,46,.12); --c-shadow:0 1px 2px rgba(33,30,23,.06),0 8px 22px rgba(33,30,23,.06); --c-overlay:rgba(36,31,23,.45);
+}
+/* GAON DARK — used for the gaon theme when the device prefers dark */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="gaon"] .cpwa {
+    color-scheme:dark; --c-bg:#171410; --c-surface:#221E16; --c-surface-2:#2C271C; --c-border:#38311F; --c-border-strong:#4A4030;
+    --c-text:#F4ECDC; --c-muted:#B3A891; --c-accent:#34A85B; --c-on-accent:#0C1A0F; --c-accent-ink:#EDB24A;
+    --c-danger:#E67A66; --c-danger-bg:rgba(230,122,102,.16); --c-shadow:none; --c-overlay:rgba(0,0,0,.6);
+  }
 }
 
 .cpwa { min-height: 100vh; background: var(--c-bg); color: var(--c-text); }
 
 /* Base controls re-themed inside the consumer app (colors only, layout intact).
    The global button/input/.card rules above use the owner (dark) tokens; these
-   overrides point them at the .cpwa tokens so light mode renders correctly. */
-.cpwa button { color: var(--c-on-accent); }
+   overrides point them at the .cpwa tokens so light mode renders correctly.
+
+   Primary (accent) buttons take the accent surface + on-accent label. The
+   :where() list excludes the known NON-primary variants (secondary, chips,
+   danger) WITHOUT adding specificity — :where() counts as (0,0,0) — so this rule
+   stays at (0,1,1) and no longer out-specifies the (0,1,0) .cpwa-chip label. The
+   accent background is a .cpwa token so it reskins per theme (e.g. Gaon green),
+   instead of leaking the owner's fixed --accent. */
+.cpwa button:not(:where(.secondary, .cpwa-chip, .cpwa-btn-danger)) { background: var(--c-accent); color: var(--c-on-accent); }
 .cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
 .cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-border-strong); color: var(--c-text); }
 .cpwa-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
@@ -131,13 +159,46 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-main.has-tabs { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 .cpwa .card { margin-bottom: 12px; background: var(--c-surface); box-shadow: var(--c-shadow); }
 
-/* Small theme toggle button in the consumer topbar (colors from tokens). */
+/* Small theme picker button in the consumer topbar (colors from tokens). */
 .cpwa-theme-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; padding: 0; border-radius: 8px;
   background: var(--c-surface); color: var(--c-text);
   border: 1px solid var(--c-border-strong); line-height: 0; flex: 0 0 auto;
 }
+.cpwa-theme-btn:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+
+/* Theme picker popover: anchored under the trigger, lists the three options. */
+.cpwa-theme-picker { position: relative; flex: 0 0 auto; }
+.cpwa-theme-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 40;
+  min-width: 184px; padding: 6px; margin: 0;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); border-radius: 12px;
+  box-shadow: 0 8px 24px var(--c-overlay); list-style: none;
+}
+.cpwa-theme-menu-title {
+  padding: 4px 8px 6px; font-size: 12px; font-weight: 700; color: var(--c-muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.cpwa-theme-opt {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 8px; border-radius: 8px; border: none; background: none;
+  color: var(--c-text); font-size: 14px; font-weight: 600; text-align: left;
+}
+.cpwa-theme-opt:hover { background: var(--c-surface-2); }
+.cpwa-theme-opt:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: -2px; }
+.cpwa-theme-opt[aria-checked="true"] { background: var(--c-surface-2); }
+.cpwa-theme-swatch {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--c-border-strong);
+  background:
+    linear-gradient(135deg, var(--sw-accent) 0 50%, transparent 50% 100%),
+    var(--sw-bg);
+}
+.cpwa-theme-opt-label { flex: 1; min-width: 0; }
+.cpwa-theme-check { flex: 0 0 auto; color: var(--c-accent-ink); font-weight: 800; }
+.cpwa-theme-opt[aria-checked="false"] .cpwa-theme-check { visibility: hidden; }
 
 /* Bottom tab bar */
 .cpwa-tabbar {
@@ -349,7 +410,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-chips { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
 .cpwa-chip {
   flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
-  background: var(--c-border-strong); color: var(--c-text); border: 1px solid var(--c-border-strong); cursor: pointer; white-space: nowrap;
+  background: var(--c-surface-2); color: var(--c-text); border: 1px solid var(--c-border); cursor: pointer; white-space: nowrap;
 }
 .cpwa-chip.active { background: var(--c-accent); color: var(--c-on-accent); border-color: var(--c-accent); }
 
