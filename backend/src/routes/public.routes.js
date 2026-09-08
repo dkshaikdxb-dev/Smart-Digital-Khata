@@ -7,6 +7,7 @@ const productCtrl = require('../controllers/product.controller');
 const discoveryCtrl = require('../controllers/discovery.controller');
 const configCtrl = require('../controllers/config.controller');
 const contentPublicCtrl = require('../controllers/content-public.controller');
+const promosCtrl = require('../controllers/promos.controller');
 
 // Public runtime config for the marketing landing (safe values only).
 router.get('/config', asyncHandler(configCtrl.publicConfig));
@@ -68,5 +69,29 @@ router.post(
 );
 router.get('/newsletter/confirm', asyncHandler(contentPublicCtrl.confirmNewsletter));
 router.get('/newsletter/unsubscribe', asyncHandler(contentPublicCtrl.unsubscribeNewsletter));
+
+// Geo-targeted promo serving (batch ADS4). Unauthenticated, read-only. Returns
+// the localized, geo-matched, in-window, active promo slides for the shopper's
+// saved location (any subset of town/village/pincode; no location = 'all'-only).
+// resolveLang (inside the controller) maps anything unknown/absent to base
+// creative. Covered by the global /api rate limiter.
+const promosQuerySchema = Joi.object({
+  town: Joi.string().trim().max(120),
+  village: Joi.string().trim().max(120),
+  pincode: Joi.string().trim().max(20),
+  lang: Joi.string(),
+});
+router.get('/promos', validate(promosQuerySchema, 'query'), asyncHandler(promosCtrl.listPromos));
+
+// Impression / click beacons: best-effort, unauthenticated, O(1). The :id is
+// uuid-validated (malformed → 400) before the guarded counter increment; both
+// return 204 with no body. Rate-limited by the existing /api limiter.
+const beaconParamsSchema = Joi.object({ id: Joi.string().uuid().required() });
+router.post(
+  '/promos/:id/impression',
+  validate(beaconParamsSchema, 'params'),
+  asyncHandler(promosCtrl.impression)
+);
+router.post('/promos/:id/click', validate(beaconParamsSchema, 'params'), asyncHandler(promosCtrl.click));
 
 module.exports = router;
