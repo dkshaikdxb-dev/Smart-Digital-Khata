@@ -1248,6 +1248,26 @@
         "name": "آمچور",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "மாங்காய் தூள்",
+        "aliases": "maangaai thool amchur",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మామిడి పొడి",
+        "aliases": "mamidi podi amchur",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಾವಿನ ಪುಡಿ",
+        "aliases": "mavina pudi amchur",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മാങ്ങാ പൊടി",
+        "aliases": "manga podi amchur",
+        "needs_review": true
       }
     }
   },
@@ -1471,6 +1491,11 @@
         "name": "تیز پتہ",
         "aliases": "",
         "needs_review": false
+      },
+      "ml": {
+        "name": "ബിരിയാണി ഇല",
+        "aliases": "biriyani ila bay leaf",
+        "needs_review": true
       }
     }
   },
@@ -2731,6 +2756,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "برتن دھونے کا مائع صابن"
+      },
+      "ta": {
+        "name": "துணி துவைக்கும் திரவம்",
+        "aliases": "detergent liquid",
+        "needs_review": true,
+        "description": "பாத்திரம் கழுவும் திரவம்"
+      },
+      "te": {
+        "name": "బట్టలు ఉతికే ద్రవం",
+        "aliases": "detergent liquid",
+        "needs_review": true,
+        "description": "పాత్రలు కడిగే ద్రవం"
+      },
+      "kn": {
+        "name": "ಬಟ್ಟೆ ತೊಳೆಯುವ ದ್ರವ",
+        "aliases": "detergent liquid",
+        "needs_review": true,
+        "description": "ಪಾತ್ರೆ ತೊಳೆಯುವ ದ್ರವ"
+      },
+      "ml": {
+        "name": "തുണി കഴുകുന്ന ദ്രാവകം",
+        "aliases": "detergent liquid",
+        "needs_review": true,
+        "description": "പാത്രം കഴുകുന്ന ദ്രാവകം"
       }
     }
   },
@@ -2749,6 +2798,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "کپڑے دھونے کا پاؤڈر"
+      },
+      "ta": {
+        "name": "துணி துவைக்கும் தூள்",
+        "aliases": "detergent powder",
+        "needs_review": true,
+        "description": "துணி துவைக்கும் தூள்"
+      },
+      "te": {
+        "name": "బట్టలు ఉతికే పొడి",
+        "aliases": "detergent powder",
+        "needs_review": true,
+        "description": "బట్టలు ఉతికే పొడి"
+      },
+      "kn": {
+        "name": "ಬಟ್ಟೆ ತೊಳೆಯುವ ಪುಡಿ",
+        "aliases": "detergent powder",
+        "needs_review": true,
+        "description": "ಬಟ್ಟೆ ತೊಳೆಯುವ ಪುಡಿ"
+      },
+      "ml": {
+        "name": "തുണി കഴുകുന്ന പൊടി",
+        "aliases": "detergent powder",
+        "needs_review": true,
+        "description": "തുണി കഴുകുന്ന പൊടി"
       }
     }
   },
@@ -2960,6 +3033,11 @@
         "name": "السی",
         "aliases": "alsi",
         "needs_review": false
+      },
+      "ml": {
+        "name": "അലസി വിത്ത്",
+        "aliases": "alasi flax seeds",
+        "needs_review": true
       }
     }
   },
@@ -3111,6 +3189,11 @@
         "name": "کچرے کے تھیلے",
         "aliases": "",
         "needs_review": false
+      },
+      "ml": {
+        "name": "മാലിന്യ ബാഗ്",
+        "aliases": "malinya bag garbage",
+        "needs_review": true
       }
     }
   },
@@ -3381,6 +3464,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "سبز چائے کی پتی"
+      },
+      "ta": {
+        "name": "பச்சை தேநீர்",
+        "aliases": "green tea",
+        "needs_review": true,
+        "description": "பச்சை தேயிலை"
+      },
+      "te": {
+        "name": "గ్రీన్ టీ",
+        "aliases": "green tea",
+        "needs_review": true,
+        "description": "పచ్చి తేయాకు"
+      },
+      "kn": {
+        "name": "ಹಸಿರು ಚಹಾ",
+        "aliases": "green tea",
+        "needs_review": true,
+        "description": "ಹಸಿರು ಚಹಾ ಎಲೆ"
+      },
+      "ml": {
+        "name": "ഗ്രീൻ ടീ",
+        "aliases": "green tea",
+        "needs_review": true,
+        "description": "പച്ച ചായ ഇല"
       }
     }
   },
@@ -3669,6 +3776,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "انسٹنٹ کافی کے دانے"
+      },
+      "ta": {
+        "name": "இன்ஸ்டன்ட் காபி",
+        "aliases": "instant coffee",
+        "needs_review": true,
+        "description": "உடனடி காபி துகள்கள்"
+      },
+      "te": {
+        "name": "ఇన్‌స్టంట్ కాఫీ",
+        "aliases": "instant coffee",
+        "needs_review": true,
+        "description": "ఇన్‌స్టంట్ కాఫీ గింజలు"
+      },
+      "kn": {
+        "name": "ಇನ್‌ಸ್ಟಂಟ್ ಕಾಫಿ",
+        "aliases": "instant coffee",
+        "needs_review": true,
+        "description": "ಇನ್‌ಸ್ಟಂಟ್ ಕಾಫಿ ಹರಳು"
+      },
+      "ml": {
+        "name": "ഇൻസ്റ്റന്റ് കോഫി",
+        "aliases": "instant coffee",
+        "needs_review": true,
+        "description": "ഇൻസ്റ്റന്റ് കോഫി തരികൾ"
       }
     }
   },
@@ -3877,6 +4008,26 @@
         "name": "کوکم",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "கோகம்",
+        "aliases": "kokum kokam",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కోకం",
+        "aliases": "kokum kokam",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೋಕಂ",
+        "aliases": "kokum kokam",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോകം",
+        "aliases": "kokum kokam",
+        "needs_review": true
       }
     }
   },
@@ -4265,6 +4416,26 @@
         "name": "مٹکی",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "மட்கி",
+        "aliases": "matki moth",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మట్కి",
+        "aliases": "matki moth",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಟ್ಕಿ",
+        "aliases": "matki moth",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മട്കി",
+        "aliases": "matki moth",
+        "needs_review": true
       }
     }
   },
@@ -4581,6 +4752,26 @@
         "name": "موٹھ",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "மொத் பயறு",
+        "aliases": "moth beans matki",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మోత్ గింజలు",
+        "aliases": "moth beans matki",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೋತ್ ಹುರುಳಿ",
+        "aliases": "moth beans matki",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മോത്ത് ബീൻസ്",
+        "aliases": "moth beans matki",
+        "needs_review": true
       }
     }
   },
@@ -4599,6 +4790,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "کئی اناجوں کا ملا ہوا آٹا"
+      },
+      "ta": {
+        "name": "மல்டிகிரெயின் மாவு",
+        "aliases": "multigrain atta",
+        "needs_review": true,
+        "description": "பல தானிய மாவு கலவை"
+      },
+      "te": {
+        "name": "మల్టీగ్రెయిన్ ఆటా",
+        "aliases": "multigrain atta",
+        "needs_review": true,
+        "description": "బహుళ ధాన్యాల పిండి మిశ్రమం"
+      },
+      "kn": {
+        "name": "ಮಲ್ಟಿಗ್ರೇನ್ ಆಟಾ",
+        "aliases": "multigrain atta",
+        "needs_review": true,
+        "description": "ಬಹು ಧಾನ್ಯಗಳ ಹಿಟ್ಟಿನ ಮಿಶ್ರಣ"
+      },
+      "ml": {
+        "name": "മൾട്ടിഗ്രെയിൻ ആട്ട",
+        "aliases": "multigrain atta",
+        "needs_review": true,
+        "description": "വിവിധ ധാന്യങ്ങളുടെ മാവ് മിശ്രിതം"
       }
     }
   },
@@ -4737,6 +4952,30 @@
         "aliases": "oats",
         "needs_review": false,
         "description": "ناشتے کے رولڈ اوٹس"
+      },
+      "ta": {
+        "name": "ஓட்ஸ்",
+        "aliases": "oats",
+        "needs_review": true,
+        "description": "காலை உணவு ரோல்டு ஓட்ஸ்"
+      },
+      "te": {
+        "name": "ఓట్స్",
+        "aliases": "oats",
+        "needs_review": true,
+        "description": "అల్పాహారం రోల్డ్ ఓట్స్"
+      },
+      "kn": {
+        "name": "ಓಟ್ಸ್",
+        "aliases": "oats",
+        "needs_review": true,
+        "description": "ಬೆಳಗಿನ ಉಪಾಹಾರದ ರೋಲ್ಡ್ ಓಟ್ಸ್"
+      },
+      "ml": {
+        "name": "ഓട്സ്",
+        "aliases": "oats",
+        "needs_review": true,
+        "description": "പ്രഭാതഭക്ഷണ റോൾഡ് ഓട്സ്"
       }
     }
   },
@@ -5539,6 +5778,26 @@
         "name": "ریزر",
         "aliases": "ustura",
         "needs_review": false
+      },
+      "ta": {
+        "name": "ரேசர்",
+        "aliases": "razor",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రేజర్",
+        "aliases": "razor",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೇಜರ್",
+        "aliases": "razor",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റേസർ",
+        "aliases": "razor",
+        "needs_review": true
       }
     }
   },
@@ -5819,6 +6078,26 @@
         "name": "شربتی آٹا",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "ஷர்பதி மாவு",
+        "aliases": "sharbati atta",
+        "needs_review": true
+      },
+      "te": {
+        "name": "శర్బతి ఆటా",
+        "aliases": "sharbati atta",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶರಬತಿ ಆಟಾ",
+        "aliases": "sharbati atta",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ശർബതി ആട്ട",
+        "aliases": "sharbati atta",
+        "needs_review": true
       }
     }
   },
@@ -5835,6 +6114,26 @@
         "name": "شیونگ کریم",
         "aliases": "",
         "needs_review": false
+      },
+      "ta": {
+        "name": "ஷேவிங் கிரீம்",
+        "aliases": "shaving cream",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షేవింగ్ క్రీమ్",
+        "aliases": "shaving cream",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶೇವಿಂಗ್ ಕ್ರೀಮ್",
+        "aliases": "shaving cream",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷേവിംഗ് ക്രീം",
+        "aliases": "shaving cream",
+        "needs_review": true
       }
     }
   },
@@ -6291,6 +6590,30 @@
         "aliases": "",
         "needs_review": false,
         "description": "نرم ریشوں والا ٹوتھ برش"
+      },
+      "ta": {
+        "name": "பல் துலக்கி",
+        "aliases": "toothbrush",
+        "needs_review": true,
+        "description": "மென்மையான முடி கொண்ட பல் துலக்கி"
+      },
+      "te": {
+        "name": "టూత్‌బ్రష్",
+        "aliases": "toothbrush",
+        "needs_review": true,
+        "description": "మృదువైన వెంట్రుకల టూత్‌బ్రష్"
+      },
+      "kn": {
+        "name": "ಟೂತ್‌ಬ್ರಷ್",
+        "aliases": "toothbrush",
+        "needs_review": true,
+        "description": "ಮೃದು ಕೂದಲಿನ ಟೂತ್‌ಬ್ರಷ್"
+      },
+      "ml": {
+        "name": "ടൂത്ത് ബ്രഷ്",
+        "aliases": "toothbrush",
+        "needs_review": true,
+        "description": "മൃദുവായ രോമങ്ങളുള്ള ടൂത്ത് ബ്രഷ്"
       }
     }
   },
@@ -6510,6 +6833,21 @@
         "name": "سرکہ",
         "aliases": "sirka",
         "needs_review": false
+      },
+      "ta": {
+        "name": "வினிகர்",
+        "aliases": "vinegar kadi",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వెనిగర్",
+        "aliases": "vinegar",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಿನೆಗರ್",
+        "aliases": "vinegar",
+        "needs_review": true
       }
     }
   },

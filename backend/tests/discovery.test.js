@@ -44,6 +44,14 @@ let SALT_TERM;
 const SALT_EN_DESC = 'Iodized table salt';
 const SALT_HI_DESC = 'आयोडीन युक्त खाने का नमक';
 const SALT_NAME_HI = 'नमक';
+// A dedicated shop exercising getShop's localized variant-GROUP name
+// (base_product). One product linked to a base catalog_item whose `product`
+// column is a run-unique master term, with a hi translation of that master term
+// seeded into catalog_i18n. getShop?lang=hi must localize base_product; en/no-lang
+// returns the raw English master term. Run-unique to avoid cross-file collision.
+let baseShop; let tokenBase;
+let BASE_TERM;
+const BASE_NAME_HI = 'नमक';
 
 beforeAll(async () => {
   const uniq = Date.now().toString().slice(-9);
@@ -116,10 +124,33 @@ beforeAll(async () => {
      ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
     [SALT_TERM, SALT_NAME_HI, SALT_HI_DESC]
   );
+
+  // Base-product (variant-group name) localization fixture: a separate LISTED
+  // shop with ONE product linked to a base catalog_item whose `product` column
+  // is a run-unique master term (Baseprod<uniq>), plus a hi translation of that
+  // master term. getShop?lang=hi must localize base_product; en/no-lang returns
+  // the raw English master term.
+  const base = await register('DiscBase', `${uniq}5`.slice(-9));
+  baseShop = base.shop; tokenBase = base.token;
+  BASE_TERM = `Baseprod${uniq}`;
+  await pool.query('UPDATE shops SET is_listed = true WHERE id = $1', [baseShop.id]);
+  const baseProd = await withToken(request(app).post('/api/products'), tokenBase)
+    .send({ name: `Base Card ${uniq}`, price: 3200, unit: 'kg' });
+  const baseCi = await pool.query(
+    `INSERT INTO catalog_items (category, product, is_global) VALUES ($1, $2, true) RETURNING id`,
+    [`Food${uniq}5`.slice(0, 40), BASE_TERM]
+  );
+  await pool.query('UPDATE products SET catalog_item_id = $1 WHERE id = $2', [baseCi.rows[0].id, baseProd.body.product.id]);
+  await pool.query(
+    `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review)
+     VALUES ('product', $1, 'hi', $2, '', false)
+     ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
+    [BASE_TERM, BASE_NAME_HI]
+  );
 }, 30000);
 
 afterAll(async () => {
-  for (const s of [listedA, listedB, unlisted, catShop, saltShop]) {
+  for (const s of [listedA, listedB, unlisted, catShop, saltShop, baseShop]) {
     if (s) await pool.query('DELETE FROM shops WHERE id = $1', [s.id]);
   }
   if (CATEGORY) {
@@ -128,6 +159,10 @@ afterAll(async () => {
   }
   if (SALT_TERM) {
     await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'product' AND term_en = $1`, [SALT_TERM]);
+  }
+  if (BASE_TERM) {
+    await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'product' AND term_en = $1`, [BASE_TERM]);
+    await pool.query('DELETE FROM catalog_items WHERE product = $1', [BASE_TERM]);
   }
   await pool.end();
 });
@@ -366,6 +401,26 @@ describe('GET /public/shops/:shopId — localized product description', () => {
       const prod = res.body.shop.products.find((p) => p.name === SALT_TERM);
       expect(prod).toBeDefined();
       expect(prod.description).toBe(SALT_EN_DESC);
+    }
+  });
+});
+
+describe('GET /public/shops/:shopId — localized base_product (variant-group name)', () => {
+  it('lang=hi localizes base_product from catalog_i18n', async () => {
+    const res = await request(app).get(`/api/public/shops/${baseShop.id}?lang=hi`);
+    expect(res.status).toBe(200);
+    const prod = res.body.shop.products.find((p) => p.base_product === BASE_NAME_HI);
+    expect(prod).toBeDefined();
+    expect(prod.base_product).toBe(BASE_NAME_HI);
+  });
+
+  it('en (and no lang) returns the raw English base_product', async () => {
+    for (const url of [`/api/public/shops/${baseShop.id}`, `/api/public/shops/${baseShop.id}?lang=en`]) {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(200);
+      const prod = res.body.shop.products.find((p) => p.base_product === BASE_TERM);
+      expect(prod).toBeDefined();
+      expect(prod.base_product).toBe(BASE_TERM);
     }
   });
 });
