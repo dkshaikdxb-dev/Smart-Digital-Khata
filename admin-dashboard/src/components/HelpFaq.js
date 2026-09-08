@@ -18,18 +18,29 @@ const ENTRY_COUNT = 13;
 // statement, privacy). Emoji only — no new icon dependency.
 const ENTRY_ICONS = ['👤', '📒', '💵', '🔔', '🧺', '⚖️', '🔗', '📴', '🌐', '📉', '💳', '🧾', '🔒'];
 
+// Consumer (cpwa) variant shows a SEPARATE, customer-relevant entry set from the
+// chelp.* key family — finding a shop, searching, ordering, pickup vs delivery,
+// paying/khata, tracking, language/voice, light-dark. Same static, offline,
+// read-aloud, collapsible treatment; only the source keys and icons differ.
+const CHELP_COUNT = 9;
+const CHELP_ICONS = ['🔍', '🧺', '🛒', '🛵', '💳', '📒', '📦', '🌐', '🌗'];
+
 export default function HelpFaq({ variant }) {
   const { t } = useLang();
   const { ttsSupported, speak } = useSpeech();
+  const isConsumer = variant === 'cpwa';
+  const count = isConsumer ? CHELP_COUNT : ENTRY_COUNT;
+  const prefix = isConsumer ? 'chelp' : 'help';
+  const icons = isConsumer ? CHELP_ICONS : ENTRY_ICONS;
   const entries = [];
-  for (let i = 1; i <= ENTRY_COUNT; i += 1) {
-    entries.push({ q: t(`help.e${i}.q`), a: t(`help.e${i}.a`), ico: ENTRY_ICONS[i - 1] || '❓' });
+  for (let i = 1; i <= count; i += 1) {
+    entries.push({ q: t(`${prefix}.e${i}.q`), a: t(`${prefix}.e${i}.a`), ico: icons[i - 1] || '❓' });
   }
-  const cls = variant === 'cpwa' ? 'card' : 'card';
+  const cls = 'card';
   return (
-    <div className={cls} style={{ maxWidth: variant === 'cpwa' ? undefined : 640 }}>
-      <h3>{t('help.title')}</h3>
-      <p className="muted">{t('help.subtitle')}</p>
+    <div className={cls} style={{ maxWidth: isConsumer ? undefined : 640 }}>
+      <h3>{t(`${prefix}.title`)}</h3>
+      <p className="muted">{t(`${prefix}.subtitle`)}</p>
       <div style={{ display: 'grid', gap: 6 }}>
         {entries.map((e, idx) => (
           <details key={idx} className="help-entry">
