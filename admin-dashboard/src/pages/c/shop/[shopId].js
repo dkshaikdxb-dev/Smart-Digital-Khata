@@ -277,8 +277,11 @@ export default function ShopCatalog() {
                 {t('c.allCategories')}
               </button>
               {categories.map((c) => (
+                // Label is the localized category name when the backend supplied
+                // one (shop.category_labels, populated for non-en langs); the raw
+                // English `c` stays the click/filter key so filtering is unchanged.
                 <button key={c} type="button" className={`cpwa-chip ${activeCat === c ? 'active' : ''}`} onClick={() => setActiveCat(c)}>
-                  {c}
+                  {(shop.category_labels || {})[c] || c}
                 </button>
               ))}
             </div>
