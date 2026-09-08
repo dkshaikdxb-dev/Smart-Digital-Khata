@@ -144,7 +144,7 @@ th { color: var(--muted); font-weight: 600; }
    stays at (0,1,1) and no longer out-specifies the (0,1,0) .cpwa-chip label. The
    accent background is a .cpwa token so it reskins per theme (e.g. warm green),
    instead of leaking the owner's fixed --accent. */
-.cpwa button:not(:where(.secondary, .cpwa-chip, .cpwa-btn-danger)) { background: var(--c-accent); color: var(--c-on-accent); }
+.cpwa button:not(:where(.secondary, .cpwa-chip, .cpwa-btn-danger, .cpwa-theme-opt)) { background: var(--c-accent); color: var(--c-on-accent); }
 .cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
 .cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-border-strong); color: var(--c-text); }
 .cpwa-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
@@ -188,7 +188,7 @@ th { color: var(--muted); font-weight: 600; }
 }
 .cpwa-theme-opt:hover { background: var(--c-surface-2); }
 .cpwa-theme-opt:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: -2px; }
-.cpwa-theme-opt[aria-checked="true"] { background: var(--c-surface-2); }
+.cpwa-theme-opt[aria-checked="true"] { background: var(--c-surface-2); background: color-mix(in srgb, var(--c-accent) 16%, var(--c-surface)); }
 .cpwa-theme-swatch {
   flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px;
   border: 1px solid var(--c-border-strong);

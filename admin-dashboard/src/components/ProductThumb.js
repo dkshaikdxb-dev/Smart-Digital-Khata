@@ -28,6 +28,11 @@ const EMOJI_RULES = [
   { emoji: '🧽', words: ['harpic', 'cleaner', 'toilet'] },
   { emoji: '🪔', words: ['agarbatti', 'incense'] },
   { emoji: '🦟', words: ['mosquito', 'good knight'] },
+  { emoji: '🥜', words: ['peanut', 'groundnut', 'moongfali', 'mungfali'] },
+  { emoji: '🍞', words: ['bread', 'bun', 'pav'] },
+  { emoji: '🥚', words: ['egg', 'anda'] },
+  { emoji: '💧', words: ['water', 'pani'] },
+  { emoji: '🧻', words: ['tissue', 'napkin', 'toilet paper'] },
   { emoji: '🌶️', words: ['chilli', 'turmeric', 'haldi', 'masala', 'jeera', 'cumin', 'coriander', 'dhania', 'pepper', 'mustard', 'rai', 'spice'] },
 ];
 
@@ -91,7 +96,10 @@ export default function ProductThumb({ product, size = 56 }) {
         border: '1px solid var(--c-border, #26344a)',
       }}
     >
-      {categoryEmoji(product && product.name)}
+      {/* Match on the display name PLUS the all-language search blob (English +
+          romanized aliases), so a localized name like "फुल क्रीम दूध" still
+          resolves to 🧈 via its 'milk' token instead of the generic fallback. */}
+      {categoryEmoji([product && product.name, product && product.search_text].filter(Boolean).join(' '))}
     </div>
   );
 }
