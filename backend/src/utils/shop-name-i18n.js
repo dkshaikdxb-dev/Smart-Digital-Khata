@@ -18,10 +18,20 @@
  *        @indic-transliteration/sanscript (ITRANS -> native script); and
  *     3. mark the WHOLE name needs_review=true whenever a proper-noun token had
  *        to be transliterated (fully-lexicon names stay trusted); and
- *     4. always fall back to the raw English name for en / ur / any language with
- *        no native script here.
+ *     4. always fall back to the raw English name for en / any language with no
+ *        native rendering here.
  *   Verified: "Sri Balaji General Stores" -> श्री बलजि जनरल स्टोर;
  *             "New Bharat Provision"       -> न्यू भरत् प्रोविज़न.
+ *
+ * URDU (ur), Arabic script — CURATED-ONLY path:
+ *   There is NO reliable deterministic Latin->Arabic-script transliterator (and we
+ *   add no dependency and no engine), so ur is rendered purely from the curated
+ *   BUSINESS_LEXICON + SURNAMES dictionaries. Real shop names are
+ *   "[surname] [shop-words]", so the curated dictionaries cover the common case
+ *   fully. A token that is neither a lexicon word nor a known surname is KEPT
+ *   VERBATIM (its Roman form) and the whole name is flagged needs_review=true —
+ *   the transliteration engine is NEVER invoked for ur.
+ *   Verified: "Das Family Store" -> داس فیملی اسٹور (fully curated, trusted).
  *
  * DEPENDENCY NOTE:
  *   @indic-transliteration/sanscript is a runtime `dependency` (pure JS,
@@ -38,10 +48,12 @@
  * only side-effecting export and it operates purely on an injected client.
  */
 
-// Native script per language, as understood by the transliteration engine.
+// Native script per language, as understood by the TRANSLITERATION ENGINE.
 // Kept identical to enrich-catalog-i18n.js so both i18n paths agree on coverage.
-// Urdu (ur, Arabic script) is intentionally absent: Roman->Arabic-script is not
-// reliably deterministic with these tools, so ur falls back to the English name.
+// These are the Indic languages with a deterministic ITRANS->native mapping;
+// unknown proper-noun tokens in these langs are best-effort transliterated. Urdu
+// (ur) is intentionally NOT here — Roman->Arabic-script is not reliably
+// deterministic, so ur never touches the engine (see NON_TRANSLIT_LANGS).
 const SCRIPT_BY_LANG = Object.freeze({
   hi: 'devanagari',
   ta: 'tamil',
@@ -50,11 +62,18 @@ const SCRIPT_BY_LANG = Object.freeze({
   ml: 'malayalam',
 });
 
-// The closed set of languages we render a native shop name into: the non-'en',
-// non-'ur' languages that have a native script above. This matches the existing
-// transliteration coverage (bn/gu/mr are deliberately NOT here — they have no
+// Languages rendered by the CURATED DICTIONARIES ONLY (no transliteration
+// engine): Arabic-script Urdu. For these, curated lexicon/surname hits produce
+// native script; any other token is kept verbatim (Roman) and the name is flagged
+// needs_review — there is no reliable deterministic Latin->Arabic transliterator.
+const NON_TRANSLIT_LANGS = Object.freeze(['ur']);
+
+// The closed set of languages we render a native shop name into: the Indic
+// transliteration-capable langs PLUS the curated-only non-translit langs. This is
+// the gate for localizeShopName / renderAllLangs / resolveActiveRenderLangs and
+// the owner-override endpoint (bn/gu/mr are deliberately NOT here — they have no
 // script mapping and no catalog transliteration today).
-const RENDER_LANGS = Object.freeze(Object.keys(SCRIPT_BY_LANG));
+const RENDER_LANGS = Object.freeze([...Object.keys(SCRIPT_BY_LANG), ...NON_TRANSLIT_LANGS]);
 
 /**
  * BUSINESS_LEXICON — the curated, closed dictionary of recurring Indian shop
@@ -137,6 +156,22 @@ const BUSINESS_LEXICON = Object.freeze({
     needs: 'നീഡ്സ്', family: 'ഫാമിലി', mini: 'മിനി', emporium: 'എംപോറിയം',
     collection: 'കളക്ഷൻ', variety: 'വെറൈറ്റി',
   }),
+  // Urdu (Arabic script) — natural loanword spellings. Curated-only: these localize
+  // the recurring shop words; unknown proper nouns stay Roman + needs_review.
+  ur: Object.freeze({
+    store: 'اسٹور', stores: 'اسٹور', kirana: 'کریانہ', general: 'جنرل',
+    provision: 'پرووژن', provisions: 'پرووژن', traders: 'ٹریڈرز',
+    medical: 'میڈیکل', medicals: 'میڈیکل', mart: 'مارٹ', bakery: 'بیکری',
+    sweets: 'سویٹس', dairy: 'ڈیری', electronics: 'الیکٹرانکس',
+    hardware: 'ہارڈویئر', supermarket: 'سپرمارکیٹ', enterprises: 'انٹرپرائزز',
+    agencies: 'ایجنسیز', shop: 'شاپ', new: 'نیو', sri: 'سری', shri: 'سری',
+    super: 'سپر', fresh: 'فریش', cool: 'کول', point: 'پوائنٹ', center: 'سینٹر',
+    centre: 'سینٹر', and: 'اینڈ',
+    bazaar: 'بازار', bazar: 'بازار', bhandar: 'بھنڈار', market: 'مارکیٹ',
+    grocery: 'گروسری', groceries: 'گروسری', corner: 'کارنر', daily: 'ڈیلی',
+    needs: 'نیڈز', family: 'فیملی', mini: 'منی', emporium: 'ایمپوریم',
+    collection: 'کلیکشن', variety: 'ورائٹی',
+  }),
 });
 
 /**
@@ -166,6 +201,10 @@ const SURNAMES = Object.freeze({
     mukherjee: 'मुखर्जी', krishnan: 'कृष्णन', raman: 'रमन', subramanian: 'सुब्रमण्यन',
     chopra: 'चोपड़ा', saxena: 'सक्सेना', dubey: 'दुबे', thakur: 'ठाकुर', patil: 'पाटिल',
     kulkarni: 'कुलकर्णी', deshpande: 'देशपांडे', gowda: 'गौड़ा',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'अहमद', ali: 'अली', hussain: 'हुसैन', sheikh: 'शेख़', syed: 'सैयद',
+    ansari: 'अंसारी', qureshi: 'क़ुरैशी', siddiqui: 'सिद्दीक़ी', malik: 'मलिक',
+    rahman: 'रहमान', farooqui: 'फ़ारूक़ी', hashmi: 'हाश्मी', usmani: 'उस्मानी',
   }),
   ta: Object.freeze({
     sharma: 'ஷர்மா', gupta: 'குப்தா', patel: 'படேல்', reddy: 'ரெட்டி', reddi: 'ரெட்டி',
@@ -180,6 +219,10 @@ const SURNAMES = Object.freeze({
     mukherjee: 'முகர்ஜி', krishnan: 'கிருஷ்ணன்', raman: 'ராமன்', subramanian: 'சுப்பிரமணியன்',
     chopra: 'சோப்ரா', saxena: 'சக்சேனா', dubey: 'துபே', thakur: 'தாகூர்', patil: 'பாட்டீல்',
     kulkarni: 'குல்கர்ணி', deshpande: 'தேஷ்பாண்டே', gowda: 'கவுடா',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'அஹ்மத்', ali: 'அலி', hussain: 'ஹுசைன்', sheikh: 'ஷேக்', syed: 'சையத்',
+    ansari: 'அன்சாரி', qureshi: 'குரேஷி', siddiqui: 'சித்திக்கி', malik: 'மாலிக்',
+    rahman: 'ரஹ்மான்', farooqui: 'ஃபாரூகி', hashmi: 'ஹாஷ்மி', usmani: 'உஸ்மானி',
   }),
   te: Object.freeze({
     sharma: 'శర్మ', gupta: 'గుప్తా', patel: 'పటేల్', reddy: 'రెడ్డి', reddi: 'రెడ్డి',
@@ -194,6 +237,10 @@ const SURNAMES = Object.freeze({
     mukherjee: 'ముఖర్జీ', krishnan: 'కృష్ణన్', raman: 'రామన్', subramanian: 'సుబ్రమణ్యన్',
     chopra: 'చోప్రా', saxena: 'సక్సేనా', dubey: 'దూబే', thakur: 'ఠాకూర్', patil: 'పాటిల్',
     kulkarni: 'కులకర్ణి', deshpande: 'దేశ్పాండే', gowda: 'గౌడ',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'అహ్మద్', ali: 'అలీ', hussain: 'హుస్సేన్', sheikh: 'షేక్', syed: 'సయ్యద్',
+    ansari: 'అన్సారీ', qureshi: 'ఖురేషి', siddiqui: 'సిద్దీఖీ', malik: 'మాలిక్',
+    rahman: 'రహ్మాన్', farooqui: 'ఫారూఖీ', hashmi: 'హష్మీ', usmani: 'ఉస్మానీ',
   }),
   kn: Object.freeze({
     sharma: 'ಶರ್ಮಾ', gupta: 'ಗುಪ್ತಾ', patel: 'ಪಟೇಲ್', reddy: 'ರೆಡ್ಡಿ', reddi: 'ರೆಡ್ಡಿ',
@@ -208,6 +255,10 @@ const SURNAMES = Object.freeze({
     mukherjee: 'ಮುಖರ್ಜಿ', krishnan: 'ಕೃಷ್ಣನ್', raman: 'ರಾಮನ್', subramanian: 'ಸುಬ್ರಮಣ್ಯನ್',
     chopra: 'ಚೋಪ್ರಾ', saxena: 'ಸಕ್ಸೇನಾ', dubey: 'ದುಬೆ', thakur: 'ಠಾಕೂರ್', patil: 'ಪಾಟೀಲ್',
     kulkarni: 'ಕುಲಕರ್ಣಿ', deshpande: 'ದೇಶಪಾಂಡೆ', gowda: 'ಗೌಡ',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'ಅಹ್ಮದ್', ali: 'ಅಲಿ', hussain: 'ಹುಸೇನ್', sheikh: 'ಶೇಖ್', syed: 'ಸಯ್ಯದ್',
+    ansari: 'ಅನ್ಸಾರಿ', qureshi: 'ಖುರೇಷಿ', siddiqui: 'ಸಿದ್ದೀಖಿ', malik: 'ಮಾಲಿಕ್',
+    rahman: 'ರಹಮಾನ್', farooqui: 'ಫಾರೂಖಿ', hashmi: 'ಹಶ್ಮಿ', usmani: 'ಉಸ್ಮಾನಿ',
   }),
   ml: Object.freeze({
     sharma: 'ശർമ്മ', gupta: 'ഗുപ്ത', patel: 'പട്ടേൽ', reddy: 'റെഡ്ഡി', reddi: 'റെഡ്ഡി',
@@ -222,6 +273,30 @@ const SURNAMES = Object.freeze({
     mukherjee: 'മുഖർജി', krishnan: 'കൃഷ്ണൻ', raman: 'രാമൻ', subramanian: 'സുബ്രഹ്മണ്യൻ',
     chopra: 'ചോപ്ര', saxena: 'സക്സേന', dubey: 'ദുബെ', thakur: 'ഠാക്കൂർ', patil: 'പാട്ടീൽ',
     kulkarni: 'കുൽക്കർണി', deshpande: 'ദേശ്പാണ്ഡെ', gowda: 'ഗൗഡ',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'അഹ്മദ്', ali: 'അലി', hussain: 'ഹുസൈൻ', sheikh: 'ശൈഖ്', syed: 'സയ്യിദ്',
+    ansari: 'അൻസാരി', qureshi: 'ഖുറേഷി', siddiqui: 'സിദ്ദീഖി', malik: 'മാലിക്',
+    rahman: 'റഹ്മാൻ', farooqui: 'ഫാറൂഖി', hashmi: 'ഹാഷ്മി', usmani: 'ഉസ്മാനി',
+  }),
+  // Urdu (Arabic script) — same key set as the Indic blocks. Curated hits are
+  // trusted (no review); every other token stays Roman + needs_review.
+  ur: Object.freeze({
+    sharma: 'شرما', gupta: 'گپتا', patel: 'پٹیل', reddy: 'ریڈی', reddi: 'ریڈی',
+    khan: 'خان', singh: 'سنگھ', iyer: 'آئیر', ayyar: 'آئیر', das: 'داس',
+    mehta: 'مہتا', nair: 'نائر', kumar: 'کمار', verma: 'ورما', varma: 'ورما',
+    yadav: 'یادو', shah: 'شاہ', rao: 'راؤ', naidu: 'نائیڈو', pillai: 'پلئی',
+    menon: 'مینن', bose: 'بوس', roy: 'رائے', agarwal: 'اگروال', aggarwal: 'اگروال',
+    jain: 'جین', kapoor: 'کپور', malhotra: 'مہلوترا', bhat: 'بھٹ', bhatt: 'بھٹ',
+    shetty: 'شیٹی', hegde: 'ہیگڑے', prasad: 'پرساد', mishra: 'مشرا', misra: 'مشرا',
+    pandey: 'پانڈے', tiwari: 'تیواری', joshi: 'جوشی', desai: 'ڈیسائی', chauhan: 'چوہان',
+    nayak: 'نایک', sinha: 'سنہا', ghosh: 'گھوش', banerjee: 'بینرجی', chatterjee: 'چٹرجی',
+    mukherjee: 'مکھرجی', krishnan: 'کرشنن', raman: 'رمن', subramanian: 'سبرامنین',
+    chopra: 'چوپڑا', saxena: 'سکسینہ', dubey: 'دوبے', thakur: 'ٹھاکر', patil: 'پاٹل',
+    kulkarni: 'کلکرنی', deshpande: 'دیشپانڈے', gowda: 'گوڑا',
+    // Common Muslim / Urdu surnames (khan already above).
+    ahmed: 'احمد', ali: 'علی', hussain: 'حسین', sheikh: 'شیخ', syed: 'سید',
+    ansari: 'انصاری', qureshi: 'قریشی', siddiqui: 'صدیقی', malik: 'ملک',
+    rahman: 'رحمان', farooqui: 'فاروقی', hashmi: 'ہاشمی', usmani: 'عثمانی',
   }),
 });
 
@@ -319,22 +394,25 @@ function lexKey(token) {
 /**
  * Localize one English shop name into `lang`. Pure and total.
  * Returns { name, needsReview }:
- *   - en / ur / any lang without a native script here -> the English name
- *     verbatim, needsReview=false (English is ALWAYS the fallback).
+ *   - en / any lang not in RENDER_LANGS -> the English name verbatim,
+ *     needsReview=false (English is ALWAYS the fallback).
  *   - otherwise: tokenize on whitespace (order preserved, joined by single
- *     spaces); each token is either a curated lexicon word, a transliterated
- *     proper noun (marks the whole name needsReview=true), or a non-alpha token
- *     passed through unchanged ('&' and the word 'and' map via the lexicon).
+ *     spaces); each token is either a curated lexicon word, a curated surname, a
+ *     proper noun, or a non-alpha token passed through unchanged ('&' and the word
+ *     'and' map via the lexicon). A proper noun marks the whole name
+ *     needsReview=true; for Indic langs it is best-effort transliterated, for the
+ *     curated-only langs (ur) it is kept verbatim (no engine).
  */
 function localizeShopName(englishName, lang) {
   const raw = englishName == null ? '' : String(englishName);
   const l = (lang || '').trim().toLowerCase();
 
-  // English fallback for the base language, Arabic-script Urdu, and anything we
-  // do not have a native script for.
-  if (!SCRIPT_BY_LANG[l]) {
+  // English fallback for the base language and anything not in the render set.
+  if (!RENDER_LANGS.includes(l)) {
     return { name: raw, needsReview: false };
   }
+  // Whether this lang has a transliteration engine (Indic) or is curated-only (ur).
+  const canTranslit = Boolean(SCRIPT_BY_LANG[l]);
 
   const lexicon = BUSINESS_LEXICON[l] || {};
   const surnames = SURNAMES[l] || {};
@@ -371,8 +449,16 @@ function localizeShopName(englishName, lang) {
       return surnames[key];
     }
 
-    // Proper-noun remainder: best-effort transliteration. A machine-produced
-    // token means the whole name should be human-reviewed.
+    // Proper-noun remainder. Curated-only langs (ur) have NO transliteration
+    // engine: keep the raw token verbatim and flag the name for review. There is
+    // no reliable deterministic Latin->Arabic transliterator, so this is by design.
+    if (!canTranslit) {
+      needsReview = true;
+      return token;
+    }
+
+    // Indic langs: best-effort transliteration. A machine-produced token means the
+    // whole name should be human-reviewed.
     const native = engine.transliterate(key, l);
     if (native && native.trim()) {
       needsReview = true;
@@ -392,16 +478,16 @@ function localizeShopName(englishName, lang) {
 /**
  * Render an English name into every requested language. `activeLangs` is the set
  * of language codes to render into (typically RENDER_LANGS or the active subset
- * of it). Unknown/duplicate codes are ignored; en/ur are skipped (English
- * fallback needs no stored row). Returns a { [lang]: { name, needsReview } } map.
- * Pure and total.
+ * of it). Unknown/duplicate codes are ignored; en (and any code not in
+ * RENDER_LANGS) is skipped (English fallback needs no stored row). Returns a
+ * { [lang]: { name, needsReview } } map. Pure and total.
  */
 function renderAllLangs(englishName, activeLangs) {
   const langs = Array.isArray(activeLangs) ? activeLangs : RENDER_LANGS;
   const out = {};
   for (const lang of langs) {
     const l = (lang || '').trim().toLowerCase();
-    if (!SCRIPT_BY_LANG[l] || Object.prototype.hasOwnProperty.call(out, l)) continue;
+    if (!RENDER_LANGS.includes(l) || Object.prototype.hasOwnProperty.call(out, l)) continue;
     out[l] = localizeShopName(englishName, l);
   }
   return out;
@@ -421,7 +507,7 @@ async function resolveActiveRenderLangs(client) {
         WHERE is_active = true AND code = ANY($1::text[])`,
       [RENDER_LANGS.slice()]
     );
-    const active = r.rows.map((row) => row.code).filter((c) => SCRIPT_BY_LANG[c]);
+    const active = r.rows.map((row) => row.code).filter((c) => RENDER_LANGS.includes(c));
     return active.length ? active : RENDER_LANGS.slice();
   } catch (err) {
     return RENDER_LANGS.slice();
@@ -458,6 +544,7 @@ async function reseedShopName(client, shopId, englishName) {
 
 module.exports = {
   SCRIPT_BY_LANG,
+  NON_TRANSLIT_LANGS,
   RENDER_LANGS,
   BUSINESS_LEXICON,
   SURNAMES,
