@@ -111,21 +111,21 @@ th { color: var(--muted); font-weight: 600; }
   --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
 }
 
-/* GAON BAZAAR — a warm paper + kirana-green skin selected by data-theme="gaon".
+/* WARM — a warm paper + kirana-green colour skin selected by data-theme="warm".
    Palette-only reskin through the SAME --c-* token names, so every .cpwa
    component reskins automatically. It has its own warm LIGHT (base, applied when
    the device is not in dark mode) and warm DARK (media block). Scoped to
-   :root[data-theme="gaon"] .cpwa ONLY — the owner dashboard's bare :root has no
-   gaon entry and is untouched. */
-/* GAON LIGHT — default for the gaon theme (and when the device prefers light) */
-:root[data-theme="gaon"] .cpwa {
+   :root[data-theme="warm"] .cpwa ONLY — the owner dashboard's bare :root has no
+   warm entry and is untouched. */
+/* WARM LIGHT — default for the warm theme (and when the device prefers light) */
+:root[data-theme="warm"] .cpwa {
   color-scheme:light; --c-bg:#FBF6EB; --c-surface:#FFFFFF; --c-surface-2:#F3EBDC; --c-border:#EADFC9; --c-border-strong:#D8C9AB;
   --c-text:#241F17; --c-muted:#736A58; --c-accent:#157A3A; --c-on-accent:#FFFFFF; --c-accent-ink:#136A33;
   --c-danger:#B23A2E; --c-danger-bg:rgba(178,58,46,.12); --c-shadow:0 1px 2px rgba(33,30,23,.06),0 8px 22px rgba(33,30,23,.06); --c-overlay:rgba(36,31,23,.45);
 }
-/* GAON DARK — used for the gaon theme when the device prefers dark */
+/* WARM DARK — used for the warm theme when the device prefers dark */
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="gaon"] .cpwa {
+  :root[data-theme="warm"] .cpwa {
     color-scheme:dark; --c-bg:#171410; --c-surface:#221E16; --c-surface-2:#2C271C; --c-border:#38311F; --c-border-strong:#4A4030;
     --c-text:#F4ECDC; --c-muted:#B3A891; --c-accent:#34A85B; --c-on-accent:#0C1A0F; --c-accent-ink:#EDB24A;
     --c-danger:#E67A66; --c-danger-bg:rgba(230,122,102,.16); --c-shadow:none; --c-overlay:rgba(0,0,0,.6);
@@ -142,7 +142,7 @@ th { color: var(--muted); font-weight: 600; }
    :where() list excludes the known NON-primary variants (secondary, chips,
    danger) WITHOUT adding specificity — :where() counts as (0,0,0) — so this rule
    stays at (0,1,1) and no longer out-specifies the (0,1,0) .cpwa-chip label. The
-   accent background is a .cpwa token so it reskins per theme (e.g. Gaon green),
+   accent background is a .cpwa token so it reskins per theme (e.g. warm green),
    instead of leaking the owner's fixed --accent. */
 .cpwa button:not(:where(.secondary, .cpwa-chip, .cpwa-btn-danger)) { background: var(--c-accent); color: var(--c-on-accent); }
 .cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
@@ -199,6 +199,86 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-theme-opt-label { flex: 1; min-width: 0; }
 .cpwa-theme-check { flex: 0 0 auto; color: var(--c-accent-ink); font-weight: 800; }
 .cpwa-theme-opt[aria-checked="false"] .cpwa-theme-check { visibility: hidden; }
+/* Appearance popover holds two labelled radio groups (Theme + Layout). The
+   nested <ul> groups carry no bullets/indent; a second section title gets a
+   little top rule to separate the two axes. */
+.cpwa-theme-group { list-style: none; margin: 0; padding: 0; }
+.cpwa-theme-menu-title-2 { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--c-border); }
+/* Layout options use a small token-drawn glyph (rows vs. tiles) in place of the
+   colour swatch, so the Layout axis reads as structural, not chromatic. */
+.cpwa-layout-ico {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--c-border-strong); background: var(--c-surface-2); background-repeat: no-repeat;
+}
+.cpwa-layout-ico-standard {
+  background-image:
+    linear-gradient(var(--c-muted) 0 0), linear-gradient(var(--c-muted) 0 0), linear-gradient(var(--c-muted) 0 0);
+  background-size: 12px 2px; background-position: 5px 6px, 5px 10px, 5px 14px;
+}
+.cpwa-layout-ico-gaon {
+  background-image:
+    linear-gradient(var(--c-muted) 0 0), linear-gradient(var(--c-muted) 0 0),
+    linear-gradient(var(--c-muted) 0 0), linear-gradient(var(--c-muted) 0 0);
+  background-size: 6px 6px; background-position: 4px 4px, 12px 4px, 4px 12px, 12px 12px;
+}
+
+/* ==========================================================================
+   HOOK DEFAULTS — inert in the STANDARD layout.
+   These leading elements exist in the markup on every render so a single
+   component tree serves both layouts, but they are hidden unless the Gaon
+   Bazaar layout is active, keeping the standard layout byte-for-visual
+   identical to before. The Gaon overrides live in the layout block below.
+   ========================================================================== */
+.cpwa-shopcard-logo { display: none; }
+
+/* ==========================================================================
+   GAON BAZAAR LAYOUT — a switchable, colour-theme-agnostic skin for the
+   DISCOVERY screens (shops list + product views), selected by
+   data-cpwa-layout="gaon" on <html>. Independent of the colour theme: every
+   colour here comes from a --c-* token, so it renders correctly in the light,
+   dark AND warm themes. Scoped to :root[data-cpwa-layout="gaon"] .cpwa so the
+   owner dashboard is never touched. Warm, rounded, picture-led, price-forward.
+   ========================================================================== */
+/* Category chips become column tiles: big emoji stacked over a small label. Only
+   the category group carries .cpwa-cats — the fulfillment/variant chip groups
+   keep their pill shape. */
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats { gap: 12px; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats .cpwa-chip {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: 64px; min-width: 64px; height: 64px; padding: 8px 4px; border-radius: 14px;
+  background: var(--c-surface-2); border: 1px solid var(--c-border); white-space: normal;
+}
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats .cpwa-chip-ico { font-size: 30px; line-height: 1; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats .cpwa-chip-label {
+  font-size: 12px; line-height: 1.15; text-align: center; overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+
+/* Shop cards get a leading accent logo tile and a larger name. */
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-shopcard { gap: 14px; padding: 16px; border-radius: 16px; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-shopcard-logo {
+  display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 48px; height: 48px; border-radius: 12px; font-size: 26px; line-height: 1;
+  background: var(--c-accent); color: var(--c-on-accent);
+}
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-shopcard-name { font-size: 18px; }
+
+/* Product cards reuse the EXISTING ProductThumb (its smart per-product tile:
+   photo when present, else a category emoji, data-saver aware) as the picture-
+   led element — no competing tile is introduced, so the standard layout is
+   unchanged and Gaon simply re-lays-out [ProductThumb] [info] [action] with more
+   room. The price is enlarged and the action keeps ≥40px tap targets. */
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-product,
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-vcard,
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-product-weighed { border-radius: 16px; padding: 16px; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-product { gap: 14px; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-product-price { font-size: 21px; }
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-stepper button {
+  min-width: 40px; min-height: 40px; border-radius: 10px;
+}
+:root[data-cpwa-layout="gaon"] .cpwa .cpwa-product-action > button {
+  min-height: 40px; border-radius: 10px;
+}
 
 /* Bottom tab bar */
 .cpwa-tabbar {
