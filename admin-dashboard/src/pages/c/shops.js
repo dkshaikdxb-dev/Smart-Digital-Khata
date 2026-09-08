@@ -139,7 +139,7 @@ export default function DiscoverShops() {
             </button>
           )}
         </div>
-        <div className="cpwa-chips" role="group" aria-label={t('c.productsTitle')}>
+        <div className="cpwa-chips cpwa-cats" role="group" aria-label={t('c.productsTitle')}>
           {CATEGORIES.map((c) => (
             <button
               key={c.key}
@@ -147,7 +147,8 @@ export default function DiscoverShops() {
               className="cpwa-chip"
               onClick={() => goProducts(c.term)}
             >
-              {c.icon} {t(`c.${c.key}`)}
+              <span className="cpwa-chip-ico">{c.icon}</span>{' '}
+              <span className="cpwa-chip-label">{t(`c.${c.key}`)}</span>
             </button>
           ))}
         </div>
@@ -209,6 +210,7 @@ export default function DiscoverShops() {
 
       {shops.map((s) => (
         <Link key={s.id} href={`/c/shop/${s.id}`} className="card cpwa-shopcard">
+          <span className="cpwa-shopcard-logo" aria-hidden="true">🏪</span>
           <div className="cpwa-shopcard-body">
             <div className="cpwa-shopcard-name">{s.name}</div>
             <div className="muted">

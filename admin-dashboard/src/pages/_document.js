@@ -4,14 +4,18 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* No-flash theme: apply a STORED consumer preference before first paint.
-            With no stored pref, no data-theme is set and the consumer PWA follows
-            the device via prefers-color-scheme. The owner dashboard ignores the
-            .cpwa tokens and its bare :root stays dark regardless. */}
+        {/* No-flash appearance: apply STORED consumer preferences before first
+            paint. Colour theme (data-theme) and layout (data-cpwa-layout) are two
+            independent axes, each in its own try/catch so a failure in one cannot
+            starve the other. With no stored pref, neither attribute is set and the
+            consumer PWA follows the device via prefers-color-scheme in the standard
+            layout. A legacy 'gaon' colour theme (the old warm palette name) is read
+            as 'warm'. The owner dashboard ignores the .cpwa tokens and its bare
+            :root stays dark regardless. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='light'||t==='dark'||t==='gaon'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='gaon'){t='warm';try{localStorage.setItem('skhata-theme','warm');}catch(e){}}if(t==='light'||t==='dark'||t==='warm'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}try{var l=localStorage.getItem('skhata-layout');if(l==='gaon'){document.documentElement.setAttribute('data-cpwa-layout','gaon');}}catch(e){}})();",
           }}
         />
         <meta name="application-name" content="Smart Digital Khata" />
