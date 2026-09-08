@@ -299,10 +299,16 @@ exports.getShop = async (req, res) => {
   const localized = lang !== 'en';
   const params = [shopId];
   let nameSelect = 'p.name';
+  // Description also localizes off the same master term (batch DESCLOC): when a
+  // catalog_i18n row carries a translated description, show it; else fall back to
+  // the raw stored description. Only the VALUE changes; the `description` key and
+  // the en path are unchanged.
+  let descSelect = 'p.description';
   let i18nJoin = '';
   if (localized) {
     params.push(lang); // $2
     nameSelect = 'COALESCE(cp.name, p.name)';
+    descSelect = 'COALESCE(cp.description, p.description)';
     i18nJoin = `LEFT JOIN catalog_i18n cp
                   ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2`;
   }
@@ -310,7 +316,7 @@ exports.getShop = async (req, res) => {
   // client filter can match aliases/romanized/native tokens; it is derived from
   // public catalog + name data, not sensitive.
   const products = await query(
-    `SELECT p.id, ${nameSelect} AS name, p.description, p.price, p.unit, p.sold_by_weight, p.image_url,
+    `SELECT p.id, ${nameSelect} AS name, ${descSelect} AS description, p.price, p.unit, p.sold_by_weight, p.image_url,
             p.search_text,
             ci.category, ci.subcategory,
             ci.product AS base_product, ci.brand, ci.pack

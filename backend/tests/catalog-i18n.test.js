@@ -183,7 +183,8 @@ describe('import-catalog-i18n idempotency', () => {
       {
         term_type: 'product', term_en: `${tag} Import Rice`,
         translations: {
-          hi: { name: 'आयात चावल', aliases: 'aayat', needs_review: false },
+          // hi carries a localized description; ta has none (writes NULL).
+          hi: { name: 'आयात चावल', aliases: 'aayat', needs_review: false, description: 'आयात किया हुआ चावल' },
           ta: { name: 'இறக்குமதி அரிசி', aliases: '', needs_review: false },
         },
       },
@@ -195,6 +196,15 @@ describe('import-catalog-i18n idempotency', () => {
 
     const first = await importCatalogI18n({ rows: fixture });
     expect(first.upserted).toBe(3); // 2 hi + 1 ta + ... = hi,ta for product + hi for category = 3
+
+    // The description column round-trips: hi got one, ta stays NULL (back-compat).
+    const desc = await pool.query(
+      "SELECT lang, description FROM catalog_i18n WHERE term_type='product' AND term_en=$1 ORDER BY lang",
+      [`${tag} Import Rice`]
+    );
+    const byLang = Object.fromEntries(desc.rows.map((r) => [r.lang, r.description]));
+    expect(byLang.hi).toBe('आयात किया हुआ चावल');
+    expect(byLang.ta).toBeNull();
 
     const countAfterFirst = await pool.query(
       'SELECT COUNT(*)::int AS n FROM catalog_i18n WHERE term_en LIKE $1', [`${tag} Import%`]
