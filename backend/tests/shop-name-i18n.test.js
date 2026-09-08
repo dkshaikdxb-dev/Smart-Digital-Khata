@@ -7,12 +7,16 @@ const {
   localizeShopName,
   renderAllLangs,
   cleanTranslit,
+  resolveActiveRenderLangs,
 } = require('../src/utils/shop-name-i18n');
 
 describe('shop-name-i18n util', () => {
-  test('render language set is exactly hi/ta/te/kn/ml (existing translit coverage)', () => {
-    expect(RENDER_LANGS.slice().sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te']);
+  test('render set is hi/ta/te/kn/ml (translit) + ur (curated-only)', () => {
+    expect(RENDER_LANGS.slice().sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te', 'ur']);
+    // The transliteration engine still covers only the Indic scripts; ur is NOT here.
     expect(Object.keys(SCRIPT_BY_LANG).sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te']);
+    expect(RENDER_LANGS.includes('ur')).toBe(true);
+    expect(SCRIPT_BY_LANG.ur).toBeUndefined();
   });
 
   test('the verified hybrid examples reproduce exactly (hi)', () => {
@@ -53,7 +57,7 @@ describe('shop-name-i18n util', () => {
   });
 
   test('a surname hit is trusted in every render language (needsReview=false)', () => {
-    const expected = { hi: 'शर्मा', ta: 'ஷர்மா', te: 'శర్మ', kn: 'ಶರ್ಮಾ', ml: 'ശർമ്മ' };
+    const expected = { hi: 'शर्मा', ta: 'ஷர்மா', te: 'శర్మ', kn: 'ಶರ್ಮಾ', ml: 'ശർമ്മ', ur: 'شرما' };
     for (const lang of RENDER_LANGS) {
       const r = localizeShopName('Sharma Kirana Store', lang);
       expect(r.needsReview).toBe(false);
@@ -119,8 +123,9 @@ describe('shop-name-i18n util', () => {
     }
   });
 
-  test('en / ur / unknown langs fall back to the English name verbatim', () => {
-    for (const lang of ['en', 'ur', 'bn', 'xx', '', null, undefined]) {
+  test('en / non-render langs fall back to the English name verbatim', () => {
+    // ur is NO LONGER a fallback lang — it renders via the curated dictionaries.
+    for (const lang of ['en', 'bn', 'gu', 'mr', 'xx', '', null, undefined]) {
       const r = localizeShopName('New Bharat Provision', lang);
       expect(r).toEqual({ name: 'New Bharat Provision', needsReview: false });
     }
@@ -165,15 +170,15 @@ describe('shop-name-i18n util', () => {
 
   test('renderAllLangs covers every render language with the right shape', () => {
     const all = renderAllLangs('New Bharat Provision', RENDER_LANGS);
-    expect(Object.keys(all).sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te']);
+    expect(Object.keys(all).sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te', 'ur']);
     for (const lang of RENDER_LANGS) {
       expect(typeof all[lang].name).toBe('string');
       expect(all[lang].name.length).toBeGreaterThan(0);
       expect(typeof all[lang].needsReview).toBe('boolean');
     }
-    // en / ur are skipped (English fallback needs no stored row).
+    // en (and other non-render langs) are skipped; ur now seeds a row.
     const withBase = renderAllLangs('New Bharat Provision', ['en', 'ur', 'hi']);
-    expect(Object.keys(withBase)).toEqual(['hi']);
+    expect(Object.keys(withBase).sort()).toEqual(['hi', 'ur']);
   });
 
   test('output carries no NUL / control characters', () => {
@@ -183,5 +188,63 @@ describe('shop-name-i18n util', () => {
       const r = localizeShopName('Sri Balaji General & Provision Stores 24', lang);
       expect(ctrl.test(r.name)).toBe(false);
     }
+  });
+
+  describe('Urdu (ur) — curated Arabic-script rendering, no transliteration engine', () => {
+    test('the 10 live demo shops render EXACTLY in Urdu and are TRUSTED', () => {
+      const cases = [
+        ['Das Family Store', 'داس فیملی اسٹور'],
+        ['Gupta General Store', 'گپتا جنرل اسٹور'],
+        ['Sharma Kirana Store', 'شرما کریانہ اسٹور'],
+        ['Patel Provision Mart', 'پٹیل پرووژن مارٹ'],
+        ['Reddy Super Bazaar', 'ریڈی سپر بازار'],
+        ['Khan Daily Needs', 'خان ڈیلی نیڈز'],
+        ['Iyer Grocery Corner', 'آئیر گروسری کارنر'],
+        ['Singh Mini Market', 'سنگھ منی مارکیٹ'],
+        ['Mehta Kirana Bhandar', 'مہتا کریانہ بھنڈار'],
+        ['Nair Fresh Mart', 'نائر فریش مارٹ'],
+      ];
+      for (const [en, ur] of cases) {
+        const r = localizeShopName(en, 'ur');
+        expect(r.name).toBe(ur);
+        expect(r.needsReview).toBe(false);
+        // fully curated -> no Latin letters survive.
+        expect(/[a-z]/i.test(r.name)).toBe(false);
+      }
+    });
+
+    test('an unknown proper-noun token is kept VERBATIM (Roman) and forces review', () => {
+      // "Ramineni" is not a curated surname and there is no ur transliterator, so it
+      // stays Roman while the curated words around it are in Urdu script.
+      const r = localizeShopName('Sharma Ramineni Kirana', 'ur');
+      expect(r.needsReview).toBe(true);
+      expect(r.name).toBe('شرما Ramineni کریانہ');
+      expect(r.name.startsWith('شرما ')).toBe(true); // curated surname preserved
+      expect(r.name.endsWith(' کریانہ')).toBe(true); // curated word preserved
+      expect(r.name).toContain('Ramineni'); // unknown token verbatim, not mangled
+    });
+
+    test('a Muslim/Urdu surname is a trusted curated hit', () => {
+      const r = localizeShopName('Ansari General Store', 'ur');
+      expect(r.name).toBe('انصاری جنرل اسٹور');
+      expect(r.needsReview).toBe(false);
+    });
+
+    test('renderAllLangs over RENDER_LANGS produces a ur entry', () => {
+      const all = renderAllLangs('Das Family Store', RENDER_LANGS);
+      expect(all.ur).toEqual({ name: 'داس فیملی اسٹور', needsReview: false });
+    });
+
+    test('resolveActiveRenderLangs includes ur when the languages table marks it active', async () => {
+      // Mock client: only hi and ur are active among the render langs.
+      const client = {
+        query: async (_sql, params) => {
+          expect(params[0]).toEqual(expect.arrayContaining(['ur']));
+          return { rows: [{ code: 'hi' }, { code: 'ur' }] };
+        },
+      };
+      const active = await resolveActiveRenderLangs(client);
+      expect(active.sort()).toEqual(['hi', 'ur']);
+    });
   });
 });
