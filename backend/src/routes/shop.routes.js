@@ -16,6 +16,11 @@ const updateSchema = Joi.object({
   // field so an owner can wipe their location / opt out of the geo directory.
   city: Joi.string().allow('', null).max(120),
   area: Joi.string().allow('', null).max(120),
+  // Location foundation (LOC1): village + PIN granularity for geo targeting.
+  // null/'' clears the field. pincode is a free-form string here (owner-facing);
+  // the consumer picker validates 4–6 digits.
+  pincode: Joi.string().allow('', null).max(12),
+  village: Joi.string().allow('', null).max(120),
   latitude: Joi.number().min(-90).max(90).allow(null),
   longitude: Joi.number().min(-180).max(180).allow(null),
   is_listed: Joi.boolean(),

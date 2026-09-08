@@ -807,3 +807,71 @@ exports.cancelOrder = async (req, res) => {
 
   res.json(result);
 };
+
+// ---------------------------------------------------------------------------
+// Consumer location (batch LOC1) — the shopper's chosen town/village/pincode,
+// stored on the GLOBAL customer_users identity (NOT any per-shop `customers`
+// ledger row). This is the cross-device backup for the client-side localStorage
+// location that later batches send to the promos API. Scoped to the caller's
+// customer_users row via req.customerUser.id (the token `sub`).
+// ---------------------------------------------------------------------------
+
+const LOC_FIELDS = ['town', 'village', 'pincode'];
+
+/** Normalize a saved location row to the public { town, village, pincode } shape. */
+function locShape(row) {
+  return {
+    town: (row && row.town) || null,
+    village: (row && row.village) || null,
+    pincode: (row && row.pincode) || null,
+  };
+}
+
+/**
+ * GET /my/location — the logged-in consumer's saved location. Returns nulls
+ * when nothing has been saved (or, defensively, when the identity row is gone).
+ */
+exports.getLocation = async (req, res) => {
+  const r = await query(
+    'SELECT town, village, pincode FROM customer_users WHERE id = $1',
+    [req.customerUser.id]
+  );
+  res.json(locShape(r.rows[0]));
+};
+
+/**
+ * PUT /my/location { town?, village?, pincode? } — save the consumer's location
+ * onto their customer_users row. Each field is optional; only the keys present
+ * in the body change (an omitted key is left untouched). A field sent as '' or
+ * null clears it. Never throws on empty. Returns the saved location.
+ */
+exports.putLocation = async (req, res) => {
+  const fields = [];
+  const values = [];
+  let i = 1;
+  for (const k of LOC_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(req.body, k)) {
+      let v = req.body[k];
+      if (typeof v === 'string') v = v.trim();
+      if (v === '') v = null; // clearing is allowed
+      fields.push(`${k} = $${i++}`);
+      values.push(v);
+    }
+  }
+
+  if (!fields.length) {
+    const cur = await query(
+      'SELECT town, village, pincode FROM customer_users WHERE id = $1',
+      [req.customerUser.id]
+    );
+    return res.json(locShape(cur.rows[0]));
+  }
+
+  values.push(req.customerUser.id);
+  const r = await query(
+    `UPDATE customer_users SET ${fields.join(', ')} WHERE id = $${i} RETURNING town, village, pincode`,
+    values
+  );
+  if (!r.rowCount) throw ApiError.notFound('Customer not found');
+  res.json(locShape(r.rows[0]));
+};

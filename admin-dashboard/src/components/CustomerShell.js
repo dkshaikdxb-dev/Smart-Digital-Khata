@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import CustomerTabBar from './CustomerTabBar';
 import LangSwitch from './LangSwitch';
 import CpwaThemeToggle from './CpwaThemeToggle';
+import CpwaLocationPicker from './CpwaLocationPicker';
 import { getCustomerToken } from '../lib/customerApi';
 
 const fmtRs = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
@@ -55,6 +56,7 @@ export default function CustomerShell({ title, children, tabs = true, back }) {
           )}
           {title && <h1>{title}</h1>}
           <span style={{ flex: 1 }} />
+          <CpwaLocationPicker />
           <CpwaThemeToggle />
           <LangSwitch variant="cpwa" />
         </header>

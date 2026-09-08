@@ -204,6 +204,8 @@ export default function Settings() {
         body: JSON.stringify({
           city: shop.city || null,
           area: shop.area || null,
+          village: shop.village || null,
+          pincode: shop.pincode || null,
           latitude: shop.latitude === '' || shop.latitude == null ? null : Number(shop.latitude),
           longitude: shop.longitude === '' || shop.longitude == null ? null : Number(shop.longitude),
           is_listed: !!shop.is_listed,
@@ -526,6 +528,17 @@ export default function Settings() {
           <div style={{ height: 12 }} />
           <label className="muted">{t('set.areaLocality')}</label>
           <input value={shop.area || ''} onChange={(e) => setShop({ ...shop, area: e.target.value })} placeholder={t('set.areaPlaceholder')} />
+          <div style={{ height: 12 }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label className="muted">{t('set.village')}</label>
+              <input value={shop.village || ''} onChange={(e) => setShop({ ...shop, village: e.target.value })} placeholder={t('set.village')} />
+            </div>
+            <div>
+              <label className="muted">{t('set.pincode')}</label>
+              <input value={shop.pincode || ''} onChange={(e) => setShop({ ...shop, pincode: e.target.value })} placeholder={t('set.pincode')} />
+            </div>
+          </div>
           <div style={{ height: 12 }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
