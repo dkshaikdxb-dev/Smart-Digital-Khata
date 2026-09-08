@@ -39,6 +39,50 @@ exports.khata = async (req, res) => {
 };
 
 /**
+ * GET /my/shop-faqs — the owner-authored FAQ for each of THIS customer's shops.
+ * Visibility mirrors khata exactly: a shop appears only when a `customers` row
+ * exists for the authenticated customer's E164 phone at that shop. Only ACTIVE
+ * faqs are returned, and shops with no active faqs are omitted (so the consumer
+ * section only lists shops that actually have FAQs). Read-only, customer-scoped.
+ * Returns [{ shop_id, shop_name, faqs: [{ id, question, answer }] }] ordered by
+ * shop name then sort_order.
+ */
+exports.shopFaqs = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+
+  const r = await query(
+    `SELECT s.id AS shop_id, s.name AS shop_name,
+            f.id AS faq_id, f.question, f.answer
+     FROM customers c
+     JOIN shops s ON s.id = c.shop_id
+     JOIN shop_faqs f ON f.shop_id = s.id AND f.is_active = true
+     WHERE c.phone = $1
+     ORDER BY s.name ASC, f.sort_order ASC, f.id ASC`,
+    [phone]
+  );
+
+  // Group the flat rows by shop, preserving the SQL order (shop name, then
+  // sort_order). A customer with a record at several shops that share a phone
+  // could produce duplicate (shop, faq) pairs across customer rows; de-dupe by
+  // faq id per shop so each question shows once.
+  const byShop = new Map();
+  for (const row of r.rows) {
+    let entry = byShop.get(row.shop_id);
+    if (!entry) {
+      entry = { shop_id: row.shop_id, shop_name: row.shop_name, faqs: [], _seen: new Set() };
+      byShop.set(row.shop_id, entry);
+    }
+    if (!entry._seen.has(row.faq_id)) {
+      entry._seen.add(row.faq_id);
+      entry.faqs.push({ id: row.faq_id, question: row.question, answer: row.answer });
+    }
+  }
+
+  const shops = Array.from(byShop.values()).map(({ _seen, ...rest }) => rest);
+  res.json({ shops });
+};
+
+/**
  * GET /my/khata/:shopId — this customer's ledger at a single shop.
  */
 exports.shopKhata = async (req, res) => {

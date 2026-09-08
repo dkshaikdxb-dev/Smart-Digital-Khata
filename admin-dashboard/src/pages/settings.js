@@ -48,11 +48,20 @@ export default function Settings() {
   const [ful, setFul] = useState(null);
   const [fulMsg, setFulMsg] = useState('');
 
+  // Store FAQ — owner-authored questions/policies shown to the shop's customers.
+  const [faqs, setFaqs] = useState([]);
+  const [faqForm, setFaqForm] = useState({ question: '', answer: '', sort_order: '' });
+  const [faqMsg, setFaqMsg] = useState('');
+
   // Share your shop — consumer link + a client-side QR the owner can print and
   // stick on the counter for customers to scan.
   const [shopLink, setShopLink] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [copyMsg, setCopyMsg] = useState('');
+
+  function loadFaqs() {
+    apiFetch('/api/shops/faqs').then((r) => setFaqs(r.items || [])).catch(console.error);
+  }
 
   function loadPayment() {
     apiFetch('/api/shops/me/payment').then((r) => {
@@ -70,6 +79,7 @@ export default function Settings() {
     apiFetch('/api/subscriptions/plans').then((r) => setPlans(r.plans)).catch(console.error);
     apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
     loadPayment();
+    loadFaqs();
   }, [router]);
 
   // Build the consumer link and render its QR client-side (window + the qrcode
@@ -207,6 +217,46 @@ export default function Settings() {
     } catch (e) { setFulMsg(e.message); }
   }
 
+  async function addFaq() {
+    setFaqMsg('');
+    const question = faqForm.question.trim();
+    const answer = faqForm.answer.trim();
+    if (!question || !answer) { setFaqMsg(t('sfaq.needBoth')); return; }
+    try {
+      const body = { question, answer };
+      if (faqForm.sort_order !== '' && faqForm.sort_order != null) body.sort_order = Number(faqForm.sort_order);
+      await apiFetch('/api/shops/faqs', { method: 'POST', body: JSON.stringify(body) });
+      setFaqForm({ question: '', answer: '', sort_order: '' });
+      loadFaqs();
+      setFaqMsg(t('common.saved'));
+    } catch (e) { setFaqMsg(e.message); }
+  }
+
+  async function saveFaq(f) {
+    setFaqMsg('');
+    try {
+      await apiFetch(`/api/shops/faqs/${f.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          question: f.question,
+          answer: f.answer,
+          sort_order: Number(f.sort_order) || 0,
+          is_active: f.is_active !== false,
+        }),
+      });
+      loadFaqs();
+      setFaqMsg(t('common.saved'));
+    } catch (e) { setFaqMsg(e.message); }
+  }
+
+  async function deleteFaq(id) {
+    setFaqMsg('');
+    try {
+      await apiFetch(`/api/shops/faqs/${id}`, { method: 'DELETE' });
+      loadFaqs();
+    } catch (e) { setFaqMsg(e.message); }
+  }
+
   return (
     <div>
       <Nav />
@@ -275,6 +325,70 @@ export default function Settings() {
             {qrDataUrl && <img className="qr-print-img" src={qrDataUrl} alt="" width={280} height={280} />}
             <div className="qr-print-link">{shopLink}</div>
           </div>
+        </div>
+
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('sfaq.title')}</h3>
+          <p className="muted">{t('sfaq.subtitle')}</p>
+
+          {faqs.length === 0 && <div className="muted" style={{ marginBottom: 12 }}>{t('sfaq.empty')}</div>}
+
+          <div style={{ display: 'grid', gap: 14 }}>
+            {faqs.map((f, idx) => (
+              <div key={f.id} style={{ borderBottom: '1px solid #334155', paddingBottom: 12 }}>
+                <label className="muted">{t('sfaq.question')}</label>
+                <input
+                  value={f.question}
+                  onChange={(e) => setFaqs(faqs.map((x, i) => (i === idx ? { ...x, question: e.target.value } : x)))}
+                />
+                <div style={{ height: 8 }} />
+                <label className="muted">{t('sfaq.answer')}</label>
+                <textarea
+                  rows={3}
+                  value={f.answer}
+                  onChange={(e) => setFaqs(faqs.map((x, i) => (i === idx ? { ...x, answer: e.target.value } : x)))}
+                />
+                <div style={{ height: 8 }} />
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                  <div style={{ width: 90 }}>
+                    <label className="muted">{t('sfaq.order')}</label>
+                    <input
+                      type="number" min="0" step="1"
+                      value={f.sort_order}
+                      onChange={(e) => setFaqs(faqs.map((x, i) => (i === idx ? { ...x, sort_order: e.target.value } : x)))}
+                    />
+                  </div>
+                  <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox" style={{ width: 'auto' }}
+                      checked={f.is_active !== false}
+                      onChange={(e) => setFaqs(faqs.map((x, i) => (i === idx ? { ...x, is_active: e.target.checked } : x)))}
+                    />
+                    <span>{t('sfaq.active')}</span>
+                  </label>
+                  <div style={{ flex: 1 }} />
+                  <button className="secondary" onClick={() => saveFaq(f)}>{t('sfaq.save')}</button>
+                  <button className="secondary" onClick={() => deleteFaq(f.id)}>{t('sfaq.delete')}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            <label className="muted">{t('sfaq.question')}</label>
+            <input value={faqForm.question} onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })} placeholder={t('sfaq.questionPlaceholder')} />
+            <div style={{ height: 8 }} />
+            <label className="muted">{t('sfaq.answer')}</label>
+            <textarea rows={3} value={faqForm.answer} onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })} placeholder={t('sfaq.answerPlaceholder')} />
+            <div style={{ height: 8 }} />
+            <div style={{ width: 90 }}>
+              <label className="muted">{t('sfaq.order')}</label>
+              <input type="number" min="0" step="1" value={faqForm.sort_order} onChange={(e) => setFaqForm({ ...faqForm, sort_order: e.target.value })} placeholder="0" />
+            </div>
+            <div style={{ height: 12 }} />
+            <button onClick={addFaq}>{t('sfaq.add')}</button>
+          </div>
+          {faqMsg && <div className="muted" style={{ marginTop: 10 }}>{faqMsg}</div>}
         </div>
 
         <div className="card" style={{ maxWidth: 520 }}>

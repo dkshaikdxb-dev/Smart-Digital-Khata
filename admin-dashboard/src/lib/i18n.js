@@ -7109,6 +7109,61 @@ for (const code of Object.keys(CONTENT)) {
   Object.assign(DICT[code], CONTENT[code]);
 }
 
+// Store FAQ (Batch FAQ-2): owner editor keys (sfaq.*) on Settings + consumer
+// display keys (csfaq.*) on the account page. en + hi are authored; ta/te/kn/ml/
+// ur seed to English until a native QA pass, mirroring the CONTENT block above.
+const SFAQ_EN = {
+  // Owner editor (Settings → Store FAQ)
+  'sfaq.title': 'Store FAQ',
+  'sfaq.subtitle': 'Write answers to common questions for your customers — timings, delivery, returns, offers. These show on each customer’s account page.',
+  'sfaq.add': 'Add FAQ',
+  'sfaq.question': 'Question',
+  'sfaq.answer': 'Answer',
+  'sfaq.order': 'Order',
+  'sfaq.active': 'Show to customers',
+  'sfaq.save': 'Save',
+  'sfaq.delete': 'Delete',
+  'sfaq.empty': 'No FAQs yet. Add your first question and answer below.',
+  'sfaq.needBoth': 'Please write both a question and an answer.',
+  'sfaq.questionPlaceholder': 'e.g. What are your shop timings?',
+  'sfaq.answerPlaceholder': 'e.g. We are open 8am–9pm every day.',
+  // Consumer display (Account → Questions about your shops)
+  'csfaq.title': 'Questions about your shops',
+  'csfaq.subtitle': 'Answers your shops have shared — timings, delivery, returns and more.',
+  'csfaq.empty': 'Your shops have not added any questions yet.',
+};
+const SFAQ_HI = {
+  'sfaq.title': 'दुकान के सामान्य प्रश्न',
+  'sfaq.subtitle': 'अपने ग्राहकों के आम सवालों के जवाब लिखें — समय, डिलीवरी, वापसी, ऑफ़र। ये हर ग्राहक के अकाउंट पेज पर दिखते हैं।',
+  'sfaq.add': 'प्रश्न जोड़ें',
+  'sfaq.question': 'प्रश्न',
+  'sfaq.answer': 'उत्तर',
+  'sfaq.order': 'क्रम',
+  'sfaq.active': 'ग्राहकों को दिखाएँ',
+  'sfaq.save': 'सहेजें',
+  'sfaq.delete': 'हटाएँ',
+  'sfaq.empty': 'अभी कोई प्रश्न नहीं है। नीचे अपना पहला प्रश्न और उत्तर जोड़ें।',
+  'sfaq.needBoth': 'कृपया प्रश्न और उत्तर दोनों लिखें।',
+  'sfaq.questionPlaceholder': 'जैसे, आपकी दुकान का समय क्या है?',
+  'sfaq.answerPlaceholder': 'जैसे, हम रोज़ सुबह 8 से रात 9 बजे तक खुले रहते हैं।',
+  'csfaq.title': 'आपकी दुकानों के प्रश्न',
+  'csfaq.subtitle': 'आपकी दुकानों द्वारा साझा किए गए जवाब — समय, डिलीवरी, वापसी और अधिक।',
+  'csfaq.empty': 'आपकी दुकानों ने अभी कोई प्रश्न नहीं जोड़ा है।',
+};
+const SFAQ = {
+  en: SFAQ_EN,
+  hi: SFAQ_HI,
+  ta: SFAQ_EN,
+  te: SFAQ_EN,
+  kn: SFAQ_EN,
+  ml: SFAQ_EN,
+  ur: SFAQ_EN,
+};
+for (const code of Object.keys(SFAQ)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], SFAQ[code]);
+}
+
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
 // the other languages' wording here, so strip it from their strings — English
 // keeps it and receives 's'/'' at call time; every other language ignores the
