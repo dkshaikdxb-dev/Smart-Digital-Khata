@@ -15,7 +15,11 @@ export default function CustomerLangGate({ onDone }) {
     onDone();
   }
   return (
-    <div className="cpwa-langgate" role="dialog" aria-modal="true" aria-label="Choose language">
+    // The `cpwa` class is REQUIRED here: this gate is mounted in _app.js OUTSIDE
+    // the page's .cpwa wrapper, and its styles use the .cpwa-scoped theme tokens
+    // (--c-bg etc.). Without it, --c-bg is undefined → a transparent overlay that
+    // lets the page behind bleed through. `cpwa` also keeps it light/dark aware.
+    <div className="cpwa cpwa-langgate" role="dialog" aria-modal="true" aria-label="Choose language">
       <div className="cpwa-langgate-card">
         <div className="cpwa-langgate-ico" aria-hidden="true">🌐</div>
         <h1 className="cpwa-langgate-title">
