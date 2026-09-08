@@ -204,6 +204,37 @@ th { color: var(--muted); font-weight: 600; }
    little top rule to separate the two axes. */
 .cpwa-theme-group { list-style: none; margin: 0; padding: 0; }
 .cpwa-theme-menu-title-2 { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--c-border); }
+
+/* Consumer location picker (LOC1): a chip trigger + a small popover sheet, all
+   from theme tokens so it works in Light/Dark/Warm and standard/gaon, and
+   RTL-safe for Urdu (logical properties + flex). */
+.cpwa-loc-picker { position: relative; flex: 0 1 auto; min-width: 0; }
+.cpwa-loc-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 132px;
+  height: 34px; padding: 0 10px; border-radius: 8px;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); font-size: 13px; font-weight: 600;
+}
+.cpwa-loc-chip:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+.cpwa-loc-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cpwa-loc-sheet {
+  position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 40;
+  width: 240px; max-width: calc(100vw - 32px); padding: 12px;
+  background: var(--c-surface); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); border-radius: 12px;
+  box-shadow: 0 8px 24px var(--c-overlay);
+}
+.cpwa-loc-sheet-title {
+  padding: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--c-muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.cpwa-loc-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.cpwa-loc-field span { font-size: 12px; font-weight: 600; color: var(--c-muted); }
+.cpwa-loc-field input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--c-border-strong); }
+.cpwa-loc-detect { width: 100%; margin-bottom: 10px; font-size: 13px; }
+.cpwa-loc-detect:disabled { opacity: .6; }
+.cpwa-loc-actions { display: flex; gap: 8px; }
+.cpwa-loc-actions button { flex: 1; }
 /* Layout options use a small token-drawn glyph (rows vs. tiles) in place of the
    colour swatch, so the Layout axis reads as structural, not chromatic. */
 .cpwa-layout-ico {

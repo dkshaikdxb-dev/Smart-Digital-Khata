@@ -237,7 +237,7 @@ describe('GET /public/shops', () => {
     // Minimal, non-sensitive fields only; no distance without lat/lng.
     // Fulfillment badge fields added: offers_pickup + offers_delivery + delivery_fee.
     expect(Object.keys(a).sort()).toEqual(
-      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'offers_pickup', 'product_count']
+      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'offers_pickup', 'pincode', 'product_count', 'village']
     );
     expect(a.offers_pickup).toBe(true);
     expect(a.offers_delivery).toBe(false);

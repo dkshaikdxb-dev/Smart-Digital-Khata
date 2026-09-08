@@ -38,6 +38,16 @@ const orderIdSchema = Joi.object({
   id: Joi.string().uuid().required(),
 });
 
+// Consumer location (LOC1). Each field optional; town/village trimmed + capped;
+// pincode is 4–6 digits or empty. '' / null clears a field.
+const locationSchema = Joi.object({
+  town: Joi.string().trim().allow('', null).max(120),
+  village: Joi.string().trim().allow('', null).max(120),
+  pincode: Joi.string().pattern(/^[0-9]{4,6}$/).allow('', null),
+}).messages({
+  'string.pattern.base': 'Pincode must be 4 to 6 digits',
+});
+
 // Statement range/format. shop_id optional (omitted → all-shops combined).
 const statementQuerySchema = Joi.object({
   shop_id: Joi.string().uuid(),
@@ -48,6 +58,9 @@ const statementQuerySchema = Joi.object({
 
 // Every /my endpoint is scoped to the authenticated customer's phone.
 router.use(customerAuth());
+
+router.get('/location', asyncHandler(ctrl.getLocation));
+router.put('/location', validate(locationSchema), asyncHandler(ctrl.putLocation));
 
 router.get('/khata', asyncHandler(ctrl.khata));
 router.get('/shop-faqs', asyncHandler(ctrl.shopFaqs));

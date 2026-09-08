@@ -97,7 +97,7 @@ exports.listShops = async (req, res) => {
   const limitIdx = `$${params.length}`;
 
   const r = await query(
-    `SELECT s.id, ${nameSelect} AS name, s.city, s.area,
+    `SELECT s.id, ${nameSelect} AS name, s.city, s.area, s.village, s.pincode,
             s.offers_pickup, s.offers_delivery, s.delivery_fee,
             (SELECT COUNT(*) FROM products p
               WHERE p.shop_id = s.id AND p.is_active = true)::int AS product_count,
@@ -117,6 +117,10 @@ exports.listShops = async (req, res) => {
       name: row.name,
       city: row.city,
       area: row.area,
+      // Location foundation (LOC1): village/PIN so a nearby-shop lookup can seed
+      // the consumer location picker at the village/PIN granularity.
+      village: row.village,
+      pincode: row.pincode,
       product_count: row.product_count,
       // Fulfillment badges for the directory (delivery_fee in paise).
       offers_pickup: row.offers_pickup,
