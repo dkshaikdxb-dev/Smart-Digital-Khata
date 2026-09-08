@@ -46,7 +46,10 @@ export default function ShopCatalog() {
       setLoading(true);
       setError('');
       try {
-        const r = await publicFetch(`/api/public/shops/${shopId}`);
+        // Pass ?lang so getShop localizes product names (catalog_i18n) and
+        // returns category_labels — without it the backend defaults to English.
+        const q = lang ? `?lang=${encodeURIComponent(lang)}` : '';
+        const r = await publicFetch(`/api/public/shops/${shopId}${q}`);
         const s = r.shop || r;
         if (cancelled) return;
         setShop(s);
@@ -59,7 +62,7 @@ export default function ShopCatalog() {
       }
     })();
     return () => { cancelled = true; };
-  }, [shopId]);
+  }, [shopId, lang]);
 
   function persist(nextCart) {
     setCart(nextCart);
