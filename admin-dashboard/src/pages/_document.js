@@ -11,7 +11,7 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='light'||t==='dark'||t==='gaon'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();",
           }}
         />
         <meta name="application-name" content="Smart Digital Khata" />
