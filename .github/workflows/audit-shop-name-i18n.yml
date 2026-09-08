@@ -1,0 +1,31 @@
+name: Audit shop-name translations
+
+# Manual only. READ-ONLY diagnostic: prints every shop's English name and its
+# stored shop_name_i18n rows (lang, source, needs_review, native name) to the
+# job log, so the operator can eyeball the machine-generated native names and
+# spot proper-noun renderings that read poorly. Runs only SELECTs — it never
+# writes. Shop names are public discovery data, so this is not sensitive.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: audit-shop-name-i18n-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Audit shop-name translations on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            docker compose exec -T backend npm run audit:shop-name-i18n

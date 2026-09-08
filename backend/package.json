@@ -16,6 +16,7 @@
     "enrich:catalog-i18n": "node src/utils/enrich-catalog-i18n.js",
     "import:i18n": "node src/utils/import-i18n-overrides.js",
     "backfill:shop-name-i18n": "node src/utils/backfill-shop-name-i18n.js",
+    "audit:shop-name-i18n": "node src/utils/audit-shop-name-i18n.js",
     "refresh:search-text": "node src/utils/refresh-search-text.js",
     "test": "jest --passWithNoTests"
   },
