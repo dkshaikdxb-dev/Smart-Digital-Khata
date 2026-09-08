@@ -6928,5 +6928,3605 @@
         "description": "چکی میں پسا ہوا سالم گندم کا آٹا"
       }
     }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Aluminium Foil",
+    "translations": {
+      "hi": {
+        "name": "एल्युमिनियम फॉयल",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "அலுமினியம் ஃபாயில்",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      },
+      "te": {
+        "name": "అల్యూమినియం ఫాయిల్",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಲ್ಯೂಮಿನಿಯಂ ಫಾಯಿಲ್",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "അലുമിനിയം ഫോയിൽ",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایلومینیم فوائل",
+        "aliases": "aluminium foil",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Baking Powder",
+    "translations": {
+      "hi": {
+        "name": "बेकिंग पाउडर",
+        "aliases": "baking powder",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேக்கிங் பவுடர்",
+        "aliases": "baking powder",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బేకింగ్ పౌడర్",
+        "aliases": "baking powder",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೇಕಿಂಗ್ ಪೌಡರ್",
+        "aliases": "baking powder",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബേക്കിംഗ് പൗഡർ",
+        "aliases": "baking powder",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیکنگ پاؤڈر",
+        "aliases": "baking powder",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Baking Soda",
+    "translations": {
+      "hi": {
+        "name": "बेकिंग सोडा",
+        "aliases": "baking soda mitha",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேக்கிங் சோடா",
+        "aliases": "baking soda",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బేకింగ్ సోడా",
+        "aliases": "baking soda",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೇಕಿಂಗ್ ಸೋಡಾ",
+        "aliases": "baking soda",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബേക്കിംഗ് സോഡ",
+        "aliases": "baking soda",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیکنگ سوڈا",
+        "aliases": "baking soda",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Barbecue Sauce",
+    "translations": {
+      "hi": {
+        "name": "बारबेक्यू सॉस",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பார்பிக்யூ சாஸ்",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బార్బెక్యూ సాస్",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾರ್ಬೆಕ್ಯೂ ಸಾಸ್",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാർബിക്യൂ സോസ്",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "باربی کیو ساس",
+        "aliases": "barbecue sauce bbq",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bathroom Cleaner",
+    "translations": {
+      "hi": {
+        "name": "बाथरूम क्लीनर",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாத்ரூம் கிளீனர்",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాత్రూమ్ క్లీనర్",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾತ್‌ರೂಮ್ ಕ್ಲೀನರ್",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാത്ത്റൂം ക്ലീനർ",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "باتھ روم کلینر",
+        "aliases": "bathroom cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Bleach",
+    "translations": {
+      "hi": {
+        "name": "ब्लीच",
+        "aliases": "bleach",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிளீச்",
+        "aliases": "bleach",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్లీచ్",
+        "aliases": "bleach",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ಲೀಚ್",
+        "aliases": "bleach",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്ലീച്ച്",
+        "aliases": "bleach",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بلیچ",
+        "aliases": "bleach",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Body Wash",
+    "translations": {
+      "hi": {
+        "name": "बॉडी वॉश",
+        "aliases": "body wash",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாடி வாஷ்",
+        "aliases": "body wash",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాడీ వాష్",
+        "aliases": "body wash",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾಡಿ ವಾಶ್",
+        "aliases": "body wash",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബോഡി വാഷ്",
+        "aliases": "body wash",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "باڈی واش",
+        "aliases": "body wash",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Broccoli",
+    "translations": {
+      "hi": {
+        "name": "ब्रोकली",
+        "aliases": "broccoli",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ப்ரோக்கோலி",
+        "aliases": "broccoli",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్రోకలీ",
+        "aliases": "broccoli",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ರೊಕೊಲಿ",
+        "aliases": "broccoli",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്രോക്കോളി",
+        "aliases": "broccoli",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بروکلی",
+        "aliases": "broccoli",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Brown Rice",
+    "translations": {
+      "hi": {
+        "name": "ब्राउन चावल",
+        "aliases": "brown rice chawal",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிரவுன் அரிசி",
+        "aliases": "brown rice arisi",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్రౌన్ రైస్",
+        "aliases": "brown rice biyyam",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ರೌನ್ ಅಕ್ಕಿ",
+        "aliases": "brown rice akki",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്രൗൺ റൈസ്",
+        "aliases": "brown rice ari",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "براؤن چاول",
+        "aliases": "brown rice chawal",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Butter Paper",
+    "translations": {
+      "hi": {
+        "name": "बटर पेपर",
+        "aliases": "butter paper",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பட்டர் பேப்பர்",
+        "aliases": "butter paper",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బటర్ పేపర్",
+        "aliases": "butter paper",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಟರ್ ಪೇಪರ್",
+        "aliases": "butter paper",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബട്ടർ പേപ്പർ",
+        "aliases": "butter paper",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بٹر پیپر",
+        "aliases": "butter paper",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cheese Slices",
+    "translations": {
+      "hi": {
+        "name": "चीज़ स्लाइस",
+        "aliases": "cheese slices",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சீஸ் ஸ்லைஸ்",
+        "aliases": "cheese slices",
+        "needs_review": true
+      },
+      "te": {
+        "name": "చీజ్ స్లైసెస్",
+        "aliases": "cheese slices",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಚೀಸ್ ಸ್ಲೈಸ್",
+        "aliases": "cheese slices",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചീസ് സ്ലൈസ്",
+        "aliases": "cheese slices",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "چیز سلائس",
+        "aliases": "cheese slices",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chia Seeds",
+    "translations": {
+      "hi": {
+        "name": "चिया बीज",
+        "aliases": "chia seeds beej",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சியா விதைகள்",
+        "aliases": "chia seeds vidhai",
+        "needs_review": true
+      },
+      "te": {
+        "name": "చియా గింజలు",
+        "aliases": "chia seeds ginjalu",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಚಿಯಾ ಬೀಜಗಳು",
+        "aliases": "chia seeds beeja",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചിയ വിത്തുകൾ",
+        "aliases": "chia seeds vithu",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "چیا سیڈز",
+        "aliases": "chia seeds",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Chilli Garlic Sauce",
+    "translations": {
+      "hi": {
+        "name": "चिली गार्लिक सॉस",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சில்லி கார்லிக் சாஸ்",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "చిల్లీ గార్లిక్ సాస్",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಚಿಲ್ಲಿ ಗಾರ್ಲಿಕ್ ಸಾಸ್",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചില്ലി ഗാർലിക് സോസ്",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "چلی گارلک ساس",
+        "aliases": "chilli garlic sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cling Film",
+    "translations": {
+      "hi": {
+        "name": "क्लिंग फिल्म",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிளிங் ஃபிலிம்",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్లింగ్ ఫిల్మ్",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ಲಿಂಗ್ ಫಿಲ್ಮ್",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്ലിംഗ് ഫിലിം",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کلنگ فلم",
+        "aliases": "cling film wrap",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cockroach Killer",
+    "translations": {
+      "hi": {
+        "name": "कॉकरोच किलर",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கரப்பான் பூச்சி கொல்லி",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బొద్దింక కిల్లర్",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಜಿರಳೆ ನಾಶಕ",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാറ്റ കൊല്ലി",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لال بیگ مار",
+        "aliases": "cockroach killer",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cocoa Powder",
+    "translations": {
+      "hi": {
+        "name": "कोको पाउडर",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோகோ பவுடர்",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కోకో పౌడర్",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೋಕೋ ಪೌಡರ್",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കൊക്കോ പൗഡർ",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کوکو پاؤڈر",
+        "aliases": "cocoa powder",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Conditioner",
+    "translations": {
+      "hi": {
+        "name": "कंडीशनर",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கண்டிஷனர்",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కండిషనర్",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಂಡಿಷನರ್",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കണ്ടീഷണർ",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کنڈیشنر",
+        "aliases": "conditioner hair",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Corn Flakes",
+    "translations": {
+      "hi": {
+        "name": "कॉर्न फ्लेक्स",
+        "aliases": "corn flakes",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கார்ன் ஃப்ளேக்ஸ்",
+        "aliases": "corn flakes",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కార్న్ ఫ్లేక్స్",
+        "aliases": "corn flakes",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಾರ್ನ್ ಫ್ಲೇಕ್ಸ್",
+        "aliases": "corn flakes",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോൺ ഫ്ലേക്സ്",
+        "aliases": "corn flakes",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کارن فلیکس",
+        "aliases": "corn flakes",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Cream Biscuits",
+    "translations": {
+      "hi": {
+        "name": "क्रीम बिस्किट",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிரீம் பிஸ்கட்",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్రీమ్ బిస్కెట్",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ರೀಮ್ ಬಿಸ್ಕೆಟ್",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്രീം ബിസ്ക്കറ്റ്",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کریم بسکٹ",
+        "aliases": "cream biscuits",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Custard Powder",
+    "translations": {
+      "hi": {
+        "name": "कस्टर्ड पाउडर",
+        "aliases": "custard powder",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கஸ்டர்ட் பவுடர்",
+        "aliases": "custard powder",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కస్టర్డ్ పౌడర్",
+        "aliases": "custard powder",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಸ್ಟರ್ಡ್ ಪೌಡರ್",
+        "aliases": "custard powder",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കസ്റ്റഡ് പൗഡർ",
+        "aliases": "custard powder",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کسٹرڈ پاؤڈر",
+        "aliases": "custard powder",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Deodorant",
+    "translations": {
+      "hi": {
+        "name": "डियोड्रेंट",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டியோடரண்ட்",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డియోడరెంట్",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಯೋಡರೆಂಟ್",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിയോഡറന്റ്",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈیوڈرنٹ",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dishwash Bar",
+    "translations": {
+      "hi": {
+        "name": "डिशवॉश बार",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிஷ்வாஷ் பார்",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డిష్‌వాష్ బార్",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಶ್‌ವಾಶ್ ಬಾರ್",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിഷ്വാഷ് ബാർ",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈش واش بار",
+        "aliases": "dishwash bar",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dishwash Liquid",
+    "translations": {
+      "hi": {
+        "name": "डिशवॉश लिक्विड",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிஷ்வாஷ் லிக்விட்",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డిష్‌వాష్ లిక్విడ్",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಶ್‌ವಾಶ್ ಲಿಕ್ವಿಡ್",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിഷ്വാഷ് ലിക്വിഡ്",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈش واش لیکوئڈ",
+        "aliases": "dishwash liquid",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dishwasher Tablets",
+    "translations": {
+      "hi": {
+        "name": "डिशवॉशर टैबलेट",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிஷ்வாஷர் டேப்லெட்",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డిష్‌వాషర్ టాబ్లెట్స్",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಶ್‌ವಾಶರ್ ಟ್ಯಾಬ್ಲೆಟ್",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിഷ്വാഷർ ടാബ്ലറ്റ്",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈش واشر ٹیبلٹ",
+        "aliases": "dishwasher tablets",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Disinfectant",
+    "translations": {
+      "hi": {
+        "name": "डिसइंफेक्टेंट",
+        "aliases": "disinfectant germ",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிருமிநாசினி",
+        "aliases": "disinfectant kirumi",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డిస్‌ఇన్ఫెక్టెంట్",
+        "aliases": "disinfectant",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೋಂಕುನಿವಾರಕ",
+        "aliases": "disinfectant",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "അണുനാശിനി",
+        "aliases": "disinfectant",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "جراثیم کش",
+        "aliases": "disinfectant",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Drain Cleaner",
+    "translations": {
+      "hi": {
+        "name": "ड्रेन क्लीनर",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிரெயின் கிளீனர்",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డ్రెయిన్ క్లీనర్",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡ್ರೈನ್ ಕ್ಲೀನರ್",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡ്രെയിൻ ക്ലീനർ",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈرین کلینر",
+        "aliases": "drain cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Dustpan",
+    "translations": {
+      "hi": {
+        "name": "डस्टपैन",
+        "aliases": "dustpan",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குப்பை அள்ளி",
+        "aliases": "dustpan kuppai",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డస్ట్‌ప్యాన్",
+        "aliases": "dustpan",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಸ ಬಾಚುವ ಪಾತ್ರೆ",
+        "aliases": "dustpan kasa",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചവറ് വാരി",
+        "aliases": "dustpan",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کوڑا اٹھانے والا",
+        "aliases": "dustpan",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Fabric Softener",
+    "translations": {
+      "hi": {
+        "name": "फैब्रिक सॉफ्टनर",
+        "aliases": "fabric softener",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபேப்ரிக் சாஃப்ட்னர்",
+        "aliases": "fabric softener",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్యాబ్రిక్ సాఫ్ట్‌నర్",
+        "aliases": "fabric softener",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ಯಾಬ್ರಿಕ್ ಸಾಫ್ಟ್‌ನರ್",
+        "aliases": "fabric softener",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫാബ്രിക് സോഫ്റ്റ്നർ",
+        "aliases": "fabric softener",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فیبرک سافٹنر",
+        "aliases": "fabric softener",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Face Wash",
+    "translations": {
+      "hi": {
+        "name": "फेस वॉश",
+        "aliases": "face wash",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபேஸ் வாஷ்",
+        "aliases": "face wash",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫేస్ వాష్",
+        "aliases": "face wash",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫೇಸ್ ವಾಶ್",
+        "aliases": "face wash",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫേസ് വാഷ്",
+        "aliases": "face wash",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فیس واش",
+        "aliases": "face wash",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Facial Tissue",
+    "translations": {
+      "hi": {
+        "name": "फेशियल टिश्यू",
+        "aliases": "facial tissue",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபேஷியல் டிஷ்யூ",
+        "aliases": "facial tissue",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫేషియల్ టిష్యూ",
+        "aliases": "facial tissue",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫೇಶಿಯಲ್ ಟಿಶ್ಯೂ",
+        "aliases": "facial tissue",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫേഷ്യൽ ടിഷ്യൂ",
+        "aliases": "facial tissue",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فیشل ٹشو",
+        "aliases": "facial tissue",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Floor Cleaner",
+    "translations": {
+      "hi": {
+        "name": "फ्लोर क्लीनर",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ளோர் கிளீனர்",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్లోర్ క్లీనర్",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ಲೋರ್ ಕ್ಲೀನರ್",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്ലോർ ക്ലീനർ",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فلور کلینر",
+        "aliases": "floor cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "French Beans",
+    "translations": {
+      "hi": {
+        "name": "फ्रेंच बीन्स",
+        "aliases": "french beans",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பீன்ஸ்",
+        "aliases": "french beans",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రెంచ్ బీన్స్",
+        "aliases": "french beans",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹುರುಳಿಕಾಯಿ",
+        "aliases": "french beans huruli",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രഞ്ച് ബീൻസ്",
+        "aliases": "french beans",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فرنچ بینز",
+        "aliases": "french beans",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Frozen French Fries",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न फ्रेंच फ्राइज़",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன் ஃப்ரெஞ்ச் ஃப்ரைஸ்",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్ ఫ్రెంచ్ ఫ్రైస్",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್ ಫ್ರೆಂಚ್ ಫ್ರೈಸ್",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ ഫ്രഞ്ച് ഫ്രൈസ്",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن فرنچ فرائز",
+        "aliases": "frozen french fries",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Frozen Green Peas",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न हरी मटर",
+        "aliases": "frozen green peas matar",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன் பச்சை பட்டாணி",
+        "aliases": "frozen green peas",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్ పచ్చి బఠానీలు",
+        "aliases": "frozen green peas batani",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್ ಹಸಿ ಬಟಾಣಿ",
+        "aliases": "frozen green peas batani",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ പച്ച പട്ടാണി",
+        "aliases": "frozen green peas",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن ہری مٹر",
+        "aliases": "frozen green peas matar",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Frozen Mixed Vegetables",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न मिक्स सब्जियां",
+        "aliases": "frozen mixed vegetables sabzi",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன் கலவை காய்கறிகள்",
+        "aliases": "frozen mixed vegetables",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్ మిక్స్‌డ్ కూరగాయలు",
+        "aliases": "frozen mixed vegetables kuragaya",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್ ಮಿಶ್ರ ತರಕಾರಿಗಳು",
+        "aliases": "frozen mixed vegetables tarakari",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ മിക്സഡ് പച്ചക്കറികൾ",
+        "aliases": "frozen mixed vegetables",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن مکس سبزیاں",
+        "aliases": "frozen mixed vegetables sabzi",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Frozen Paratha",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न पराठा",
+        "aliases": "frozen paratha",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன் பராத்தா",
+        "aliases": "frozen paratha",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్ పరాఠా",
+        "aliases": "frozen paratha",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್ ಪರೋಟಾ",
+        "aliases": "frozen parota",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ പൊറോട്ട",
+        "aliases": "frozen porotta",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن پراٹھا",
+        "aliases": "frozen paratha",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Frozen Sweet Corn",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न स्वीट कॉर्न",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன் ஸ்வீட் கார்ன்",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్ స్వీట్ కార్న్",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್ ಸ್ವೀಟ್ ಕಾರ್ನ್",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ സ്വീറ്റ് കോൺ",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن سویٹ کارن",
+        "aliases": "frozen sweet corn",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Glass Cleaner",
+    "translations": {
+      "hi": {
+        "name": "ग्लास क्लीनर",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிளாஸ் கிளீனர்",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గ్లాస్ క్లీనర్",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗ್ಲಾಸ್ ಕ್ಲೀನರ್",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗ്ലാസ് ക്ലീനർ",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گلاس کلینر",
+        "aliases": "glass cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Granola",
+    "translations": {
+      "hi": {
+        "name": "ग्रेनोला",
+        "aliases": "granola",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிரனோலா",
+        "aliases": "granola",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గ్రనోలా",
+        "aliases": "granola",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗ್ರನೋಲಾ",
+        "aliases": "granola",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗ്രനോള",
+        "aliases": "granola",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گرینولا",
+        "aliases": "granola",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Green Chilli Sauce",
+    "translations": {
+      "hi": {
+        "name": "ग्रीन चिली सॉस",
+        "aliases": "green chilli sauce hari mirch",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பச்சை மிளகாய் சாஸ்",
+        "aliases": "green chilli sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గ్రీన్ చిల్లీ సాస్",
+        "aliases": "green chilli sauce pachi mirchi",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಸಿ ಮೆಣಸಿನ ಸಾಸ್",
+        "aliases": "green chilli sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പച്ചമുളക് സോസ്",
+        "aliases": "green chilli sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہری مرچ ساس",
+        "aliases": "green chilli sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Hand Sanitizer",
+    "translations": {
+      "hi": {
+        "name": "हैंड सैनिटाइज़र",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹேண்ட் சானிடைசர்",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హ్యాండ్ శానిటైజర్",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹ್ಯಾಂಡ್ ಸ್ಯಾನಿಟೈಸರ್",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹാൻഡ് സാനിറ്റൈസർ",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہینڈ سینیٹائزر",
+        "aliases": "hand sanitizer",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Handwash",
+    "translations": {
+      "hi": {
+        "name": "हैंडवॉश",
+        "aliases": "handwash",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹேண்ட்வாஷ்",
+        "aliases": "handwash",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హ్యాండ్‌వాష్",
+        "aliases": "handwash",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹ್ಯಾಂಡ್‌ವಾಶ್",
+        "aliases": "handwash",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹാൻഡ്‌വാഷ്",
+        "aliases": "handwash",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہینڈ واش",
+        "aliases": "handwash",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Health Drink",
+    "translations": {
+      "hi": {
+        "name": "हेल्थ ड्रिंक",
+        "aliases": "health drink",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹெல்த் ட்ரிங்க்",
+        "aliases": "health drink",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హెల్త్ డ్రింక్",
+        "aliases": "health drink",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹೆಲ್ತ್ ಡ್ರಿಂಕ್",
+        "aliases": "health drink",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹെൽത്ത് ഡ്രിങ്ക്",
+        "aliases": "health drink",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہیلتھ ڈرنک",
+        "aliases": "health drink",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Instant Noodles",
+    "translations": {
+      "hi": {
+        "name": "इंस्टेंट नूडल्स",
+        "aliases": "instant noodles",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "இன்ஸ்டன்ட் நூடுல்ஸ்",
+        "aliases": "instant noodles",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇన్‌స్టంట్ నూడుల్స్",
+        "aliases": "instant noodles",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಇನ್‌ಸ್ಟಂಟ್ ನೂಡಲ್ಸ್",
+        "aliases": "instant noodles",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഇൻസ്റ്റന്റ് നൂഡിൽസ്",
+        "aliases": "instant noodles",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "انسٹنٹ نوڈلز",
+        "aliases": "instant noodles",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Instant Soup",
+    "translations": {
+      "hi": {
+        "name": "इंस्टेंट सूप",
+        "aliases": "instant soup",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "இன்ஸ்டன்ட் சூப்",
+        "aliases": "instant soup",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇన్‌స్టంట్ సూప్",
+        "aliases": "instant soup",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಇನ್‌ಸ್ಟಂಟ್ ಸೂಪ್",
+        "aliases": "instant soup",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഇൻസ്റ്റന്റ് സൂപ്പ്",
+        "aliases": "instant soup",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "انسٹنٹ سوپ",
+        "aliases": "instant soup",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Jam",
+    "translations": {
+      "hi": {
+        "name": "जैम",
+        "aliases": "jam fruit",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஜாம்",
+        "aliases": "jam",
+        "needs_review": true
+      },
+      "te": {
+        "name": "జామ్",
+        "aliases": "jam",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಜಾಮ್",
+        "aliases": "jam",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ജാം",
+        "aliases": "jam",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "جیم",
+        "aliases": "jam",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kitchen Cleaner",
+    "translations": {
+      "hi": {
+        "name": "किचन क्लीनर",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிச்சன் கிளீனர்",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిచెన్ క్లీనర్",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಚನ್ ಕ್ಲೀನರ್",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിച്ചൻ ക്ലീനർ",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کچن کلینر",
+        "aliases": "kitchen cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kitchen King Masala",
+    "translations": {
+      "hi": {
+        "name": "किचन किंग मसाला",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிச்சன் கிங் மசாலா",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిచెన్ కింగ్ మసాలా",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಚನ್ ಕಿಂಗ್ ಮಸಾಲಾ",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിച്ചൻ കിംഗ് മസാല",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کچن کنگ مسالہ",
+        "aliases": "kitchen king masala",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kitchen Tissue",
+    "translations": {
+      "hi": {
+        "name": "किचन टिश्यू",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிச்சன் டிஷ்யூ",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిచెన్ టిష్యూ",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಚನ್ ಟಿಶ್ಯೂ",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിച്ചൻ ടിഷ്യൂ",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کچن ٹشو",
+        "aliases": "kitchen tissue",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Kitchen Towels",
+    "translations": {
+      "hi": {
+        "name": "किचन टॉवल",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிச்சன் டவல்",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిచెన్ టవల్స్",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಚನ್ ಟವೆಲ್",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിച്ചൻ ടവൽ",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کچن تولیہ",
+        "aliases": "kitchen towels",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Macaroni",
+    "translations": {
+      "hi": {
+        "name": "मैकरोनी",
+        "aliases": "macaroni",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மக்ரோனி",
+        "aliases": "macaroni",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మకరోనీ",
+        "aliases": "macaroni",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಕರೋನಿ",
+        "aliases": "macaroni",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മക്രോണി",
+        "aliases": "macaroni",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میکرونی",
+        "aliases": "macaroni",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Marie Biscuits",
+    "translations": {
+      "hi": {
+        "name": "मैरी बिस्किट",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மேரி பிஸ்கட்",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మేరీ బిస్కెట్",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೇರಿ ಬಿಸ್ಕೆಟ್",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മേരി ബിസ്ക്കറ്റ്",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میری بسکٹ",
+        "aliases": "marie biscuits",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mayonnaise",
+    "translations": {
+      "hi": {
+        "name": "मेयोनेज़",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மயோனைஸ்",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మయోన్నైస్",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಯೊನೈಸ್",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മയോണൈസ്",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میونیز",
+        "aliases": "mayonnaise mayo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Microfiber Cloth",
+    "translations": {
+      "hi": {
+        "name": "माइक्रोफाइबर कपड़ा",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மைக்ரோஃபைபர் துணி",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మైక్రోఫైబర్ క్లాత్",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೈಕ್ರೋಫೈಬರ್ ಬಟ್ಟೆ",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മൈക്രോഫൈബർ തുണി",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مائیکرو فائبر کپڑا",
+        "aliases": "microfiber cloth",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Millet Mix Flour",
+    "translations": {
+      "hi": {
+        "name": "मिलेट मिक्स आटा",
+        "aliases": "millet mix flour atta",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சிறுதானிய கலவை மாவு",
+        "aliases": "millet mix flour maavu",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మిల్లెట్ మిక్స్ పిండి",
+        "aliases": "millet mix flour pindi",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಿರಿಧಾನ್ಯ ಮಿಶ್ರ ಹಿಟ್ಟು",
+        "aliases": "millet mix flour hittu",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചെറുധാന്യ മിക്സ് പൊടി",
+        "aliases": "millet mix flour podi",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مِلٹ مکس آٹا",
+        "aliases": "millet mix flour atta",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Moisturizer",
+    "translations": {
+      "hi": {
+        "name": "मॉइस्चराइज़र",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மாய்ஸ்சரைசர்",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మాయిశ్చరైజర్",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಾಯಿಶ್ಚರೈಸರ್",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മോയ്സ്ചറൈസർ",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "موئسچرائزر",
+        "aliases": "moisturizer lotion",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mop Refill",
+    "translations": {
+      "hi": {
+        "name": "मॉप रिफिल",
+        "aliases": "mop refill",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மாப் ரீஃபில்",
+        "aliases": "mop refill",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మాప్ రీఫిల్",
+        "aliases": "mop refill",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಾಪ್ ರೀಫಿಲ್",
+        "aliases": "mop refill",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മോപ്പ് റീഫിൽ",
+        "aliases": "mop refill",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "موپ ری فل",
+        "aliases": "mop refill",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mosquito Liquid Refill",
+    "translations": {
+      "hi": {
+        "name": "मॉस्किटो लिक्विड रिफिल",
+        "aliases": "mosquito liquid refill",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கொசு விரட்டி லிக்விட் ரீஃபில்",
+        "aliases": "mosquito liquid refill kosu",
+        "needs_review": true
+      },
+      "te": {
+        "name": "దోమల లిక్విడ్ రీఫిల్",
+        "aliases": "mosquito liquid refill doma",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೊಳ್ಳೆ ಲಿಕ್ವಿಡ್ ರೀಫಿಲ್",
+        "aliases": "mosquito liquid refill solle",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കൊതുക് ലിക്വിഡ് റീഫിൽ",
+        "aliases": "mosquito liquid refill kothuku",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مچھر بھگاؤ لیکوئڈ ری فل",
+        "aliases": "mosquito liquid refill",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mosquito Spray",
+    "translations": {
+      "hi": {
+        "name": "मॉस्किटो स्प्रे",
+        "aliases": "mosquito spray",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கொசு ஸ்ப்ரே",
+        "aliases": "mosquito spray kosu",
+        "needs_review": true
+      },
+      "te": {
+        "name": "దోమల స్ప్రే",
+        "aliases": "mosquito spray doma",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೊಳ್ಳೆ ಸ್ಪ್ರೇ",
+        "aliases": "mosquito spray solle",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കൊതുക് സ്പ്രേ",
+        "aliases": "mosquito spray kothuku",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مچھر مار سپرے",
+        "aliases": "mosquito spray",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mouthwash",
+    "translations": {
+      "hi": {
+        "name": "माउथवॉश",
+        "aliases": "mouthwash",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மவுத்வாஷ்",
+        "aliases": "mouthwash",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మౌత్‌వాష్",
+        "aliases": "mouthwash",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೌತ್‌ವಾಶ್",
+        "aliases": "mouthwash",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മൗത്ത്‌വാഷ്",
+        "aliases": "mouthwash",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ماؤتھ واش",
+        "aliases": "mouthwash",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Muesli",
+    "translations": {
+      "hi": {
+        "name": "म्यूसली",
+        "aliases": "muesli",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மியூஸ்லி",
+        "aliases": "muesli",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మ్యూస్లీ",
+        "aliases": "muesli",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮ್ಯೂಸ್ಲಿ",
+        "aliases": "muesli",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മ്യൂസ്‌ലി",
+        "aliases": "muesli",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میوسلی",
+        "aliases": "muesli",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Mustard Sauce",
+    "translations": {
+      "hi": {
+        "name": "मस्टर्ड सॉस",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மஸ்டர்ட் சாஸ்",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మస్టర్డ్ సాస్",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಸ್ಟರ್ಡ್ ಸಾಸ್",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മസ്റ്റഡ് സോസ്",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مسٹرڈ ساس",
+        "aliases": "mustard sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Namkeen",
+    "translations": {
+      "hi": {
+        "name": "नमकीन",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நம்கீன்",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      },
+      "te": {
+        "name": "నంకీన్",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನಮ್‌ಕೀನ್",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "നംകീൻ",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نمکین",
+        "aliases": "namkeen snacks",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Paper Napkins",
+    "translations": {
+      "hi": {
+        "name": "पेपर नैपकिन",
+        "aliases": "paper napkins",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேப்பர் நாப்கின்",
+        "aliases": "paper napkins",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పేపర్ న్యాప్‌కిన్స్",
+        "aliases": "paper napkins",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೇಪರ್ ನ್ಯಾಪ್‌ಕಿನ್",
+        "aliases": "paper napkins",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പേപ്പർ നാപ്കിൻ",
+        "aliases": "paper napkins",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیپر نیپکن",
+        "aliases": "paper napkins",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Pasta Sauce",
+    "translations": {
+      "hi": {
+        "name": "पास्ता सॉस",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாஸ்தா சாஸ்",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పాస్తా సాస్",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಾಸ್ತಾ ಸಾಸ್",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാസ്ത സോസ്",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پاستا ساس",
+        "aliases": "pasta sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Peanut Butter",
+    "translations": {
+      "hi": {
+        "name": "पीनट बटर",
+        "aliases": "peanut butter mungfali",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பீனட் பட்டர்",
+        "aliases": "peanut butter",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పీనట్ బటర్",
+        "aliases": "peanut butter",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೀನಟ್ ಬಟರ್",
+        "aliases": "peanut butter",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പീനട്ട് ബട്ടർ",
+        "aliases": "peanut butter",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پینٹ بٹر",
+        "aliases": "peanut butter",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Penne Pasta",
+    "translations": {
+      "hi": {
+        "name": "पेने पास्ता",
+        "aliases": "penne pasta",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பென்னே பாஸ்தா",
+        "aliases": "penne pasta",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పెన్నే పాస్తా",
+        "aliases": "penne pasta",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೆನ್ನೆ ಪಾಸ್ತಾ",
+        "aliases": "penne pasta",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പെന്നെ പാസ്ത",
+        "aliases": "penne pasta",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پینے پاستا",
+        "aliases": "penne pasta",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Peri Peri Sauce",
+    "translations": {
+      "hi": {
+        "name": "पेरी पेरी सॉस",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பெரி பெரி சாஸ்",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పెరి పెరి సాస్",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೆರಿ ಪೆರಿ ಸಾಸ್",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പെരി പെരി സോസ്",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیری پیری ساس",
+        "aliases": "peri peri sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Pizza Sauce",
+    "translations": {
+      "hi": {
+        "name": "पिज़्ज़ा सॉस",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பீட்சா சாஸ்",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పిజ్జా సాస్",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಿಜ್ಜಾ ಸಾಸ್",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പിസ്സ സോസ്",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیزا ساس",
+        "aliases": "pizza sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Potato Chips",
+    "translations": {
+      "hi": {
+        "name": "आलू चिप्स",
+        "aliases": "potato chips aloo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "உருளைக்கிழங்கு சிப்ஸ்",
+        "aliases": "potato chips",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బంగాళాదుంప చిప్స్",
+        "aliases": "potato chips",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆಲೂಗಡ್ಡೆ ಚಿಪ್ಸ್",
+        "aliases": "potato chips aloo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഉരുളക്കിഴങ്ങ് ചിപ്സ്",
+        "aliases": "potato chips",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آلو چپس",
+        "aliases": "potato chips aloo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Red Chilli Sauce",
+    "translations": {
+      "hi": {
+        "name": "लाल मिर्च सॉस",
+        "aliases": "red chilli sauce lal mirch",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சிவப்பு மிளகாய் சாஸ்",
+        "aliases": "red chilli sauce",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎర్ర మిర్చి సాస్",
+        "aliases": "red chilli sauce erra mirchi",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೆಂಪು ಮೆಣಸಿನ ಸಾಸ್",
+        "aliases": "red chilli sauce",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചുവന്ന മുളക് സോസ്",
+        "aliases": "red chilli sauce",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لال مرچ ساس",
+        "aliases": "red chilli sauce lal mirch",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Rice Bran Oil",
+    "translations": {
+      "hi": {
+        "name": "राइस ब्रान ऑयल",
+        "aliases": "rice bran oil",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரைஸ் பிரான் எண்ணெய்",
+        "aliases": "rice bran oil ennai",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రైస్ బ్రాన్ ఆయిల్",
+        "aliases": "rice bran oil",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೈಸ್ ಬ್ರಾನ್ ಎಣ್ಣೆ",
+        "aliases": "rice bran oil enne",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റൈസ് ബ്രാൻ ഓയിൽ",
+        "aliases": "rice bran oil",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "رائس بران آئل",
+        "aliases": "rice bran oil",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Salt",
+    "translations": {
+      "hi": {
+        "name": "नमक",
+        "aliases": "namak salt",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "உப்பு",
+        "aliases": "uppu salt",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఉప్పు",
+        "aliases": "uppu salt",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಉಪ್ಪು",
+        "aliases": "uppu salt",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഉപ്പ്",
+        "aliases": "uppu salt",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نمک",
+        "aliases": "namak salt",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sanitary Pads",
+    "translations": {
+      "hi": {
+        "name": "सैनिटरी पैड",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சானிட்டரி பேட்",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      },
+      "te": {
+        "name": "శానిటరీ ప్యాడ్స్",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಯಾನಿಟರಿ ಪ್ಯಾಡ್",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സാനിറ്ററി പാഡ്",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سینٹری پیڈ",
+        "aliases": "sanitary pads",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Schezwan Chutney",
+    "translations": {
+      "hi": {
+        "name": "शेज़वान चटनी",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "செஷ்வான் சட்னி",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షెజ్వాన్ చట్నీ",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶೆಜ್ವಾನ್ ಚಟ್ನಿ",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷെസ്വാൻ ചട്ണി",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "شیزوان چٹنی",
+        "aliases": "schezwan chutney",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Scrub Pad",
+    "translations": {
+      "hi": {
+        "name": "स्क्रब पैड",
+        "aliases": "scrub pad",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்க்ரப் பேட்",
+        "aliases": "scrub pad",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్క్రబ్ ప్యాడ్",
+        "aliases": "scrub pad",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಕ್ರಬ್ ಪ್ಯಾಡ್",
+        "aliases": "scrub pad",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്ക്രബ് പാഡ്",
+        "aliases": "scrub pad",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسکرب پیڈ",
+        "aliases": "scrub pad",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Soy Sauce",
+    "translations": {
+      "hi": {
+        "name": "सोया सॉस",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சோயா சாஸ்",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సోయా సాస్",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೋಯಾ ಸಾಸ್",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സോയ സോസ്",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سویا ساس",
+        "aliases": "soy sauce soya",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Soya Chunks",
+    "translations": {
+      "hi": {
+        "name": "सोया चंक्स",
+        "aliases": "soya chunks badi",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சோயா சங்க்ஸ்",
+        "aliases": "soya chunks",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సోయా చంక్స్",
+        "aliases": "soya chunks",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೋಯಾ ಚಂಕ್ಸ್",
+        "aliases": "soya chunks",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സോയ ചങ്ക്സ്",
+        "aliases": "soya chunks",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سویا چنکس",
+        "aliases": "soya chunks",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sponge",
+    "translations": {
+      "hi": {
+        "name": "स्पंज",
+        "aliases": "sponge",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்பான்ஜ்",
+        "aliases": "sponge",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్పాంజ్",
+        "aliases": "sponge",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಪಂಜ್",
+        "aliases": "sponge",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്പോഞ്ച്",
+        "aliases": "sponge",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسپنج",
+        "aliases": "sponge",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Squash",
+    "translations": {
+      "hi": {
+        "name": "स्क्वैश",
+        "aliases": "squash sharbat",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்குவாஷ்",
+        "aliases": "squash",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్క్వాష్",
+        "aliases": "squash",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಕ್ವಾಶ್",
+        "aliases": "squash",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്ക്വാഷ്",
+        "aliases": "squash",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسکواش",
+        "aliases": "squash sharbat",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Stain Remover",
+    "translations": {
+      "hi": {
+        "name": "स्टेन रिमूवर",
+        "aliases": "stain remover daag",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கறை நீக்கி",
+        "aliases": "stain remover karai",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మరక తొలగించే",
+        "aliases": "stain remover maraka",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಲೆ ತೆಗೆಯುವ",
+        "aliases": "stain remover kale",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കറ നീക്കി",
+        "aliases": "stain remover kara",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "داغ ختم کرنے والا",
+        "aliases": "stain remover daag",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Steel Scrubber",
+    "translations": {
+      "hi": {
+        "name": "स्टील स्क्रबर",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்டீல் ஸ்க்ரப்பர்",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్టీల్ స్క్రబ్బర్",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಟೀಲ್ ಸ್ಕ್ರಬ್ಬರ್",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്റ്റീൽ സ്ക്രബ്ബർ",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسٹیل اسکربر",
+        "aliases": "steel scrubber",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Sunscreen",
+    "translations": {
+      "hi": {
+        "name": "सनस्क्रीन",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சன்ஸ்கிரீன்",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సన్‌స్క్రీన్",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸನ್‌ಸ್ಕ್ರೀನ್",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സൺസ്ക്രീൻ",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سن اسکرین",
+        "aliases": "sunscreen spf",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Tandoori Mayo",
+    "translations": {
+      "hi": {
+        "name": "तंदूरी मेयो",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தந்தூரி மயோ",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "తందూరీ మయో",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ತಂದೂರಿ ಮಯೊ",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "തന്തൂരി മയോ",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "تندوری میو",
+        "aliases": "tandoori mayo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toilet Cleaner",
+    "translations": {
+      "hi": {
+        "name": "टॉयलेट क्लीनर",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாய்லெட் கிளீனர்",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాయిలెట్ క్లీనర్",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಯ್ಲೆಟ್ ಕ್ಲೀನರ್",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടോയ്‌ലറ്റ് ക്ലീനർ",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹوائلٹ کلینر",
+        "aliases": "toilet cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Toilet Tissue",
+    "translations": {
+      "hi": {
+        "name": "टॉयलेट टिश्यू",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாய்லெட் டிஷ்யூ",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాయిలెట్ టిష్యూ",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಯ್ಲೆಟ್ ಟಿಶ್ಯೂ",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടോയ്‌ലറ്റ് ടിഷ്യൂ",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹوائلٹ ٹشو",
+        "aliases": "toilet tissue roll",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Tomato Ketchup",
+    "translations": {
+      "hi": {
+        "name": "टोमैटो केचप",
+        "aliases": "tomato ketchup sauce",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தக்காளி கெட்ச்அப்",
+        "aliases": "tomato ketchup",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టొమాటో కెచప్",
+        "aliases": "tomato ketchup",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟೊಮ್ಯಾಟೊ ಕೆಚಪ್",
+        "aliases": "tomato ketchup",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "തക്കാളി കെച്ചപ്പ്",
+        "aliases": "tomato ketchup",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹماٹو کیچپ",
+        "aliases": "tomato ketchup sauce",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Vanilla Essence",
+    "translations": {
+      "hi": {
+        "name": "वनीला एसेंस",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வெனிலா எசன்ஸ்",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వెనిల్లా ఎసెన్స్",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವೆನಿಲಾ ಎಸೆನ್ಸ್",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വാനില എസൻസ്",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ونیلا ایسنس",
+        "aliases": "vanilla essence",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Washing Machine Cleaner",
+    "translations": {
+      "hi": {
+        "name": "वॉशिंग मशीन क्लीनर",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வாஷிங் மெஷின் கிளீனர்",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వాషింగ్ మెషిన్ క్లీనర్",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಾಶಿಂಗ್ ಮೆಶಿನ್ ಕ್ಲೀನರ್",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വാഷിംഗ് മെഷീൻ ക്ലീനർ",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "واشنگ مشین کلینر",
+        "aliases": "washing machine cleaner",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "product",
+    "term_en": "Zip Lock Bags",
+    "translations": {
+      "hi": {
+        "name": "ज़िप लॉक बैग",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஜிப் லாக் பேக்",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      },
+      "te": {
+        "name": "జిప్ లాక్ బ్యాగ్స్",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಜಿಪ್ ಲಾಕ್ ಬ್ಯಾಗ್",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സിപ് ലോക്ക് ബാഗ്",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "زپ لاک بیگ",
+        "aliases": "zip lock bags ziplock",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Baking",
+    "translations": {
+      "hi": {
+        "name": "बेकिंग",
+        "aliases": "baking",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேக்கிங்",
+        "aliases": "baking",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బేకింగ్",
+        "aliases": "baking",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೇಕಿಂಗ್",
+        "aliases": "baking",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബേക്കിംഗ്",
+        "aliases": "baking",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیکنگ",
+        "aliases": "baking",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Bath & Body",
+    "translations": {
+      "hi": {
+        "name": "बाथ और बॉडी",
+        "aliases": "bath body",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குளியல் & உடல்",
+        "aliases": "bath body",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాత్ & బాడీ",
+        "aliases": "bath body",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ನಾನ ಮತ್ತು ದೇಹ",
+        "aliases": "bath body",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാത്ത് & ബോഡി",
+        "aliases": "bath body",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نہانے اور جسم",
+        "aliases": "bath body",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Cooking Fats",
+    "translations": {
+      "hi": {
+        "name": "कुकिंग फैट्स",
+        "aliases": "cooking fats oil ghee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சமையல் கொழுப்புகள்",
+        "aliases": "cooking fats",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వంట కొవ్వులు",
+        "aliases": "cooking fats",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಡುಗೆ ಕೊಬ್ಬುಗಳು",
+        "aliases": "cooking fats",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാചക കൊഴുപ്പുകൾ",
+        "aliases": "cooking fats",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کھانا پکانے کی چکنائی",
+        "aliases": "cooking fats",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Deodorant",
+    "translations": {
+      "hi": {
+        "name": "डियोड्रेंट",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டியோடரண்ட்",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డియోడరెంట్",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಯೋಡರೆಂಟ್",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിയോഡറന്റ്",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈیوڈرنٹ",
+        "aliases": "deodorant deo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Frozen",
+    "translations": {
+      "hi": {
+        "name": "फ्रोज़न",
+        "aliases": "frozen",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரோஸன்",
+        "aliases": "frozen",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రోజెన్",
+        "aliases": "frozen",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೋಜನ್",
+        "aliases": "frozen",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രോസൺ",
+        "aliases": "frozen",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فروزن",
+        "aliases": "frozen",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Instant Foods",
+    "translations": {
+      "hi": {
+        "name": "इंस्टेंट फूड",
+        "aliases": "instant foods",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "இன்ஸ்டன்ட் உணவுகள்",
+        "aliases": "instant foods",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇన్‌స్టంట్ ఫుడ్స్",
+        "aliases": "instant foods",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಇನ್‌ಸ್ಟಂಟ್ ಆಹಾರಗಳು",
+        "aliases": "instant foods",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഇൻസ്റ്റന്റ് ഫുഡ്സ്",
+        "aliases": "instant foods",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "انسٹنٹ فوڈز",
+        "aliases": "instant foods",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Pasta",
+    "translations": {
+      "hi": {
+        "name": "पास्ता",
+        "aliases": "pasta",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாஸ்தா",
+        "aliases": "pasta",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పాస్తా",
+        "aliases": "pasta",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಾಸ್ತಾ",
+        "aliases": "pasta",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാസ്ത",
+        "aliases": "pasta",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پاستا",
+        "aliases": "pasta",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Ready To Cook",
+    "translations": {
+      "hi": {
+        "name": "रेडी टू कुक",
+        "aliases": "ready to cook",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சமைக்க தயார்",
+        "aliases": "ready to cook",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రెడీ టు కుక్",
+        "aliases": "ready to cook",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೆಡಿ ಟು ಕುಕ್",
+        "aliases": "ready to cook",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റെഡി ടു കുക്ക്",
+        "aliases": "ready to cook",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ریڈی ٹو کک",
+        "aliases": "ready to cook",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Sauces & Condiments",
+    "translations": {
+      "hi": {
+        "name": "सॉस और मसाले",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சாஸ் & கூட்டுப்பொருட்கள்",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సాస్‌లు & మసాలాలు",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಾಸ್ ಮತ್ತು ಮಸಾಲೆಗಳು",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സോസുകൾ & കോണ്ടിമെന്റ്സ്",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ساس اور مصالحہ جات",
+        "aliases": "sauces condiments",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "subcategory",
+    "term_en": "Shaving",
+    "translations": {
+      "hi": {
+        "name": "शेविंग",
+        "aliases": "shaving",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஷேவிங்",
+        "aliases": "shaving",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షేవింగ్",
+        "aliases": "shaving",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶೇವಿಂಗ್",
+        "aliases": "shaving",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷേവിംഗ്",
+        "aliases": "shaving",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "شیونگ",
+        "aliases": "shaving",
+        "needs_review": true
+      }
+    }
   }
 ]
