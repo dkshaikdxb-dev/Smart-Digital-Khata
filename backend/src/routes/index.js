@@ -7,6 +7,7 @@ router.use('/me', require('./me.routes'));
 router.use('/staff', require('./staff.routes'));
 router.use('/shops', require('./shop.routes'));
 router.use('/shops', require('./shop-payment.routes'));
+router.use('/shops', require('./shop-faq.routes')); // owner/staff: per-store FAQ CRUD
 router.use('/customers', require('./customer.routes'));
 router.use('/products', require('./product.routes'));
 router.use('/catalog', require('./catalog.routes'));

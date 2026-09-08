@@ -47,6 +47,7 @@ export default function CAccount() {
   const [pinBusy, setPinBusy] = useState(false);
 
   const [shops, setShops] = useState([]);
+  const [shopFaqs, setShopFaqs] = useState([]); // [{ shop_id, shop_name, faqs: [] }]
   const [pick, setPick] = useState(''); // '' = all shops
   const [range, setRange] = useState({ from: defFrom(), to: defTo() });
   const [stmt, setStmt] = useState(null); // { single?: {shop_name, statement}, shops?: [], combined?: {} }
@@ -74,6 +75,10 @@ export default function CAccount() {
         const k = await customerFetch('/api/my/khata');
         setShops(k.shops || []);
       } catch { /* khata list is optional for the profile */ }
+      try {
+        const f = await customerFetch('/api/my/shop-faqs');
+        setShopFaqs(f.shops || []);
+      } catch { /* store FAQ is an optional section */ }
     })();
   }, [ready, t]);
 
@@ -402,6 +407,28 @@ export default function CAccount() {
       />
 
       <ReferralCard fetcher={customerFetch} endpoint="/api/customer-auth/referral" />
+
+      {shopFaqs.length > 0 && (
+        <div className="card">
+          <h3 style={{ marginTop: 0 }}>{t('csfaq.title')}</h3>
+          <p className="muted">{t('csfaq.subtitle')}</p>
+          {shopFaqs.map((s) => (
+            <div key={s.shop_id} style={{ marginBottom: 14 }}>
+              <div style={{ fontWeight: 600, margin: '6px 0' }}>{s.shop_name}</div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                {s.faqs.map((f) => (
+                  <details key={f.id} className="help-entry">
+                    <summary style={{ cursor: 'pointer', padding: '8px 0', fontWeight: 600 }}>
+                      <span>{f.question}</span>
+                    </summary>
+                    <div className="muted" style={{ padding: '2px 0 8px', whiteSpace: 'pre-wrap' }}>{f.answer}</div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <HelpFaq variant="cpwa" />
 

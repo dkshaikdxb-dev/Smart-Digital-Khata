@@ -50,6 +50,7 @@ const statementQuerySchema = Joi.object({
 router.use(customerAuth());
 
 router.get('/khata', asyncHandler(ctrl.khata));
+router.get('/shop-faqs', asyncHandler(ctrl.shopFaqs));
 router.get('/statement', validate(statementQuerySchema, 'query'), asyncHandler(ctrl.statement));
 router.get('/khata/:shopId', validate(shopParamSchema, 'params'), asyncHandler(ctrl.shopKhata));
 router.post('/pay', validate(paySchema), asyncHandler(ctrl.pay));
