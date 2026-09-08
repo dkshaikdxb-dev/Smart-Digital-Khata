@@ -76,6 +76,10 @@ const BUSINESS_LEXICON = Object.freeze({
     agencies: 'एजेंसीज़', shop: 'शॉप', new: 'न्यू', sri: 'श्री', shri: 'श्री',
     super: 'सुपर', fresh: 'फ्रेश', cool: 'कूल', point: 'पॉइंट', center: 'सेंटर',
     centre: 'सेंटर', and: 'एंड',
+    bazaar: 'बाज़ार', bazar: 'बाज़ार', bhandar: 'भंडार', market: 'मार्केट',
+    grocery: 'ग्रोसरी', groceries: 'ग्रोसरीज़', corner: 'कॉर्नर', daily: 'डेली',
+    needs: 'नीड्स', family: 'फैमिली', mini: 'मिनी', emporium: 'एम्पोरियम',
+    collection: 'कलेक्शन', variety: 'वैरायटी',
   }),
   ta: Object.freeze({
     store: 'ஸ்டோர்', stores: 'ஸ்டோர்', kirana: 'கிராணா', general: 'ஜெனரல்',
@@ -86,6 +90,10 @@ const BUSINESS_LEXICON = Object.freeze({
     agencies: 'ஏஜென்சீஸ்', shop: 'ஷாப்', new: 'நியூ', sri: 'ஸ்ரீ', shri: 'ஸ்ரீ',
     super: 'சூப்பர்', fresh: 'ஃப்ரெஷ்', cool: 'கூல்', point: 'பாயிண்ட்', center: 'சென்டர்',
     centre: 'சென்டர்', and: 'அண்ட்',
+    bazaar: 'பஜார்', bazar: 'பஜார்', bhandar: 'பண்டார்', market: 'மார்க்கெட்',
+    grocery: 'க்ரோசரி', groceries: 'க்ரோசரீஸ்', corner: 'கார்னர்', daily: 'டெய்லி',
+    needs: 'நீட்ஸ்', family: 'ஃபேமிலி', mini: 'மினி', emporium: 'எம்போரியம்',
+    collection: 'கலெக்ஷன்', variety: 'வெரைட்டி',
   }),
   te: Object.freeze({
     store: 'స్టోర్', stores: 'స్టోర్', kirana: 'కిరాణా', general: 'జనరల్',
@@ -96,6 +104,10 @@ const BUSINESS_LEXICON = Object.freeze({
     agencies: 'ఏజెన్సీస్', shop: 'షాప్', new: 'న్యూ', sri: 'శ్రీ', shri: 'శ్రీ',
     super: 'సూపర్', fresh: 'ఫ్రెష్', cool: 'కూల్', point: 'పాయింట్', center: 'సెంటర్',
     centre: 'సెంటర్', and: 'అండ్',
+    bazaar: 'బజార్', bazar: 'బజార్', bhandar: 'భండార్', market: 'మార్కెట్',
+    grocery: 'గ్రోసరీ', groceries: 'గ్రోసరీస్', corner: 'కార్నర్', daily: 'డైలీ',
+    needs: 'నీడ్స్', family: 'ఫ్యామిలీ', mini: 'మినీ', emporium: 'ఎంపోరియం',
+    collection: 'కలెక్షన్', variety: 'వెరైటీ',
   }),
   kn: Object.freeze({
     store: 'ಸ್ಟೋರ್', stores: 'ಸ್ಟೋರ್', kirana: 'ಕಿರಾಣಾ', general: 'ಜನರಲ್',
@@ -106,6 +118,10 @@ const BUSINESS_LEXICON = Object.freeze({
     agencies: 'ಏಜೆನ್ಸೀಸ್', shop: 'ಶಾಪ್', new: 'ನ್ಯೂ', sri: 'ಶ್ರೀ', shri: 'ಶ್ರೀ',
     super: 'ಸೂಪರ್', fresh: 'ಫ್ರೆಶ್', cool: 'ಕೂಲ್', point: 'ಪಾಯಿಂಟ್', center: 'ಸೆಂಟರ್',
     centre: 'ಸೆಂಟರ್', and: 'ಅಂಡ್',
+    bazaar: 'ಬಜಾರ್', bazar: 'ಬಜಾರ್', bhandar: 'ಭಂಡಾರ್', market: 'ಮಾರ್ಕೆಟ್',
+    grocery: 'ಗ್ರೋಸರಿ', groceries: 'ಗ್ರೋಸರೀಸ್', corner: 'ಕಾರ್ನರ್', daily: 'ಡೈಲಿ',
+    needs: 'ನೀಡ್ಸ್', family: 'ಫ್ಯಾಮಿಲಿ', mini: 'ಮಿನಿ', emporium: 'ಎಂಪೋರಿಯಂ',
+    collection: 'ಕಲೆಕ್ಷನ್', variety: 'ವೆರೈಟಿ',
   }),
   ml: Object.freeze({
     store: 'സ്റ്റോർ', stores: 'സ്റ്റോർ', kirana: 'കിരാണ', general: 'ജനറൽ',
@@ -116,6 +132,96 @@ const BUSINESS_LEXICON = Object.freeze({
     agencies: 'ഏജൻസീസ്', shop: 'ഷോപ്പ്', new: 'ന്യൂ', sri: 'ശ്രീ', shri: 'ശ്രീ',
     super: 'സൂപ്പർ', fresh: 'ഫ്രഷ്', cool: 'കൂൾ', point: 'പോയിന്റ്', center: 'സെന്റർ',
     centre: 'സെന്റർ', and: 'ആൻഡ്',
+    bazaar: 'ബസാർ', bazar: 'ബസാർ', bhandar: 'ഭണ്ഡാർ', market: 'മാർക്കറ്റ്',
+    grocery: 'ഗ്രോസറി', groceries: 'ഗ്രോസറീസ്', corner: 'കോർണർ', daily: 'ഡെയിലി',
+    needs: 'നീഡ്സ്', family: 'ഫാമിലി', mini: 'മിനി', emporium: 'എംപോറിയം',
+    collection: 'കളക്ഷൻ', variety: 'വെറൈറ്റി',
+  }),
+});
+
+/**
+ * SURNAMES — a curated, closed dictionary of common Indian surnames in natural
+ * native script per language, keyed by the stripped, lowercased ASCII form (the
+ * same `lexKey` used for BUSINESS_LEXICON). Real shop names overwhelmingly begin
+ * with the owner's surname ("Sharma Kirana Store"), and raw transliteration
+ * mangles them (Sharma -> शर्म, Reddy -> रेद्द्य्). A curated hit is TRUSTED: it
+ * does NOT set needs_review, exactly like a business-lexicon hit. Common spelling
+ * variants share the same target (reddy/reddi, iyer/ayyar, verma/varma, etc.).
+ *
+ * The Devanagari (hi) forms are review-grade and match the audited targets. The
+ * ta/te/kn/ml forms are the conventional local renderings but a native speaker
+ * should still spot-check them; the owner override UI is the correction path.
+ */
+const SURNAMES = Object.freeze({
+  hi: Object.freeze({
+    sharma: 'शर्मा', gupta: 'गुप्ता', patel: 'पटेल', reddy: 'रेड्डी', reddi: 'रेड्डी',
+    khan: 'खान', singh: 'सिंह', iyer: 'अय्यर', ayyar: 'अय्यर', das: 'दास',
+    mehta: 'मेहता', nair: 'नायर', kumar: 'कुमार', verma: 'वर्मा', varma: 'वर्मा',
+    yadav: 'यादव', shah: 'शाह', rao: 'राव', naidu: 'नायडू', pillai: 'पिल्लई',
+    menon: 'मेनन', bose: 'बोस', roy: 'रॉय', agarwal: 'अग्रवाल', aggarwal: 'अग्रवाल',
+    jain: 'जैन', kapoor: 'कपूर', malhotra: 'मल्होत्रा', bhat: 'भट', bhatt: 'भट्ट',
+    shetty: 'शेट्टी', hegde: 'हेगड़े', prasad: 'प्रसाद', mishra: 'मिश्रा', misra: 'मिश्रा',
+    pandey: 'पांडे', tiwari: 'तिवारी', joshi: 'जोशी', desai: 'देसाई', chauhan: 'चौहान',
+    nayak: 'नायक', sinha: 'सिन्हा', ghosh: 'घोष', banerjee: 'बनर्जी', chatterjee: 'चटर्जी',
+    mukherjee: 'मुखर्जी', krishnan: 'कृष्णन', raman: 'रमन', subramanian: 'सुब्रमण्यन',
+    chopra: 'चोपड़ा', saxena: 'सक्सेना', dubey: 'दुबे', thakur: 'ठाकुर', patil: 'पाटिल',
+    kulkarni: 'कुलकर्णी', deshpande: 'देशपांडे', gowda: 'गौड़ा',
+  }),
+  ta: Object.freeze({
+    sharma: 'ஷர்மா', gupta: 'குப்தா', patel: 'படேல்', reddy: 'ரெட்டி', reddi: 'ரெட்டி',
+    khan: 'கான்', singh: 'சிங்', iyer: 'ஐயர்', ayyar: 'ஐயர்', das: 'தாஸ்',
+    mehta: 'மேத்தா', nair: 'நாயர்', kumar: 'குமார்', verma: 'வர்மா', varma: 'வர்மா',
+    yadav: 'யாதவ்', shah: 'ஷா', rao: 'ராவ்', naidu: 'நாயுடு', pillai: 'பிள்ளை',
+    menon: 'மேனன்', bose: 'போஸ்', roy: 'ராய்', agarwal: 'அகர்வால்', aggarwal: 'அகர்வால்',
+    jain: 'ஜைன்', kapoor: 'கபூர்', malhotra: 'மல்ஹோத்ரா', bhat: 'பட்', bhatt: 'பட்ட',
+    shetty: 'ஷெட்டி', hegde: 'ஹெக்டே', prasad: 'பிரசாத்', mishra: 'மிஸ்ரா', misra: 'மிஸ்ரா',
+    pandey: 'பாண்டே', tiwari: 'திவாரி', joshi: 'ஜோஷி', desai: 'தேசாய்', chauhan: 'சவுஹான்',
+    nayak: 'நாயக்', sinha: 'சின்ஹா', ghosh: 'கோஷ்', banerjee: 'பானர்ஜி', chatterjee: 'சட்டர்ஜி',
+    mukherjee: 'முகர்ஜி', krishnan: 'கிருஷ்ணன்', raman: 'ராமன்', subramanian: 'சுப்பிரமணியன்',
+    chopra: 'சோப்ரா', saxena: 'சக்சேனா', dubey: 'துபே', thakur: 'தாகூர்', patil: 'பாட்டீல்',
+    kulkarni: 'குல்கர்ணி', deshpande: 'தேஷ்பாண்டே', gowda: 'கவுடா',
+  }),
+  te: Object.freeze({
+    sharma: 'శర్మ', gupta: 'గుప్తా', patel: 'పటేల్', reddy: 'రెడ్డి', reddi: 'రెడ్డి',
+    khan: 'ఖాన్', singh: 'సింగ్', iyer: 'అయ్యర్', ayyar: 'అయ్యర్', das: 'దాస్',
+    mehta: 'మెహతా', nair: 'నాయర్', kumar: 'కుమార్', verma: 'వర్మ', varma: 'వర్మ',
+    yadav: 'యాదవ్', shah: 'షా', rao: 'రావు', naidu: 'నాయుడు', pillai: 'పిళ్ళై',
+    menon: 'మీనన్', bose: 'బోస్', roy: 'రాయ్', agarwal: 'అగర్వాల్', aggarwal: 'అగర్వాల్',
+    jain: 'జైన్', kapoor: 'కపూర్', malhotra: 'మల్హోత్రా', bhat: 'భట్', bhatt: 'భట్',
+    shetty: 'శెట్టి', hegde: 'హెగ్డే', prasad: 'ప్రసాద్', mishra: 'మిశ్రా', misra: 'మిశ్రా',
+    pandey: 'పాండే', tiwari: 'తివారీ', joshi: 'జోషి', desai: 'దేశాయ్', chauhan: 'చౌహాన్',
+    nayak: 'నాయక్', sinha: 'సిన్హా', ghosh: 'ఘోష్', banerjee: 'బెనర్జీ', chatterjee: 'చటర్జీ',
+    mukherjee: 'ముఖర్జీ', krishnan: 'కృష్ణన్', raman: 'రామన్', subramanian: 'సుబ్రమణ్యన్',
+    chopra: 'చోప్రా', saxena: 'సక్సేనా', dubey: 'దూబే', thakur: 'ఠాకూర్', patil: 'పాటిల్',
+    kulkarni: 'కులకర్ణి', deshpande: 'దేశ్పాండే', gowda: 'గౌడ',
+  }),
+  kn: Object.freeze({
+    sharma: 'ಶರ್ಮಾ', gupta: 'ಗುಪ್ತಾ', patel: 'ಪಟೇಲ್', reddy: 'ರೆಡ್ಡಿ', reddi: 'ರೆಡ್ಡಿ',
+    khan: 'ಖಾನ್', singh: 'ಸಿಂಗ್', iyer: 'ಅಯ್ಯರ್', ayyar: 'ಅಯ್ಯರ್', das: 'ದಾಸ್',
+    mehta: 'ಮೆಹ್ತಾ', nair: 'ನಾಯರ್', kumar: 'ಕುಮಾರ್', verma: 'ವರ್ಮಾ', varma: 'ವರ್ಮಾ',
+    yadav: 'ಯಾದವ್', shah: 'ಶಾ', rao: 'ರಾವ್', naidu: 'ನಾಯುಡು', pillai: 'ಪಿಳ್ಳೈ',
+    menon: 'ಮೆನನ್', bose: 'ಬೋಸ್', roy: 'ರಾಯ್', agarwal: 'ಅಗರ್ವಾಲ್', aggarwal: 'ಅಗರ್ವಾಲ್',
+    jain: 'ಜೈನ್', kapoor: 'ಕಪೂರ್', malhotra: 'ಮಲ್ಹೋತ್ರಾ', bhat: 'ಭಟ್', bhatt: 'ಭಟ್',
+    shetty: 'ಶೆಟ್ಟಿ', hegde: 'ಹೆಗಡೆ', prasad: 'ಪ್ರಸಾದ್', mishra: 'ಮಿಶ್ರಾ', misra: 'ಮಿಶ್ರಾ',
+    pandey: 'ಪಾಂಡೆ', tiwari: 'ತಿವಾರಿ', joshi: 'ಜೋಶಿ', desai: 'ದೇಸಾಯಿ', chauhan: 'ಚೌಹಾನ್',
+    nayak: 'ನಾಯಕ್', sinha: 'ಸಿನ್ಹಾ', ghosh: 'ಘೋಷ್', banerjee: 'ಬ್ಯಾನರ್ಜಿ', chatterjee: 'ಚಟರ್ಜಿ',
+    mukherjee: 'ಮುಖರ್ಜಿ', krishnan: 'ಕೃಷ್ಣನ್', raman: 'ರಾಮನ್', subramanian: 'ಸುಬ್ರಮಣ್ಯನ್',
+    chopra: 'ಚೋಪ್ರಾ', saxena: 'ಸಕ್ಸೇನಾ', dubey: 'ದುಬೆ', thakur: 'ಠಾಕೂರ್', patil: 'ಪಾಟೀಲ್',
+    kulkarni: 'ಕುಲಕರ್ಣಿ', deshpande: 'ದೇಶಪಾಂಡೆ', gowda: 'ಗೌಡ',
+  }),
+  ml: Object.freeze({
+    sharma: 'ശർമ്മ', gupta: 'ഗുപ്ത', patel: 'പട്ടേൽ', reddy: 'റെഡ്ഡി', reddi: 'റെഡ്ഡി',
+    khan: 'ഖാൻ', singh: 'സിംഗ്', iyer: 'അയ്യർ', ayyar: 'അയ്യർ', das: 'ദാസ്',
+    mehta: 'മേത്ത', nair: 'നായർ', kumar: 'കുമാർ', verma: 'വർമ്മ', varma: 'വർമ്മ',
+    yadav: 'യാദവ്', shah: 'ഷാ', rao: 'റാവു', naidu: 'നായിഡു', pillai: 'പിള്ള',
+    menon: 'മേനോൻ', bose: 'ബോസ്', roy: 'റോയ്', agarwal: 'അഗർവാൾ', aggarwal: 'അഗർവാൾ',
+    jain: 'ജെയിൻ', kapoor: 'കപൂർ', malhotra: 'മൽഹോത്ര', bhat: 'ഭട്ട്', bhatt: 'ഭട്ട്',
+    shetty: 'ഷെട്ടി', hegde: 'ഹെഗ്ഡെ', prasad: 'പ്രസാദ്', mishra: 'മിശ്ര', misra: 'മിശ്ര',
+    pandey: 'പാണ്ഡെ', tiwari: 'തിവാരി', joshi: 'ജോഷി', desai: 'ദേശായി', chauhan: 'ചൗഹാൻ',
+    nayak: 'നായക്', sinha: 'സിൻഹ', ghosh: 'ഘോഷ്', banerjee: 'ബാനർജി', chatterjee: 'ചാറ്റർജി',
+    mukherjee: 'മുഖർജി', krishnan: 'കൃഷ്ണൻ', raman: 'രാമൻ', subramanian: 'സുബ്രഹ്മണ്യൻ',
+    chopra: 'ചോപ്ര', saxena: 'സക്സേന', dubey: 'ദുബെ', thakur: 'ഠാക്കൂർ', patil: 'പാട്ടീൽ',
+    kulkarni: 'കുൽക്കർണി', deshpande: 'ദേശ്പാണ്ഡെ', gowda: 'ഗൗഡ',
   }),
 });
 
@@ -174,9 +280,14 @@ const VIRAMA_BY_SCRIPT = Object.freeze({
  * (the enrich util's careful folding is the reference for "small and safe"):
  *   - strip NUL / C0 control characters and normalize whitespace, and
  *   - collapse a DOUBLED trailing virama down to one (a genuine transliterator
- *     artefact) — but a single word-final virama is LEFT INTACT, because the
- *     verified reference output keeps it ("Bharat" -> भरत्). Never throws; never
- *     rewrites the phonemes of a name.
+ *     artefact); and
+ *   - for Devanagari (hi) ONLY, strip a SINGLE trailing virama/halant so an
+ *     unknown proper noun reads by the natural schwa-deletion convention
+ *     (पतेल् -> पतेल, नैर् -> नैर) instead of an over-marked halant. This is NOT
+ *     done for the Dravidian scripts (ta/te/kn/ml), where a word-final pure
+ *     consonant / pulli is legitimate and stripping it would corrupt correct
+ *     forms (e.g. "Bharat" -> भरत in hi, but பரத் / భరత్ / ಭರತ್ / ഭരത് elsewhere).
+ *   Never throws; never rewrites the phonemes of a name.
  */
 function cleanTranslit(token, lang) {
   if (token == null) return '';
@@ -185,11 +296,16 @@ function cleanTranslit(token, lang) {
     .replace(/[\x00-\x1F\x7F]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  const v = VIRAMA_BY_SCRIPT[SCRIPT_BY_LANG[lang]];
+  const script = SCRIPT_BY_LANG[lang];
+  const v = VIRAMA_BY_SCRIPT[script];
   if (v) {
-    // Only fold a stray DOUBLE virama; keep a single trailing one.
+    // Fold a stray DOUBLE virama down to one first.
     const dbl = new RegExp(`${v}${v}+`, 'g');
     out = out.replace(dbl, v);
+    // Devanagari only: drop a single word-final halant (schwa-deletion reading).
+    if (script === 'devanagari' && out.endsWith(v)) {
+      out = out.slice(0, -v.length);
+    }
   }
   return out;
 }
@@ -221,6 +337,7 @@ function localizeShopName(englishName, lang) {
   }
 
   const lexicon = BUSINESS_LEXICON[l] || {};
+  const surnames = SURNAMES[l] || {};
   const engine = resolveEngine();
 
   // Whitespace tokens; drop the empties from leading/trailing/multiple spaces.
@@ -245,6 +362,13 @@ function localizeShopName(englishName, lang) {
     // Curated business word — trusted, no review needed for this token.
     if (Object.prototype.hasOwnProperty.call(lexicon, key)) {
       return lexicon[key];
+    }
+
+    // Curated surname — also trusted (most shop names lead with the owner's
+    // surname, which raw transliteration mangles). Checked AFTER the business
+    // lexicon so a word appearing in both resolves to its business meaning.
+    if (Object.prototype.hasOwnProperty.call(surnames, key)) {
+      return surnames[key];
     }
 
     // Proper-noun remainder: best-effort transliteration. A machine-produced
@@ -336,6 +460,7 @@ module.exports = {
   SCRIPT_BY_LANG,
   RENDER_LANGS,
   BUSINESS_LEXICON,
+  SURNAMES,
   resolveEngine,
   cleanTranslit,
   localizeShopName,
