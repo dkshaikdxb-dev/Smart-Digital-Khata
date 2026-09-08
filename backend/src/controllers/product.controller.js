@@ -148,7 +148,7 @@ exports.publicCatalog = async (req, res) => {
   if (localized) {
     params.push(lang); // $2
     sql = `SELECT p.id, COALESCE(cpi.name, cp.name, p.name) AS name,
-                  p.description, p.price, p.unit, p.image_url, p.search_text
+                  COALESCE(cp.description, p.description) AS description, p.price, p.unit, p.image_url, p.search_text
              FROM products p
              LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
              LEFT JOIN catalog_i18n cpi

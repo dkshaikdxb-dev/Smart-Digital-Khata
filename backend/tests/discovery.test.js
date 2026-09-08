@@ -34,6 +34,16 @@ let unlisted; let tokenU;
 let catShop; let tokenCat;
 let CATEGORY;
 const CATEGORY_HI = 'खाद्य पदार्थ';
+// A dedicated shop exercising getShop's localized product `description`: one
+// product whose English name matches a catalog_i18n product term carrying a hi
+// `description`. getShop?lang=hi must return the localized description; en/no-lang
+// the raw English one. A run-unique term (Salt<uniq>) keeps this isolated from
+// product-search-recall.test.js, which owns the shared ('product','Salt','hi') row.
+let saltShop; let tokenSalt;
+let SALT_TERM;
+const SALT_EN_DESC = 'Iodized table salt';
+const SALT_HI_DESC = 'आयोडीन युक्त खाने का नमक';
+const SALT_NAME_HI = 'नमक';
 
 beforeAll(async () => {
   const uniq = Date.now().toString().slice(-9);
@@ -90,15 +100,34 @@ beforeAll(async () => {
      ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
     [CATEGORY, CATEGORY_HI]
   );
+
+  // Description-localization fixture: a separate LISTED shop with ONE product
+  // whose English name (Salt<uniq>) matches a catalog_i18n product term that
+  // carries a hi `description`. The product also has its own English description.
+  const salt = await register('DiscSalt', `${uniq}4`.slice(-9));
+  saltShop = salt.shop; tokenSalt = salt.token;
+  SALT_TERM = `Salt${uniq}`;
+  await pool.query('UPDATE shops SET is_listed = true WHERE id = $1', [saltShop.id]);
+  await withToken(request(app).post('/api/products'), tokenSalt)
+    .send({ name: SALT_TERM, price: 2800, unit: 'kg', description: SALT_EN_DESC });
+  await pool.query(
+    `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review, description)
+     VALUES ('product', $1, 'hi', $2, '', false, $3)
+     ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description`,
+    [SALT_TERM, SALT_NAME_HI, SALT_HI_DESC]
+  );
 }, 30000);
 
 afterAll(async () => {
-  for (const s of [listedA, listedB, unlisted, catShop]) {
+  for (const s of [listedA, listedB, unlisted, catShop, saltShop]) {
     if (s) await pool.query('DELETE FROM shops WHERE id = $1', [s.id]);
   }
   if (CATEGORY) {
     await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'category' AND term_en = $1`, [CATEGORY]);
     await pool.query('DELETE FROM catalog_items WHERE category = $1', [CATEGORY]);
+  }
+  if (SALT_TERM) {
+    await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'product' AND term_en = $1`, [SALT_TERM]);
   }
   await pool.end();
 });
@@ -316,6 +345,27 @@ describe('GET /public/shops/:shopId — localized category_labels', () => {
       const res = await request(app).get(url);
       expect(res.status).toBe(200);
       expect(res.body.shop.category_labels).toBeUndefined();
+    }
+  });
+});
+
+describe('GET /public/shops/:shopId — localized product description', () => {
+  it('lang=hi returns the localized description from catalog_i18n', async () => {
+    const res = await request(app).get(`/api/public/shops/${saltShop.id}?lang=hi`);
+    expect(res.status).toBe(200);
+    const prod = res.body.shop.products.find((p) => p.name === SALT_NAME_HI);
+    expect(prod).toBeDefined();
+    // The product name is localized AND its description comes from catalog_i18n.
+    expect(prod.description).toBe(SALT_HI_DESC);
+  });
+
+  it('en (and no lang) returns the raw English description', async () => {
+    for (const url of [`/api/public/shops/${saltShop.id}`, `/api/public/shops/${saltShop.id}?lang=en`]) {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(200);
+      const prod = res.body.shop.products.find((p) => p.name === SALT_TERM);
+      expect(prod).toBeDefined();
+      expect(prod.description).toBe(SALT_EN_DESC);
     }
   });
 });

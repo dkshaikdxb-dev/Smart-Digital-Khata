@@ -14,7 +14,9 @@
  * untouched. Mirrors the style of import-catalog.js.
  *
  * Seed shape: an array of
- *   { term_type, term_en, translations: { hi:{name,aliases,needs_review}, ... } }
+ *   { term_type, term_en, translations: { hi:{name,aliases,needs_review,description?}, ... } }
+ * `description` is optional (products only); rows without one write NULL and the
+ * API falls back to the raw products.description.
  */
 require('dotenv').config();
 const fs = require('fs');
@@ -38,13 +40,14 @@ async function importCatalogI18n({ rows, client } = {}) {
       for (const [lang, t] of Object.entries(row.translations)) {
         if (!t || !t.name) continue; // skip empty translations (English fallback)
         await c.query(
-          `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review)
-           VALUES ($1,$2,$3,$4,$5,$6)
+          `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review, description)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)
            ON CONFLICT (term_type, term_en, lang) DO UPDATE SET
              name         = EXCLUDED.name,
              aliases      = EXCLUDED.aliases,
-             needs_review = EXCLUDED.needs_review`,
-          [row.term_type, row.term_en, lang, t.name, t.aliases || '', Boolean(t.needs_review)]
+             needs_review = EXCLUDED.needs_review,
+             description  = EXCLUDED.description`,
+          [row.term_type, row.term_en, lang, t.name, t.aliases || '', Boolean(t.needs_review), t.description || null]
         );
         upserted += 1;
       }

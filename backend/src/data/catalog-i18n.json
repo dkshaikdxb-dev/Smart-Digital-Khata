@@ -1366,32 +1366,38 @@
       "hi": {
         "name": "बासमती चावल",
         "aliases": "basamati cavala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "लंबे दाने वाला खुशबूदार चावल"
       },
       "ta": {
         "name": "பாஸ்மதி அரிசி",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "நீள்தானிய நறுமண அரிசி"
       },
       "te": {
         "name": "బాస్మతి బియ్యం",
         "aliases": "basmati biyyam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "పొడవాటి గింజల సువాసన బియ్యం"
       },
       "kn": {
         "name": "ಬಾಸ್ಮತಿ ಅಕ್ಕಿ",
         "aliases": "basmati akki",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಉದ್ದ ಕಾಳಿನ ಪರಿಮಳದ ಅಕ್ಕಿ"
       },
       "ml": {
         "name": "ബാസ്മതി അരി",
         "aliases": "basmati ari",
-        "needs_review": false
+        "needs_review": false,
+        "description": "നീളൻ മണമുള്ള അരി"
       },
       "ur": {
         "name": "باسمتی چاول",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "لمبے دانے والا خوشبودار چاول"
       }
     }
   },
@@ -1402,32 +1408,38 @@
       "hi": {
         "name": "नहाने का साबुन",
         "aliases": "sabun soap nahane sabuna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "रोज़ नहाने का साबुन"
       },
       "ta": {
         "name": "குளியல் சோப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "தினசரி குளியல் சோப்பு"
       },
       "te": {
         "name": "స్నానం సబ్బు",
         "aliases": "snanam sabbu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "రోజువారీ స్నానపు సబ్బు"
       },
       "kn": {
         "name": "ಸ್ನಾನದ ಸಾಬೂನು",
         "aliases": "snanada sabunu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ದಿನನಿತ್ಯದ ಸ್ನಾನದ ಸೋಪು"
       },
       "ml": {
         "name": "കുളിസോപ്പ്",
         "aliases": "kulisopp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ദിവസവുമുള്ള കുളി സോപ്പ്"
       },
       "ur": {
         "name": "نہانے کا صابن",
         "aliases": "sabun",
-        "needs_review": false
+        "needs_review": false,
+        "description": "روز نہانے کا صابن"
       }
     }
   },
@@ -1541,32 +1553,38 @@
       "hi": {
         "name": "बेसन",
         "aliases": "besan besana",
-        "needs_review": false
+        "needs_review": false,
+        "description": "बेसन"
       },
       "ta": {
         "name": "கடலை மாவு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "கடலை மாவு"
       },
       "te": {
         "name": "శనగపిండి",
         "aliases": "shanagapimdi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "శనగ పిండి"
       },
       "kn": {
         "name": "ಕಡಲೆ ಹಿಟ್ಟು",
         "aliases": "kadale hittu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕಡಲೆ ಹಿಟ್ಟು"
       },
       "ml": {
         "name": "കടലമാവ്",
         "aliases": "katalamav",
-        "needs_review": false
+        "needs_review": false,
+        "description": "കടല മാവ്"
       },
       "ur": {
         "name": "بیسن",
         "aliases": "besan",
-        "needs_review": false
+        "needs_review": false,
+        "description": "بیسن"
       }
     }
   },
@@ -1649,32 +1667,38 @@
       "hi": {
         "name": "काली मिर्च",
         "aliases": "kali mirch mirca",
-        "needs_review": false
+        "needs_review": false,
+        "description": "साबुत काली मिर्च"
       },
       "ta": {
         "name": "மிளகு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முழு மிளகு"
       },
       "te": {
         "name": "మిరియాలు",
         "aliases": "miriyalu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "సంపూర్ణ మిరియాలు"
       },
       "kn": {
         "name": "ಕರಿಮೆಣಸು",
         "aliases": "karimenasu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಸಂಪೂರ್ಣ ಕಾಳುಮೆಣಸು"
       },
       "ml": {
         "name": "കുരുമുളക്",
         "aliases": "kurumulak",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുഴുവൻ കുരുമുളക്"
       },
       "ur": {
         "name": "کالی مرچ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ثابت کالی مرچ"
       }
     }
   },
@@ -1793,32 +1817,38 @@
       "hi": {
         "name": "मक्खन",
         "aliases": "makkhan makkhana",
-        "needs_review": false
+        "needs_review": false,
+        "description": "टेबल बटर (मक्खन)"
       },
       "ta": {
         "name": "வெண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "வெண்ணெய்"
       },
       "te": {
         "name": "వెన్న",
         "aliases": "venna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "వెన్న"
       },
       "kn": {
         "name": "ಬೆಣ್ಣೆ",
         "aliases": "benne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಬೆಣ್ಣೆ"
       },
       "ml": {
         "name": "വെണ്ണ",
         "aliases": "venna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "വെണ്ണ"
       },
       "ur": {
         "name": "مکھن",
         "aliases": "makkhan",
-        "needs_review": false
+        "needs_review": false,
+        "description": "مکھن"
       }
     }
   },
@@ -2081,32 +2111,38 @@
       "hi": {
         "name": "चना दाल",
         "aliases": "chana dal cana dala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "चने की दाल"
       },
       "ta": {
         "name": "கடலைப் பருப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "கடலைப் பருப்பு"
       },
       "te": {
         "name": "శనగపప్పు",
         "aliases": "shanagapappu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "శనగ పప్పు"
       },
       "kn": {
         "name": "ಕಡಲೆ ಬೇಳೆ",
         "aliases": "kadale bele",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕಡಲೆ ಬೇಳೆ"
       },
       "ml": {
         "name": "കടലപ്പരിപ്പ്",
         "aliases": "katalapparipp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "കടല പരിപ്പ്"
       },
       "ur": {
         "name": "چنا دال",
         "aliases": "chana dal",
-        "needs_review": false
+        "needs_review": false,
+        "description": "چنے کی دال"
       }
     }
   },
@@ -2261,32 +2297,38 @@
       "hi": {
         "name": "नारियल तेल",
         "aliases": "nariyala tela",
-        "needs_review": false
+        "needs_review": false,
+        "description": "शुद्ध नारियल का तेल"
       },
       "ta": {
         "name": "தேங்காய் எண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "தூய தேங்காய் எண்ணெய்"
       },
       "te": {
         "name": "కొబ్బరి నూనె",
         "aliases": "kobbari nune",
-        "needs_review": false
+        "needs_review": false,
+        "description": "స్వచ్ఛమైన కొబ్బరి నూనె"
       },
       "kn": {
         "name": "ತೆಂಗಿನ ಎಣ್ಣೆ",
         "aliases": "temgina enne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಶುದ್ಧ ತೆಂಗಿನ ಎಣ್ಣೆ"
       },
       "ml": {
         "name": "വെളിച്ചെണ്ണ",
         "aliases": "veliccenna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ശുദ്ധമായ വെളിച്ചെണ്ണ"
       },
       "ur": {
         "name": "ناریل کا تیل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "خالص ناریل کا تیل"
       }
     }
   },
@@ -2369,32 +2411,38 @@
       "hi": {
         "name": "धनिया पाउडर",
         "aliases": "dhaniya paudara",
-        "needs_review": false
+        "needs_review": false,
+        "description": "पिसा धनिया"
       },
       "ta": {
         "name": "கொத்தமல்லி தூள்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "மல்லி தூள்"
       },
       "te": {
         "name": "ధనియాల పొడి",
         "aliases": "dhaniyala podi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ధనియాల పొడి"
       },
       "kn": {
         "name": "ಕೊತ್ತಂಬರಿ ಪುಡಿ",
         "aliases": "kottambari pudi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕೊತ್ತಂಬರಿ ಪುಡಿ"
       },
       "ml": {
         "name": "മല്ലിപ്പൊടി",
         "aliases": "mallippoti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മല്ലി പൊടി"
       },
       "ur": {
         "name": "دھنیا پاؤڈر",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "پسا دھنیا"
       }
     }
   },
@@ -2441,32 +2489,38 @@
       "hi": {
         "name": "जीरा",
         "aliases": "jeera jira",
-        "needs_review": false
+        "needs_review": false,
+        "description": "साबुत जीरा"
       },
       "ta": {
         "name": "சீரகம்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முழு சீரகம்"
       },
       "te": {
         "name": "జీలకర్ర",
         "aliases": "jilakarra",
-        "needs_review": false
+        "needs_review": false,
+        "description": "సంపూర్ణ జీలకర్ర"
       },
       "kn": {
         "name": "ಜೀರಿಗೆ",
         "aliases": "jirige",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಸಂಪೂರ್ಣ ಜೀರಿಗೆ"
       },
       "ml": {
         "name": "ജീരകം",
         "aliases": "jirakam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുഴുവൻ ജീരകം"
       },
       "ur": {
         "name": "زیرہ",
         "aliases": "zeera",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ثابت زیرہ"
       }
     }
   },
@@ -2477,32 +2531,38 @@
       "hi": {
         "name": "दही",
         "aliases": "dahi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ताज़ा जमा दही"
       },
       "ta": {
         "name": "தயிர்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "புதிய தயிர்"
       },
       "te": {
         "name": "పెరుగు",
         "aliases": "perugu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "తాజా పెరుగు"
       },
       "kn": {
         "name": "ಮೊಸರು",
         "aliases": "mosaru",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ತಾಜಾ ಮೊಸರು"
       },
       "ml": {
         "name": "തൈര്",
         "aliases": "tair",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പുതിയ തൈര്"
       },
       "ur": {
         "name": "دہی",
         "aliases": "dahi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "تازہ جمی دہی"
       }
     }
   },
@@ -2585,32 +2645,38 @@
       "hi": {
         "name": "देसी घी",
         "aliases": "ghee ghi desi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "शुद्ध देसी घी"
       },
       "ta": {
         "name": "தேசி நெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "தூய நெய்"
       },
       "te": {
         "name": "దేశీ నెయ్యి",
         "aliases": "deshi neyyi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "స్వచ్ఛమైన నెయ్యి"
       },
       "kn": {
         "name": "ದೇಸಿ ತುಪ್ಪ",
         "aliases": "desi tuppa",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಶುದ್ಧ ತುಪ್ಪ"
       },
       "ml": {
         "name": "ദേശി നെയ്യ്",
         "aliases": "deshi neyy",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ശുദ്ധമായ നെയ്യ്"
       },
       "ur": {
         "name": "دیسی گھی",
         "aliases": "ghee",
-        "needs_review": false
+        "needs_review": false,
+        "description": "خالص دیسی گھی"
       }
     }
   },
@@ -2657,12 +2723,14 @@
       "hi": {
         "name": "कपड़े धोने का लिक्विड",
         "aliases": "kapada dhone likvida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "बर्तन धोने का तरल साबुन"
       },
       "ur": {
         "name": "کپڑے دھونے کا لیکوئڈ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "برتن دھونے کا مائع صابن"
       }
     }
   },
@@ -2673,12 +2741,14 @@
       "hi": {
         "name": "कपड़े धोने का पाउडर",
         "aliases": "kapada dhone paudara",
-        "needs_review": false
+        "needs_review": false,
+        "description": "कपड़े धोने का पाउडर"
       },
       "ur": {
         "name": "کپڑے دھونے کا پاؤڈر",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "کپڑے دھونے کا پاؤڈر"
       }
     }
   },
@@ -2936,32 +3006,38 @@
       "hi": {
         "name": "फुल क्रीम दूध",
         "aliases": "phula krima dudha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "फुल क्रीम डेयरी दूध"
       },
       "ta": {
         "name": "ஃபுல் கிரீம் பால்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முழு கிரீம் பால்"
       },
       "te": {
         "name": "ఫుల్ క్రీమ్ పాలు",
         "aliases": "phul krim palu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ఫుల్ క్రీమ్ పాలు"
       },
       "kn": {
         "name": "ಫುಲ್ ಕ್ರೀಂ ಹಾಲು",
         "aliases": "phul krim halu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಫುಲ್ ಕ್ರೀಮ್ ಹಾಲು"
       },
       "ml": {
         "name": "ഫുൾ ക്രീം പാൽ",
         "aliases": "phu krim",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ഫുൾ ക്രീം പാൽ"
       },
       "ur": {
         "name": "فل کریم دودھ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "فل کریم ڈیری دودھ"
       }
     }
   },
@@ -2972,32 +3048,38 @@
       "hi": {
         "name": "गरम मसाला",
         "aliases": "garama masala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "साबुत मसालों से बना गरम मसाला"
       },
       "ta": {
         "name": "கரம் மசாலா",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முழு மசாலா கலவை தூள்"
       },
       "te": {
         "name": "గరం మసాలా",
         "aliases": "garam masala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "సంపూర్ణ మసాలాల మిశ్రమ పొడి"
       },
       "kn": {
         "name": "ಗರಂ ಮಸಾಲಾ",
         "aliases": "garam masala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಸಂಪೂರ್ಣ ಮಸಾಲ ಮಿಶ್ರಣ ಪುಡಿ"
       },
       "ml": {
         "name": "ഗരം മസാല",
         "aliases": "garam masala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ഗരം മസാല പൊടി"
       },
       "ur": {
         "name": "گرم مسالہ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ثابت مصالحوں سے بنا گرم مسالہ"
       }
     }
   },
@@ -3291,12 +3373,14 @@
       "hi": {
         "name": "ग्रीन टी",
         "aliases": "grina",
-        "needs_review": false
+        "needs_review": false,
+        "description": "हरी चाय की पत्ती"
       },
       "ur": {
         "name": "گرین ٹی",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "سبز چائے کی پتی"
       }
     }
   },
@@ -3307,32 +3391,38 @@
       "hi": {
         "name": "मूंगफली का तेल",
         "aliases": "mumgaphali tela",
-        "needs_review": false
+        "needs_review": false,
+        "description": "रिफाइंड मूंगफली का तेल"
       },
       "ta": {
         "name": "கடலை எண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "சுத்திகரித்த நிலக்கடலை எண்ணெய்"
       },
       "te": {
         "name": "వేరుశనగ నూనె",
         "aliases": "verushanaga nune",
-        "needs_review": false
+        "needs_review": false,
+        "description": "శుద్ధి చేసిన వేరుశనగ నూనె"
       },
       "kn": {
         "name": "ಶೇಂಗಾ ಎಣ್ಣೆ",
         "aliases": "shemga enne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಶುದ್ಧೀಕರಿಸಿದ ಕಡಲೆಕಾಯಿ ಎಣ್ಣೆ"
       },
       "ml": {
         "name": "കപ്പലണ്ടി എണ്ണ",
         "aliases": "kappalanti enna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ശുദ്ധീകരിച്ച നിലക്കടല എണ്ണ"
       },
       "ur": {
         "name": "مونگ پھلی کا تیل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "صاف شدہ مونگ پھلی کا تیل"
       }
     }
   },
@@ -3379,32 +3469,38 @@
       "hi": {
         "name": "बालों का तेल",
         "aliases": "balom tela",
-        "needs_review": false
+        "needs_review": false,
+        "description": "बालों को पोषण देने वाला तेल"
       },
       "ta": {
         "name": "தலை எண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முடிக்கு ஊட்டமளிக்கும் எண்ணெய்"
       },
       "te": {
         "name": "జుట్టు నూనె",
         "aliases": "juttu nune",
-        "needs_review": false
+        "needs_review": false,
+        "description": "జుట్టుకు పోషణనిచ్చే నూనె"
       },
       "kn": {
         "name": "ಕೂದಲ ಎಣ್ಣೆ",
         "aliases": "kudala enne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕೂದಲಿಗೆ ಪೋಷಣೆ ನೀಡುವ ಎಣ್ಣೆ"
       },
       "ml": {
         "name": "തലയെണ്ണ",
         "aliases": "talayenna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുടിക്ക് പോഷണം നൽകുന്ന എണ്ണ"
       },
       "ur": {
         "name": "بالوں کا تیل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "بالوں کو غذائیت دینے والا تیل"
       }
     }
   },
@@ -3451,32 +3547,38 @@
       "hi": {
         "name": "शहद",
         "aliases": "shahad shahada",
-        "needs_review": false
+        "needs_review": false,
+        "description": "शुद्ध प्राकृतिक शहद"
       },
       "ta": {
         "name": "தேன்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "தூய இயற்கை தேன்"
       },
       "te": {
         "name": "తేనె",
         "aliases": "tene",
-        "needs_review": false
+        "needs_review": false,
+        "description": "స్వచ్ఛమైన సహజ తేనె"
       },
       "kn": {
         "name": "ಜೇನುತುಪ್ಪ",
         "aliases": "jenutuppa",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಶುದ್ಧ ನೈಸರ್ಗಿಕ ಜೇನುತುಪ್ಪ"
       },
       "ml": {
         "name": "തേൻ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ശുദ്ധമായ പ്രകൃതി തേൻ"
       },
       "ur": {
         "name": "شہد",
         "aliases": "shahad",
-        "needs_review": false
+        "needs_review": false,
+        "description": "خالص قدرتی شہد"
       }
     }
   },
@@ -3559,12 +3661,14 @@
       "hi": {
         "name": "इंस्टेंट कॉफ़ी",
         "aliases": "imstemta pha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "इंस्टेंट कॉफी के दाने"
       },
       "ur": {
         "name": "انسٹنٹ کافی",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "انسٹنٹ کافی کے دانے"
       }
     }
   },
@@ -3575,32 +3679,38 @@
       "hi": {
         "name": "गुड़",
         "aliases": "gud gur guda",
-        "needs_review": false
+        "needs_review": false,
+        "description": "प्राकृतिक गन्ने का गुड़"
       },
       "ta": {
         "name": "வெல்லம்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "இயற்கை கரும்பு வெல்லம்"
       },
       "te": {
         "name": "బెల్లం",
         "aliases": "bellam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "సహజ చెరకు బెల్లం"
       },
       "kn": {
         "name": "ಬೆಲ್ಲ",
         "aliases": "bella",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ನೈಸರ್ಗಿಕ ಕಬ್ಬಿನ ಬೆಲ್ಲ"
       },
       "ml": {
         "name": "ശർക്കര",
         "aliases": "sha kkara",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പ്രകൃതിദത്ത കരിമ്പ് ശർക്കര"
       },
       "ur": {
         "name": "گڑ",
         "aliases": "gur",
-        "needs_review": false
+        "needs_review": false,
+        "description": "قدرتی گنے کا گڑ"
       }
     }
   },
@@ -3647,32 +3757,38 @@
       "hi": {
         "name": "काबुली चना",
         "aliases": "chhole chole kabuli cana",
-        "needs_review": false
+        "needs_review": false,
+        "description": "सफ़ेद काबुली चना"
       },
       "ta": {
         "name": "கொண்டைக் கடலை",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "வெள்ளை கொண்டைக்கடலை"
       },
       "te": {
         "name": "కాబూలీ శనగ",
         "aliases": "kabuli shanaga",
-        "needs_review": false
+        "needs_review": false,
+        "description": "తెల్ల శనగలు"
       },
       "kn": {
         "name": "ಕಾಬೂಲಿ ಕಡಲೆ",
         "aliases": "kabuli kadale",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಬಿಳಿ ಕಾಬೂಲಿ ಕಡಲೆ"
       },
       "ml": {
         "name": "വെള്ളക്കടല",
         "aliases": "vellakkatala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "വെള്ള കടല"
       },
       "ur": {
         "name": "کابلی چنا",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "سفید کابلی چنے"
       }
     }
   },
@@ -3951,32 +4067,38 @@
       "hi": {
         "name": "मैदा",
         "aliases": "maida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "मैदा"
       },
       "ta": {
         "name": "மைதா மாவு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "மைதா மாவு"
       },
       "te": {
         "name": "మైదా",
         "aliases": "maida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "మైదా పిండి"
       },
       "kn": {
         "name": "ಮೈದಾ",
         "aliases": "maida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಮೈದಾ ಹಿಟ್ಟು"
       },
       "ml": {
         "name": "മൈദ",
         "aliases": "maida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മൈദ"
       },
       "ur": {
         "name": "میدہ",
         "aliases": "maida",
-        "needs_review": false
+        "needs_review": false,
+        "description": "میدہ"
       }
     }
   },
@@ -4059,32 +4181,38 @@
       "hi": {
         "name": "मसूर दाल",
         "aliases": "masoor dal masura dala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "मसूर की लाल दाल"
       },
       "ta": {
         "name": "மசூர் பருப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "மைசூர் பருப்பு"
       },
       "te": {
         "name": "మసూర్ పప్పు",
         "aliases": "masur pappu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "మసూర్ పప్పు"
       },
       "kn": {
         "name": "ಮಸೂರ್ ಬೇಳೆ",
         "aliases": "masur bele",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಮಸೂರ್ ಬೇಳೆ"
       },
       "ml": {
         "name": "മസൂർ പരിപ്പ്",
         "aliases": "masu paripp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മസൂർ പരിപ്പ്"
       },
       "ur": {
         "name": "مسور دال",
         "aliases": "masoor dal",
-        "needs_review": false
+        "needs_review": false,
+        "description": "مسور کی لال دال"
       }
     }
   },
@@ -4327,32 +4455,38 @@
       "hi": {
         "name": "मूंग दाल",
         "aliases": "moong dal mumga dala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "छिलका उतरी हरी मूंग की दाल"
       },
       "ta": {
         "name": "பாசிப் பருப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "பாசிப் பருப்பு"
       },
       "te": {
         "name": "పెసర పప్పు",
         "aliases": "pesara pappu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "పెసర పప్పు"
       },
       "kn": {
         "name": "ಹೆಸರು ಬೇಳೆ",
         "aliases": "hesaru bele",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಹೆಸರು ಬೇಳೆ"
       },
       "ml": {
         "name": "ചെറുപയർ പരിപ്പ്",
         "aliases": "cerupaya paripp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ചെറുപയർ പരിപ്പ്"
       },
       "ur": {
         "name": "مونگ دال",
         "aliases": "moong dal",
-        "needs_review": false
+        "needs_review": false,
+        "description": "دھلی ہوئی مونگ کی دال"
       }
     }
   },
@@ -4399,32 +4533,38 @@
       "hi": {
         "name": "मच्छर कॉइल",
         "aliases": "macchara ila",
-        "needs_review": false
+        "needs_review": false,
+        "description": "मच्छर भगाने की कॉइल"
       },
       "ta": {
         "name": "கொசு சுருள்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "கொசு விரட்டும் சுருள்"
       },
       "te": {
         "name": "దోమల చుట్ట",
         "aliases": "domala cutta",
-        "needs_review": false
+        "needs_review": false,
+        "description": "దోమలను తరిమే కాయిల్"
       },
       "kn": {
         "name": "ಸೊಳ್ಳೆ ಸುರುಳಿ",
         "aliases": "solle suruli",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಸೊಳ್ಳೆ ಓಡಿಸುವ ಕಾಯಿಲ್"
       },
       "ml": {
         "name": "കൊതുക് തിരി",
         "aliases": "kotuk tiri",
-        "needs_review": false
+        "needs_review": false,
+        "description": "കൊതുകിനെ അകറ്റുന്ന കോയിൽ"
       },
       "ur": {
         "name": "مچھر کوائل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "مچھر بھگانے والی کوائل"
       }
     }
   },
@@ -4451,12 +4591,14 @@
       "hi": {
         "name": "मल्टीग्रेन आटा",
         "aliases": "maltigrena ata",
-        "needs_review": false
+        "needs_review": false,
+        "description": "कई अनाजों का मिला-जुला आटा"
       },
       "ur": {
         "name": "ملٹی گرین آٹا",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "کئی اناجوں کا ملا ہوا آٹا"
       }
     }
   },
@@ -4503,32 +4645,38 @@
       "hi": {
         "name": "सरसों का तेल",
         "aliases": "sarasom tela",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ठंडा पेरा हुआ सरसों का तेल"
       },
       "ta": {
         "name": "கடுகு எண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "குளிர் பிழிந்த கடுகு எண்ணெய்"
       },
       "te": {
         "name": "ఆవనూనె",
         "aliases": "avanune",
-        "needs_review": false
+        "needs_review": false,
+        "description": "చల్లగా తీసిన ఆవ నూనె"
       },
       "kn": {
         "name": "ಸಾಸಿವೆ ಎಣ್ಣೆ",
         "aliases": "sasive enne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ತಣ್ಣಗೆ ಹಿಂಡಿದ ಸಾಸಿವೆ ಎಣ್ಣೆ"
       },
       "ml": {
         "name": "കടുകെണ്ണ",
         "aliases": "katukenna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "തണുപ്പിൽ ആട്ടിയെടുത്ത കടുക് എണ്ണ"
       },
       "ur": {
         "name": "سرسوں کا تیل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ٹھنڈا نکالا ہوا سرسوں کا تیل"
       }
     }
   },
@@ -4539,32 +4687,38 @@
       "hi": {
         "name": "सरसों",
         "aliases": "rai sarson sarasom",
-        "needs_review": false
+        "needs_review": false,
+        "description": "साबुत सरसों के दाने"
       },
       "ta": {
         "name": "கடுகு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முழு கடுகு"
       },
       "te": {
         "name": "ఆవాలు",
         "aliases": "avalu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "సంపూర్ణ ఆవాలు"
       },
       "kn": {
         "name": "ಸಾಸಿವೆ",
         "aliases": "sasive",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಸಂಪೂರ್ಣ ಸಾಸಿವೆ"
       },
       "ml": {
         "name": "കടുക്",
         "aliases": "katuk",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുഴുവൻ കടുക്"
       },
       "ur": {
         "name": "رائی",
         "aliases": "rai",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ثابت سرسوں کے دانے"
       }
     }
   },
@@ -4575,12 +4729,14 @@
       "hi": {
         "name": "ओट्स",
         "aliases": "oats jai otsa",
-        "needs_review": false
+        "needs_review": false,
+        "description": "नाश्ते के रोल्ड ओट्स"
       },
       "ur": {
         "name": "اوٹس",
         "aliases": "oats",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ناشتے کے رولڈ اوٹس"
       }
     }
   },
@@ -4699,32 +4855,38 @@
       "hi": {
         "name": "पनीर",
         "aliases": "paneer panira",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ताज़ा पनीर"
       },
       "ta": {
         "name": "பன்னீர்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "புதிய பன்னீர்"
       },
       "te": {
         "name": "పనీర్",
         "aliases": "panir",
-        "needs_review": false
+        "needs_review": false,
+        "description": "తాజా పన్నీర్"
       },
       "kn": {
         "name": "ಪನೀರ್",
         "aliases": "panir",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ತಾಜಾ ಪನೀರ್"
       },
       "ml": {
         "name": "പനീർ",
         "aliases": "pani",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പുതിയ പനീർ"
       },
       "ur": {
         "name": "پنیر",
         "aliases": "paneer",
-        "needs_review": false
+        "needs_review": false,
+        "description": "تازہ پنیر"
       }
     }
   },
@@ -4807,32 +4969,38 @@
       "hi": {
         "name": "मूंगफली",
         "aliases": "moongphali mumgaphali",
-        "needs_review": false
+        "needs_review": false,
+        "description": "कच्ची मूंगफली"
       },
       "ta": {
         "name": "நிலக்கடலை",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "பச்சை நிலக்கடலை"
       },
       "te": {
         "name": "వేరుశనగ",
         "aliases": "verushanaga",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ముడి వేరుశనగ"
       },
       "kn": {
         "name": "ಕಡಲೆಕಾಯಿ",
         "aliases": "kadalekayi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಹಸಿ ಕಡಲೆಕಾಯಿ"
       },
       "ml": {
         "name": "കപ്പലണ്ടി",
         "aliases": "kappalanti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പച്ച നിലക്കടല"
       },
       "ur": {
         "name": "مونگ پھلی",
         "aliases": "moongphali",
-        "needs_review": false
+        "needs_review": false,
+        "description": "کچی مونگ پھلی"
       }
     }
   },
@@ -4879,32 +5047,38 @@
       "hi": {
         "name": "पोहा",
         "aliases": "poha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "चपटे चावल के पोहे"
       },
       "ta": {
         "name": "அவல்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "அவல்"
       },
       "te": {
         "name": "అటుకులు",
         "aliases": "atukulu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "అటుకులు"
       },
       "kn": {
         "name": "ಅವಲಕ್ಕಿ",
         "aliases": "avalakki",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಅವಲಕ್ಕಿ"
       },
       "ml": {
         "name": "അവൽ",
         "aliases": "ava",
-        "needs_review": false
+        "needs_review": false,
+        "description": "അവിൽ"
       },
       "ur": {
         "name": "پوہا",
         "aliases": "poha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "چپٹے چاول کے پوہے"
       }
     }
   },
@@ -4951,32 +5125,38 @@
       "hi": {
         "name": "पोन्नी चावल",
         "aliases": "ponni cavala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "दक्षिण भारत का लोकप्रिय चावल"
       },
       "ta": {
         "name": "பொன்னி அரிசி",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "பிரபலமான தென்னிந்திய அரிசி"
       },
       "te": {
         "name": "పొన్ని బియ్యం",
         "aliases": "ponni biyyam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ప్రసిద్ధ దక్షిణ భారత బియ్యం"
       },
       "kn": {
         "name": "ಪೊನ್ನಿ ಅಕ್ಕಿ",
         "aliases": "ponni akki",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಜನಪ್ರಿಯ ದಕ್ಷಿಣ ಭಾರತದ ಅಕ್ಕಿ"
       },
       "ml": {
         "name": "പൊന്നി അരി",
         "aliases": "ponni ari",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പ്രശസ്തമായ ദക്ഷിണേന്ത്യൻ അരി"
       },
       "ur": {
         "name": "پونی چاول",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "مشہور جنوبی ہند کا چاول"
       }
     }
   },
@@ -5167,32 +5347,38 @@
       "hi": {
         "name": "चितरा राजमा",
         "aliases": "citara rajama",
-        "needs_review": false
+        "needs_review": false,
+        "description": "चितकबरे राजमा"
       },
       "ta": {
         "name": "சித்ரா ராஜ்மா",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "புள்ளி ராஜ்மா பீன்ஸ்"
       },
       "te": {
         "name": "చిత్ర రాజ్మా",
         "aliases": "citra rajma",
-        "needs_review": false
+        "needs_review": false,
+        "description": "మచ్చల రాజ్మా చిక్కుడు"
       },
       "kn": {
         "name": "ಚಿತ್ರಾ ರಾಜ್ಮಾ",
         "aliases": "citra rajma",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಚುಕ್ಕೆ ರಾಜ್ಮಾ ಬೀನ್ಸ್"
       },
       "ml": {
         "name": "ചിത്ര രാജ്മ",
         "aliases": "citra rajma",
-        "needs_review": false
+        "needs_review": false,
+        "description": "പുള്ളിയുള്ള രാജ്മ ബീൻസ്"
       },
       "ur": {
         "name": "چترا راجما",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "چتکبرے راجما"
       }
     }
   },
@@ -5363,32 +5549,38 @@
       "hi": {
         "name": "लाल मिर्च पाउडर",
         "aliases": "lal mirch lala mirca paudara",
-        "needs_review": false
+        "needs_review": false,
+        "description": "पिसी लाल मिर्च"
       },
       "ta": {
         "name": "மிளகாய் தூள்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "சிவப்பு மிளகாய் தூள்"
       },
       "te": {
         "name": "ఎర్ర కారం",
         "aliases": "erra karam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ఎర్ర మిర్చి పొడి"
       },
       "kn": {
         "name": "ಕೆಂಪು ಮೆಣಸಿನ ಪುಡಿ",
         "aliases": "kempu menasina pudi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕೆಂಪು ಮೆಣಸಿನ ಪುಡಿ"
       },
       "ml": {
         "name": "മുളകുപൊടി",
         "aliases": "mulakupoti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുളക് പൊടി"
       },
       "ur": {
         "name": "لال مرچ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "پسی لال مرچ"
       }
     }
   },
@@ -5579,32 +5771,38 @@
       "hi": {
         "name": "शैम्पू",
         "aliases": "shaimpu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "बालों का शैम्पू"
       },
       "ta": {
         "name": "ஷாம்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "முடி ஷாம்பு"
       },
       "te": {
         "name": "షాంపూ",
         "aliases": "shampu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "జుట్టు షాంపూ"
       },
       "kn": {
         "name": "ಶಾಂಪೂ",
         "aliases": "shampu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕೂದಲಿನ ಶ್ಯಾಂಪೂ"
       },
       "ml": {
         "name": "ഷാംപൂ",
         "aliases": "shampu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മുടിക്കുള്ള ഷാംപൂ"
       },
       "ur": {
         "name": "شیمپو",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "بالوں کا شیمپو"
       }
     }
   },
@@ -5647,32 +5845,38 @@
       "hi": {
         "name": "सोना मसूरी चावल",
         "aliases": "sona masuri cavala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "रोज़ के इस्तेमाल का मध्यम दाने वाला चावल"
       },
       "ta": {
         "name": "சோனா மசூரி அரிசி",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "அன்றாட உபயோகத்திற்கான நடுத்தர அரிசி"
       },
       "te": {
         "name": "సోనా మసూరి బియ్యం",
         "aliases": "sona masuri biyyam",
-        "needs_review": false
+        "needs_review": false,
+        "description": "రోజువారీ వాడకానికి మధ్యస్థ బియ్యం"
       },
       "kn": {
         "name": "ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ",
         "aliases": "sona masuri akki",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ದಿನನಿತ್ಯದ ಬಳಕೆಯ ಮಧ್ಯಮ ಕಾಳಿನ ಅಕ್ಕಿ"
       },
       "ml": {
         "name": "സോന മസൂരി അരി",
         "aliases": "sona masuri ari",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ദിവസവും ഉപയോഗിക്കാവുന്ന ഇടത്തരം അരി"
       },
       "ur": {
         "name": "سونا مسوری چاول",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "روزمرہ استعمال کا درمیانے دانے والا چاول"
       }
     }
   },
@@ -5683,32 +5887,38 @@
       "hi": {
         "name": "सूजी",
         "aliases": "sooji rava suji",
-        "needs_review": false
+        "needs_review": false,
+        "description": "सूजी (रवा)"
       },
       "ta": {
         "name": "ரவை",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ரவை"
       },
       "te": {
         "name": "రవ్వ",
         "aliases": "ravva",
-        "needs_review": false
+        "needs_review": false,
+        "description": "రవ్వ"
       },
       "kn": {
         "name": "ರವೆ",
         "aliases": "rave",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ರವೆ"
       },
       "ml": {
         "name": "റവ",
         "aliases": "rava",
-        "needs_review": false
+        "needs_review": false,
+        "description": "റവ"
       },
       "ur": {
         "name": "سوجی",
         "aliases": "sooji",
-        "needs_review": false
+        "needs_review": false,
+        "description": "سوجی (روا)"
       }
     }
   },
@@ -5755,32 +5965,38 @@
       "hi": {
         "name": "चीनी",
         "aliases": "chini shakkar cheeni cini",
-        "needs_review": false
+        "needs_review": false,
+        "description": "सफ़ेद रिफाइंड चीनी"
       },
       "ta": {
         "name": "சர்க்கரை",
         "aliases": "sarkarai",
-        "needs_review": false
+        "needs_review": false,
+        "description": "வெள்ளை சர்க்கரை"
       },
       "te": {
         "name": "చక్కెర",
         "aliases": "chakkera cakkera",
-        "needs_review": false
+        "needs_review": false,
+        "description": "తెల్ల చక్కెర"
       },
       "kn": {
         "name": "ಸಕ್ಕರೆ",
         "aliases": "sakkare",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಬಿಳಿ ಸಕ್ಕರೆ"
       },
       "ml": {
         "name": "പഞ്ചസാര",
         "aliases": "panchasara pancasara",
-        "needs_review": false
+        "needs_review": false,
+        "description": "വെള്ള പഞ്ചസാര"
       },
       "ur": {
         "name": "چینی",
         "aliases": "chini shakar",
-        "needs_review": false
+        "needs_review": false,
+        "description": "سفید صاف شدہ چینی"
       }
     }
   },
@@ -5791,32 +6007,38 @@
       "hi": {
         "name": "सूरजमुखी तेल",
         "aliases": "surajamukhi tela",
-        "needs_review": false
+        "needs_review": false,
+        "description": "सूरजमुखी का रिफाइंड खाना पकाने का तेल"
       },
       "ta": {
         "name": "சூரியகாந்தி எண்ணெய்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "சுத்திகரித்த சூரியகாந்தி சமையல் எண்ணெய்"
       },
       "te": {
         "name": "సూర్యకాంతి నూనె",
         "aliases": "suryakamti nune",
-        "needs_review": false
+        "needs_review": false,
+        "description": "శుద్ధి చేసిన పొద్దుతిరుగుడు వంట నూనె"
       },
       "kn": {
         "name": "ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ",
         "aliases": "suryakamti enne",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಶುದ್ಧೀಕರಿಸಿದ ಸೂರ್ಯಕಾಂತಿ ಅಡುಗೆ ಎಣ್ಣೆ"
       },
       "ml": {
         "name": "സൂര്യകാന്തി എണ്ണ",
         "aliases": "suryakanti enna",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ശുദ്ധീകരിച്ച സൂര്യകാന്തി പാചക എണ്ണ"
       },
       "ur": {
         "name": "سورج مکھی تیل",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "صاف شدہ سورج مکھی کا کھانا پکانے کا تیل"
       }
     }
   },
@@ -5899,32 +6121,38 @@
       "hi": {
         "name": "चाय पत्ती",
         "aliases": "chai chaay tea caya patti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "खुली काली चाय पत्ती"
       },
       "ta": {
         "name": "தேயிலை",
         "aliases": "tea chai",
-        "needs_review": false
+        "needs_review": false,
+        "description": "அவிழ்த்த கருப்பு தேயிலை"
       },
       "te": {
         "name": "తేయాకు",
         "aliases": "tea chai teyaku",
-        "needs_review": false
+        "needs_review": false,
+        "description": "విడి నల్ల టీ ఆకులు"
       },
       "kn": {
         "name": "ಟೀ ಪುಡಿ",
         "aliases": "tea chai pudi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಬಿಡಿ ಕಪ್ಪು ಚಹಾ ಎಲೆ"
       },
       "ml": {
         "name": "തേയില",
         "aliases": "tea chai teyila",
-        "needs_review": false
+        "needs_review": false,
+        "description": "അയഞ്ഞ കറുത്ത ചായപ്പൊടി"
       },
       "ur": {
         "name": "چائے کی پتی",
         "aliases": "chai tea",
-        "needs_review": false
+        "needs_review": false,
+        "description": "کھلی کالی چائے کی پتی"
       }
     }
   },
@@ -5971,32 +6199,38 @@
       "hi": {
         "name": "टोंड दूध",
         "aliases": "tomda dudha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "टोंड डेयरी दूध"
       },
       "ta": {
         "name": "டோண்டு பால்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "டோன்டு பால்"
       },
       "te": {
         "name": "టోన్డ్ పాలు",
         "aliases": "tond palu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "టోన్డ్ పాలు"
       },
       "kn": {
         "name": "ಟೋನ್ಡ್ ಹಾಲು",
         "aliases": "tond halu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಟೋನ್ಡ್ ಹಾಲು"
       },
       "ml": {
         "name": "ടോൺഡ് പാൽ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ടോൺഡ് പാൽ"
       },
       "ur": {
         "name": "ٹونڈ دودھ",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ٹونڈ ڈیری دودھ"
       }
     }
   },
@@ -6007,32 +6241,38 @@
       "hi": {
         "name": "तूर दाल",
         "aliases": "toor dal arhar tura dala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "अरहर की दाल (तूर)"
       },
       "ta": {
         "name": "துவரம் பருப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "துவரம் பருப்பு"
       },
       "te": {
         "name": "కందిపప్పు",
         "aliases": "kamdipappu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "కంది పప్పు"
       },
       "kn": {
         "name": "ತೊಗರಿ ಬೇಳೆ",
         "aliases": "togari bele",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ತೊಗರಿ ಬೇಳೆ"
       },
       "ml": {
         "name": "തുവരപ്പരിപ്പ്",
         "aliases": "tuvarapparipp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "തുവരപ്പരിപ്പ്"
       },
       "ur": {
         "name": "تور دال",
         "aliases": "toor dal",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ارہر کی دال (تور)"
       }
     }
   },
@@ -6043,12 +6283,14 @@
       "hi": {
         "name": "टूथब्रश",
         "aliases": "tuthabrasha",
-        "needs_review": false
+        "needs_review": false,
+        "description": "मुलायम रेशे वाला टूथब्रश"
       },
       "ur": {
         "name": "ٹوتھ برش",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "نرم ریشوں والا ٹوتھ برش"
       }
     }
   },
@@ -6059,32 +6301,38 @@
       "hi": {
         "name": "टूथपेस्ट",
         "aliases": "manjan toothpaste tuthapesta",
-        "needs_review": false
+        "needs_review": false,
+        "description": "फ्लोराइड वाला टूथपेस्ट"
       },
       "ta": {
         "name": "பற்பசை",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ஃப்ளோரைடு பற்பசை"
       },
       "te": {
         "name": "టూత్‌పేస్ట్",
         "aliases": "tut pest",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ఫ్లోరైడ్ టూత్‌పేస్ట్"
       },
       "kn": {
         "name": "ಟೂತ್‌ಪೇಸ್ಟ್",
         "aliases": "tut pest",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಫ್ಲೋರೈಡ್ ಟೂತ್‌ಪೇಸ್ಟ್"
       },
       "ml": {
         "name": "ടൂത്ത്പേസ്റ്റ്",
         "aliases": "tuttpesrr",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ഫ്ലൂറൈഡ് ടൂത്ത്പേസ്റ്റ്"
       },
       "ur": {
         "name": "ٹوتھ پیسٹ",
         "aliases": "manjan",
-        "needs_review": false
+        "needs_review": false,
+        "description": "فلورائیڈ والا ٹوتھ پیسٹ"
       }
     }
   },
@@ -6095,32 +6343,38 @@
       "hi": {
         "name": "हल्दी",
         "aliases": "haldi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "पिसी हल्दी"
       },
       "ta": {
         "name": "மஞ்சள் தூள்",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "மஞ்சள் தூள்"
       },
       "te": {
         "name": "పసుపు",
         "aliases": "pasupu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "పసుపు పొడి"
       },
       "kn": {
         "name": "ಅರಿಶಿನ ಪುಡಿ",
         "aliases": "arishina pudi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಅರಿಶಿನ ಪುಡಿ"
       },
       "ml": {
         "name": "മഞ്ഞൾ പൊടി",
         "aliases": "manna poti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "മഞ്ഞൾ പൊടി"
       },
       "ur": {
         "name": "ہلدی",
         "aliases": "haldi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "پسی ہلدی"
       }
     }
   },
@@ -6131,32 +6385,38 @@
       "hi": {
         "name": "धुली उड़द दाल",
         "aliases": "dhuli uda dala",
-        "needs_review": false
+        "needs_review": false,
+        "description": "उड़द की धुली दाल"
       },
       "ta": {
         "name": "உளுத்தம் பருப்பு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "உளுந்து பருப்பு"
       },
       "te": {
         "name": "మినప్పప్పు",
         "aliases": "minappappu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "మినప పప్పు"
       },
       "kn": {
         "name": "ಉದ್ದಿನ ಬೇಳೆ",
         "aliases": "uddina bele",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಉದ್ದಿನ ಬೇಳೆ"
       },
       "ml": {
         "name": "ഉഴുന്ന് പരിപ്പ്",
         "aliases": "ulunn paripp",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ഉഴുന്നു പരിപ്പ്"
       },
       "ur": {
         "name": "اڑد دال",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "اُڑد کی دُھلی دال"
       }
     }
   },
@@ -6296,32 +6556,38 @@
       "hi": {
         "name": "गेहूं का आटा",
         "aliases": "atta gehu gehum ata",
-        "needs_review": false
+        "needs_review": false,
+        "description": "चक्की में पिसा साबुत गेहूं का आटा"
       },
       "ta": {
         "name": "கோதுமை மாவு",
         "aliases": "",
-        "needs_review": false
+        "needs_review": false,
+        "description": "எந்திரத்தில் அரைத்த முழு கோதுமை மாவு"
       },
       "te": {
         "name": "గోధుమ పిండి",
         "aliases": "godhuma pimdi",
-        "needs_review": false
+        "needs_review": false,
+        "description": "రుబ్బిన పూర్తి గోధుమ పిండి"
       },
       "kn": {
         "name": "ಗೋಧಿ ಹಿಟ್ಟು",
         "aliases": "godhi hittu",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ಕಲ್ಲಿನಲ್ಲಿ ಬೀಸಿದ ಪೂರ್ಣ ಗೋಧಿ ಹಿಟ್ಟು"
       },
       "ml": {
         "name": "ഗോതമ്പ് പൊടി",
         "aliases": "gotamp poti",
-        "needs_review": false
+        "needs_review": false,
+        "description": "ചക്കിയിൽ പൊടിച്ച മുഴുവൻ ഗോതമ്പ് പൊടി"
       },
       "ur": {
         "name": "گندم کا آٹا",
         "aliases": "atta",
-        "needs_review": false
+        "needs_review": false,
+        "description": "چکی میں پسا ہوا سالم گندم کا آٹا"
       }
     }
   }
