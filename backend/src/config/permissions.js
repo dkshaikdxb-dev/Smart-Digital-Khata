@@ -19,6 +19,8 @@
 //                     APPROVE them (the human gate that lets a Tier 1/2 item ever
 //                     be scheduled/published). Held by the ops/growth role that
 //                     already owns platform settings (finance), plus super.
+//   ads:view          see the geo-targeted promo campaigns + their targets
+//   ads:manage        create/edit/delete campaigns and their geo targets
 
 const ALL = Object.freeze([
   'shops:view',
@@ -32,6 +34,8 @@ const ALL = Object.freeze([
   'revenue:view',
   'settings:manage',
   'content:manage',
+  'ads:view',
+  'ads:manage',
 ]);
 
 // Role → permission list. Kept as plain arrays for readability; wrapped in Sets
@@ -73,6 +77,16 @@ const ROLE_PERMS = Object.freeze({
     // platform settings owns the newsroom). super inherits it via ALL.
     'content:manage',
   ],
+
+  // Marketing: owns the geo-targeted promo campaigns. Can view and manage
+  // campaigns + their targets, and view shops (so the campaign UI can pick a
+  // shop to link/feature). No billing/settings, no moderation, no admin-role
+  // management. super inherits ads:* via ALL.
+  marketing: [
+    'ads:view',
+    'ads:manage',
+    'shops:view',
+  ],
 });
 
 // Cached Sets per role so repeated hasPermission() checks avoid rebuilding.
@@ -95,7 +109,7 @@ function hasPermission(adminRole, perm) {
 
 module.exports = {
   ALL_PERMISSIONS: ALL,
-  ADMIN_ROLES: Object.freeze(['super', 'support', 'finance', 'moderation']),
+  ADMIN_ROLES: Object.freeze(['super', 'support', 'finance', 'moderation', 'marketing']),
   permissionsFor,
   hasPermission,
 };

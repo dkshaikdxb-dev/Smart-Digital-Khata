@@ -11,6 +11,7 @@ const exportCtrl = require('../controllers/admin-export.controller');
 const dashboardCtrl = require('../controllers/dashboard.controller');
 const distributorCtrl = require('../controllers/distributor.controller');
 const analyticsCtrl = require('../controllers/admin-analytics.controller');
+const adsCtrl = require('../controllers/ads.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -24,7 +25,7 @@ const reasonSchema = Joi.object({
 });
 
 const adminRoleSchema = Joi.object({
-  admin_role: Joi.string().valid('super', 'support', 'finance', 'moderation').allow(null),
+  admin_role: Joi.string().valid('super', 'support', 'finance', 'moderation', 'marketing').allow(null),
   reason: Joi.string().max(1000).allow('', null),
 }).min(1);
 
@@ -61,6 +62,44 @@ const rewardRuleSchema = Joi.object({
 // Flag/unflag a referral code as a Khata Mitra agent code.
 const setMitraSchema = Joi.object({
   is_mitra: Joi.boolean().required(),
+});
+
+// Geo-targeted promo campaigns (ADS2). A campaign carries its geo targets; a
+// target is a town(=shop.city)/village/pincode value, or 'all' (everyone, one
+// row, geo_value null). link_* consistency + reference existence are checked in
+// the controller (needs the DB); here we validate shape/enums.
+const adTargetSchema = Joi.object({
+  geo_type: Joi.string().valid('town', 'village', 'pincode', 'all').required(),
+  geo_value: Joi.string().trim().max(120).when('geo_type', {
+    is: 'all',
+    then: Joi.optional().allow(null, ''),
+    otherwise: Joi.required(),
+  }),
+});
+
+const campaignSchema = Joi.object({
+  style: Joi.string().valid('offer', 'product', 'shop', 'festival').required(),
+  title: Joi.string().max(200).required(),
+  offer_text: Joi.string().max(200).allow('', null),
+  subtitle: Joi.string().max(300).allow('', null),
+  glyph: Joi.string().max(40).allow('', null),
+  image_url: Joi.string().max(2000).allow('', null),
+  i18n: Joi.object().default({}),
+  advertiser: Joi.string().max(200).allow('', null),
+  link_type: Joi.string().valid('none', 'shop', 'product', 'brand', 'url').default('none'),
+  link_shop_id: Joi.string().uuid().allow(null),
+  link_product_id: Joi.string().uuid().allow(null),
+  link_url: Joi.string().max(2000).allow('', null),
+  is_seasonal: Joi.boolean().default(false),
+  starts_at: Joi.date().iso().allow(null),
+  ends_at: Joi.date().iso().allow(null),
+  priority: Joi.number().integer().min(0).max(1000000).default(0),
+  status: Joi.string().valid('draft', 'active', 'paused').default('draft'),
+  targets: Joi.array().items(adTargetSchema).default([]),
+});
+
+const adStatusSchema = Joi.object({
+  status: Joi.string().valid('draft', 'active', 'paused').required(),
 });
 
 // auth guarantees role='admin'; loadAdminRole resolves the admin SUB-role onto
@@ -129,5 +168,16 @@ router.get('/exports/users.csv', requirePerm('users:view'), asyncHandler(exportC
 router.get('/exports/moderation-log.csv', requirePerm('audit:view'), asyncHandler(exportCtrl.moderationLogCsv));
 router.get('/exports/referrals.csv', requirePerm('revenue:view'), asyncHandler(exportCtrl.referralsCsv));
 router.get('/exports/revenue.csv', requirePerm('revenue:view'), asyncHandler(exportCtrl.revenueCsv));
+
+// Geo-targeted promo campaigns (ADS2). Reads gated with ads:view, writes with
+// ads:manage (held by the marketing role, plus super via ALL). geo-options is
+// registered BEFORE the :id routes so it is not captured as a campaign id.
+router.get('/ads', requirePerm('ads:view'), asyncHandler(adsCtrl.list));
+router.get('/ads/geo-options', requirePerm('ads:view'), asyncHandler(adsCtrl.geoOptions));
+router.get('/ads/:id', requirePerm('ads:view'), asyncHandler(adsCtrl.getOne));
+router.post('/ads', requirePerm('ads:manage'), validate(campaignSchema), asyncHandler(adsCtrl.create));
+router.put('/ads/:id', requirePerm('ads:manage'), validate(campaignSchema), asyncHandler(adsCtrl.update));
+router.patch('/ads/:id/status', requirePerm('ads:manage'), validate(adStatusSchema), asyncHandler(adsCtrl.setStatus));
+router.delete('/ads/:id', requirePerm('ads:manage'), asyncHandler(adsCtrl.remove));
 
 module.exports = router;
