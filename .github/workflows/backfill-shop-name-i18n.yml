@@ -1,0 +1,32 @@
+name: Backfill shop-name translations
+
+# Manual only. Fills shop_name_i18n for EXISTING shops on the VPS from each
+# shop's English name (batch SHOPNAME). New signups/renames are auto-seeded by
+# the API, so this is the one-shot catch-up for shops that predate the feature.
+# The backfill is idempotent (UPSERT of source='auto' rows) and never clobbers a
+# name an owner has manually overridden (source='owner'), so it is safe to
+# re-run. This is derived localisation data, not demo data, so NO FORCE_DEMO.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: backfill-shop-name-i18n-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Backfill shop-name translations on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backfill over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            docker compose exec -T backend npm run backfill:shop-name-i18n

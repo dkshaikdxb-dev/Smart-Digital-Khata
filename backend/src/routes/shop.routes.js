@@ -32,8 +32,24 @@ const updateSchema = Joi.object({
   delivery_hours: Joi.string().allow('', null).max(120),
 });
 
+// Owner override of the native shop name (batch SHOPNAME). One language per PUT;
+// the name is validated + trimmed + length-capped in the controller.
+const nameI18nParamSchema = Joi.object({
+  lang: Joi.string().trim().lowercase().required(),
+});
+const nameI18nBodySchema = Joi.object({
+  name: Joi.string().trim().min(1).max(120).required(),
+});
+
 router.use(auth(['owner', 'staff']));
 router.get('/me', asyncHandler(ctrl.getMine));
 router.patch('/me', validate(updateSchema), asyncHandler(ctrl.updateMine));
+router.get('/me/name-i18n', asyncHandler(ctrl.getNameI18n));
+router.put(
+  '/me/name-i18n/:lang',
+  validate(nameI18nParamSchema, 'params'),
+  validate(nameI18nBodySchema),
+  asyncHandler(ctrl.putNameI18n)
+);
 
 module.exports = router;

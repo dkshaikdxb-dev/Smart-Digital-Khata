@@ -25,6 +25,9 @@ const listSchema = Joi.object({
   lat: Joi.number().min(-90).max(90),
   lng: Joi.number().min(-180).max(180),
   fulfillment: Joi.string().valid('pickup', 'delivery'),
+  // Display language for the localized shop name (batch SHOPNAME). resolveLang
+  // maps anything unknown/absent to 'en' (raw English name).
+  lang: Joi.string(),
   limit: Joi.number().integer(),
 });
 

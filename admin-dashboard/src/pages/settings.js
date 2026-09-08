@@ -3,7 +3,10 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataSaverToggle from '../components/DataSaverToggle';
 import { apiFetch } from '../lib/api';
-import { useLang } from '../lib/i18n';
+import { useLang, LANGS } from '../lib/i18n';
+
+// Display name for a language code (native script), for the shop-name-i18n panel.
+const langName = (code) => (LANGS.find((l) => l.code === code)?.name || code);
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -44,6 +47,20 @@ export default function Settings() {
   // Discovery
   const [discoveryMsg, setDiscoveryMsg] = useState('');
 
+  // Shop name in other languages (auto-localized; owner can override per lang).
+  const [nameI18n, setNameI18n] = useState(null); // { english_name, languages[], names[] }
+  const [nameEdits, setNameEdits] = useState({}); // { [lang]: string }
+  const [nameI18nMsg, setNameI18nMsg] = useState('');
+
+  function loadNameI18n() {
+    apiFetch('/api/shops/me/name-i18n').then((r) => {
+      setNameI18n(r);
+      const edits = {};
+      for (const row of r.names || []) edits[row.lang] = row.name;
+      setNameEdits(edits);
+    }).catch(console.error);
+  }
+
   // Delivery & pickup (per-shop fulfillment). Edited in rupees; saved in paise.
   const [ful, setFul] = useState(null);
   const [fulMsg, setFulMsg] = useState('');
@@ -80,6 +97,7 @@ export default function Settings() {
     apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
     loadPayment();
     loadFaqs();
+    loadNameI18n();
   }, [router]);
 
   // Build the consumer link and render its QR client-side (window + the qrcode
@@ -196,6 +214,20 @@ export default function Settings() {
     } catch (e) { setDiscoveryMsg(e.message); }
   }
 
+  async function saveNameI18n(lang) {
+    setNameI18nMsg('');
+    const name = (nameEdits[lang] || '').trim();
+    if (!name) { setNameI18nMsg(t('sfaq.needBoth')); return; }
+    try {
+      await apiFetch(`/api/shops/me/name-i18n/${lang}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name }),
+      });
+      loadNameI18n();
+      setNameI18nMsg(t('common.saved'));
+    } catch (e) { setNameI18nMsg(e.message); }
+  }
+
   async function saveFulfillment() {
     setFulMsg('');
     try {
@@ -298,6 +330,43 @@ export default function Settings() {
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
         </div>
+
+        {nameI18n && nameI18n.languages && nameI18n.languages.length > 0 && (
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('snl.title')}</h3>
+          <p className="muted">{t('snl.desc')}</p>
+          <div className="muted" style={{ marginBottom: 12 }}>
+            {t('snl.english')}: <strong style={{ color: '#e2e8f0' }}>{nameI18n.english_name}</strong>
+          </div>
+          <div style={{ display: 'grid', gap: 14 }}>
+            {nameI18n.languages.map((code) => {
+              const row = (nameI18n.names || []).find((n) => n.lang === code);
+              return (
+                <div key={code} style={{ borderBottom: '1px solid #334155', paddingBottom: 12 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                    <label className="muted" style={{ margin: 0 }}>{langName(code)}</label>
+                    {row && (
+                      <span className="badge">{row.source === 'owner' ? t('snl.owner') : t('snl.auto')}</span>
+                    )}
+                    {row && row.needs_review && (
+                      <span className="badge" style={{ background: '#7c2d12', color: '#fed7aa' }}>{t('snl.review')}</span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <input
+                      style={{ flex: 1 }}
+                      value={nameEdits[code] ?? ''}
+                      onChange={(e) => setNameEdits({ ...nameEdits, [code]: e.target.value })}
+                    />
+                    <button className="secondary" onClick={() => saveNameI18n(code)}>{t('snl.save')}</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {nameI18nMsg && <div className="muted" style={{ marginTop: 10 }}>{nameI18nMsg}</div>}
+        </div>
+        )}
 
         <div className="card" style={{ maxWidth: 520 }}>
           <h3>{t('ds.title')}</h3>
