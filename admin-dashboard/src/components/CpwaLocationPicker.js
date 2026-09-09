@@ -36,6 +36,15 @@ function writeStoredLoc(loc) {
   } catch (e) {
     /* storage blocked — the in-memory choice still applies for this session */
   }
+  // Nudge any interested component (e.g. the promo slider) to re-read the saved
+  // location and re-fetch, so a location change takes effect without a reload.
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('skhata:location-changed', { detail: loc }));
+    }
+  } catch (e) {
+    /* CustomEvent unsupported — the value is still persisted for the next load */
+  }
 }
 
 function hasAny(loc) {

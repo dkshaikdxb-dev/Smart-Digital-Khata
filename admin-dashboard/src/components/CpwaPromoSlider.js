@@ -83,31 +83,40 @@ export default function CpwaPromoSlider() {
   const trackRef = useRef(null);
   const activeIndexRef = useRef(0);
   const firedRef = useRef(new Set()); // promo ids that already sent an impression
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
-  // Fetch on mount and whenever the language changes (re-fetching localized
-  // creative). The saved location is read fresh from localStorage at fetch time.
-  // Empty result or any error → clear promos → the band renders nothing.
-  useEffect(() => {
-    let cancelled = false;
+  // Fetch localized, geo-matched promos. The saved location is read fresh from
+  // localStorage at fetch time; empty result or any error → clear → the band
+  // renders nothing.
+  const loadPromos = useCallback(() => {
     const loc = readLoc();
     const q = new URLSearchParams();
     if (lang) q.set('lang', lang);
     if (loc.town) q.set('town', loc.town);
     if (loc.village) q.set('village', loc.village);
     if (loc.pincode) q.set('pincode', loc.pincode);
-    publicFetch(`/api/public/promos?${q.toString()}`)
+    return publicFetch(`/api/public/promos?${q.toString()}`)
       .then((r) => {
-        if (cancelled) return;
+        if (!mountedRef.current) return;
         const list = r && Array.isArray(r.promos) ? r.promos.slice(0, MAX_SLIDES) : [];
         setPromos(list);
       })
       .catch(() => {
-        if (!cancelled) setPromos([]);
+        if (mountedRef.current) setPromos([]);
       });
-    return () => {
-      cancelled = true;
-    };
   }, [lang]);
+
+  // Run on mount + language change, and re-run immediately when the shopper
+  // changes their saved location in the picker (CpwaLocationPicker dispatches
+  // the 'skhata:location-changed' event on save).
+  useEffect(() => {
+    loadPromos();
+    if (typeof window === 'undefined') return undefined;
+    const onLoc = () => loadPromos();
+    window.addEventListener('skhata:location-changed', onLoc);
+    return () => window.removeEventListener('skhata:location-changed', onLoc);
+  }, [loadPromos]);
 
   // Track scroll position → active dot. Uses the inline-start edge so it is
   // correct in both LTR and RTL (Urdu) without special-casing browser scrollLeft.
