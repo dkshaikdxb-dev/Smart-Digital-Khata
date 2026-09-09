@@ -1,0 +1,31 @@
+name: Seed promo demo
+
+# Manual only. Makes the geo-targeted promo band visible end-to-end for testing:
+# fills blank town/village/pincode on the demo shops and creates a few clearly
+# labelled sample campaigns (advertiser='DEMO Seed'). Idempotent and reversible
+# (DELETE FROM ad_campaigns WHERE advertiser='DEMO Seed'). Writes demo data to
+# whatever DB the VPS points at, so run it deliberately.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: seed-promo-demo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    name: Seed promo demo on the VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Seed over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
+            docker compose exec -T backend npm run seed:promo-demo

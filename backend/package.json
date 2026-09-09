@@ -17,6 +17,7 @@
     "import:i18n": "node src/utils/import-i18n-overrides.js",
     "backfill:shop-name-i18n": "node src/utils/backfill-shop-name-i18n.js",
     "audit:shop-name-i18n": "node src/utils/audit-shop-name-i18n.js",
+    "seed:promo-demo": "node src/utils/seed-promo-demo.js",
     "refresh:search-text": "node src/utils/refresh-search-text.js",
     "test": "jest --passWithNoTests"
   },
