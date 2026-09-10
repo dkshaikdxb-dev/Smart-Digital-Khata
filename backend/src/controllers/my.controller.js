@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
+const { getConsumerPrepayConfig } = require('../utils/consumerPrepay');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
 const {
@@ -35,7 +36,11 @@ exports.khata = async (req, res) => {
   const shops = r.rows;
   const total_outstanding = shops.reduce((sum, s) => sum + Number(s.balance), 0);
 
-  res.json({ total_outstanding, shops });
+  // Surface the live single-merchant pre-pay config so the consumer app can offer
+  // the "Add money / Pre-pay" control and cap the entered amount. Disabled-safe.
+  const prepay = await getConsumerPrepayConfig();
+
+  res.json({ total_outstanding, shops, prepay });
 };
 
 /**
@@ -208,9 +213,28 @@ exports.pay = async (req, res) => {
   );
   if (!own.rowCount) throw ApiError.notFound('No khata found at this shop');
   const customer = own.rows[0];
+  const balance = Number(customer.balance);
 
-  // Never let a customer overpay what they owe at this shop.
-  if (amount > Number(customer.balance)) {
+  // Pay-guard. When single-merchant pre-pay is ON, a customer may clear the due AND
+  // pre-load an ADVANCE up to `maxAdvance` beyond it — the money still settles to
+  // THIS shop's own Razorpay and the webhook's `balance = balance - amount` naturally
+  // drives the balance negative (= advance in this shop's ledger). The only reject is
+  // when the amount would push the advance past the cap. When pre-pay is OFF we keep
+  // today's behaviour exactly: reject any amount over the outstanding balance.
+  const prepay = await getConsumerPrepayConfig();
+  if (prepay.enabled) {
+    const maxAdvance = prepay.max_advance_paise;
+    // Allowed: clear the due (balance, floored at 0) PLUS up to maxAdvance advance.
+    // Reject only when it would push the advance past the cap: balance - amount < -maxAdvance.
+    if (balance - amount < -maxAdvance) {
+      const maxAllowed = Math.max(balance, 0) + maxAdvance;
+      throw ApiError.unprocessable(
+        'Amount exceeds the most you can pre-pay this shop right now',
+        { max_allowed: maxAllowed, max_advance: maxAdvance, balance }
+      );
+    }
+  } else if (amount > balance) {
+    // Pre-pay disabled — never let a customer overpay what they owe at this shop.
     throw ApiError.unprocessable('Amount exceeds your outstanding balance at this shop');
   }
 
@@ -256,7 +280,10 @@ exports.pay = async (req, res) => {
     throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
   }
 
-  res.status(201).json({ link, order_id: orderRow.id });
+  // Hint so the client can confirm "you're adding an advance" — true when the paid
+  // amount exceeds the current due (the extra pre-loads an advance). Response shape
+  // is otherwise unchanged.
+  res.status(201).json({ link, order_id: orderRow.id, prepay: amount > Math.max(balance, 0) });
 };
 
 // ---------------------------------------------------------------------------

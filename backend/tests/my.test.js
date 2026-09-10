@@ -155,11 +155,15 @@ describe('customer /my cross-shop khata', () => {
     expect(res.status).toBe(404);
   });
 
-  it('POST /my/pay rejects an amount over the balance with 422', async () => {
+  it('POST /my/pay rejects an amount beyond the pre-pay advance cap with 422', async () => {
+    // Pre-pay is enabled by default (migration 0057: cap ₹20,000 = 2000000 paise).
+    // balance is 15000 owed, so the ceiling is 15000 + 2000000; an amount past that
+    // (a mistyped recharge) must still be rejected. Full pre-pay coverage lives in
+    // consumer-prepay.test.js (which mocks Razorpay to prove acceptance/settlement).
     const res = await request(app)
       .post('/api/my/pay')
       .set('Authorization', `Bearer ${token()}`)
-      .send({ shop_id: shop1Id, amount: 20000 }); // > 15000 owed
+      .send({ shop_id: shop1Id, amount: 2100000 }); // > 15000 + 2000000 cap
     expect(res.status).toBe(422);
   });
 

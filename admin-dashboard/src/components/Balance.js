@@ -20,9 +20,12 @@ export default function Balance({ paise, showWord = true, className, style, word
   if (n > 0) { color = 'var(--danger)'; word = t('bal.owed'); }
   else if (n < 0) { color = 'var(--accent)'; word = t('bal.advance'); }
   else { color = 'var(--muted)'; word = t('bal.settled'); }
+  // An advance (negative balance = a single-merchant pre-pay, batch WALLET1) reads
+  // as a credit: show the MAGNITUDE — "₹50.00 · advance", never "₹-50.00 · owed".
+  // The word + colour already carry the sign, so the "-" would only confuse.
   return (
     <span className={className} style={{ color, fontVariantNumeric: 'tabular-nums', ...style }}>
-      <span>{fmtPaise(n)}</span>
+      <span>{fmtPaise(n < 0 ? -n : n)}</span>
       {showWord && <span className={wordClassName || 'bal-word'}> · {word}</span>}
     </span>
   );
