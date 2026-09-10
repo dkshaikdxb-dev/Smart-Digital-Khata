@@ -238,7 +238,11 @@ describe('getEnrolmentConfig math + amountForTier', () => {
     expect(enrolmentUtil.amountForTier('gold', cfg)).toBeNull();
   });
 
-  it('onEnrolmentPaid is a no-op in R1 (returns { accrued:false })', async () => {
-    await expect(enrolmentUtil.onEnrolmentPaid('shop', 'enrol')).resolves.toEqual({ accrued: false });
+  it('onEnrolmentPaid delegates to chain accrual and never throws on bad ids (accrued:false)', async () => {
+    // R2 fills the stub: onEnrolmentPaid now delegates to the fee-funded chain
+    // accrual. With garbage ids it must resolve (best-effort) to accrued:false,
+    // never throw into the payment-confirm path.
+    const r = await enrolmentUtil.onEnrolmentPaid('shop', 'enrol');
+    expect(r.accrued).toBe(false);
   });
 });

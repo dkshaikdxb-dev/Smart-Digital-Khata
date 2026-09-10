@@ -78,17 +78,25 @@ function amountForTier(tier, cfg) {
 // ---------------------------------------------------------------------------
 // R2 HOOK POINT — the zero-burn referral-chain accrual.
 //
-// This stub is a deliberate NO-OP in Batch R1. It is called exactly once, right
-// after an enrolment row transitions pending -> paid (see enrolment.controller
-// confirm). R2 will fill this in with the fee-funded chain accrual (infra buffer
-// + L1/L2 referrer shares from the split snapshot captured on the enrolment row),
-// keeping R2 a small, additive change with a single well-known entry point.
+// Called exactly once, right after an enrolment row transitions pending -> paid
+// (see enrolment.controller confirm). Delegates to the fee-funded L1/L2 chain
+// accrual, which splits the fee just collected across the peer referral chain
+// from the split snapshot captured on the enrolment row (zero platform burn).
 //
-// It NEVER throws into the request path: the confirm handler wraps this call
-// best-effort, so a future accrual failure can never fail a payment that already
-// succeeded at Razorpay.
-async function onEnrolmentPaid(_shopId, _enrolmentId) {
-  return { accrued: false };
+// It NEVER throws into the request path: accrueEnrolmentChainRewards is itself
+// best-effort and never throws, and this wrapper catches anyway, so an accrual
+// failure can never fail a payment that already succeeded at Razorpay.
+//
+// The require is LAZY (inside the function) to avoid a circular require between
+// enrolment.js and referral.js — referral.accrueEnrolmentChainRewards in turn
+// lazily requires this module for the live-config split fallback.
+async function onEnrolmentPaid(shopId, enrolmentId) {
+  try {
+    const { accrueEnrolmentChainRewards } = require('./referral');
+    return await accrueEnrolmentChainRewards(shopId, enrolmentId);
+  } catch (e) {
+    return { accrued: false, reason: 'error', error: e.message };
+  }
 }
 
 module.exports = {
