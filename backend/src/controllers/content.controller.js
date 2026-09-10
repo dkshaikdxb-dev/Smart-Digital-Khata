@@ -3,8 +3,15 @@ const ApiError = require('../utils/ApiError');
 const { canTransition, gateAllows, isStatus } = require('../utils/content-workflow');
 const drafter = require('../services/content-drafter.service');
 const social = require('../services/content-social.service');
+const meta = require('../services/content-meta.service');
 
+// Real OAuth publishers (Batch S) — a live connect/callback flow.
 const SOCIAL_CHANNELS = ['linkedin', 'twitter'];
+// Meta publishers (Batch FBIG1) — connectable but INERT until a Meta app is
+// configured (see content-meta.service). No live OAuth/Graph flow yet.
+const META_CHANNELS = ['facebook', 'instagram'];
+// Every channel the Connections card lists + the connect endpoint accepts.
+const CONNECTABLE_CHANNELS = [...SOCIAL_CHANNELS, ...META_CHANNELS];
 
 // Editor-in-chief review desk API. All routes are auth('admin') +
 // requirePerm('content:manage') (wired in content.routes.js). The SAFETY CORE —
@@ -13,8 +20,8 @@ const SOCIAL_CHANNELS = ['linkedin', 'twitter'];
 // integer paise; nothing here computes money, it only stores/moves items.
 
 const CHANNELS = [
-  'blog', 'linkedin', 'twitter', 'newsletter_community', 'newsletter_ecosystem',
-  'whatsapp_tip', 'reel', 'voice',
+  'blog', 'linkedin', 'twitter', 'facebook', 'instagram', 'newsletter_community',
+  'newsletter_ecosystem', 'whatsapp_tip', 'reel', 'voice',
 ];
 const ENGINES = ['record', 'reach'];
 
@@ -164,6 +171,17 @@ exports.config = async (_req, res) => {
       display_name: acct ? acct.display_name : null,
     };
   }
+  // Meta channels (Batch FBIG1) — connectable but INERT: `configured` reflects
+  // whether a Meta app is wired (metaConfigured), and `connected` is always
+  // false until the live Graph path attaches. No token/secret is ever exposed.
+  for (const ch of META_CHANNELS) {
+    const acct = connectedByChannel[ch] || null;
+    channels[ch] = {
+      configured: meta.metaConfigured(ch),
+      connected: Boolean(acct),
+      display_name: acct ? acct.display_name : null,
+    };
+  }
   res.json({ ai_drafting: drafter.isConfigured(), channels });
 };
 
@@ -173,7 +191,18 @@ exports.config = async (_req, res) => {
 // configured (no creds / no token key) — nothing is minted.
 exports.oauthStart = async (req, res) => {
   const { channel } = req.params;
-  if (!SOCIAL_CHANNELS.includes(channel)) throw ApiError.badRequest('Unsupported channel');
+  if (!CONNECTABLE_CHANNELS.includes(channel)) throw ApiError.badRequest('Unsupported channel');
+
+  // Meta channels (Batch FBIG1) are INERT: the connect entry reports a clear
+  // "Meta app not configured" status and mints NOTHING — no state, no token, no
+  // Graph call. The live OAuth start attaches at the meta service's seam once a
+  // Meta app exists.
+  if (META_CHANNELS.includes(channel)) {
+    const status = meta.connect(channel);
+    if (!status.ok) throw ApiError.badRequest(status.message);
+    return res.json({ authorize_url: status.authorize_url });
+  }
+
   if (!social.oauthConfigured(channel)) {
     throw ApiError.badRequest('This channel is not configured for OAuth');
   }

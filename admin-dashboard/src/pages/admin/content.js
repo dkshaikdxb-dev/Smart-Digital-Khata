@@ -13,9 +13,14 @@ import { usePermissions } from '../../lib/adminPerms';
 // through the outbox (the note at the top says so).
 
 const CHANNELS = [
-  'blog', 'linkedin', 'twitter', 'newsletter_community', 'newsletter_ecosystem',
-  'whatsapp_tip', 'reel', 'voice',
+  'blog', 'linkedin', 'twitter', 'facebook', 'instagram', 'newsletter_community',
+  'newsletter_ecosystem', 'whatsapp_tip', 'reel', 'voice',
 ];
+// The Connections card lists real OAuth publishers (LinkedIn/X, Batch S) plus
+// the Meta publishers (Facebook/Instagram, Batch FBIG1) which are connectable
+// but INERT until a Meta app is configured.
+const CONNECTABLE_CHANNELS = ['linkedin', 'twitter', 'facebook', 'instagram'];
+const META_CHANNELS = ['facebook', 'instagram'];
 const ENGINES = ['record', 'reach'];
 const STATUSES = [
   'idea', 'drafting', 'draft', 'localized', 'in_review', 'approved',
@@ -238,9 +243,13 @@ export default function AdminContent() {
         <h3>{t('content.connections')}</h3>
         <p className="muted" style={{ marginTop: 0 }}>{t('content.connectionsSub')}</p>
         <div style={{ display: 'grid', gap: 10 }}>
-          {['linkedin', 'twitter'].map((ch) => {
+          {CONNECTABLE_CHANNELS.map((ch) => {
             const c = channels[ch] || {};
             const live = Boolean(c.connected);
+            const isMeta = META_CHANNELS.includes(ch);
+            // Meta channels are inert until a Meta app is wired: an unconfigured
+            // row reads "needs Meta app setup" and its Connect stays disabled.
+            const notReadyMsg = isMeta ? t('content.metaNotConfigured') : t('content.notConfigured');
             return (
               <div key={ch} style={{
                 display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap',
@@ -256,7 +265,7 @@ export default function AdminContent() {
                 <div className="muted" style={{ flex: 1, minWidth: 160 }}>
                   {live
                     ? t('content.connected', { name: c.display_name || c.external_account_id || ch })
-                    : c.configured ? t('content.notConnected') : t('content.notConfigured')}
+                    : c.configured ? t('content.notConnected') : notReadyMsg}
                 </div>
                 {live ? (
                   <button className="secondary" onClick={() => disconnectChannel(ch)}>{t('content.disconnect')}</button>
@@ -264,7 +273,7 @@ export default function AdminContent() {
                   <button
                     onClick={() => connectChannel(ch)}
                     disabled={!c.configured || connecting === ch}
-                    title={c.configured ? '' : t('content.notConfigured')}
+                    title={c.configured ? '' : notReadyMsg}
                   >
                     {connecting === ch ? t('content.connecting') : t('content.connect')}
                   </button>

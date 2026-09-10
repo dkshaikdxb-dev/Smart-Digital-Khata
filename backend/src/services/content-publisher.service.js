@@ -59,6 +59,8 @@ const adapters = Object.freeze({
   blog: outboxAdapter,
   linkedin: outboxAdapter,
   twitter: outboxAdapter,
+  facebook: outboxAdapter,
+  instagram: outboxAdapter,
   newsletter_community: outboxAdapter,
   newsletter_ecosystem: outboxAdapter,
   whatsapp_tip: outboxAdapter,
@@ -78,6 +80,9 @@ function adapterFor(channel) {
 // follows the SAME shape ({ ADAPTERS, publishConfigured }) so adding a publisher
 // is a localized edit. Lazy-require avoids a load-time cycle. Resolution order:
 //   - social (Batch S): linkedin/twitter — real when a connected account exists.
+//   - meta (Batch FBIG1): facebook/instagram — the meta adapter (INERT/gated:
+//     it self-checks metaConfigured() and gracefully skips, never calling Graph,
+//     until a Meta app is wired).
 //   - blog (Batch T): the `blog` channel — INTERNAL, always configured.
 //   - newsletter (Batch T): newsletter_* — real when SMTP is configured, else
 //     this falls through to the outbox (inert without SMTP).
@@ -86,6 +91,7 @@ function adapterFor(channel) {
 async function resolveAdapter(channel) {
   const registries = [
     require('./content-social.service'),
+    require('./content-meta.service'),
     require('./content-blog.service'),
     require('./content-newsletter.service'),
   ];
