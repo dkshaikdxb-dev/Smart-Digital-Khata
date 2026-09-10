@@ -15,7 +15,48 @@ import { useDataSaver } from '../lib/useDataSaver';
 // standard/gaon layouts, and RTL-safe.
 
 const LOC_KEY = 'skhata-loc';
+const VID_KEY = 'skhata-vid';
 const MAX_SLIDES = 5;
+
+// Per-session in-memory fallback viewer id, used only when localStorage is
+// unavailable (SSR, private mode, blocked store) so the impression beacon still
+// carries a stable-within-this-page token instead of nothing.
+let memoryVid = null;
+
+// A random opaque token — no PII. Prefers crypto.randomUUID; falls back to a
+// Math.random-based id when it (or crypto) is missing.
+function newVid() {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+  } catch (e) {
+    /* fall through to the Math.random path */
+  }
+  return `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+// Return a stable anonymous viewer id from localStorage['skhata-vid'], creating
+// one on first use. SSR-guarded and wrapped in try/catch: if storage is blocked
+// we keep a per-session in-memory id so the beacon still carries something. The
+// id is a random opaque per-device token, never PII.
+function getViewerId() {
+  if (typeof window === 'undefined') {
+    if (!memoryVid) memoryVid = newVid();
+    return memoryVid;
+  }
+  try {
+    let vid = window.localStorage.getItem(VID_KEY);
+    if (!vid) {
+      vid = newVid();
+      window.localStorage.setItem(VID_KEY, vid);
+    }
+    return vid;
+  } catch (e) {
+    if (!memoryVid) memoryVid = newVid();
+    return memoryVid;
+  }
+}
 
 // Neutral per-style glyph fallbacks — used when a promo carries no glyph and no
 // (usable) image. Emoji only, so there is nothing to download.
@@ -60,7 +101,14 @@ function readLoc() {
 function fireBeacon(id, kind) {
   if (!id) return;
   try {
-    const url = `${API_BASE}/api/public/promos/${encodeURIComponent(id)}/${kind}`;
+    let url = `${API_BASE}/api/public/promos/${encodeURIComponent(id)}/${kind}`;
+    // The impression beacon carries the stable viewer id so the server can dedup
+    // per (campaign, viewer, day). Passed in the URL so it survives sendBeacon
+    // (which sends no readable body). Clicks stay raw — no vid.
+    if (kind === 'impression') {
+      const vid = getViewerId();
+      if (vid) url += `?vid=${encodeURIComponent(vid)}`;
+    }
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       navigator.sendBeacon(url);
       return;

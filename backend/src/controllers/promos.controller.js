@@ -1,3 +1,4 @@
+const Joi = require('joi');
 const { query } = require('../config/db');
 
 // Public, unauthenticated promo serving (batch ADS4). Serves the localized,
@@ -103,22 +104,68 @@ exports.listPromos = async (req, res) => {
 // POST /api/public/promos/:id/impression
 // POST /api/public/promos/:id/click
 //
-// Best-effort, unauthenticated fire-and-forget beacons. O(1): a single guarded
-// increment, no reads beyond the update. The :id is uuid-validated up the route
-// (Joi), so a malformed id is rejected 400 before this runs. We return 204
-// regardless of whether a row matched — a beacon for a paused/deleted campaign is
-// silently ignored, never an error the client must handle. The existing /api rate
-// limiter covers abuse. (No per-viewer dedup in v1 — a future refinement.)
-function beacon(column) {
-  return async (req, res) => {
-    await query(
-      `UPDATE ad_campaigns SET ${column} = ${column} + 1 WHERE id = $1 AND status = 'active'`,
-      [req.params.id]
-    );
-    res.status(204).end();
-  };
+// Best-effort, unauthenticated fire-and-forget beacons. The :id is uuid-validated
+// up the route (Joi), so a malformed id is rejected 400 before this runs. We
+// return 204 regardless of whether a row matched — a beacon for a paused/deleted
+// campaign is silently ignored, never an error the client must handle. The
+// existing /api rate limiter covers abuse.
+
+// A guarded raw increment: bump the counter iff the campaign is active. Used by
+// clicks (always) and by impressions when no viewer id is supplied (back-compat).
+async function rawIncrement(column, id) {
+  await query(
+    `UPDATE ad_campaigns SET ${column} = ${column} + 1 WHERE id = $1 AND status = 'active'`,
+    [id]
+  );
 }
 
-// `column` is a fixed identifier chosen here (never user input), safe to inline.
-exports.impression = beacon('impressions');
-exports.click = beacon('clicks');
+// Optional anonymous viewer id carried by the impression beacon. A random,
+// opaque, per-device token (localStorage 'skhata-vid') — no PII. Bounded so a
+// hostile client cannot stuff the dedup table with giant keys.
+const viewerIdSchema = Joi.string().max(64).pattern(/^[A-Za-z0-9_-]+$/);
+
+// Extract a valid viewer id from the beacon (query ?vid= so sendBeacon can pass
+// it in the URL, or body). Returns null when absent OR malformed — a bad token is
+// ignored gracefully, never a 400, and the caller falls back to the raw path.
+function readViewerId(req) {
+  const raw = (req.query && req.query.vid) != null ? req.query.vid
+    : (req.body && req.body.vid) != null ? req.body.vid
+      : null;
+  if (raw == null) return null;
+  const { error, value } = viewerIdSchema.validate(raw);
+  return error ? null : value;
+}
+
+// Impression beacon. When a viewer id is present, dedup per (campaign, viewer,
+// day): insert into ad_impressions and increment ad_campaigns.impressions ONLY
+// when a genuinely new row lands (rowCount === 1). A repeat within the same day
+// (rowCount === 0) does not increment, so reloads no longer inflate the count. An
+// unknown-campaign FK violation on the insert is swallowed. With no viewer id we
+// keep the old raw increment. All paths are best-effort and always return 204.
+exports.impression = async (req, res) => {
+  const viewerId = readViewerId(req);
+  if (viewerId) {
+    let inserted = false;
+    try {
+      const r = await query(
+        `INSERT INTO ad_impressions (campaign_id, viewer_id) VALUES ($1, $2)
+           ON CONFLICT DO NOTHING`,
+        [req.params.id, viewerId]
+      );
+      inserted = r.rowCount === 1;
+    } catch (e) {
+      // A beacon for an unknown/deleted campaign trips the FK — swallow it so the
+      // beacon stays a silent no-op, exactly like the raw path's guarded UPDATE.
+      inserted = false;
+    }
+    if (inserted) await rawIncrement('impressions', req.params.id);
+  } else {
+    await rawIncrement('impressions', req.params.id);
+  }
+  res.status(204).end();
+};
+
+exports.click = async (req, res) => {
+  await rawIncrement('clicks', req.params.id);
+  res.status(204).end();
+};
