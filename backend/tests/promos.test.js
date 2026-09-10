@@ -278,3 +278,65 @@ describe('POST /api/public/promos/:id/{impression,click} — beacons', () => {
     expect(Number(after.rows[0].impressions)).toBe(Number(before.rows[0].impressions));
   });
 });
+
+describe('POST /api/public/promos/:id/impression — per-viewer dedup (batch DEDUP)', () => {
+  const DTOWN = `${TOWN}Dedup`;
+  let id;
+
+  beforeAll(async () => {
+    id = await seedCampaign({ title: 'Dedup', targets: [{ geo_type: 'town', geo_value: DTOWN }] });
+  });
+
+  const impressions = async () => {
+    const r = await pool.query('SELECT impressions FROM ad_campaigns WHERE id = $1', [id]);
+    return Number(r.rows[0].impressions);
+  };
+
+  // Run-unique viewer ids so this suite never collides with another test's rows.
+  const viewerA = `vieweraA${uniq}`;
+  const viewerB = `viewerbB${uniq}`;
+
+  test('first impression with a viewer_id increments by 1 and inserts an ad_impressions row', async () => {
+    const before = await impressions();
+    const res = await request(app).post(`/api/public/promos/${id}/impression?vid=${viewerA}`);
+    expect(res.status).toBe(204);
+    expect(await impressions()).toBe(before + 1);
+    const rows = await pool.query(
+      'SELECT 1 FROM ad_impressions WHERE campaign_id = $1 AND viewer_id = $2 AND day = CURRENT_DATE',
+      [id, viewerA]
+    );
+    expect(rows.rowCount).toBe(1);
+  });
+
+  test('a SECOND impression, same campaign+viewer+day, returns 204 and does NOT increment', async () => {
+    const before = await impressions();
+    const res = await request(app).post(`/api/public/promos/${id}/impression?vid=${viewerA}`);
+    expect(res.status).toBe(204);
+    expect(await impressions()).toBe(before);
+  });
+
+  test('a DIFFERENT viewer_id DOES increment', async () => {
+    const before = await impressions();
+    const res = await request(app).post(`/api/public/promos/${id}/impression?vid=${viewerB}`);
+    expect(res.status).toBe(204);
+    expect(await impressions()).toBe(before + 1);
+  });
+
+  test('an impression with NO viewer_id still increments (back-compat)', async () => {
+    const before = await impressions();
+    const res = await request(app).post(`/api/public/promos/${id}/impression`);
+    expect(res.status).toBe(204);
+    expect(await impressions()).toBe(before + 1);
+  });
+
+  test('a bad vid (fails the token pattern) is handled gracefully — 204, no crash', async () => {
+    const res = await request(app).post(`/api/public/promos/${id}/impression?vid=${encodeURIComponent('bad id!*')}`);
+    expect(res.status).toBe(204);
+    // No dedup row is written for the malformed token.
+    const rows = await pool.query(
+      'SELECT 1 FROM ad_impressions WHERE campaign_id = $1 AND viewer_id = $2',
+      [id, 'bad id!*']
+    );
+    expect(rows.rowCount).toBe(0);
+  });
+});
