@@ -18,11 +18,12 @@ function gramsLabel(g) {
 // they place the order.
 export default function Cart() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const shopId = typeof router.query.shop === 'string' ? router.query.shop : null;
   const [cart, setCart] = useState(null);
   const [ready, setReady] = useState(false);
   const [shop, setShop] = useState(null); // fulfillment settings for this cart's shop
+  const [locMap, setLocMap] = useState(null); // product_id -> localized {name,base_product,brand,pack}
   const [fulfillment, setFulfillment] = useState('pickup');
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
@@ -42,21 +43,40 @@ export default function Cart() {
 
   // Fetch the shop's fulfillment settings so the checkout offers only what the
   // shop supports and previews the same delivery fee the server will charge.
+  // Pass ?lang so getShop localizes product names/brand/pack (catalog_i18n);
+  // we build an id -> localized map to re-resolve cart line names at render time
+  // (the stored line name was captured in whatever language was active at add).
   useEffect(() => {
     if (!activeShopId) return;
     let cancelled = false;
     (async () => {
       try {
-        const r = await publicFetch(`/api/public/shops/${activeShopId}`);
-        if (!cancelled) setShop(r.shop || r);
+        const q = lang && lang !== 'en' ? `?lang=${encodeURIComponent(lang)}` : '';
+        const r = await publicFetch(`/api/public/shops/${activeShopId}${q}`);
+        if (cancelled) return;
+        const s = r.shop || r;
+        setShop(s);
+        const map = new Map();
+        for (const p of (s.products || r.products || [])) {
+          if (p && p.id != null) {
+            map.set(String(p.id), {
+              name: p.name,
+              base_product: p.base_product,
+              brand: p.brand,
+              pack: p.pack,
+            });
+          }
+        }
+        setLocMap(map);
       } catch {
         // No live shop info (offline / not listed) — fall back to both options,
-        // no fee, no minimum. The server stays authoritative at submit time.
-        if (!cancelled) setShop(null);
+        // no fee, no minimum, and the cart renders the stored line names. The
+        // server stays authoritative at submit time.
+        if (!cancelled) { setShop(null); setLocMap(null); }
       }
     })();
     return () => { cancelled = true; };
-  }, [activeShopId]);
+  }, [activeShopId, lang]);
 
   // Which fulfillment options this shop offers. If the shop specifies at least
   // one, honor it exactly; otherwise (unknown shop or none set) allow both.
@@ -159,16 +179,22 @@ export default function Cart() {
 
   return (
     <CustomerShell title={t('c.yourCart')} back={activeShopId ? `/c/shop/${activeShopId}` : '/c/shops'}>
-      {cart?.shop_name && (
-        <div className="card"><strong>{cart.shop_name}</strong></div>
+      {(shop?.name || cart?.shop_name) && (
+        <div className="card"><strong>{shop?.name || cart.shop_name}</strong></div>
       )}
 
       <div className="card">
-        {lines.map((l) => (
+        {lines.map((l) => {
+          // Re-resolve the display name from the shop's localized catalogue.
+          // Fall back to the stored line name when the product isn't in the
+          // response (offline, unlisted, or since removed).
+          const loc = locMap ? locMap.get(String(l.product_id)) : null;
+          const displayName = (loc && loc.name) || l.name;
+          return (
           <div key={l.product_id} className="cpwa-cart-line">
             <ProductThumb product={l} size={40} />
             <div className="cpwa-cart-line-info">
-              <div>{l.name}</div>
+              <div>{displayName}</div>
               {l.sold_by_weight ? (
                 <div className="muted">{money(l.price)} {t('loose.perKg')} · {gramsLabel(l.weight_grams)}</div>
               ) : (
@@ -189,7 +215,8 @@ export default function Cart() {
             )}
             <div className="cpwa-cart-line-total">{money(lineTotalPaise(l))}</div>
           </div>
-        ))}
+          );
+        })}
         <div className="cpwa-row-between cpwa-subtotal">
           <span>{t('common.subtotal')}</span>
           <span>{money(subtotal)}</span>
