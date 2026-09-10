@@ -44,6 +44,18 @@ describe('GET /api/public/config (unauthenticated)', () => {
     const res = await request(app).get('/api/public/config'); // no Authorization header
     expect(res.status).toBe(200);
   });
+
+  it('exposes social_share_enabled (batch SOCIAL1, default ON)', async () => {
+    const res = await request(app).get('/api/public/config');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('social_share_enabled');
+    // Migration 0058 seeds it 'true'; the endpoint returns a real boolean and,
+    // absent an operator override, defaults ON. The PARKED meta_autopost seam is
+    // deliberately NOT advertised in the public config.
+    expect(typeof res.body.social_share_enabled).toBe('boolean');
+    expect(res.body.social_share_enabled).toBe(true);
+    expect(res.body).not.toHaveProperty('meta_autopost_enabled');
+  });
 });
 
 describe('admin sets the landing WhatsApp number', () => {

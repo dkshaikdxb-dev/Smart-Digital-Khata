@@ -4,6 +4,7 @@ import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import OwnerNudges from '../components/OwnerNudges';
 import AskShop from '../components/AskShop';
+import SharePoster from '../components/SharePoster';
 import Balance from '../components/Balance';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
@@ -62,6 +63,8 @@ export default function Dashboard() {
         </div>
 
         <AskShop />
+
+        <SharePoster />
 
         <OwnerNudges />
 
