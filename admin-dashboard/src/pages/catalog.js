@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import ProductThumb from '../components/ProductThumb';
+import ImageStudio from '../components/ImageStudio';
 import { apiFetch } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
@@ -30,6 +31,7 @@ export default function Catalog() {
   const [priceDraft, setPriceDraft] = useState({}); // { [productId]: rupees string }
   const [photoBusy, setPhotoBusy] = useState(null); // product id currently up/downloading
   const [photoErr, setPhotoErr] = useState({}); // { [productId]: message }
+  const [photoPending, setPhotoPending] = useState({}); // { [productId]: Blob } compressed, awaiting upload
 
   // --- Add from catalogue (base) -----------------------------------------
   const [categories, setCategories] = useState([]);
@@ -158,7 +160,10 @@ export default function Catalog() {
     try {
       const token = window.localStorage.getItem('skhata_token');
       const fd = new FormData();
-      fd.append('image', file);
+      // The client ImageStudio hands back a compressed WebP Blob; give it a
+      // filename so the multipart part is well-formed. A Blob without a
+      // filename would upload as "blob". The server sharp pipeline re-validates.
+      fd.append('image', file, file.name || 'photo.webp');
       const res = await fetch(`${API}/api/products/${p.id}/image`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -167,6 +172,7 @@ export default function Catalog() {
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
       applyProduct(body.product || body);
+      setPhotoPending((s) => { const n = { ...s }; delete n[p.id]; return n; });
     } catch (err) {
       setPhotoErr((e) => ({ ...e, [p.id]: err.message }));
     } finally {
@@ -288,20 +294,21 @@ export default function Catalog() {
           <span className="cat-photo" onClick={(e) => e.stopPropagation()}>
             <ProductThumb product={p} size={44} />
             <span className="cat-photo-actions">
-              <label className="secondary cat-photo-btn" aria-disabled={busy}>
-                {hasPhoto ? t('cat.changePhoto') : t('cat.uploadPhoto')}
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={busy}
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const f = e.target.files && e.target.files[0];
-                    e.target.value = '';
-                    uploadPhoto(p, f);
-                  }}
-                />
-              </label>
+              {/* Client-side compress + square-crop before upload (2G win); the
+                  server sharp pipeline stays the validating backstop. */}
+              <ImageStudio
+                aspect={1}
+                maxDim={800}
+                targetBytes={200 * 1024}
+                label={hasPhoto ? t('cat.changePhoto') : t('cat.uploadPhoto')}
+                onReady={(blob) => setPhotoPending((s) => ({ ...s, [p.id]: blob }))}
+              />
+              {photoPending[p.id] && (
+                <button type="button" disabled={busy}
+                  onClick={(e) => { e.stopPropagation(); uploadPhoto(p, photoPending[p.id]); }}>
+                  {busy ? t('cat.uploadingPhoto') : t('cat.savePhoto')}
+                </button>
+              )}
               {hasPhoto && (
                 <button type="button" className="secondary" disabled={busy}
                   onClick={(e) => { e.stopPropagation(); removePhoto(p); }}>

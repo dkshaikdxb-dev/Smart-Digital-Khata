@@ -323,7 +323,7 @@ exports.getShop = async (req, res) => {
     shopNameJoin = 'LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $2';
   }
   const shop = await query(
-    `SELECT s.id, ${shopNameSelect} AS name, s.city, s.area,
+    `SELECT s.id, ${shopNameSelect} AS name, s.city, s.area, s.image_url,
             s.offers_pickup, s.offers_delivery, s.delivery_fee, s.free_delivery_min,
             s.delivery_min_order, s.delivery_radius_km, s.delivery_hours
        FROM shops s

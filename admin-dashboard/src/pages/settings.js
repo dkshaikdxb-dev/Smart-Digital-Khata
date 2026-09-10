@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataSaverToggle from '../components/DataSaverToggle';
+import ImageStudio from '../components/ImageStudio';
 import { apiFetch } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
+
+// The multipart cover upload needs the raw API base (apiFetch is JSON-only and
+// would clobber the multipart boundary). Same base + token key as lib/api.js.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API_BASE}${url}`));
 
 // Display name for a language code (native script), for the shop-name-i18n panel.
 const langName = (code) => (LANGS.find((l) => l.code === code)?.name || code);
@@ -35,6 +41,10 @@ export default function Settings() {
   const { t } = useLang();
   const [shop, setShop] = useState(null);
   const [msg, setMsg] = useState('');
+  // Shop cover image (batch IMG1): a compressed WebP Blob awaiting upload.
+  const [coverBlob, setCoverBlob] = useState(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const [coverMsg, setCoverMsg] = useState('');
   const [plans, setPlans] = useState([]);
   const [sub, setSub] = useState(null);
   const [billingMsg, setBillingMsg] = useState('');
@@ -155,6 +165,33 @@ export default function Settings() {
       setShop(r.shop);
       setMsg(t('common.saved'));
     } catch (e) { setMsg(e.message); }
+  }
+
+  // Upload the compressed shop cover Blob (multipart) — raw fetch so the browser
+  // sets the multipart boundary itself. The server sharp pipeline is the backstop.
+  async function saveCover() {
+    if (!coverBlob) return;
+    setCoverMsg('');
+    setCoverBusy(true);
+    try {
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem('skhata_token') : '';
+      const fd = new FormData();
+      fd.append('image', coverBlob, coverBlob.name || 'cover.webp');
+      const res = await fetch(`${API_BASE}/api/shops/me/image`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      setShop((s) => ({ ...s, image_url: body.image_url }));
+      setCoverBlob(null);
+      setCoverMsg(t('common.saved'));
+    } catch (e) {
+      setCoverMsg(e.message);
+    } finally {
+      setCoverBusy(false);
+    }
   }
 
   async function choosePlan(code) {
@@ -331,6 +368,39 @@ export default function Settings() {
           <div style={{ height: 16 }} />
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
+        </div>
+
+        {/* Shop cover photo (batch IMG1): compressed client-side to ~400KB WebP
+            before upload; shown on the storefront header. */}
+        <div className="card" style={{ maxWidth: 520 }}>
+          <h3>{t('set.shopCover')}</h3>
+          <p className="muted">{t('set.shopCoverDesc')}</p>
+          {shop.image_url && (
+            <div style={{ marginBottom: 12 }}>
+              <div className="muted" style={{ marginBottom: 4 }}>{t('set.shopCoverCurrent')}</div>
+              <img
+                src={resolveImg(shop.image_url)}
+                alt={shop.name || ''}
+                loading="lazy"
+                style={{ display: 'block', width: '100%', maxWidth: 480, borderRadius: 10 }}
+              />
+            </div>
+          )}
+          <ImageStudio
+            aspect={16 / 9}
+            maxDim={1600}
+            targetBytes={400 * 1024}
+            label={t('set.chooseCover')}
+            onReady={(blob) => setCoverBlob(blob)}
+          />
+          {coverBlob && (
+            <div style={{ marginTop: 12 }}>
+              <button onClick={saveCover} disabled={coverBusy}>
+                {coverBusy ? t('set.savingCover') : t('set.saveCover')}
+              </button>
+            </div>
+          )}
+          {coverMsg && <div className="muted" style={{ marginTop: 8 }}>{coverMsg}</div>}
         </div>
 
         {nameI18n && nameI18n.languages && nameI18n.languages.length > 0 && (

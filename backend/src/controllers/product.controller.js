@@ -2,6 +2,7 @@ const { query, pool } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { refreshProductSearchText } = require('../utils/refresh-search-text');
+const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
 
 // Best-effort refresh of a product's search_text after a write. A failure here
 // must never fail the product write — the SQL backfill / next edit / the
@@ -14,17 +15,9 @@ async function safeRefreshSearchText(productId) {
   }
 }
 
-// sharp is loaded lazily/defensively: if the native binary is unavailable at
-// runtime (e.g. an unexpected build), we fall back to storing original bytes.
-let sharp = null;
-try {
-  // eslint-disable-next-line global-require
-  sharp = require('sharp');
-} catch (_e) {
-  sharp = null;
-}
-
-const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+// The resize/re-encode pipeline and the allowed-mime set now live in the shared
+// image util (also used by the shop cover), keeping the product image behaviour
+// (800px WebP, defensive sharp fallback) identical.
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 // Languages the consumer catalogue can be viewed in. 'en' is the base language:
@@ -180,24 +173,14 @@ exports.uploadImage = async (req, res) => {
     throw ApiError.badRequest('Unsupported image type; allowed: JPEG, PNG, WebP');
   }
 
-  // Key bandwidth win: downscale to <=800px long edge and re-encode as webp.
-  // If sharp is unavailable at runtime, fall back to the original bytes.
-  let data = req.file.buffer;
-  let mime = req.file.mimetype;
-  if (sharp) {
-    try {
-      data = await sharp(req.file.buffer)
-        .rotate() // honour EXIF orientation
-        .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-      mime = 'image/webp';
-    } catch (_e) {
-      // Corrupt/unsupported payload for sharp, or missing binary — keep original.
-      data = req.file.buffer;
-      mime = req.file.mimetype;
-    }
-  }
+  // Key bandwidth win: downscale to <=800px long edge and re-encode as webp
+  // (shared server backstop). If sharp is unavailable/undecodable, the util falls
+  // back to the original bytes + the original (already-validated) mime.
+  const { data, mime } = await processImage(req.file.buffer, {
+    maxDim: 800,
+    quality: 80,
+    fallbackMime: req.file.mimetype,
+  });
 
   // NOW() is stable within the statement, so image_updated_at and the epoch in
   // image_url agree. Cross-shop uploads yield rowCount 0 -> 404.

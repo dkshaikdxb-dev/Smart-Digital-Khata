@@ -1,9 +1,32 @@
 const router = require('express').Router();
 const Joi = require('joi');
+const multer = require('multer');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
+const ApiError = require('../utils/ApiError');
 const ctrl = require('../controllers/shop.controller');
+
+// Multer scoped to the single cover-upload route only (memory storage; the file
+// goes straight to Postgres, never to disk). 5MB hard cap, one file — the client
+// ImageStudio has already shrunk it, this is the pre-resize ceiling.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+});
+
+// Run multer for the `image` field and translate its errors into a 400.
+function uploadImageField(req, res, next) {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        return next(ApiError.badRequest(`Image upload failed: ${err.message}`));
+      }
+      return next(err);
+    }
+    return next();
+  });
+}
 
 const updateSchema = Joi.object({
   name: Joi.string().min(2).max(120),
@@ -46,9 +69,16 @@ const nameI18nBodySchema = Joi.object({
   name: Joi.string().trim().min(1).max(120).required(),
 });
 
+// PUBLIC shop cover serve — the storefront header embeds it without auth.
+// Declared BEFORE the auth guard below so it is not caught by it. `:id` is
+// UUID-validated in the controller, so it never shadows the owner `/me/*` routes.
+router.get('/:id/image', asyncHandler(ctrl.serveImage));
+
 router.use(auth(['owner', 'staff']));
 router.get('/me', asyncHandler(ctrl.getMine));
 router.patch('/me', validate(updateSchema), asyncHandler(ctrl.updateMine));
+// Owner/staff, shop-scoped cover upload.
+router.post('/me/image', uploadImageField, asyncHandler(ctrl.uploadImage));
 router.get('/me/name-i18n', asyncHandler(ctrl.getNameI18n));
 router.put(
   '/me/name-i18n/:lang',
