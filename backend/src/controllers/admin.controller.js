@@ -350,6 +350,51 @@ exports.moderationLog = async (req, res) => {
 
 const keyId = () => settings.get('RAZORPAY_KEY_ID');
 
+// ---- Feature flags & pricing (batch FLAGS1) ------------------------------
+// The session's runtime features are driven by these platform_settings keys.
+// Their live readers (getEnrolmentConfig, getShopPromoConfig, getBrandedStore
+// config, consumerPrepay, publicConfig, the delivery-champion fee) query
+// platform_settings DIRECTLY, so an admin write here takes effect immediately.
+// Values are stored as TEXT; every amount is integer paise. Defaults mirror the
+// migration seeds (0048/0052/0054/0056/0057/0058/0059) and are used only as a
+// fallback when a value is missing/unparseable.
+
+// boolean feature flags -> seeded default
+const FEATURE_BOOL_DEFAULTS = {
+  voice_assistant_enabled: true,
+  social_share_enabled: true,
+  shop_promo_enabled: true,
+  branded_store_enabled: true,
+  consumer_prepay_enabled: true,
+  enrolment_fee_enabled: false, // MONEY-CRITICAL: paid-signup master switch
+};
+
+// numeric keys (paise amounts, day counts, split percents) -> seeded default
+const FEATURE_NUM_DEFAULTS = {
+  enrolment_fee_basic_paise: 9900,
+  enrolment_fee_premium_paise: 19900,
+  shop_promo_credits_per_day_paise: 1000,
+  shop_promo_max_days: 30,
+  branded_store_credits_per_day_paise: 2000,
+  branded_store_max_days: 90,
+  consumer_prepay_max_advance_paise: 2000000,
+  delivery_champion_fee_paise: 2000,
+  referral_split_infra_pct: 50,
+  referral_split_l1_pct: 30,
+  referral_split_l2_pct: 15,
+};
+
+// The three referral-split percents feed the zero-burn accrual: their sum can
+// never exceed 100 (the platform's infra buffer is never negative).
+const SPLIT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
+
+// A feature amount/percent as a number, defaulting to the seeded value when the
+// stored TEXT is missing or unparseable.
+function featureNumber(key) {
+  const n = parseInt(settings.get(key), 10);
+  return Number.isFinite(n) ? n : FEATURE_NUM_DEFAULTS[key];
+}
+
 exports.getSettings = async (_req, res) => {
   res.json({
     razorpay: {
@@ -374,6 +419,19 @@ exports.getSettings = async (_req, res) => {
       // (international digits, no +). Distinct from the Cloud API sender above.
       whatsapp: settings.get('LANDING_WHATSAPP') || '',
     },
+    // Feature flags & pricing (batch FLAGS1). Each key is TYPED for the UI:
+    // booleans as real booleans, amounts/counts/percents as numbers. The inert
+    // Meta auto-post stub is surfaced with meta_autopost_available:false so the
+    // UI renders its toggle disabled ("coming soon") and never a live switch.
+    features: (() => {
+      const f = {
+        meta_autopost_available: false,
+        meta_autopost_enabled: settings.get('meta_autopost_enabled') === 'true',
+      };
+      for (const k of Object.keys(FEATURE_BOOL_DEFAULTS)) f[k] = settings.get(k) === 'true';
+      for (const k of Object.keys(FEATURE_NUM_DEFAULTS)) f[k] = featureNumber(k);
+      return f;
+    })(),
   });
 };
 
@@ -409,6 +467,39 @@ exports.updateSettings = async (req, res) => {
   };
   for (const [field, key] of Object.entries(secrets)) {
     if (b[field]) patch[key] = b[field];
+  }
+
+  // ---- Feature flags & pricing (batch FLAGS1) ----------------------------
+  // Coerce every provided field to the TEXT shape the live readers expect, then
+  // validate BEFORE writing so a bad split is never partially applied.
+
+  // meta_autopost_enabled is an inert stub — it must stay locked. Reject any
+  // attempt to turn it ON (it is never added to the writable set below).
+  if (b.meta_autopost_enabled === true) {
+    throw ApiError.badRequest('meta_not_available');
+  }
+
+  // booleans -> 'true' / 'false'
+  for (const key of Object.keys(FEATURE_BOOL_DEFAULTS)) {
+    if (b[key] !== undefined) patch[key] = b[key] ? 'true' : 'false';
+  }
+  // amounts / counts / percents -> String(int)
+  for (const key of Object.keys(FEATURE_NUM_DEFAULTS)) {
+    if (b[key] !== undefined) patch[key] = String(parseInt(b[key], 10));
+  }
+
+  // Zero-burn guard: if ANY split percent is being changed, validate the
+  // RESULTING trio (the provided values merged over the current ones) sums to
+  // <= 100. The referral pool can never exceed the fee, so infra stays >= 0.
+  if (SPLIT_KEYS.some((k) => b[k] !== undefined)) {
+    const merged = {};
+    for (const k of SPLIT_KEYS) {
+      merged[k] = b[k] !== undefined ? parseInt(b[k], 10) : featureNumber(k);
+    }
+    const sum = merged.referral_split_infra_pct
+      + merged.referral_split_l1_pct
+      + merged.referral_split_l2_pct;
+    if (!(sum <= 100)) throw ApiError.badRequest('invalid_split');
   }
 
   await settings.setMany(patch);
