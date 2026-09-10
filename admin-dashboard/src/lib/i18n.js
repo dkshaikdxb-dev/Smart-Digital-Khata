@@ -5155,6 +5155,122 @@ const REF = {
   },
 };
 
+// Khata Credits UI strings (Batch R4). Own block, merged into DICT like
+// PAGE/ALANG/MOD/REF/DL. en/hi are authored here; ta/te/kn/ml/ur are not listed
+// and fall back to English via translate(). Credits are ALWAYS framed as a
+// closed-loop loyalty/discount balance — never cash, never withdrawable. Amounts
+// are formatted with ₹ + Indian grouping in the components; numbers stay
+// interpolated data. Urdu inherits the English seed and renders RTL-safely
+// (codes render dir="ltr" where shown).
+const CREDITS = {
+  en: {
+    'credits.title': 'Khata Credits',
+    'credits.balanceLabel': 'Your Khata Credits',
+    'credits.spendNote': 'Spend on your subscription, promos and more',
+    'credits.earnedTitle': 'Earned so far',
+    'credits.pending': '{amt} pending',
+    'credits.bySource': 'By source',
+    'credits.recentTitle': 'Recent activity',
+    'credits.empty': 'No credits yet — refer a shop to start earning',
+    'credits.loadError': 'Could not load your Khata Credits.',
+    'credits.src.referrer': 'Direct referral',
+    'credits.src.chain_l1': '1st-level chain',
+    'credits.src.chain_l2': '2nd-level chain',
+    'credits.src.referee': 'Referred bonus',
+    'credits.src.mitra': 'Khata Mitra',
+    'credits.src.influencer': 'Influencer',
+    'credits.kind.reward_settled': 'Referral reward',
+    'credits.kind.redeem_enrolment': 'Applied to enrolment',
+    'credits.kind.redeem_subscription': 'Spent on subscription',
+    'credits.kind.redeem_promo': 'Spent on promo',
+    'credits.kind.redeem_whatsapp': 'Spent on WhatsApp',
+    'credits.kind.redeem_premium': 'Spent on premium',
+    'credits.kind.sponsor_shop': 'Sponsored a shop',
+    'credits.kind.reversal': 'Reversed',
+    'credits.kind.other': 'Adjustment',
+    'credits.ecoTitle': 'Referral economics',
+    'credits.ecoSubtitle': 'Live check — the referral network never pays out more than the enrolment fees fund it.',
+    'credits.ecoPaidEnrolments': 'Paid enrolments',
+    'credits.ecoGrossFees': 'Gross fees',
+    'credits.ecoPool': 'Pool collected',
+    'credits.ecoChainPaid': 'Chain paid',
+    'credits.ecoInfluencerSpend': 'Influencer spend',
+    'credits.ecoInfraRetained': 'Infra retained',
+    'credits.ecoWalletLiability': 'Credit liability',
+    'credits.zeroBurnOk': 'Zero-burn ✓',
+    'credits.zeroBurnBad': 'Over pool ✗',
+    'credits.cfgTitle': 'Influencer code config',
+    'credits.cfgSubtitle': 'set a flat bounty per referral and an optional budget cap.',
+    'credits.cfgForCode': 'Configuring',
+    'credits.cfgLabel': 'Label',
+    'credits.cfgFlatBounty': 'Flat bounty per referral (₹)',
+    'credits.cfgBudgetCap': 'Budget cap (₹)',
+    'credits.cfgUncapped': 'blank = uncapped',
+    'credits.cfgMitra': 'Khata Mitra code',
+    'credits.cfgSave': 'Save config',
+    'credits.cfgSaved': 'Code configured.',
+    'credits.cfgInvalid': 'Amounts must be ₹0 or more.',
+    'credits.settleTitle': 'Settle accrued credits',
+    'credits.settleSubtitle': 'Drain all currently-accrued rewards into their Khata Credits wallets. Use when auto-settle is off.',
+    'credits.settleBtn': 'Settle accrued',
+    'credits.settleConfirm': 'Settle all accrued rewards into credit wallets now?',
+    'credits.settleDone': 'Settled {n} reward(s).',
+  },
+  hi: {
+    'credits.title': 'खाता क्रेडिट',
+    'credits.balanceLabel': 'आपके खाता क्रेडिट',
+    'credits.spendNote': 'अपनी सदस्यता, प्रोमो और अन्य पर खर्च करें',
+    'credits.earnedTitle': 'अब तक कमाया',
+    'credits.pending': '{amt} लंबित',
+    'credits.bySource': 'स्रोत के अनुसार',
+    'credits.recentTitle': 'हाल की गतिविधि',
+    'credits.empty': 'अभी कोई क्रेडिट नहीं — कमाई शुरू करने के लिए किसी दुकान को रेफ़र करें',
+    'credits.loadError': 'आपके खाता क्रेडिट लोड नहीं हो सके।',
+    'credits.src.referrer': 'सीधा रेफ़रल',
+    'credits.src.chain_l1': 'पहला स्तर',
+    'credits.src.chain_l2': 'दूसरा स्तर',
+    'credits.src.referee': 'रेफ़रल बोनस',
+    'credits.src.mitra': 'खाता मित्र',
+    'credits.src.influencer': 'इन्फ़्लुएंसर',
+    'credits.kind.reward_settled': 'रेफ़रल इनाम',
+    'credits.kind.redeem_enrolment': 'एनरोलमेंट पर लगाया',
+    'credits.kind.redeem_subscription': 'सदस्यता पर खर्च',
+    'credits.kind.redeem_promo': 'प्रोमो पर खर्च',
+    'credits.kind.redeem_whatsapp': 'व्हाट्सऐप पर खर्च',
+    'credits.kind.redeem_premium': 'प्रीमियम पर खर्च',
+    'credits.kind.sponsor_shop': 'दुकान को प्रायोजित किया',
+    'credits.kind.reversal': 'वापस किया',
+    'credits.kind.other': 'समायोजन',
+    'credits.ecoTitle': 'रेफ़रल अर्थशास्त्र',
+    'credits.ecoSubtitle': 'लाइव जाँच — रेफ़रल नेटवर्क कभी भी एनरोलमेंट शुल्क से मिली राशि से ज़्यादा भुगतान नहीं करता।',
+    'credits.ecoPaidEnrolments': 'भुगतान किए एनरोलमेंट',
+    'credits.ecoGrossFees': 'कुल शुल्क',
+    'credits.ecoPool': 'एकत्रित पूल',
+    'credits.ecoChainPaid': 'चेन भुगतान',
+    'credits.ecoInfluencerSpend': 'इन्फ़्लुएंसर खर्च',
+    'credits.ecoInfraRetained': 'इंफ़्रा में रखा',
+    'credits.ecoWalletLiability': 'क्रेडिट देनदारी',
+    'credits.zeroBurnOk': 'ज़ीरो-बर्न ✓',
+    'credits.zeroBurnBad': 'पूल से ज़्यादा ✗',
+    'credits.cfgTitle': 'इन्फ़्लुएंसर कोड कॉन्फ़िग',
+    'credits.cfgSubtitle': 'प्रति रेफ़रल एक तय बाउंटी और वैकल्पिक बजट सीमा तय करें।',
+    'credits.cfgForCode': 'कॉन्फ़िगर कर रहे हैं',
+    'credits.cfgLabel': 'लेबल',
+    'credits.cfgFlatBounty': 'प्रति रेफ़रल तय बाउंटी (₹)',
+    'credits.cfgBudgetCap': 'बजट सीमा (₹)',
+    'credits.cfgUncapped': 'खाली = असीमित',
+    'credits.cfgMitra': 'खाता मित्र कोड',
+    'credits.cfgSave': 'कॉन्फ़िग सेव करें',
+    'credits.cfgSaved': 'कोड कॉन्फ़िगर हो गया।',
+    'credits.cfgInvalid': 'राशि ₹0 या उससे अधिक होनी चाहिए।',
+    'credits.settleTitle': 'संचित क्रेडिट सेटल करें',
+    'credits.settleSubtitle': 'सभी वर्तमान संचित इनाम उनके खाता क्रेडिट वॉलेट में डालें। ऑटो-सेटल बंद हो तब इस्तेमाल करें।',
+    'credits.settleBtn': 'संचित सेटल करें',
+    'credits.settleConfirm': 'सभी संचित इनाम अभी क्रेडिट वॉलेट में सेटल करें?',
+    'credits.settleDone': '{n} इनाम सेटल हुए।',
+  },
+};
+
 // Role-based downloads UI strings (#5). Own block, merged into DICT like
 // PAGE/ALANG/MOD/REF. en/hi are native; ta/te/kn/ml/ur are seed translations
 // (worth a native-speaker QA pass). Urdu is RTL-safe. Missing keys fall back to
@@ -7005,6 +7121,13 @@ for (const code of Object.keys(MOD)) {
 for (const code of Object.keys(REF)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], REF[code]);
+}
+
+// Merge the Khata Credits (Batch R4) UI strings the same way. en/hi authored;
+// other languages fall back to English via translate().
+for (const code of Object.keys(CREDITS)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], CREDITS[code]);
 }
 
 // Merge the role-based downloads UI strings the same way.
