@@ -35,6 +35,7 @@ const app = require('../src/app');
 const { pool } = require('../src/config/db');
 const tokenCrypto = require('../src/utils/token-crypto');
 const social = require('../src/services/content-social.service');
+const meta = require('../src/services/content-meta.service');
 const publisher = require('../src/services/content-publisher.service');
 
 const uniq = Date.now().toString().slice(-9);
@@ -418,6 +419,81 @@ describe('publishDue with real adapters', () => {
     const log = await pool.query(`SELECT result, adapter FROM content_publish_log WHERE content_id=$1`, [item.id]);
     expect(log.rows[0].result).toBe('failed');
     expect(log.rows[0].adapter).toBe('twitter');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5b. Meta (Facebook + Instagram) — connectable but INERT (Batch FBIG1)
+// This worker has NO META_APP_ID / META_APP_SECRET / page/IG token set, so the
+// Meta channels are unconfigured. connect must report "not configured" and a
+// publish must be a graceful skip: no throw, no Graph network call.
+// ---------------------------------------------------------------------------
+describe('Meta publishers (Facebook + Instagram) — gated on a Meta app', () => {
+  it('are unconfigured without a Meta app', () => {
+    expect(meta.metaConfigured('facebook')).toBe(false);
+    expect(meta.metaConfigured('instagram')).toBe(false);
+  });
+
+  it('appear in /config as connectable channels (configured:false, connected:false)', async () => {
+    const res = await withToken(request(app).get('/api/admin/content/config'), superAdmin.token);
+    expect(res.status).toBe(200);
+    for (const ch of ['facebook', 'instagram']) {
+      expect(res.body.channels[ch]).toBeTruthy();
+      expect(res.body.channels[ch].configured).toBe(false);
+      expect(res.body.channels[ch].connected).toBe(false);
+    }
+    // No token/secret is ever exposed in the config projection.
+    expect(JSON.stringify(res.body.channels)).not.toMatch(/token|secret/i);
+  });
+
+  it('accept facebook/instagram as a valid channel filter (not a 400)', async () => {
+    for (const ch of ['facebook', 'instagram']) {
+      const res = await withToken(request(app).get(`/api/admin/content?channel=${ch}`), superAdmin.token);
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it('an unconfigured connect reports "not configured" (no state minted, no network)', async () => {
+    for (const ch of ['facebook', 'instagram']) {
+      const res = await withToken(request(app).get(`/api/admin/content/oauth/${ch}/start`), superAdmin.token);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/not configured/i);
+    }
+  });
+
+  it('publishing to Facebook with no Meta app is a graceful skip — no throw, no network', async () => {
+    const item = await insertItem({ channel: 'facebook', engine: 'reach', autonomy_tier: 0, body: 'hello page' });
+    const httpFetch = fetchMock([]); // any Graph call would throw "unexpected fetch"
+    const res = await publisher.publishDue(new Date(), { httpFetch });
+    expect(res.published).toBeGreaterThanOrEqual(1);
+    // No Graph API call was ever attempted.
+    expect(httpFetch.calls.length).toBe(0);
+    const row = await pool.query('SELECT status, external_ref FROM content_items WHERE id=$1', [item.id]);
+    expect(row.rows[0].status).toBe('published');
+    expect(row.rows[0].external_ref).toMatch(/^meta-skip:facebook:/);
+    const log = await pool.query('SELECT adapter, result, detail FROM content_publish_log WHERE content_id=$1', [item.id]);
+    expect(log.rows[0].adapter).toBe('facebook');
+    expect(log.rows[0].result).toBe('sent');
+    expect(log.rows[0].detail).toMatch(/not connected|Meta app not configured/i);
+  });
+
+  it('publishing to Instagram with no Meta app is a graceful skip — no throw, no network', async () => {
+    const item = await insertItem({ channel: 'instagram', engine: 'reach', autonomy_tier: 0, body: 'hello ig' });
+    const httpFetch = fetchMock([]);
+    const res = await publisher.publishDue(new Date(), { httpFetch });
+    expect(res.published).toBeGreaterThanOrEqual(1);
+    expect(httpFetch.calls.length).toBe(0);
+    const row = await pool.query('SELECT status, external_ref FROM content_items WHERE id=$1', [item.id]);
+    expect(row.rows[0].status).toBe('published');
+    expect(row.rows[0].external_ref).toMatch(/^meta-skip:instagram:/);
+    const log = await pool.query('SELECT adapter, result FROM content_publish_log WHERE content_id=$1', [item.id]);
+    expect(log.rows[0].adapter).toBe('instagram');
+    expect(log.rows[0].result).toBe('sent');
+  });
+
+  it('the adapter never throws even when send is called directly while unconfigured', async () => {
+    await expect(meta.facebookAdapter.send({ id: 'x', body: 'b' })).resolves.toMatchObject({ result: 'sent' });
+    await expect(meta.instagramAdapter.send({ id: 'y', body: 'b' })).resolves.toMatchObject({ result: 'sent' });
   });
 });
 
