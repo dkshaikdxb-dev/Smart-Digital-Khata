@@ -87,6 +87,19 @@ function verifyWebhookSignature(rawBody, signatureHeader) {
   return verifyHmac(rawBody, signatureHeader, settings.get('RAZORPAY_WEBHOOK_SECRET'));
 }
 
+/**
+ * Verify a Razorpay one-time-order payment signature.
+ * Razorpay signs `${order_id}|${payment_id}` with HMAC-SHA256 keyed by the
+ * platform KEY SECRET (NOT the webhook secret) and returns it hex-encoded as
+ * razorpay_signature on the checkout callback. Reuses the constant-time
+ * verifyHmac above. Returns false on any missing input.
+ * https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/#verify-payment-signature
+ */
+function verifyPaymentSignature({ orderId, paymentId, signature } = {}) {
+  if (!orderId || !paymentId) return false;
+  return verifyHmac(`${orderId}|${paymentId}`, signature, settings.get('RAZORPAY_KEY_SECRET'));
+}
+
 /** Lightweight auth check for the "Test connection" button. */
 async function testConnection() {
   await getClient().orders.all({ count: 1 });
@@ -169,6 +182,7 @@ module.exports = {
   isConfigured,
   isSubscriptionBillingConfigured,
   verifyWebhookSignature,
+  verifyPaymentSignature,
   testConnection,
   // per-shop
   clientForShop,
