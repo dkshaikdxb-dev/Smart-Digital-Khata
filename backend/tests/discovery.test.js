@@ -52,6 +52,13 @@ const SALT_NAME_HI = 'नमक';
 let baseShop; let tokenBase;
 let BASE_TERM;
 const BASE_NAME_HI = 'नमक';
+// A dedicated shop exercising getShop's localized `brand` (batch LOC-BRAND). One
+// product linked to a base catalog_item whose `brand` is a run-unique term, with
+// a hi translation of that brand seeded into catalog_i18n (term_type='brand').
+// getShop?lang=hi must localize brand; en/no-lang returns the raw English brand.
+let brandShop; let tokenBrand;
+let BRAND_TERM;
+const BRAND_NAME_HI = 'टाटा';
 
 beforeAll(async () => {
   const uniq = Date.now().toString().slice(-9);
@@ -147,10 +154,32 @@ beforeAll(async () => {
      ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
     [BASE_TERM, BASE_NAME_HI]
   );
+
+  // Brand localization fixture: a separate LISTED shop with ONE product linked to
+  // a base catalog_item carrying a run-unique brand (Tata<uniq>), plus a hi
+  // translation of that brand (term_type='brand'). getShop?lang=hi must localize
+  // brand; en/no-lang returns the raw English brand.
+  const brandReg = await register('DiscBrand', `${uniq}6`.slice(-9));
+  brandShop = brandReg.shop; tokenBrand = brandReg.token;
+  BRAND_TERM = `Tata${uniq}`;
+  await pool.query('UPDATE shops SET is_listed = true WHERE id = $1', [brandShop.id]);
+  const brandProd = await withToken(request(app).post('/api/products'), tokenBrand)
+    .send({ name: `Brand Rice ${uniq}`, price: 5000, unit: 'kg' });
+  const brandCi = await pool.query(
+    `INSERT INTO catalog_items (category, product, brand, is_global) VALUES ($1, $2, $3, true) RETURNING id`,
+    [`Food${uniq}6`.slice(0, 40), `Brand Rice ${uniq}`, BRAND_TERM]
+  );
+  await pool.query('UPDATE products SET catalog_item_id = $1 WHERE id = $2', [brandCi.rows[0].id, brandProd.body.product.id]);
+  await pool.query(
+    `INSERT INTO catalog_i18n (term_type, term_en, lang, name, aliases, needs_review)
+     VALUES ('brand', $1, 'hi', $2, '', true)
+     ON CONFLICT (term_type, term_en, lang) DO UPDATE SET name = EXCLUDED.name`,
+    [BRAND_TERM, BRAND_NAME_HI]
+  );
 }, 30000);
 
 afterAll(async () => {
-  for (const s of [listedA, listedB, unlisted, catShop, saltShop, baseShop]) {
+  for (const s of [listedA, listedB, unlisted, catShop, saltShop, baseShop, brandShop]) {
     if (s) await pool.query('DELETE FROM shops WHERE id = $1', [s.id]);
   }
   if (CATEGORY) {
@@ -163,6 +192,10 @@ afterAll(async () => {
   if (BASE_TERM) {
     await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'product' AND term_en = $1`, [BASE_TERM]);
     await pool.query('DELETE FROM catalog_items WHERE product = $1', [BASE_TERM]);
+  }
+  if (BRAND_TERM) {
+    await pool.query(`DELETE FROM catalog_i18n WHERE term_type = 'brand' AND term_en = $1`, [BRAND_TERM]);
+    await pool.query('DELETE FROM catalog_items WHERE brand = $1', [BRAND_TERM]);
   }
   await pool.end();
 });
@@ -421,6 +454,26 @@ describe('GET /public/shops/:shopId — localized base_product (variant-group na
       const prod = res.body.shop.products.find((p) => p.base_product === BASE_TERM);
       expect(prod).toBeDefined();
       expect(prod.base_product).toBe(BASE_TERM);
+    }
+  });
+});
+
+describe('GET /public/shops/:shopId — localized brand', () => {
+  it('lang=hi localizes brand from catalog_i18n', async () => {
+    const res = await request(app).get(`/api/public/shops/${brandShop.id}?lang=hi`);
+    expect(res.status).toBe(200);
+    const prod = res.body.shop.products.find((p) => p.brand === BRAND_NAME_HI);
+    expect(prod).toBeDefined();
+    expect(prod.brand).toBe(BRAND_NAME_HI);
+  });
+
+  it('en (and no lang) returns the raw English brand', async () => {
+    for (const url of [`/api/public/shops/${brandShop.id}`, `/api/public/shops/${brandShop.id}?lang=en`]) {
+      const res = await request(app).get(url);
+      expect(res.status).toBe(200);
+      const prod = res.body.shop.products.find((p) => p.brand === BRAND_TERM);
+      expect(prod).toBeDefined();
+      expect(prod.brand).toBe(BRAND_TERM);
     }
   });
 });

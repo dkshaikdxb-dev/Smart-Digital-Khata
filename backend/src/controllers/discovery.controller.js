@@ -355,16 +355,24 @@ exports.getShop = async (req, res) => {
   // COALESCE(cpb.name, ci.product) so brand/size group cards show the native
   // name when a translation exists (English fallback otherwise).
   let baseProductSelect = 'ci.product';
+  // The brand (ci.brand) shows on brand/size cards. On the en/unlocalized path it
+  // stays raw English; when localized, LEFT JOIN catalog_i18n on the brand master
+  // term (term_type='brand') and return COALESCE(cbr.name, ci.brand) so the brand
+  // renders in the native script when a translation exists (English fallback).
+  let brandSelect = 'ci.brand';
   let i18nJoin = '';
   if (localized) {
     params.push(lang); // $2
     nameSelect = 'COALESCE(cp.name, p.name)';
     descSelect = 'COALESCE(cp.description, p.description)';
     baseProductSelect = 'COALESCE(cpb.name, ci.product)';
+    brandSelect = 'COALESCE(cbr.name, ci.brand)';
     i18nJoin = `LEFT JOIN catalog_i18n cp
                   ON cp.term_type = 'product' AND cp.term_en = p.name AND cp.lang = $2
                 LEFT JOIN catalog_i18n cpb
-                  ON cpb.term_type = 'product' AND cpb.term_en = ci.product AND cpb.lang = $2`;
+                  ON cpb.term_type = 'product' AND cpb.term_en = ci.product AND cpb.lang = $2
+                LEFT JOIN catalog_i18n cbr
+                  ON cbr.term_type = 'brand' AND cbr.term_en = ci.brand AND cbr.lang = $2`;
   }
   // search_text (the normalized all-language blob) is returned so the in-shop
   // client filter can match aliases/romanized/native tokens; it is derived from
@@ -373,7 +381,7 @@ exports.getShop = async (req, res) => {
     `SELECT p.id, ${nameSelect} AS name, ${descSelect} AS description, p.price, p.unit, p.sold_by_weight, p.image_url,
             p.search_text,
             ci.category, ci.subcategory,
-            ${baseProductSelect} AS base_product, ci.brand, ci.pack
+            ${baseProductSelect} AS base_product, ${brandSelect} AS brand, ci.pack
        FROM products p
        LEFT JOIN catalog_items ci ON ci.id = p.catalog_item_id
        ${i18nJoin}
