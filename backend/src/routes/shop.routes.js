@@ -60,6 +60,20 @@ const updateSchema = Joi.object({
   delivery_hours: Joi.string().allow('', null).max(120),
 });
 
+// Premium "Branded Store" (batch STORE1). Owner-scoped: buying premium is an
+// owner decision, so staff are excluded (unlike the /me/* shop-settings routes,
+// which allow owner+staff). Activation debits credits; the accent/tagline PATCH is
+// allowed anytime (the owner can pre-set before activating).
+const brandingActivateSchema = Joi.object({
+  // Coarse upper bound; the LIVE max_days is re-clamped in the controller.
+  days: Joi.number().integer().min(1).max(365).required(),
+});
+const brandingPatchSchema = Joi.object({
+  // #RRGGBB hex; null (or '') clears it back to the default (unbranded) accent.
+  brand_accent: Joi.string().pattern(/^#[0-9a-fA-F]{6}$/).allow('', null),
+  brand_tagline: Joi.string().trim().max(80).allow('', null),
+}).min(0);
+
 // Owner override of the native shop name (batch SHOPNAME). One language per PUT;
 // the name is validated + trimmed + length-capped in the controller.
 const nameI18nParamSchema = Joi.object({
@@ -73,6 +87,18 @@ const nameI18nBodySchema = Joi.object({
 // Declared BEFORE the auth guard below so it is not caught by it. `:id` is
 // UUID-validated in the controller, so it never shadows the owner `/me/*` routes.
 router.get('/:id/image', asyncHandler(ctrl.serveImage));
+
+// Branded Store (batch STORE1) — OWNER-ONLY. Declared before the owner+staff
+// guard below with their own auth(['owner']) so staff cannot spend the shop's
+// credits on premium.
+router.get('/me/branding', auth(['owner']), asyncHandler(ctrl.getBranding));
+router.post(
+  '/me/branding/activate',
+  auth(['owner']),
+  validate(brandingActivateSchema),
+  asyncHandler(ctrl.activateBranding)
+);
+router.patch('/me/branding', auth(['owner']), validate(brandingPatchSchema), asyncHandler(ctrl.patchBranding));
 
 router.use(auth(['owner', 'staff']));
 router.get('/me', asyncHandler(ctrl.getMine));

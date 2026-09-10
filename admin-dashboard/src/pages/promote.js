@@ -4,6 +4,10 @@ import Nav from '../components/Nav';
 import { apiFetch, apiPost } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
+// The default storefront accent the colour picker seeds when the owner has not set
+// one yet (a calm brand green). Any #RRGGBB the owner saves overrides it.
+const DEFAULT_ACCENT = '#0a7e4f';
+
 // Owner "Boost my shop" (batch PROMO-BUY) — the shopkeeper spends earned Khata
 // Credits to buy a MODERATED promo advertising their own store to nearby shoppers.
 // It reads /api/promos/config (live pricing + the shop's spendable balance), lets
@@ -54,6 +58,17 @@ export default function Promote() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
+  // Branded Store premium (batch STORE1). Its own config/status block + local
+  // state for the days picker, the accent colour and the tagline.
+  const [brand, setBrand] = useState(null); // { config, is_branded, branded_until, brand_accent, brand_tagline, balance_paise }
+  const [bDays, setBDays] = useState(30);
+  const [accent, setAccent] = useState(DEFAULT_ACCENT);
+  const [tagline, setTagline] = useState('');
+  const [bBusy, setBBusy] = useState(false);
+  const [bError, setBError] = useState('');
+  const [bMsg, setBMsg] = useState('');
+  const [savingTheme, setSavingTheme] = useState(false);
+
   const load = useCallback(async () => {
     const [c, mine] = await Promise.all([
       apiFetch('/api/promos/config'),
@@ -63,6 +78,18 @@ export default function Promote() {
     setPlacements(mine.promos || []);
     // Clamp the initial day pick into the allowed range.
     setDays((d) => Math.min(Math.max(1, d), Math.max(1, c.max_days || 1)));
+
+    // Branded Store is additive — a failure here must never break the Boost page.
+    try {
+      const b = await apiFetch('/api/shops/me/branding');
+      setBrand(b);
+      setAccent(b.brand_accent || DEFAULT_ACCENT);
+      setTagline(b.brand_tagline || '');
+      const bMax = Math.max(1, Number(b.config && b.config.max_days) || 1);
+      setBDays((d) => Math.min(Math.max(1, d), bMax));
+    } catch (_e) {
+      setBrand(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -103,6 +130,49 @@ export default function Promote() {
     }
   }
 
+  // Branded Store derived values (mirror the promo card's math).
+  const bPerDay = brand ? Number(brand.config && brand.config.credits_per_day_paise) || 0 : 0;
+  const bBalance = brand ? Number(brand.balance_paise) || 0 : 0;
+  const bMaxDays = brand ? Math.max(1, Number(brand.config && brand.config.max_days) || 1) : 1;
+  const bEnabled = !!(brand && brand.config && brand.config.enabled);
+  const bCost = useMemo(() => bDays * bPerDay, [bDays, bPerDay]);
+  const bShort = bEnabled && bCost > bBalance;
+  const isBranded = !!(brand && brand.is_branded);
+
+  async function activate(e) {
+    e.preventDefault();
+    if (!bEnabled || bShort || bBusy) return;
+    setBBusy(true); setBError(''); setBMsg('');
+    try {
+      await apiPost('/api/shops/me/branding/activate', { days: bDays });
+      setBMsg(t('brand.activated'));
+      await load();
+    } catch (err) {
+      if (err && err.status === 402) setBError(t('brand.lowBalance'));
+      else setBError(err.message || t('brand.errGeneric'));
+    } finally {
+      setBBusy(false);
+    }
+  }
+
+  async function saveTheme(e) {
+    e.preventDefault();
+    if (savingTheme) return;
+    setSavingTheme(true); setBError(''); setBMsg('');
+    try {
+      await apiFetch('/api/shops/me/branding', {
+        method: 'PATCH',
+        body: JSON.stringify({ brand_accent: accent || null, brand_tagline: tagline.trim() || null }),
+      });
+      setBMsg(t('brand.saved'));
+      await load();
+    } catch (err) {
+      setBError(err.message || t('brand.errGeneric'));
+    } finally {
+      setSavingTheme(false);
+    }
+  }
+
   return (
     <div>
       <Nav />
@@ -119,6 +189,78 @@ export default function Promote() {
               <span className="muted">{t('promo.balanceLabel')}</span>
               <strong style={{ fontSize: 22 }}>{rupees(balance)}</strong>
             </div>
+
+            {/* Branded Store — a credit-unlocked premium storefront theme (STORE1). */}
+            {brand && (
+              <div className="card" style={{ display: 'grid', gap: 14, borderLeft: `4px solid ${isBranded ? accent : 'var(--border, #e5e7eb)'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <strong style={{ fontSize: 17 }}>✨ {t('brand.title')}</strong>
+                  {isBranded ? (
+                    <span style={{ background: '#dcfce7', color: '#166534', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
+                      {t('brand.statusActive', { date: fmtDate(brand.branded_until) })}
+                    </span>
+                  ) : (
+                    <span style={{ background: '#e5e7eb', color: '#374151', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
+                      {t('brand.statusInactive')}
+                    </span>
+                  )}
+                </div>
+                <p className="muted" style={{ margin: 0, fontSize: 13 }}>{t('brand.subtitle')}</p>
+
+                {bError && <div style={{ color: 'var(--danger)' }}>{bError}</div>}
+                {bMsg && <div style={{ color: 'var(--accent)' }}>{bMsg}</div>}
+
+                {!bEnabled ? (
+                  <div className="muted">{t('brand.disabledNote')}</div>
+                ) : (
+                  <form onSubmit={activate} style={{ display: 'grid', gap: 12 }}>
+                    <div>
+                      <label className="muted">{t('brand.days')}</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <input
+                          type="range" min={1} max={bMaxDays} step={1}
+                          value={bDays} onChange={(ev) => setBDays(Number(ev.target.value))}
+                          style={{ flex: 1 }} aria-label={t('brand.days')}
+                        />
+                        <input
+                          type="number" min={1} max={bMaxDays} value={bDays}
+                          onChange={(ev) => setBDays(Math.min(bMaxDays, Math.max(1, Number(ev.target.value) || 1)))}
+                          style={{ width: 72 }}
+                        />
+                      </div>
+                      <div className="muted" style={{ fontSize: 12 }}>{t('brand.perDay', { amount: rupees(bPerDay) })}</div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                      <span className="muted">{t('brand.costLabel')}</span>
+                      <strong style={{ fontSize: 20, color: bShort ? 'var(--danger)' : 'inherit' }}>{rupees(bCost)}</strong>
+                    </div>
+                    {bShort && <div className="muted" style={{ color: 'var(--danger)' }}>{t('brand.lowBalance')}</div>}
+                    <button type="submit" disabled={bBusy || bShort}>
+                      {bBusy ? t('brand.activating') : t(isBranded ? 'brand.extend' : 'brand.activate', { amount: rupees(bCost) })}
+                    </button>
+                  </form>
+                )}
+
+                {/* Accent + tagline are editable anytime (shown on the storefront only while premium). */}
+                <form onSubmit={saveTheme} style={{ display: 'grid', gap: 10, borderTop: '1px solid var(--border, #e5e7eb)', paddingTop: 12 }}>
+                  <strong style={{ fontSize: 14 }}>{t('brand.themeTitle')}</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="muted">{t('brand.accentLabel')}</span>
+                      <input type="color" value={accent} onChange={(ev) => setAccent(ev.target.value)} aria-label={t('brand.accentLabel')} style={{ width: 44, height: 32, padding: 0, border: 'none', background: 'none' }} />
+                    </label>
+                    <label style={{ flex: 1, minWidth: 200 }}>
+                      <span className="muted">{t('brand.taglineLabel')}</span>
+                      <input value={tagline} onChange={(ev) => setTagline(ev.target.value)} maxLength={80} placeholder={t('brand.taglinePlaceholder')} />
+                    </label>
+                  </div>
+                  <div className="muted" style={{ fontSize: 12 }}>{t('brand.themeNote')}</div>
+                  <button type="submit" disabled={savingTheme}>
+                    {savingTheme ? t('brand.saving') : t('brand.save')}
+                  </button>
+                </form>
+              </div>
+            )}
 
             {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
             {msg && <div className="card" style={{ color: 'var(--accent)' }}>{msg}</div>}

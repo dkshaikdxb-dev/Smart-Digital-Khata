@@ -265,9 +265,21 @@ exports.mineCreate = async (req, res) => {
 
   const cost = days * cfg.credits_per_day_paise;
 
-  const shopRow = await query('SELECT id, name, city, village, pincode FROM shops WHERE id = $1', [shopId]);
+  const shopRow = await query(
+    `SELECT id, name, city, village, pincode,
+            (branded_until IS NOT NULL AND branded_until > NOW()) AS is_branded
+       FROM shops WHERE id = $1`,
+    [shopId]
+  );
   if (!shopRow.rowCount) throw ApiError.notFound('Shop not found');
   const shop = shopRow.rows[0];
+
+  // Branded Store priority bump (batch STORE1): while a shop's premium is active
+  // (branded_until > NOW()) its self-serve promos sort a notch above non-branded
+  // shops' promos (the serving query orders by priority DESC). Guarded by the
+  // shop's own branded_until so it only applies while premium is live; the serving
+  // query itself is unchanged.
+  const priority = shop.is_branded ? 10 : 0;
 
   // Pre-check the balance for a clean 402 with the shortfall. The guarded debit in
   // spendCredits below is the real non-negativity guarantee (it writes nothing when
@@ -290,10 +302,10 @@ exports.mineCreate = async (req, res) => {
             link_type, link_shop_id, is_seasonal, starts_at, ends_at, priority,
             status, self_serve, credits_spent_paise, created_by)
          VALUES ('shop', $1, $2, $3, '🏪', $4::jsonb, $5,
-                 'shop', $6, false, NOW(), NOW() + make_interval(days => $7), 0,
+                 'shop', $6, false, NOW(), NOW() + make_interval(days => $7), $10,
                  'pending_review', true, $8, $9)
          RETURNING id, ends_at`,
-        [shop.name, offer_text, subtitle, JSON.stringify(i18n), shop.name, shopId, days, cost, req.user.sub]
+        [shop.name, offer_text, subtitle, JSON.stringify(i18n), shop.name, shopId, days, cost, req.user.sub, priority]
       );
       const campaignId = ins.rows[0].id;
       for (const t of targets) {

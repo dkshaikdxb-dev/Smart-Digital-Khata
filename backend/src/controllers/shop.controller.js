@@ -3,6 +3,8 @@ const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { RENDER_LANGS, reseedShopName } = require('../utils/shop-name-i18n');
 const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
+const { getBrandedStoreConfig } = require('../utils/brandedStore');
+const { spendCredits } = require('../utils/wallet');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
@@ -101,6 +103,151 @@ exports.putNameI18n = async (req, res) => {
     [req.user.shopId, lang, name]
   );
   res.json({ name: r.rows[0] });
+};
+
+// ===========================================================================
+// Premium "Branded Store" (batch STORE1). A shop OWNER spends its earned Khata
+// Credits to unlock, for a time-boxed window (shops.branded_until), a custom
+// storefront accent + tagline, a "Premium" badge, and a small promo-priority
+// bump. Owner-scoped (req.user.shopId). Another closed-loop credit sink — the
+// credit debit is a guarded UPDATE in the SAME transaction as the branded_until
+// extension, so the balance can never go negative and a debit never happens
+// without the window it paid for. All money is integer paise.
+// ===========================================================================
+
+// The shop's own referral_wallet balance in paise (0 when it has no wallet yet).
+async function shopBalancePaise(shopId) {
+  const r = await query(
+    "SELECT balance_paise FROM referral_wallets WHERE owner_type = 'shop' AND owner_id = $1",
+    [shopId]
+  );
+  return r.rowCount ? Number(r.rows[0].balance_paise) : 0;
+}
+
+// GET /api/shops/me/branding — the live config + this shop's current branding
+// state + spendable balance, so the owner card can render the day picker, the
+// live ₹ cost, the disabled state, and the accent/tagline editor.
+exports.getBranding = async (req, res) => {
+  const shopId = req.user.shopId;
+  const cfg = await getBrandedStoreConfig();
+  const r = await query(
+    `SELECT branded_until, brand_accent, brand_tagline,
+            (branded_until IS NOT NULL AND branded_until > NOW()) AS is_branded
+       FROM shops WHERE id = $1`,
+    [shopId]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  const row = r.rows[0];
+  const balance = await shopBalancePaise(shopId);
+  res.json({
+    config: cfg,
+    branded_until: row.branded_until,
+    is_branded: row.is_branded,
+    brand_accent: row.brand_accent,
+    brand_tagline: row.brand_tagline,
+    balance_paise: balance,
+  });
+};
+
+// POST /api/shops/me/branding/activate — spend credits to unlock (or extend)
+// premium for `days`. Validated by Joi in the route: { days (1..365) }; the upper
+// bound is clamped again against the LIVE max_days here. 403 when the feature is
+// off, 402 when the balance is short. The debit + the branded_until extension
+// commit together (or roll back together).
+exports.activateBranding = async (req, res) => {
+  const shopId = req.user.shopId;
+  if (!shopId) throw ApiError.badRequest('No shop associated with this account');
+
+  const cfg = await getBrandedStoreConfig();
+  if (!cfg.enabled) throw new ApiError(403, 'branded_store_disabled', ['Branded Store is currently disabled']);
+
+  const days = Number(req.body.days);
+  if (!Number.isInteger(days) || days < 1 || days > cfg.max_days) {
+    throw ApiError.badRequest('Validation failed', [`days must be an integer between 1 and ${cfg.max_days}`]);
+  }
+
+  const cost = days * cfg.credits_per_day_paise;
+
+  // Pre-check the balance for a clean 402 with the shortfall. The guarded debit in
+  // spendCredits below is the real non-negativity guarantee (it writes nothing when
+  // the balance is short), so a race between this check and the debit is safe.
+  const balance = await shopBalancePaise(shopId);
+  if (balance < cost) {
+    throw new ApiError(402, 'insufficient_credits', [
+      `Need ${cost} paise, have ${balance} paise (short ${cost - balance})`,
+    ]);
+  }
+
+  try {
+    const result = await withTx(async (client) => {
+      // Guarded debit IN THE SAME TRANSACTION as the branded_until extension: the
+      // payment and the premium window commit together, and the balance can never
+      // go negative (spendCredits throws { code:'insufficient' } and writes nothing
+      // when short).
+      await spendCredits(
+        {
+          shop: shopId,
+          amount_paise: cost,
+          purpose: 'redeem_premium',
+          ref_note: `branded store ${shopId}`,
+          created_by: req.user.sub,
+        },
+        client
+      );
+      // Extend from the later of the current window end and now, so activating
+      // again while already active ADDS to the remaining time rather than resetting.
+      const upd = await client.query(
+        `UPDATE shops
+            SET branded_until = GREATEST(COALESCE(branded_until, NOW()), NOW()) + make_interval(days => $2),
+                updated_at = NOW()
+          WHERE id = $1
+          RETURNING branded_until`,
+        [shopId, days]
+      );
+      if (!upd.rowCount) throw ApiError.notFound('Shop not found');
+      return { branded_until: upd.rows[0].branded_until };
+    });
+    res.json({ branded_until: result.branded_until, cost_paise: cost });
+  } catch (e) {
+    // A concurrent spend drained the balance between the pre-check and the debit.
+    if (e && e.code === 'insufficient') {
+      throw new ApiError(402, 'insufficient_credits', ['Balance changed — not enough Khata Credits']);
+    }
+    throw e;
+  }
+};
+
+// PATCH /api/shops/me/branding — set the accent colour + tagline. Validated by Joi
+// in the route ({ brand_accent: #RRGGBB|null, brand_tagline: <=80|null }). Allowed
+// ANYTIME (the owner can pre-set before activating); the values are only ever shown
+// publicly while branded. Only fields present in the body are changed.
+exports.patchBranding = async (req, res) => {
+  const shopId = req.user.shopId;
+  const fields = [];
+  const values = [];
+  let i = 1;
+  if (Object.prototype.hasOwnProperty.call(req.body, 'brand_accent')) {
+    fields.push(`brand_accent = $${i++}`);
+    values.push(req.body.brand_accent === '' ? null : req.body.brand_accent);
+  }
+  if (Object.prototype.hasOwnProperty.call(req.body, 'brand_tagline')) {
+    fields.push(`brand_tagline = $${i++}`);
+    values.push(req.body.brand_tagline === '' ? null : req.body.brand_tagline);
+  }
+  if (!fields.length) {
+    // Nothing to change — echo the current values so the client can re-sync.
+    const cur = await query('SELECT brand_accent, brand_tagline FROM shops WHERE id = $1', [shopId]);
+    if (!cur.rowCount) throw ApiError.notFound('Shop not found');
+    return res.json({ brand_accent: cur.rows[0].brand_accent, brand_tagline: cur.rows[0].brand_tagline });
+  }
+  values.push(shopId);
+  const r = await query(
+    `UPDATE shops SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${i}
+       RETURNING brand_accent, brand_tagline`,
+    values
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  res.json({ brand_accent: r.rows[0].brand_accent, brand_tagline: r.rows[0].brand_tagline });
 };
 
 /**

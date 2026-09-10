@@ -322,10 +322,17 @@ exports.getShop = async (req, res) => {
     shopNameSelect = 'COALESCE(sn.name, s.name)';
     shopNameJoin = 'LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $2';
   }
+  // Premium "Branded Store" (batch STORE1): is_branded is derived from
+  // branded_until > NOW() (computed in SQL so it uses the DB clock, never the app
+  // clock). The raw branded_until is NEVER returned; the accent/tagline are only
+  // surfaced while branded (nulled out below when not), so an expired or never-set
+  // premium leaks nothing.
   const shop = await query(
     `SELECT s.id, ${shopNameSelect} AS name, s.city, s.area, s.image_url,
             s.offers_pickup, s.offers_delivery, s.delivery_fee, s.free_delivery_min,
-            s.delivery_min_order, s.delivery_radius_km, s.delivery_hours
+            s.delivery_min_order, s.delivery_radius_km, s.delivery_hours,
+            (s.branded_until IS NOT NULL AND s.branded_until > NOW()) AS is_branded,
+            s.brand_accent, s.brand_tagline
        FROM shops s
        ${shopNameJoin}
       WHERE s.id = $1 AND s.is_listed = true`,
@@ -391,6 +398,15 @@ exports.getShop = async (req, res) => {
   );
 
   const body = { ...shop.rows[0], products: products.rows };
+
+  // Only expose the accent/tagline while premium is active. When not branded,
+  // return is_branded:false and null out the theming fields so a lapsed shop's
+  // saved accent/tagline never render on its public storefront.
+  if (!body.is_branded) {
+    body.is_branded = false;
+    body.brand_accent = null;
+    body.brand_tagline = null;
+  }
 
   // Localized category labels (additive): the per-product `category` stays the
   // raw English catalog term — it is the stable FILTER KEY the client sends
