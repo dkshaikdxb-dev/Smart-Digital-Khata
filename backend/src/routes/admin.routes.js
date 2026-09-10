@@ -44,6 +44,29 @@ const settingsSchema = Joi.object({
   whatsapp_template_reminder: Joi.string().allow(''),
   whatsapp_template_lang: Joi.string().allow(''),
   landing_whatsapp: Joi.string().allow('').max(20),
+  // Feature flags & pricing (batch FLAGS1). All optional; the object keeps
+  // .min(1). Booleans are real booleans; amounts/day-counts are non-negative
+  // integers (max_days >= 1); split percents are integers in 0..100. The
+  // controller coerces these to TEXT and enforces the zero-burn split guard +
+  // the meta_autopost lock.
+  voice_assistant_enabled: Joi.boolean(),
+  social_share_enabled: Joi.boolean(),
+  shop_promo_enabled: Joi.boolean(),
+  branded_store_enabled: Joi.boolean(),
+  consumer_prepay_enabled: Joi.boolean(),
+  enrolment_fee_enabled: Joi.boolean(),
+  meta_autopost_enabled: Joi.boolean(),
+  enrolment_fee_basic_paise: Joi.number().integer().min(0),
+  enrolment_fee_premium_paise: Joi.number().integer().min(0),
+  shop_promo_credits_per_day_paise: Joi.number().integer().min(0),
+  branded_store_credits_per_day_paise: Joi.number().integer().min(0),
+  consumer_prepay_max_advance_paise: Joi.number().integer().min(0),
+  delivery_champion_fee_paise: Joi.number().integer().min(0),
+  shop_promo_max_days: Joi.number().integer().min(1),
+  branded_store_max_days: Joi.number().integer().min(1),
+  referral_split_infra_pct: Joi.number().integer().min(0).max(100),
+  referral_split_l1_pct: Joi.number().integer().min(0).max(100),
+  referral_split_l2_pct: Joi.number().integer().min(0).max(100),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward
