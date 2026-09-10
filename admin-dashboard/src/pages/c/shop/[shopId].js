@@ -8,6 +8,11 @@ import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineT
 import { useLang, canUseVoice, useLanguageCapability } from '../../../lib/i18n';
 import { useSpeech } from '../../../lib/useSpeech';
 
+// Cover image src resolver: relative /api paths get the API base prefixed, same
+// base as customerApi/publicFetch. Absolute URLs pass through untouched.
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API_BASE}${url}`));
+
 // Quick-pick weight chips (grams) offered for loose/weighed items.
 const WEIGHT_CHIPS = [250, 500, 1000];
 // Human label for a weight in grams: "250 g" or "1 kg".
@@ -245,6 +250,20 @@ export default function ShopCatalog() {
 
       {shop && (
         <div className="card">
+          {/* Shop cover (batch IMG1): shown when the owner has uploaded one;
+              absent -> the header renders exactly as before. Already <=400KB
+              WebP, so lazy-load and let it scale to the card width. */}
+          {shop.image_url && (
+            <img
+              src={resolveImg(shop.image_url)}
+              alt={shop.name || ''}
+              loading="lazy"
+              style={{
+                display: 'block', width: '100%', aspectRatio: '16 / 9',
+                objectFit: 'cover', borderRadius: 10, marginBottom: 10,
+              }}
+            />
+          )}
           <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || t('c.locationNotSet')}</div>
           {fulfillmentSummary(shop).map((line, i) => (
             <div key={i} className="cpwa-ful-summary">{line}</div>

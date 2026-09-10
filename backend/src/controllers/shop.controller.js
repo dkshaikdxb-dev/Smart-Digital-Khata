@@ -2,11 +2,18 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { RENDER_LANGS, reseedShopName } = require('../utils/shop-name-i18n');
+const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
+
+const UUID_RE = /^[0-9a-f-]{36}$/i;
 
 exports.getMine = async (req, res) => {
   const r = await query('SELECT * FROM shops WHERE id = $1', [req.user.shopId]);
   if (!r.rowCount) throw ApiError.notFound('Shop not found');
-  res.json({ shop: r.rows[0] });
+  // Never leak the raw cover-image BYTEA blob in JSON (it is served as bytes via
+  // GET /api/shops/:id/image); image_url/mime/updated_at stay in the payload.
+  const shop = { ...r.rows[0] };
+  delete shop.image_data;
+  res.json({ shop });
 };
 
 exports.updateMine = async (req, res) => {
@@ -37,7 +44,10 @@ exports.updateMine = async (req, res) => {
     }
   }
 
-  res.json({ shop: r.rows[0] });
+  // Never leak the raw cover-image BYTEA blob in JSON (RETURNING * includes it).
+  const shop = { ...r.rows[0] };
+  delete shop.image_data;
+  res.json({ shop });
 };
 
 // Owner override for the native shop name (batch SHOPNAME). The auto-seeded
@@ -91,4 +101,74 @@ exports.putNameI18n = async (req, res) => {
     [req.user.shopId, lang, name]
   );
   res.json({ name: r.rows[0] });
+};
+
+/**
+ * Owner/staff, shop-scoped: upload the shop cover photo (multipart field
+ * `image`). Validate mime, resize/compress with the shared sharp pipeline (wider
+ * 1600px cover), store the processed bytes IN Postgres, and point image_url at the
+ * cache-busted public serve endpoint. Mirrors product.controller.uploadImage. The
+ * client ImageStudio already compresses on-device; this stays the backstop.
+ */
+exports.uploadImage = async (req, res) => {
+  if (!req.file || !req.file.buffer || !req.file.buffer.length) {
+    throw ApiError.badRequest('No image file uploaded (multipart field "image")');
+  }
+  if (!ALLOWED_IMAGE_MIMES.has(req.file.mimetype)) {
+    throw ApiError.badRequest('Unsupported image type; allowed: JPEG, PNG, WebP');
+  }
+
+  // Shop cover is a wide header image, so allow a larger long edge than products.
+  const { data, mime } = await processImage(req.file.buffer, {
+    maxDim: 1600,
+    quality: 80,
+    fallbackMime: req.file.mimetype,
+  });
+
+  // NOW() is stable within the statement, so image_updated_at and the epoch in
+  // image_url agree.
+  const r = await query(
+    `UPDATE shops
+     SET image_data = $1,
+         image_mime = $2,
+         image_updated_at = NOW(),
+         image_url = '/api/shops/' || id || '/image?v=' || EXTRACT(EPOCH FROM NOW())::bigint,
+         updated_at = NOW()
+     WHERE id = $3
+     RETURNING image_url`,
+    [data, mime, req.user.shopId]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  res.json({ image_url: r.rows[0].image_url });
+};
+
+/**
+ * PUBLIC (no auth): stream a shop's stored cover image so the storefront header
+ * can embed it. Mirrors product.controller.serveImage — long immutable cache is
+ * safe because callers use the cache-busted ?v= URL; CORP is relaxed to
+ * cross-origin so the storefront (possibly a different origin) can <img> it.
+ * 404 when the shop has no cover.
+ */
+exports.serveImage = async (req, res) => {
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) throw ApiError.notFound('Image not found');
+
+  const r = await query(
+    'SELECT image_data, image_mime, image_updated_at FROM shops WHERE id = $1',
+    [id]
+  );
+  if (!r.rowCount || !r.rows[0].image_data) throw ApiError.notFound('Image not found');
+
+  const { image_data: imageData, image_mime: imageMime, image_updated_at: updatedAt } = r.rows[0];
+  const epoch = updatedAt ? Math.floor(new Date(updatedAt).getTime() / 1000) : 0;
+  const etag = `"shop-${id}-${epoch}"`;
+
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.set('ETag', etag);
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();
+  }
+  res.set('Content-Type', imageMime || 'application/octet-stream');
+  return res.send(imageData);
 };

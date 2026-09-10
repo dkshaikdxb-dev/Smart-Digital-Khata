@@ -378,10 +378,11 @@ describe('GET /public/shops/:shopId', () => {
     expect(res.body.shop.products[0].category).toBeNull();
     expect(res.body.shop.products[0].subcategory).toBeNull();
     expect(res.body.shop.products[0].base_product).toBeNull();
-    // No owner/sensitive fields leaked; fulfillment fields (M7) are exposed.
+    // No owner/sensitive fields leaked; fulfillment fields (M7) are exposed, plus
+    // the shop cover image_url (batch IMG1 — null when no cover uploaded).
     expect(Object.keys(res.body.shop).sort()).toEqual([
       'area', 'city', 'delivery_fee', 'delivery_hours', 'delivery_min_order',
-      'delivery_radius_km', 'free_delivery_min', 'id', 'name',
+      'delivery_radius_km', 'free_delivery_min', 'id', 'image_url', 'name',
       'offers_delivery', 'offers_pickup', 'products',
     ]);
   });
