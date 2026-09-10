@@ -12,6 +12,7 @@ router.use('/customers', require('./customer.routes'));
 router.use('/products', require('./product.routes'));
 router.use('/catalog', require('./catalog.routes'));
 router.use('/orders', require('./order.routes'));
+router.use('/delivery', require('./delivery.routes')); // owner: delivery champions + assign; PUBLIC: /t/:token champion link
 router.use('/distributors', require('./distributors.routes')); // PUBLIC: POST /register
 router.use('/distributor', require('./distributor.routes')); // distributor self-service
 router.use('/suppliers', require('./suppliers.routes')); // owner/staff: discovery + ledger
