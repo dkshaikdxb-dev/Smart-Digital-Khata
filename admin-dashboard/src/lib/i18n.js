@@ -5203,6 +5203,7 @@ const CREDITS = {
     'credits.kind.redeem_premium': 'Spent on premium',
     'credits.kind.sponsor_shop': 'Sponsored a shop',
     'credits.kind.reversal': 'Reversed',
+    'credits.kind.refund': 'Promo refund',
     'credits.kind.other': 'Adjustment',
     'credits.ecoTitle': 'Referral economics',
     'credits.ecoSubtitle': 'Live check — the referral network never pays out more than the enrolment fees fund it.',
@@ -5257,6 +5258,7 @@ const CREDITS = {
     'credits.kind.redeem_premium': 'प्रीमियम पर खर्च',
     'credits.kind.sponsor_shop': 'दुकान को प्रायोजित किया',
     'credits.kind.reversal': 'वापस किया',
+    'credits.kind.refund': 'प्रोमो रिफ़ंड',
     'credits.kind.other': 'समायोजन',
     'credits.ecoTitle': 'रेफ़रल अर्थशास्त्र',
     'credits.ecoSubtitle': 'लाइव जाँच — रेफ़रल नेटवर्क कभी भी एनरोलमेंट शुल्क से मिली राशि से ज़्यादा भुगतान नहीं करता।',
@@ -7490,6 +7492,82 @@ const SFAQ = {
 for (const code of Object.keys(SFAQ)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], SFAQ[code]);
+}
+
+// Owner "Boost my shop" self-serve promo strings (batch PROMO-BUY). en + hi are
+// authored; ta/te/kn/ml/ur fall back to English via translate(). Money is framed
+// as Khata Credits, never cash. Merged into DICT like the blocks above.
+const PROMO_EN = {
+  'promo.nav': 'Boost',
+  'promo.title': 'Boost my shop',
+  'promo.subtitle': 'Spend your Khata Credits to feature your shop to nearby shoppers. A quick review keeps the marketplace clean before your promo goes live.',
+  'promo.loading': 'Loading…',
+  'promo.balanceLabel': 'Your Khata Credits',
+  'promo.disabledNote': 'Shop promos are not available right now. Please check back later.',
+  'promo.days': 'How many days',
+  'promo.perDay': '{amount} / day',
+  'promo.costLabel': 'Cost',
+  'promo.offerText': 'Offer line (optional)',
+  'promo.offerPlaceholder': 'e.g. Fresh stock daily',
+  'promo.subtitleField': 'Subtitle (optional)',
+  'promo.subtitlePlaceholder': 'e.g. Visit us today',
+  'promo.submit': 'Boost for {amount}',
+  'promo.submitting': 'Submitting…',
+  'promo.lowBalance': 'Not enough Khata Credits for this. Reduce the days or earn more credits.',
+  'promo.submitted': 'Submitted for review. It goes live once approved.',
+  'promo.errGeneric': 'Could not submit right now. Please try again.',
+  'promo.myPlacements': 'My placements',
+  'promo.empty': 'No placements yet. Boost your shop above to appear to nearby shoppers.',
+  'promo.spent': 'Spent',
+  'promo.window': 'Runs',
+  'promo.impr': 'Views',
+  'promo.clicks': 'Taps',
+  'promo.stPending': 'Pending review',
+  'promo.stActive': 'Live',
+  'promo.stRejected': 'Rejected (refunded)',
+  'promo.stPaused': 'Paused',
+  'promo.stDraft': 'Draft',
+  'promo.refundNote': 'If a promo is rejected, your Khata Credits are refunded in full.',
+};
+const PROMO_HI = {
+  'promo.nav': 'प्रचार',
+  'promo.title': 'मेरी दुकान को बढ़ावा दें',
+  'promo.subtitle': 'अपने खाता क्रेडिट खर्च करके अपनी दुकान को आस-पास के ग्राहकों को दिखाएँ। प्रचार लाइव होने से पहले एक जाँच होती है।',
+  'promo.loading': 'लोड हो रहा है…',
+  'promo.balanceLabel': 'आपके खाता क्रेडिट',
+  'promo.disabledNote': 'अभी दुकान प्रचार उपलब्ध नहीं है। कृपया बाद में देखें।',
+  'promo.days': 'कितने दिन',
+  'promo.perDay': '{amount} / दिन',
+  'promo.costLabel': 'लागत',
+  'promo.offerText': 'ऑफ़र लाइन (वैकल्पिक)',
+  'promo.offerPlaceholder': 'जैसे रोज़ ताज़ा माल',
+  'promo.subtitleField': 'उपशीर्षक (वैकल्पिक)',
+  'promo.subtitlePlaceholder': 'जैसे आज ही पधारें',
+  'promo.submit': '{amount} में बढ़ावा दें',
+  'promo.submitting': 'भेजा जा रहा है…',
+  'promo.lowBalance': 'इसके लिए पर्याप्त खाता क्रेडिट नहीं हैं। दिन कम करें या और क्रेडिट कमाएँ।',
+  'promo.submitted': 'समीक्षा के लिए भेजा गया। मंज़ूरी के बाद यह लाइव होगा।',
+  'promo.errGeneric': 'अभी नहीं भेजा जा सका। कृपया फिर से प्रयास करें।',
+  'promo.myPlacements': 'मेरे प्रचार',
+  'promo.empty': 'अभी कोई प्रचार नहीं। ऊपर से अपनी दुकान को बढ़ावा दें।',
+  'promo.spent': 'खर्च',
+  'promo.window': 'अवधि',
+  'promo.impr': 'व्यू',
+  'promo.clicks': 'टैप',
+  'promo.stPending': 'समीक्षा बाकी',
+  'promo.stActive': 'लाइव',
+  'promo.stRejected': 'अस्वीकृत (रिफ़ंड)',
+  'promo.stPaused': 'रुका हुआ',
+  'promo.stDraft': 'ड्राफ़्ट',
+  'promo.refundNote': 'यदि प्रचार अस्वीकृत होता है, तो आपके खाता क्रेडिट पूरी तरह वापस कर दिए जाते हैं।',
+};
+const PROMO = {
+  en: PROMO_EN, hi: PROMO_HI,
+  ta: PROMO_EN, te: PROMO_EN, kn: PROMO_EN, ml: PROMO_EN, ur: PROMO_EN,
+};
+for (const code of Object.keys(PROMO)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], PROMO[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in

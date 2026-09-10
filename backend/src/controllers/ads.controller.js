@@ -1,5 +1,6 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { getOrCreateWallet, creditWallet } = require('../utils/wallet');
 // Reuse the ONE set of CSV helpers so quoting/CRLF/attachment behaviour matches
 // every other export in the app (admin-export.controller.js does the same).
 const { csvRow, isoDate, sendCsv } = require('../utils/statement');
@@ -244,6 +245,116 @@ exports.remove = async (req, res) => {
 // GET /api/admin/ads/geo-options — distinct non-null town(=city)/village/pincode
 // from shops, each a sorted list, to feed the target pickers. town = shop.city;
 // village/pincode come from the location model (migration 0044).
+// ===========================================================================
+// Shop self-serve promo moderation (batch PROMO-BUY). A shop buys a moderated
+// promo (promos.controller.mineCreate) that starts status='pending_review'; an
+// admin here approves it (→ 'active', it starts serving) or rejects it (→
+// 'rejected', the credits are refunded ONCE). Gated by the same ads:manage perm
+// as the campaign CRUD above (see admin.routes).
+// ===========================================================================
+
+// GET /api/admin/promos/pending — self_serve + pending_review campaigns with the
+// shop name, geo targets and the cost the shop paid, newest first.
+exports.pendingPromos = async (_req, res) => {
+  const r = await query(
+    `SELECT c.id, c.title, c.offer_text, c.subtitle, c.glyph, c.advertiser,
+            c.link_shop_id, c.starts_at, c.ends_at, c.credits_spent_paise,
+            c.created_at, s.name AS shop_name, s.city AS shop_city,
+            COALESCE((
+              SELECT json_agg(json_build_object('geo_type', t.geo_type, 'geo_value', t.geo_value)
+                              ORDER BY t.geo_type, t.geo_value)
+              FROM ad_targets t WHERE t.campaign_id = c.id
+            ), '[]'::json) AS targets
+       FROM ad_campaigns c
+       LEFT JOIN shops s ON s.id = c.link_shop_id
+      WHERE c.self_serve = true AND c.status = 'pending_review'
+      ORDER BY c.created_at DESC
+      LIMIT 500`
+  );
+  res.json({
+    items: r.rows.map((row) => ({
+      ...row,
+      credits_spent_paise: row.credits_spent_paise == null ? null : Number(row.credits_spent_paise),
+    })),
+  });
+};
+
+// POST /api/admin/promos/:id/approve — pending_review → active. The guard on
+// status='pending_review' means only a promo actually awaiting review can be
+// approved (an already-active/rejected one 409s), so serving picks it up next.
+exports.approvePromo = async (req, res) => {
+  const r = await query(
+    `UPDATE ad_campaigns
+        SET status = 'active', updated_at = NOW()
+      WHERE id = $1 AND self_serve = true AND status = 'pending_review'
+      RETURNING id`,
+    [req.params.id]
+  );
+  if (!r.rowCount) {
+    // Distinguish "no such self-serve promo" from "not awaiting review".
+    const exists = await query(
+      "SELECT status FROM ad_campaigns WHERE id = $1 AND self_serve = true",
+      [req.params.id]
+    );
+    if (!exists.rowCount) throw ApiError.notFound('Promo not found');
+    throw ApiError.conflict(`Promo is '${exists.rows[0].status}', not pending review`);
+  }
+  res.json({ id: r.rows[0].id, status: 'active' });
+};
+
+// POST /api/admin/promos/:id/reject  { reason? } — pending_review → rejected AND
+// refund the credits the shop paid, in ONE transaction with the status flip.
+//
+// IDEMPOTENT by construction: the UPDATE ... WHERE status='pending_review' is the
+// atomic transition. Only the ONE update that actually moves the row out of
+// pending_review returns a row (rowCount 1) and triggers the refund; a concurrent
+// or repeated reject finds status='rejected' (rowCount 0) and refunds NOTHING, so
+// a double-reject can never double-refund.
+exports.rejectPromo = async (req, res) => {
+  const reason = req.body && req.body.reason ? String(req.body.reason).trim().slice(0, 500) : null;
+
+  const outcome = await withTx(async (client) => {
+    const upd = await client.query(
+      `UPDATE ad_campaigns
+          SET status = 'rejected', updated_at = NOW()
+        WHERE id = $1 AND self_serve = true AND status = 'pending_review'
+        RETURNING id, link_shop_id, credits_spent_paise`,
+      [req.params.id]
+    );
+    if (!upd.rowCount) return { transitioned: false };
+
+    const row = upd.rows[0];
+    let refunded = 0;
+    // Refund only when there is a shop wallet target and a recorded amount. The
+    // refund is a 'refund'-kind credit (free-text ledger kind) referencing the promo.
+    if (row.link_shop_id && row.credits_spent_paise != null && Number(row.credits_spent_paise) > 0) {
+      const wallet = await getOrCreateWallet('shop', row.link_shop_id, client);
+      await creditWallet(
+        {
+          wallet,
+          amount_paise: Number(row.credits_spent_paise),
+          kind: 'refund',
+          ref_note: `promo rejected ${row.id}${reason ? ` (${reason})` : ''}`,
+          created_by: req.user.sub,
+        },
+        client
+      );
+      refunded = Number(row.credits_spent_paise);
+    }
+    return { transitioned: true, refunded_paise: refunded };
+  });
+
+  if (!outcome.transitioned) {
+    const exists = await query(
+      "SELECT status FROM ad_campaigns WHERE id = $1 AND self_serve = true",
+      [req.params.id]
+    );
+    if (!exists.rowCount) throw ApiError.notFound('Promo not found');
+    throw ApiError.conflict(`Promo is '${exists.rows[0].status}', not pending review`);
+  }
+  res.json({ id: req.params.id, status: 'rejected', refunded_paise: outcome.refunded_paise });
+};
+
 exports.geoOptions = async (_req, res) => {
   const [towns, villages, pincodes] = await Promise.all([
     query(`SELECT DISTINCT city AS v FROM shops WHERE city IS NOT NULL AND city <> '' ORDER BY city`),

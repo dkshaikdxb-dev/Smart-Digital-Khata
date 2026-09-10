@@ -25,7 +25,7 @@ const SOURCE_ROLES = ['referrer', 'chain_l1', 'chain_l2', 'referee', 'mitra', 'i
 function kindLabel(t, kind) {
   const known = new Set([
     'reward_settled', 'redeem_enrolment', 'redeem_subscription', 'redeem_promo',
-    'redeem_whatsapp', 'redeem_premium', 'sponsor_shop', 'reversal',
+    'redeem_whatsapp', 'redeem_premium', 'sponsor_shop', 'reversal', 'refund',
   ]);
   if (known.has(kind)) return t(`credits.kind.${kind}`);
   return t('credits.kind.other');
