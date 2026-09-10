@@ -198,4 +198,12 @@ router.put('/ads/:id', requirePerm('ads:manage'), validate(campaignSchema), asyn
 router.patch('/ads/:id/status', requirePerm('ads:manage'), validate(adStatusSchema), asyncHandler(adsCtrl.setStatus));
 router.delete('/ads/:id', requirePerm('ads:manage'), asyncHandler(adsCtrl.remove));
 
+// Shop self-serve promo moderation (batch PROMO-BUY). A shop buys a moderated
+// promo that starts 'pending_review'; an admin approves it (→ active, it serves)
+// or rejects it (→ rejected, credits refunded once). Same ads:manage perm as the
+// campaign CRUD above.
+router.get('/promos/pending', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingPromos));
+router.post('/promos/:id/approve', requirePerm('ads:manage'), asyncHandler(adsCtrl.approvePromo));
+router.post('/promos/:id/reject', requirePerm('ads:manage'), validate(reasonSchema), asyncHandler(adsCtrl.rejectPromo));
+
 module.exports = router;

@@ -1,5 +1,8 @@
 const Joi = require('joi');
-const { query } = require('../config/db');
+const { query, withTx } = require('../config/db');
+const ApiError = require('../utils/ApiError');
+const { spendCredits } = require('../utils/wallet');
+const { getShopPromoConfig } = require('../utils/shopPromo');
 
 // Public, unauthenticated promo serving (batch ADS4). Serves the localized,
 // geo-matched, in-window, active campaigns to the consumer app and records
@@ -168,4 +171,181 @@ exports.impression = async (req, res) => {
 exports.click = async (req, res) => {
   await rawIncrement('clicks', req.params.id);
   res.status(204).end();
+};
+
+// ===========================================================================
+// Owner self-serve promo placement (batch PROMO-BUY). A shop OWNER spends its
+// earned Khata Credits to buy a moderated promo advertising its own store. These
+// endpoints are auth('owner') scoped and mounted at /api/promos (see promos.routes).
+//
+// A bought promo starts status='pending_review' and only serves once an admin
+// approves it (the serving query above filters status='active'), so nothing a
+// shop buys reaches the marketplace unreviewed. The credit debit runs in the SAME
+// transaction as the campaign insert via spendCredits, so the balance can never go
+// negative and a debit can never happen without the campaign it paid for.
+// ===========================================================================
+
+// The shop's own referral_wallet balance in paise (0 when it has no wallet yet).
+async function shopBalancePaise(shopId) {
+  const r = await query(
+    "SELECT balance_paise FROM referral_wallets WHERE owner_type = 'shop' AND owner_id = $1",
+    [shopId]
+  );
+  return r.rowCount ? Number(r.rows[0].balance_paise) : 0;
+}
+
+// GET /api/promos/config — the live pricing + the shop's spendable balance, so
+// the Boost UI can render the day picker, the live cost and the disabled state.
+exports.mineConfig = async (req, res) => {
+  const shopId = req.user.shopId;
+  const cfg = await getShopPromoConfig();
+  const balance = shopId ? await shopBalancePaise(shopId) : 0;
+  res.json({
+    enabled: cfg.enabled,
+    credits_per_day_paise: cfg.credits_per_day_paise,
+    max_days: cfg.max_days,
+    balance_paise: balance,
+  });
+};
+
+// The shop's localized name overrides → an ad_campaigns.i18n blob { <lang>:
+// { title } }. Optional: the promo's title IS the shop name, so a localized title
+// is just the localized shop name. Never throws — on any error we skip i18n.
+async function buildShopNameI18n(shopId) {
+  try {
+    const r = await query(
+      'SELECT lang, name FROM shop_name_i18n WHERE shop_id = $1',
+      [shopId]
+    );
+    const out = {};
+    for (const row of r.rows) {
+      if (row.lang && row.lang !== 'en' && row.name) out[row.lang] = { title: row.name };
+    }
+    return out;
+  } catch (_e) {
+    return {};
+  }
+}
+
+// The shop's own geography → ad_targets rows (pincode + village + town=city that
+// the shop actually has). Falls back to a single town row = shop.city when the
+// shop has no location at all. NEVER 'all' — a self-serve promo only advertises to
+// the shop's own locality, never the whole district.
+function shopTargets(shop) {
+  const out = [];
+  const town = shop.city && String(shop.city).trim() ? String(shop.city).trim() : null;
+  const village = shop.village && String(shop.village).trim() ? String(shop.village).trim() : null;
+  const pincode = shop.pincode && String(shop.pincode).trim() ? String(shop.pincode).trim() : null;
+  if (pincode) out.push({ geo_type: 'pincode', geo_value: pincode });
+  if (village) out.push({ geo_type: 'village', geo_value: village });
+  if (town) out.push({ geo_type: 'town', geo_value: town });
+  // No location at all → still target the shop's town (city), even if empty-ish
+  // it is the single fallback row. If city is also null we cannot target anything
+  // meaningful; keep the town row with whatever city holds (may be null → matches
+  // nothing until the owner fills the shop's city, which is the safe outcome).
+  if (out.length === 0) out.push({ geo_type: 'town', geo_value: town });
+  return out;
+}
+
+// POST /api/promos/mine — buy a moderated promo placement. Validated by Joi in the
+// route: { days (1..max), offer_text? (<=60), subtitle? (<=80) }.
+exports.mineCreate = async (req, res) => {
+  const shopId = req.user.shopId;
+  if (!shopId) throw ApiError.badRequest('No shop associated with this account');
+
+  const cfg = await getShopPromoConfig();
+  if (!cfg.enabled) throw new ApiError(403, 'shop_promo_disabled', ['Self-serve promos are currently disabled']);
+
+  const days = Number(req.body.days);
+  if (!Number.isInteger(days) || days < 1 || days > cfg.max_days) {
+    throw ApiError.badRequest('Validation failed', [`days must be an integer between 1 and ${cfg.max_days}`]);
+  }
+  const offer_text = req.body.offer_text ? String(req.body.offer_text).trim() || null : null;
+  const subtitle = req.body.subtitle ? String(req.body.subtitle).trim() || null : null;
+
+  const cost = days * cfg.credits_per_day_paise;
+
+  const shopRow = await query('SELECT id, name, city, village, pincode FROM shops WHERE id = $1', [shopId]);
+  if (!shopRow.rowCount) throw ApiError.notFound('Shop not found');
+  const shop = shopRow.rows[0];
+
+  // Pre-check the balance for a clean 402 with the shortfall. The guarded debit in
+  // spendCredits below is the real non-negativity guarantee (it writes nothing when
+  // the balance is short), so a race between this check and the debit is safe.
+  const balance = await shopBalancePaise(shopId);
+  if (balance < cost) {
+    throw new ApiError(402, 'insufficient_credits', [
+      `Need ${cost} paise, have ${balance} paise (short ${cost - balance})`,
+    ]);
+  }
+
+  const i18n = await buildShopNameI18n(shopId);
+  const targets = shopTargets(shop);
+
+  try {
+    const result = await withTx(async (client) => {
+      const ins = await client.query(
+        `INSERT INTO ad_campaigns
+           (style, title, offer_text, subtitle, glyph, i18n, advertiser,
+            link_type, link_shop_id, is_seasonal, starts_at, ends_at, priority,
+            status, self_serve, credits_spent_paise, created_by)
+         VALUES ('shop', $1, $2, $3, '🏪', $4::jsonb, $5,
+                 'shop', $6, false, NOW(), NOW() + make_interval(days => $7), 0,
+                 'pending_review', true, $8, $9)
+         RETURNING id, ends_at`,
+        [shop.name, offer_text, subtitle, JSON.stringify(i18n), shop.name, shopId, days, cost, req.user.sub]
+      );
+      const campaignId = ins.rows[0].id;
+      for (const t of targets) {
+        await client.query(
+          'INSERT INTO ad_targets (campaign_id, geo_type, geo_value) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
+          [campaignId, t.geo_type, t.geo_value]
+        );
+      }
+      // Guarded debit IN THE SAME TRANSACTION: the campaign and the payment commit
+      // together (or roll back together), and the balance can never go negative.
+      await spendCredits(
+        { shop: shopId, amount_paise: cost, purpose: 'redeem_promo', ref_note: `promo ${campaignId}`, created_by: req.user.sub },
+        client
+      );
+      return { id: campaignId, ends_at: ins.rows[0].ends_at };
+    });
+
+    res.status(201).json({ id: result.id, status: 'pending_review', cost_paise: cost, ends_at: result.ends_at });
+  } catch (e) {
+    // A concurrent spend drained the balance between the pre-check and the debit.
+    if (e && e.code === 'insufficient') {
+      throw new ApiError(402, 'insufficient_credits', ['Balance changed — not enough Khata Credits']);
+    }
+    throw e;
+  }
+};
+
+// GET /api/promos/mine — this shop's own self-serve placements, newest first.
+exports.mineList = async (req, res) => {
+  const shopId = req.user.shopId;
+  if (!shopId) return res.json({ promos: [] });
+  const r = await query(
+    `SELECT id, status, offer_text, subtitle, starts_at, ends_at,
+            credits_spent_paise, impressions, clicks, created_at
+       FROM ad_campaigns
+      WHERE self_serve = true AND link_shop_id = $1
+      ORDER BY created_at DESC
+      LIMIT 100`,
+    [shopId]
+  );
+  res.json({
+    promos: r.rows.map((row) => ({
+      id: row.id,
+      status: row.status,
+      offer_text: row.offer_text,
+      subtitle: row.subtitle,
+      starts_at: row.starts_at,
+      ends_at: row.ends_at,
+      credits_spent_paise: row.credits_spent_paise == null ? null : Number(row.credits_spent_paise),
+      impressions: Number(row.impressions) || 0,
+      clicks: Number(row.clicks) || 0,
+      created_at: row.created_at,
+    })),
+  });
 };

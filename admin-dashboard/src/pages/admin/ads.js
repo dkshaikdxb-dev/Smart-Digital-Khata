@@ -137,6 +137,8 @@ export default function AdminAds() {
   const canManage = has('ads:manage');
 
   const [items, setItems] = useState([]);
+  const [pending, setPending] = useState([]); // self-serve shop promos awaiting moderation
+  const [modBusy, setModBusy] = useState(null); // id currently being approved/rejected
   const [geo, setGeo] = useState({ towns: [], villages: [], pincodes: [] });
   const [shops, setShops] = useState(null); // null = picker unavailable (no shops:view), else [] list
   const [filters, setFilters] = useState({ status: '', style: '', geo: '' });
@@ -183,6 +185,32 @@ export default function AdminAds() {
   }, [loadContext, router]);
 
   useEffect(() => { if (canView) load(); }, [canView, load]);
+
+  // Shop self-serve promo moderation queue (batch PROMO-BUY). Only a manager may
+  // see/act on it (ads:manage), so it stays empty for a view-only marketing admin.
+  const loadPending = useCallback(async () => {
+    if (!canManage) return;
+    try {
+      const r = await apiFetch('/api/admin/promos/pending');
+      setPending(r.items || []);
+    } catch (e) { /* non-fatal — the queue just stays empty */ }
+  }, [canManage]);
+
+  useEffect(() => { if (canManage) loadPending(); }, [canManage, loadPending]);
+
+  // Approve → the promo goes active and starts serving. Reject → it is declined
+  // and the shop's Khata Credits are refunded (idempotently, server-side).
+  async function moderate(id, action, reason) {
+    if (!canManage || modBusy) return;
+    setModBusy(id); setError(''); setMsg('');
+    try {
+      const body = action === 'reject' ? { reason: reason || undefined } : {};
+      await apiFetch(`/api/admin/promos/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
+      setMsg(action === 'approve' ? 'Promo approved — now live.' : 'Promo rejected — credits refunded.');
+      await Promise.all([loadPending(), load()]);
+    } catch (e) { setError(e.message); }
+    finally { setModBusy(null); }
+  }
 
   function resetForm() {
     setForm(EMPTY);
@@ -525,6 +553,42 @@ export default function AdminAds() {
         <button className="secondary" onClick={load}>Refresh</button>
       </div>
 
+      {/* Shop self-serve promo moderation queue (batch PROMO-BUY). Shops buy a
+          promo with Khata Credits; it waits here at pending_review until a manager
+          approves it (→ live) or rejects it (→ refunded). Manager-only. */}
+      {canManage && (
+        <div className="card">
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 0 }}>Shop requests <span className="badge">{pending.length}</span></h3>
+            <button type="button" className="secondary" onClick={loadPending}>Refresh</button>
+          </div>
+          <p className="muted" style={{ marginTop: 8 }}>Shops that spent Khata Credits to boost themselves. Approve to go live, or reject (credits are refunded).</p>
+          {pending.length === 0 ? (
+            <div className="muted">No shop promo requests awaiting review.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Shop</th>
+                    <th>Creative</th>
+                    <th>Targets</th>
+                    <th>Window</th>
+                    <th>Paid</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pending.map((p) => (
+                    <PendingRow key={p.id} p={p} busy={modBusy === p.id} onModerate={moderate} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Matrix table */}
       <div className="card">
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
@@ -617,6 +681,41 @@ function GeoChips({ targets }) {
       ))}
       {list.length > shown.length && <span className="badge">+{list.length - shown.length}</span>}
     </div>
+  );
+}
+
+// One row in the shop self-serve moderation queue. Approve → live; Reject asks
+// for an optional reason (prompt) and refunds the shop's credits server-side.
+function PendingRow({ p, busy, onModerate }) {
+  const paid = `₹${((Number(p.credits_spent_paise) || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const win = (v) => (v ? new Date(v).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
+  const reject = () => {
+    const reason = typeof window !== 'undefined' ? window.prompt('Reason for rejecting (optional):', '') : '';
+    if (reason === null) return; // cancelled
+    onModerate(p.id, 'reject', reason.trim());
+  };
+  return (
+    <tr>
+      <td style={cell}>
+        <div style={{ fontWeight: 600 }}>{p.shop_name || p.advertiser || '—'}</div>
+        {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
+      </td>
+      <td style={cell}>
+        <div>{p.glyph} {p.offer_text || <span className="muted">No offer line</span>}</div>
+        {p.subtitle && <div className="muted" style={{ fontSize: 12 }}>{p.subtitle}</div>}
+      </td>
+      <td style={cell}><GeoChips targets={p.targets} /></td>
+      <td style={cell}>{win(p.starts_at)} – {win(p.ends_at)}</td>
+      <td style={cell}>{paid}</td>
+      <td style={cell}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve')}>
+            {busy ? '…' : 'Approve'}
+          </button>
+          <button type="button" className="secondary" disabled={busy} onClick={reject}>Reject</button>
+        </div>
+      </td>
+    </tr>
   );
 }
 
