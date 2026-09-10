@@ -24,6 +24,7 @@ import FamiliesScreen from './src/screens/FamiliesScreen';
 import FamilyDetailScreen from './src/screens/FamilyDetailScreen';
 import InsightsScreen from './src/screens/InsightsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import FeatureWebView from './src/screens/FeatureWebView';
 
 const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -83,6 +84,11 @@ function MoreStackScreen() {
       <MoreStack.Screen name="FamilyDetail" component={FamilyDetailScreen} options={{ title: 'Family' }} />
       <MoreStack.Screen name="Insights" component={InsightsScreen} />
       <MoreStack.Screen name="Settings" component={SettingsScreen} />
+      <MoreStack.Screen
+        name="FeatureWebView"
+        component={FeatureWebView}
+        options={({ route }) => ({ title: route.params?.title || 'Smart Khata' })}
+      />
     </MoreStack.Navigator>
   );
 }

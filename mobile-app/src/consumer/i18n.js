@@ -238,6 +238,9 @@ const en = {
   'pstatus.paid': 'Paid',
 
   'account.title': 'Account',
+  'account.prepay': 'Pay in advance',
+  'account.prepaySub': 'Pre-load credit & clear dues on the web',
+  'account.moreOnWeb': 'More',
   'account.profile': 'Profile',
   'account.subtitle': 'All fields optional. Your phone is your login and cannot change here.',
   'account.name': 'Name',

@@ -122,6 +122,95 @@ app a distinct icon, drop in:
 one otherwise — no code change needed. The adaptive-icon background color is already
 per-flavor (`#22c55e` owner, `#1C7A45` consumer).
 
+## WebView feature bridge (no rebuild for web features)
+
+Rich, fast-evolving features (voice, Khata Credits & referral, Boost/promote, branded
+store, delivery champions, share poster, consumer pre-pay) are **not** re-coded natively.
+`src/screens/FeatureWebView.js` renders the live web app inside an auth-bridged WebView,
+so a new **web deploy** appears in the installed apps with **no app rebuild**.
+
+- **Auth bridge:** it reads the flavor's JWT from `SecureStore` and seeds it into the
+  page's `localStorage` before any script runs (owner → `skhata_token` + `skhata_role`,
+  consumer → `ckhata_token`), so the web app is signed in as the same user. Nothing is
+  injected when there is no token.
+- **Native capabilities enabled:** camera + microphone (`onPermissionRequest` grants the
+  requested resources; inline/fullscreen media, no user-gesture gate), geolocation
+  (`geolocationEnabled`), file uploads (`<input type=file>` + file access), and downloads
+  (`onFileDownload` on iOS; on Android, direct asset/`?download` URLs are handed to the
+  system browser / DownloadManager). External links open in the system browser.
+- **Owner "More" entries:** `/account` (Khata Credits & referral), `/promote` (Boost +
+  branded store), `/delivery` (delivery champions), `/dashboard` (share poster).
+- **Consumer entry:** Account → "Pay in advance" opens `/c/khata` (single-merchant
+  pre-pay / advance) bridged with the consumer token.
+
+Native permissions are declared in `app.config.js` (`android.permissions` +
+`ios.infoPlist` usage strings) and are shared by both flavors. **Adding a native
+capability, permission, SDK bump, or native dependency still needs a fresh EAS build**;
+everything else ships via the web deploy or an OTA JS update.
+
+## EAS Update (OTA) — ship JS-shell changes with no rebuild
+
+`expo-updates` is configured in `app.config.js`:
+
+- `runtimeVersion: { policy: 'sdkVersion' }` — every build on this Expo SDK accepts these
+  updates. Bumping the SDK (or any native change) requires a new build, as expected.
+- `updates: { enabled: true, fallbackToCacheTimeout: 0, url }` — the `url` is left for
+  `eas update:configure` to fill (or the `EAS_UPDATE_URL` / `EAS_PROJECT_ID` env vars).
+  **No project id or update URL is hardcoded** — owner and consumer are separate EAS
+  projects, each with its own id/URL.
+- Per-profile channels are set in `eas.json` (`preview`, `production`).
+
+**One-time setup** (run once per flavor/project, from `mobile-app/`):
+
+```bash
+# 1. Create/link the EAS project (prints the project id):
+APP_FLAVOR=owner    eas init          # then again with APP_FLAVOR=consumer
+# 2. Wire expo-updates (sets the update URL = https://u.expo.dev/<projectId>
+#    and the channels). Because app.config.js is a *dynamic* config, if the CLI
+#    can't write the URL it prints it — set it via the env var instead:
+APP_FLAVOR=owner    eas update:configure
+APP_FLAVOR=consumer eas update:configure
+#    (or export per build: EAS_PROJECT_ID=<id>  →  url becomes https://u.expo.dev/<id>)
+# 3. Rebuild once so the installed app embeds expo-updates + the channel:
+eas build -p android --profile owner-preview     # and consumer-preview
+```
+
+**Shipping an OTA update afterwards** (JS-only shell changes — new WebView entry, tweaked
+native screen, bug fix; NOT new native perms/deps):
+
+```bash
+APP_FLAVOR=owner    eas update --branch production --message "…"
+APP_FLAVOR=consumer eas update --branch production --message "…"
+```
+
+Installed apps pick it up on next launch. Web-only feature changes need **no** update at
+all — they arrive the moment the web app is deployed, because the WebView loads it live.
+
+## On-device QA checklist (run on the APK, per flavor)
+
+The WebView permission/auth/download paths can't be unit-tested — verify on a real device:
+
+- **Auth bridge:** open a "More" web feature (owner) / "Pay in advance" (consumer) — the
+  web page should load already **signed in as the same user** (no login screen).
+- **Voice mic prompt:** trigger a voice feature — Android should show the mic permission
+  prompt once, then record; audio plays without a tap.
+- **Image Studio camera + gallery:** open a photo/camera feature — the camera opens and
+  `<input type=file>` shows the gallery/file chooser; a picked image uploads.
+- **Location:** open the nearby-shops / location picker — the location prompt appears and
+  the map/picker gets a fix.
+- **Share / download:** use the share poster / image export — the PNG saves or opens in
+  the browser (does not dead-end). See the caveat below for blob-based downloads.
+- **Back button & offline:** Android hardware back steps through web history; airplane
+  mode shows the retry screen, then recovers on Retry.
+
+> **Download caveat:** server-served file URLs (e.g. `…/poster.png`, `?download=`) are
+> handed to the system on Android and to `onFileDownload` on iOS. **Client-generated
+> `blob:` / `data:` downloads** (a canvas the web app turns into a file in JS) are the
+> weak spot — RN-WebView 13.x does not fire `onFileDownload` for those on Android. If the
+> share poster is built client-side as a blob, prefer the web app's "Share" (Web Share
+> API / WhatsApp deep link) path, or have the web serve the poster from a URL. Confirm the
+> actual poster download path on-device.
+
 ## iOS (deferred)
 
 iOS bundle identifiers are configured (`com.smartdigitalkhata.owner` /

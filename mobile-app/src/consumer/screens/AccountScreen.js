@@ -2,15 +2,20 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import Constants from 'expo-constants';
 import { colors, sizes } from '../theme';
 import { Card, Field, Button, ErrorBanner } from '../components';
 import { consumerAuth, setToken } from '../consumerApi';
 import { useConsumerAuth } from '../ConsumerAuthContext';
 import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
+// The consumer PWA base (`…/c`), bridged with the consumer token by FeatureWebView.
+const CONSUMER_URL =
+  Constants.expoConfig?.extra?.consumerUrl || 'https://khata.dadashaik.com/c';
+
 // Priority 6 — Account: editable profile (name/email; phone read-only), a
 // language switch, and logout. Profile via GET/PATCH /customer-auth/*.
-export default function AccountScreen() {
+export default function AccountScreen({ navigation }) {
   const { t, lang, setLang } = useT();
   const { signOut } = useConsumerAuth();
   const [form, setForm] = useState(null);
@@ -91,6 +96,20 @@ export default function AccountScreen() {
             {msg ? <Text style={styles.msg}>{msg}</Text> : null}
           </Card>
         ) : null}
+
+        <Card>
+          <Text style={styles.title}>{t('account.moreOnWeb')}</Text>
+          <Text style={styles.subtitle}>{t('account.prepaySub')}</Text>
+          <Button
+            title={t('account.prepay')}
+            variant="secondary"
+            onPress={() => navigation.navigate('FeatureWebView', {
+              base: CONSUMER_URL,
+              path: '/khata',
+              title: t('account.prepay'),
+            })}
+          />
+        </Card>
 
         <Card>
           <Text style={styles.title}>{t('account.language')}</Text>

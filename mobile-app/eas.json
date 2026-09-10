@@ -8,21 +8,25 @@
     },
     "owner-preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": { "buildType": "apk" },
       "env": { "APP_FLAVOR": "owner" }
     },
     "owner-production": {
       "autoIncrement": true,
+      "channel": "production",
       "android": { "buildType": "app-bundle" },
       "env": { "APP_FLAVOR": "owner" }
     },
     "consumer-preview": {
       "distribution": "internal",
+      "channel": "preview",
       "android": { "buildType": "apk" },
       "env": { "APP_FLAVOR": "consumer" }
     },
     "consumer-production": {
       "autoIncrement": true,
+      "channel": "production",
       "android": { "buildType": "app-bundle" },
       "env": { "APP_FLAVOR": "consumer" }
     }
