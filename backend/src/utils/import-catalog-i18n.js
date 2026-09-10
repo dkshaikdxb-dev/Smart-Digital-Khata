@@ -52,6 +52,32 @@ async function importCatalogI18n({ rows, client } = {}) {
         upserted += 1;
       }
     }
+
+    // Keep the language capability flags honest: a language HAS a localized
+    // catalogue exactly when it actually has catalog_i18n rows. Data-driven off
+    // the table we just wrote, so newly-loaded languages (e.g. bn/gu/mr) flip
+    // has_catalogue/has_search true automatically once their rows land — the
+    // one-time migration 0039 could not, having run before any such rows
+    // existed. True-only / additive (mirrors 0039's one-directional intent): we
+    // never delete catalogue rows, so a flag is never flipped back off. This
+    // deliberately does NOT touch is_active or audit_status — activation stays a
+    // separate admin decision made after a native-speaker audit.
+    try {
+      await c.query(
+        `UPDATE languages SET has_catalogue = true, has_search = true, updated_at = NOW()
+           WHERE code = 'en' OR code IN (SELECT DISTINCT lang FROM catalog_i18n)`
+      );
+    } catch (err) {
+      // Tolerate only a missing languages table (shouldn't happen post-migrate);
+      // let any real SQL error surface so tests and callers see it.
+      if (err && err.code === '42P01') {
+        // 42P01 = undefined_table: languages registry not present; skip the flag
+        // refresh but keep the translation upserts.
+      } else {
+        throw err;
+      }
+    }
+
     return { upserted };
   };
 

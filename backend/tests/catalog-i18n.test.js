@@ -230,3 +230,56 @@ describe('import-catalog-i18n idempotency', () => {
     await pool.query('DELETE FROM catalog_i18n WHERE term_en LIKE $1', [`${tag} Import%`]);
   });
 });
+
+describe('import-catalog-i18n language capability flags', () => {
+  it('flips has_catalogue/has_search true for a language once it has rows, leaving untouched staged languages false', async () => {
+    // `pa` is a pre-staged language (is_active=false) that this batch never
+    // gives catalogue rows to — it must stay has_catalogue=false throughout.
+    const paBefore = await pool.query("SELECT has_catalogue FROM languages WHERE code='pa'");
+    expect(paBefore.rows.length).toBe(1);
+    expect(paBefore.rows[0].has_catalogue).toBe(false);
+
+    // Snapshot bn's flags so we can restore them afterwards. The importer's flag
+    // refresh is intentionally true-only (never flips back) in production, so in
+    // this shared, run-in-band DB we must undo it ourselves to avoid leaking a
+    // flipped flag into sibling test files.
+    const bnBefore = await pool.query("SELECT has_catalogue, has_search FROM languages WHERE code='bn'");
+
+    // Import a small fixture carrying a Bengali translation for a product.
+    const rows = [
+      {
+        term_type: 'product', term_en: `${tag} Flag Rice`,
+        translations: { bn: { name: 'পতাকা চাল', aliases: 'flag chal', needs_review: true } },
+      },
+    ];
+    const res = await importCatalogI18n({ rows });
+    expect(res.upserted).toBe(1);
+
+    // (a) the catalog_i18n row exists for lang='bn'.
+    const row = await pool.query(
+      "SELECT name, needs_review FROM catalog_i18n WHERE term_type='product' AND term_en=$1 AND lang='bn'",
+      [`${tag} Flag Rice`]
+    );
+    expect(row.rows.length).toBe(1);
+    expect(row.rows[0].name).toBe('পতাকা চাল');
+    expect(row.rows[0].needs_review).toBe(true);
+
+    // (b) bn is now catalogue-ready: has_catalogue/has_search flipped true...
+    const bn = await pool.query("SELECT has_catalogue, has_search FROM languages WHERE code='bn'");
+    expect(bn.rows[0].has_catalogue).toBe(true);
+    expect(bn.rows[0].has_search).toBe(true);
+
+    // ...while the untouched staged language (pa, no catalogue rows) stays false.
+    const pa = await pool.query("SELECT has_catalogue, has_search FROM languages WHERE code='pa'");
+    expect(pa.rows[0].has_catalogue).toBe(false);
+    expect(pa.rows[0].has_search).toBe(false);
+
+    // Clean up all side effects: remove the fixture row AND restore bn's flags
+    // to their pre-test values (the true-only refresh does not revert on its own).
+    await pool.query('DELETE FROM catalog_i18n WHERE term_en LIKE $1', [`${tag} Flag%`]);
+    await pool.query(
+      'UPDATE languages SET has_catalogue = $1, has_search = $2 WHERE code = $3',
+      [bnBefore.rows[0].has_catalogue, bnBefore.rows[0].has_search, 'bn']
+    );
+  });
+});
