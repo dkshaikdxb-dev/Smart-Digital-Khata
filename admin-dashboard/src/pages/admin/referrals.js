@@ -53,8 +53,11 @@ export default function AdminReferrals() {
   const [newMitra, setNewMitra] = useState(null);
   const [mitraCopied, setMitraCopied] = useState(false);
   const [eco, setEco] = useState(null);
-  // Config form for the influencer code just minted (id from the POST response —
-  // the codes list carries no ids frontend-side, so config targets the fresh code).
+  // The code the config block currently targets: { id, code }. Set either by
+  // minting a fresh code OR by clicking Edit on any code row in the lists below
+  // (the overview now returns each code's id + config fields), so an admin can
+  // configure an existing influencer code, not only a just-minted one.
+  const [cfgTarget, setCfgTarget] = useState(null);
   const [cfgForm, setCfgForm] = useState({ label: '', is_mitra: false, bounty_rupees: '', cap_rupees: '' });
   const [settling, setSettling] = useState(false);
   const [error, setError] = useState('');
@@ -121,7 +124,8 @@ export default function AdminReferrals() {
         method: 'POST', body: JSON.stringify({ label: codeForm.label || null, owner_type: codeForm.owner_type }),
       });
       setNewCode(r.referral_code);
-      // Seed the config form for the code we just minted (its id lets us PATCH it).
+      // Point the config block at the code we just minted (its id lets us PATCH it).
+      setCfgTarget({ id: r.referral_code.id, code: r.referral_code.code });
       setCfgForm({
         label: r.referral_code.label || '',
         is_mitra: !!r.referral_code.is_mitra,
@@ -133,20 +137,38 @@ export default function AdminReferrals() {
     } catch (e2) { setError(e2.message); }
   }
 
+  // Open the config block for an EXISTING code row (from top-referrers / mitra
+  // lists), pre-filled from that row. Targets an arbitrary code id, not only the
+  // minted one — reusing the same cfgForm + saveCodeConfig PATCH path.
+  function editCode(row) {
+    setError(''); setMsg('');
+    setCfgTarget({ id: row.id, code: row.code });
+    setCfgForm({
+      label: row.label || '',
+      is_mitra: !!row.is_mitra,
+      bounty_rupees: row.flat_bounty_paise != null ? String(Number(row.flat_bounty_paise) / 100) : '',
+      cap_rupees: row.budget_cap_paise != null ? String(Number(row.budget_cap_paise) / 100) : '',
+    });
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById('code-config');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   // Configure the freshly-minted code: label, mitra flag, influencer flat bounty
   // (₹ → paise) and an optional budget cap (blank = uncapped). Amounts validated
   // >= 0 client-side; the backend re-validates. PATCH /api/admin/referral/codes/:id.
   async function saveCodeConfig(e) {
     e.preventDefault();
     setError(''); setMsg('');
-    if (!newCode || !newCode.id) return;
+    if (!cfgTarget || !cfgTarget.id) return;
     const bountyStr = cfgForm.bounty_rupees.trim();
     const capStr = cfgForm.cap_rupees.trim();
     const bounty = bountyStr === '' ? null : Math.round((parseFloat(bountyStr) || 0) * 100);
     const cap = capStr === '' ? null : Math.round((parseFloat(capStr) || 0) * 100);
     if ((bounty != null && bounty < 0) || (cap != null && cap < 0)) { setError(t('credits.cfgInvalid')); return; }
     try {
-      const r = await apiFetch(`/api/admin/referral/codes/${newCode.id}`, {
+      const r = await apiFetch(`/api/admin/referral/codes/${cfgTarget.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
           label: cfgForm.label || null,
@@ -155,9 +177,9 @@ export default function AdminReferrals() {
           budget_cap_paise: cap,
         }),
       });
-      const rc = (r && r.referral_code) || newCode;
-      setNewCode(rc);
-      setCfgForm({
+      const rc = (r && r.referral_code) || null;
+      if (rc && rc.id) setCfgTarget({ id: rc.id, code: rc.code });
+      if (rc) setCfgForm({
         label: rc.label || '',
         is_mitra: !!rc.is_mitra,
         bounty_rupees: rc.flat_bounty_paise != null ? String(Number(rc.flat_bounty_paise) / 100) : '',
@@ -299,6 +321,7 @@ export default function AdminReferrals() {
               <th style={cell}>{t('ref.colWho')}</th>
               <th style={cell}>{t('ref.colType')}</th>
               <th style={cell}>{t('ref.colCount')}</th>
+              {canWrite && <th style={cell} />}
             </tr></thead>
             <tbody>
               {ov.top_referrers.map((r) => (
@@ -307,6 +330,11 @@ export default function AdminReferrals() {
                   <td style={cell}>{r.label || '—'}</td>
                   <td style={cell}><span className="badge">{r.owner_type}</span></td>
                   <td style={cell}>{r.referred_count}</td>
+                  {canWrite && (
+                    <td style={cell}>
+                      {r.id && <button type="button" className="secondary" onClick={() => editCode(r)}>{t('credits.cfgEdit')}</button>}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -350,6 +378,7 @@ export default function AdminReferrals() {
               <th style={cell}>{t('ref.mitraColActivated')}</th>
               <th style={cell}>{t('ref.mitraColRate')}</th>
               <th style={cell}>{t('ref.mitraColBounty')}</th>
+              {canWrite && <th style={cell} />}
             </tr></thead>
             <tbody>
               {mitra.map((m) => (
@@ -360,6 +389,11 @@ export default function AdminReferrals() {
                   <td style={cell}>{Number(m.activated) || 0}</td>
                   <td style={cell}>{pct(m.activated, m.onboarded)}</td>
                   <td style={cell}>{rupeesIn(m.bounty_accrued_paise)}</td>
+                  {canWrite && (
+                    <td style={cell}>
+                      {m.id && <button type="button" className="secondary" onClick={() => editCode(m)}>{t('credits.cfgEdit')}</button>}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -391,10 +425,10 @@ export default function AdminReferrals() {
             </div>
           )}
 
-          {newCode && newCode.id && (
-            <div style={{ marginTop: 14, borderTop: '1px solid var(--border, #eee)', paddingTop: 12 }}>
+          {cfgTarget && cfgTarget.id && (
+            <div id="code-config" style={{ marginTop: 14, borderTop: '1px solid var(--border, #eee)', paddingTop: 12 }}>
               <h4 style={{ margin: '0 0 4px' }}>{t('credits.cfgTitle')}</h4>
-              <p className="muted" style={{ marginTop: 0 }}>{t('credits.cfgForCode')} <code>{newCode.code}</code> — {t('credits.cfgSubtitle')}</p>
+              <p className="muted" style={{ marginTop: 0 }}>{t('credits.cfgForCode')} <code>{cfgTarget.code}</code> — {t('credits.cfgSubtitle')}</p>
               <form onSubmit={saveCodeConfig} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1, minWidth: 160 }}>
                   <label className="muted">{t('credits.cfgLabel')}</label>

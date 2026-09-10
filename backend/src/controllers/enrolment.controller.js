@@ -24,37 +24,88 @@ function assertEnabled(cfg) {
 // Mark a pending enrolment paid atomically + idempotently, then fire the R2 hook.
 // Returns the paid row. If the row was already paid (rowCount 0), returns the
 // existing paid row WITHOUT re-firing the hook — a confirm can never double-process.
+//
+// CAPTURE-TIME DEBIT (Batch R5): the pending->paid UPDATE and the Khata Credits
+// debit run inside ONE transaction, so the credit is debited exactly when — and
+// only when — the payment actually confirms. An abandoned Razorpay checkout stays
+// pending (credits_debited=false) and is never debited. The credits_debited guard
+// makes the debit idempotent (a second confirm can never re-debit). The debit is
+// clamped to the current balance so it can never throw `insufficient`.
+// onEnrolmentPaid fires AFTER commit, unchanged, best-effort.
 async function markPaid(enrolment, paymentId) {
-  const upd = await query(
-    `UPDATE enrolments
-        SET status = 'paid', provider_payment_id = COALESCE($2, provider_payment_id), paid_at = NOW()
-      WHERE id = $1 AND status = 'pending'
-      RETURNING id, shop_id, tier, amount_paise, status, paid_at`,
-    [enrolment.id, paymentId || null]
-  );
+  const result = await withTx(async (c) => {
+    const upd = await c.query(
+      `UPDATE enrolments
+          SET status = 'paid', provider_payment_id = COALESCE($2, provider_payment_id), paid_at = NOW()
+        WHERE id = $1 AND status = 'pending'
+        RETURNING id, shop_id, tier, amount_paise, status, paid_at, wallet_applied_paise, credits_debited`,
+      [enrolment.id, paymentId || null]
+    );
 
-  if (upd.rowCount === 1) {
+    if (upd.rowCount !== 1) {
+      // Already paid / raced: return the existing paid row, do NOT re-debit or re-fire.
+      const existing = await c.query(
+        `SELECT id, shop_id, tier, amount_paise, status, paid_at FROM enrolments WHERE id = $1`,
+        [enrolment.id]
+      );
+      return { row: existing.rows[0], transitioned: false };
+    }
+
     const row = upd.rows[0];
+    const intended = Number(row.wallet_applied_paise) || 0;
+
+    // Debit the applied credits ON the paid transition — but only for a row that
+    // recorded credit intent and has NOT already been debited. The full-credit and
+    // manual-mode paths debit at order time and set credits_debited=true, so they
+    // are skipped here. Read the current balance and clamp: actual = min(intended,
+    // balance) so the guarded debit can never trip `insufficient`; if the balance
+    // is 0, skip the debit entirely but still mark the row debited.
+    if (intended > 0 && row.credits_debited !== true) {
+      const bal = await c.query(
+        "SELECT balance_paise FROM referral_wallets WHERE owner_type = 'shop' AND owner_id = $1",
+        [row.shop_id]
+      );
+      const balance = bal.rowCount ? Number(bal.rows[0].balance_paise) : 0;
+      const actual = Math.min(intended, balance);
+      if (actual > 0) {
+        await spendCredits(
+          { shop: row.shop_id, amount_paise: actual, purpose: 'redeem_enrolment', ref_note: `enrolment ${row.id}`, created_by: null },
+          c
+        );
+      }
+      if (actual < intended) {
+        // The shop spent credits elsewhere between order and confirm (practically
+        // impossible mid-checkout). It simply gets the smaller credit it could
+        // still afford — never a failed payment.
+        logger.warn({ enrolmentId: row.id, intended, actual }, 'Enrolment capture debited less than intended (balance changed since order)');
+      }
+      // Persist the ACTUAL credit applied + close the guard (even when actual===0:
+      // the balance was gone, and the debit must never be retried).
+      await c.query(
+        `UPDATE enrolments SET wallet_applied_paise = $2, credits_debited = true WHERE id = $1`,
+        [row.id, actual]
+      );
+      row.wallet_applied_paise = actual;
+      row.credits_debited = true;
+    }
+    return { row, transitioned: true };
+  });
+
+  if (result.transitioned) {
+    const row = result.row;
     // --- R2 HOOK POINT ---------------------------------------------------
-    // Right after the row transitions pending -> paid, notify R2's zero-burn
-    // chain accrual. onEnrolmentPaid is a documented NO-OP in R1. Wrapped
-    // best-effort so a future accrual error can NEVER throw into the response
-    // of a payment that already succeeded.
+    // Right after the row transitions pending -> paid (and after the capture
+    // debit commits), notify R2's zero-burn chain accrual. Wrapped best-effort
+    // so an accrual error can NEVER throw into the response of a payment that
+    // already succeeded.
     try {
       await enrolmentUtil.onEnrolmentPaid(row.shop_id, row.id);
     } catch (err) {
       logger.warn({ err: err.message, enrolmentId: row.id }, 'onEnrolmentPaid hook failed (ignored in R1)');
     }
     // ---------------------------------------------------------------------
-    return row;
   }
-
-  // Already paid / raced: return the existing paid row, do NOT double-process.
-  const existing = await query(
-    `SELECT id, shop_id, tier, amount_paise, status, paid_at FROM enrolments WHERE id = $1`,
-    [enrolment.id]
-  );
-  return existing.rows[0];
+  return result.row;
 }
 
 // GET /api/enrolment/config — always available (even when disabled), so the
@@ -140,11 +191,13 @@ exports.createOrder = async (req, res) => {
   // pool is unchanged (the credit is how the shop paid, a pure book-entry offset).
   if (remaining === 0 && applied > 0) {
     const enrolRow = await withTx(async (c) => {
+      // Straight to paid → debit at order time and mark the row credits_debited=true
+      // so markPaid's capture-time debit skips it (never a double-debit).
       const ins = await c.query(
         `INSERT INTO enrolments
            (shop_id, tier, amount_paise, status, provider,
-            split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
-         VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7)
+            split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise, credits_debited)
+         VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7,true)
          RETURNING id, shop_id, tier, amount_paise, status`,
         [shopId, tier, amount, infra_pct, l1_pct, l2_pct, applied]
       );
@@ -167,28 +220,18 @@ exports.createOrder = async (req, res) => {
       receipt: `enrol_${String(shopId).slice(0, 18)}`,
       notes: { shop_id: shopId, tier },
     });
-    const enrolId = await withTx(async (c) => {
-      const ins = await c.query(
-        `INSERT INTO enrolments
-           (shop_id, tier, amount_paise, status, provider, provider_order_id,
-            split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
-         VALUES ($1,$2,$3,'pending','razorpay',$4,$5,$6,$7,$8)
-         RETURNING id`,
-        [shopId, tier, amount, order.id, infra_pct, l1_pct, l2_pct, applied || null]
-      );
-      // Debit the applied credits in the SAME transaction as the order row, so a
-      // debit can never happen without the order. NOTE: the credits are consumed at
-      // order time; if the shopper abandons the Razorpay checkout the enrolment
-      // stays pending with the credit already spent — a credit reversal on an
-      // abandoned/failed enrolment is a documented future seam (kind='reversal').
-      if (applied > 0) {
-        await spendCredits(
-          { shop: shopId, amount_paise: applied, purpose: 'redeem_enrolment', ref_note: `enrolment ${ins.rows[0].id}`, created_by: createdBy },
-          c
-        );
-      }
-      return ins.rows[0].id;
-    });
+    // Record the credit INTENT only (wallet_applied_paise = applied,
+    // credits_debited = false). The actual debit happens at CAPTURE, in markPaid,
+    // when the Razorpay payment confirms — so an abandoned checkout leaves this row
+    // pending with the credit un-spent and the balance fully intact.
+    const enrolId = await query(
+      `INSERT INTO enrolments
+         (shop_id, tier, amount_paise, status, provider, provider_order_id,
+          split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise, credits_debited)
+       VALUES ($1,$2,$3,'pending','razorpay',$4,$5,$6,$7,$8,false)
+       RETURNING id`,
+      [shopId, tier, amount, order.id, infra_pct, l1_pct, l2_pct, applied || null]
+    ).then((r) => r.rows[0].id);
     logger.info({ shopId, enrolmentId: enrolId, order: order.id, applied, remaining }, 'Enrolment order created (razorpay, pending)');
     return res.json({
       order_id: order.id,
@@ -202,13 +245,16 @@ exports.createOrder = async (req, res) => {
   // Manual / dev mode (Razorpay unconfigured): create pending, confirm-paid now.
   // Any applied credit is debited atomically with the order row.
   const enrolRow = await withTx(async (c) => {
+    // Manual mode goes straight to paid → debit at order time (when credit is
+    // applied) and mark credits_debited=true so markPaid never re-debits.
+    const debited = applied > 0;
     const ins = await c.query(
       `INSERT INTO enrolments
          (shop_id, tier, amount_paise, status, provider,
-          split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
-       VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7)
+          split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise, credits_debited)
+       VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7,$8)
        RETURNING id, shop_id, tier, amount_paise, status`,
-      [shopId, tier, amount, infra_pct, l1_pct, l2_pct, applied || null]
+      [shopId, tier, amount, infra_pct, l1_pct, l2_pct, applied || null, debited]
     );
     if (applied > 0) {
       await spendCredits(
