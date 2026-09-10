@@ -19,7 +19,10 @@ const defTo = () => isoDay(new Date());
 
 export default function CustomerDetail() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Show the ledger name in the owner's active language; the raw stored name is
+  // kept for the edit form. English needs no name_local, so only ask when localized.
+  const localized = lang && lang !== 'en';
   const { sttSupported, ttsSupported, listening, listen, speak } = useSpeech();
   const { id } = router.query;
   const txnLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
@@ -34,14 +37,15 @@ export default function CustomerDetail() {
   const [newNum, setNewNum] = useState('');
 
   const load = useCallback(async () => {
-    const r = await apiFetch(`/api/customers/${id}/ledger`);
+    const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
+    const r = await apiFetch(`/api/customers/${id}/ledger${qs}`);
     setData(r);
     setEdit({
       name: r.customer.name,
       phone: r.customer.phone,
       credit_limit: (Number(r.customer.credit_limit) / 100).toString(),
     });
-  }, [id]);
+  }, [id, lang, localized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -222,7 +226,7 @@ export default function CustomerDetail() {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <h2 style={{ margin: '0 0 2px' }}>{c.name}</h2>
+            <h2 style={{ margin: '0 0 2px' }}>{c.name_local || c.name}</h2>
             <div className="muted">{c.phone}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -283,7 +287,7 @@ export default function CustomerDetail() {
 
       {stmt && (
         <div className="stmt-print" aria-hidden="true">
-          <h2>{c.name} — {t('stmt.title')}</h2>
+          <h2>{c.name_local || c.name} — {t('stmt.title')}</h2>
           <div>{stmtRange.from} → {stmtRange.to}</div>
           <StatementView stmt={stmt} fmt={fmt} print />
         </div>

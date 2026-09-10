@@ -10,7 +10,10 @@ const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Customers() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Render ledger names in the owner's active language (raw name kept for
+  // edit/search); English stays as-is, so only ask for name_local when localized.
+  const localized = lang && lang !== 'en';
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', credit_limit: 0 });
@@ -18,7 +21,8 @@ export default function Customers() {
   const [msg, setMsg] = useState('');
 
   async function load() {
-    const r = await apiFetch(`/api/customers?search=${encodeURIComponent(search)}`);
+    const qs = `?search=${encodeURIComponent(search)}${localized ? `&lang=${encodeURIComponent(lang)}` : ''}`;
+    const r = await apiFetch(`/api/customers${qs}`);
     setItems(r.items);
   }
 
@@ -28,7 +32,7 @@ export default function Customers() {
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
     load().catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   async function create(e) {
     e.preventDefault();
@@ -74,7 +78,7 @@ export default function Customers() {
   const open = (c) => router.push(`/customers/${c.id}`);
 
   const columns = [
-    { key: 'name', label: t('common.name'), render: (c) => <strong>{c.name}</strong> },
+    { key: 'name', label: t('common.name'), render: (c) => <strong>{c.name_local || c.name}</strong> },
     { key: 'phone', label: t('common.phone') },
     { key: 'credit_limit', label: t('common.creditLimit'), render: (c) => (Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : '—') },
     { key: 'balance', label: t('common.balance'), render: (c) => <Balance paise={c.balance} /> },

@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
 const { relinkCustomerPhone } = require('../utils/customer-merge');
+const { RENDER_LANGS, localizeShopName } = require('../utils/shop-name-i18n');
 const {
   buildStatement,
   defaultRange,
@@ -11,8 +12,27 @@ const {
   sendCsv,
 } = require('../utils/statement');
 
+// Resolve ?lang= to a render language, or null for en / absent / unknown (in
+// which case name_local is omitted and the raw name is the only name shown).
+function renderLang(raw) {
+  const lang = String(raw == null ? '' : raw).trim().toLowerCase();
+  return RENDER_LANGS.includes(lang) ? lang : null;
+}
+
+// Attach name_local to one customer row = the customer's name rendered into
+// `lang` by the SAME deterministic proper-noun engine used for shop names
+// (curated surnames + best-effort transliteration + raw English fallback). Pure
+// and in-process (no I/O), O(1) per row. When lang is null (en / absent /
+// unknown) the row is returned unchanged — the stored raw `name` stays the only
+// name, which is also what edit/search/ordering keep using.
+function withNameLocal(row, lang) {
+  if (!row || !lang) return row;
+  return { ...row, name_local: localizeShopName(row.name, lang).name };
+}
+
 exports.list = async (req, res) => {
   const search = (req.query.search || '').trim();
+  const lang = renderLang(req.query.lang);
   const limit = Math.min(Number(req.query.limit || 50), 200);
   const offset = Number(req.query.offset || 0);
 
@@ -30,7 +50,8 @@ exports.list = async (req, res) => {
      LIMIT $${params.length - 1} OFFSET $${params.length}`,
     params
   );
-  res.json({ items: r.rows, limit, offset });
+  const items = lang ? r.rows.map((row) => withNameLocal(row, lang)) : r.rows;
+  res.json({ items, limit, offset });
 };
 
 exports.create = async (req, res) => {
@@ -52,12 +73,13 @@ exports.create = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
+  const lang = renderLang(req.query.lang);
   const r = await query(
     'SELECT * FROM customers WHERE id = $1 AND shop_id = $2',
     [req.params.id, req.user.shopId]
   );
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
-  res.json({ customer: r.rows[0] });
+  res.json({ customer: withNameLocal(r.rows[0], lang) });
 };
 
 exports.update = async (req, res) => {
@@ -239,6 +261,7 @@ exports.statement = async (req, res) => {
 
 exports.ledger = async (req, res) => {
   const { id } = req.params;
+  const lang = renderLang(req.query.lang);
   const own = await query(
     'SELECT id, name, phone, credit_limit, balance FROM customers WHERE id=$1 AND shop_id=$2',
     [id, req.user.shopId]
@@ -253,5 +276,5 @@ exports.ledger = async (req, res) => {
      LIMIT 200`,
     [id]
   );
-  res.json({ customer: own.rows[0], transactions: tx.rows });
+  res.json({ customer: withNameLocal(own.rows[0], lang), transactions: tx.rows });
 };
