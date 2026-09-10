@@ -1,7 +1,8 @@
-const { query } = require('../config/db');
+const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
 const logger = require('../utils/logger');
+const { spendCredits } = require('../utils/wallet');
 // Imported as a namespace (not destructured) so the single R2 hook call site
 // below dispatches through enrolmentUtil.onEnrolmentPaid at call time — the seam
 // R2 (and the R1 tests) target.
@@ -93,16 +94,31 @@ exports.getMine = async (req, res) => {
   });
 };
 
+// The shop's redeemable Khata Credits balance (paise), 0 when it has no wallet.
+async function shopCreditBalance(shopId) {
+  const r = await query(
+    "SELECT balance_paise FROM referral_wallets WHERE owner_type = 'shop' AND owner_id = $1",
+    [shopId]
+  );
+  return r.rowCount ? Number(r.rows[0].balance_paise) : 0;
+}
+
 // POST /api/enrolment/order — start an enrolment. Only when the flag is on.
+// use_wallet (redemption method A): the shop redeems its Khata Credits against the
+// fee first. applied = min(balance, fee); the remainder is charged via Razorpay
+// (or, in manual/dev mode, instant-paid). The credit debit and the enrolment row
+// are written in ONE transaction so a debit can never happen without the order.
 exports.createOrder = async (req, res) => {
   const cfg = await enrolmentUtil.getEnrolmentConfig();
   assertEnabled(cfg);
 
   const { tier } = req.body;
+  const useWallet = req.body.use_wallet === true || req.body.use_credits === true;
   const amount = enrolmentUtil.amountForTier(tier, cfg);
   if (amount === null || !Number.isFinite(amount)) throw ApiError.badRequest('bad_tier');
 
   const shopId = req.user.shopId;
+  const createdBy = req.user.sub || null;
 
   // A shop enrols once: block a second order when a paid enrolment exists.
   const paid = await query(
@@ -113,42 +129,105 @@ exports.createOrder = async (req, res) => {
 
   const { infra_pct, l1_pct, l2_pct } = cfg.split;
 
+  // How much credit to apply (capped at the fee). 0 unless use_wallet + a balance.
+  const balance = useWallet ? await shopCreditBalance(shopId) : 0;
+  const applied = Math.min(balance, amount);
+  const remaining = amount - applied;
+
+  // Case 1 — credits fully cover the fee (remaining 0): no external charge. Insert
+  // the enrolment + debit the credits atomically, then mark it paid (manual-style)
+  // and fire the R2/R3 accrual hook. amount_paise stays the FULL fee so the chain
+  // pool is unchanged (the credit is how the shop paid, a pure book-entry offset).
+  if (remaining === 0 && applied > 0) {
+    const enrolRow = await withTx(async (c) => {
+      const ins = await c.query(
+        `INSERT INTO enrolments
+           (shop_id, tier, amount_paise, status, provider,
+            split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
+         VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7)
+         RETURNING id, shop_id, tier, amount_paise, status`,
+        [shopId, tier, amount, infra_pct, l1_pct, l2_pct, applied]
+      );
+      await spendCredits(
+        { shop: shopId, amount_paise: applied, purpose: 'redeem_enrolment', ref_note: `enrolment ${ins.rows[0].id}`, created_by: createdBy },
+        c
+      );
+      return ins.rows[0];
+    });
+    const paidRow = await markPaid(enrolRow, null);
+    logger.info({ shopId, enrolmentId: paidRow.id, applied }, 'Enrolment paid fully by Khata Credits');
+    return res.json({ manual: true, status: paidRow.status, wallet_applied_paise: applied, amount_paise: amount, charge_paise: 0 });
+  }
+
   if (razorpay.isConfigured()) {
-    // Razorpay one-time order paid TO the platform → use the platform client.
+    // Razorpay one-time order paid TO the platform → use the platform client. The
+    // order charges only the REMAINING amount after any credit applied.
     const order = await razorpay.createOrder({
-      amount,
+      amount: remaining,
       receipt: `enrol_${String(shopId).slice(0, 18)}`,
       notes: { shop_id: shopId, tier },
     });
-    const ins = await query(
-      `INSERT INTO enrolments
-         (shop_id, tier, amount_paise, status, provider, provider_order_id,
-          split_infra_pct, split_l1_pct, split_l2_pct)
-       VALUES ($1,$2,$3,'pending','razorpay',$4,$5,$6,$7)
-       RETURNING id`,
-      [shopId, tier, amount, order.id, infra_pct, l1_pct, l2_pct]
-    );
-    logger.info({ shopId, enrolmentId: ins.rows[0].id, order: order.id }, 'Enrolment order created (razorpay, pending)');
+    const enrolId = await withTx(async (c) => {
+      const ins = await c.query(
+        `INSERT INTO enrolments
+           (shop_id, tier, amount_paise, status, provider, provider_order_id,
+            split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
+         VALUES ($1,$2,$3,'pending','razorpay',$4,$5,$6,$7,$8)
+         RETURNING id`,
+        [shopId, tier, amount, order.id, infra_pct, l1_pct, l2_pct, applied || null]
+      );
+      // Debit the applied credits in the SAME transaction as the order row, so a
+      // debit can never happen without the order. NOTE: the credits are consumed at
+      // order time; if the shopper abandons the Razorpay checkout the enrolment
+      // stays pending with the credit already spent — a credit reversal on an
+      // abandoned/failed enrolment is a documented future seam (kind='reversal').
+      if (applied > 0) {
+        await spendCredits(
+          { shop: shopId, amount_paise: applied, purpose: 'redeem_enrolment', ref_note: `enrolment ${ins.rows[0].id}`, created_by: createdBy },
+          c
+        );
+      }
+      return ins.rows[0].id;
+    });
+    logger.info({ shopId, enrolmentId: enrolId, order: order.id, applied, remaining }, 'Enrolment order created (razorpay, pending)');
     return res.json({
       order_id: order.id,
-      amount_paise: amount,
+      amount_paise: remaining,
+      wallet_applied_paise: applied,
       currency: 'INR',
       key_id: razorpay.keyId(),
     });
   }
 
   // Manual / dev mode (Razorpay unconfigured): create pending, confirm-paid now.
-  const ins = await query(
-    `INSERT INTO enrolments
-       (shop_id, tier, amount_paise, status, provider,
-        split_infra_pct, split_l1_pct, split_l2_pct)
-     VALUES ($1,$2,$3,'pending','manual',$4,$5,$6)
-     RETURNING id, shop_id, tier, amount_paise, status`,
-    [shopId, tier, amount, infra_pct, l1_pct, l2_pct]
-  );
-  const paidRow = await markPaid(ins.rows[0], null);
-  logger.info({ shopId, enrolmentId: paidRow.id }, 'Enrolment order created + paid (manual mode)');
-  return res.json({ manual: true, status: paidRow.status });
+  // Any applied credit is debited atomically with the order row.
+  const enrolRow = await withTx(async (c) => {
+    const ins = await c.query(
+      `INSERT INTO enrolments
+         (shop_id, tier, amount_paise, status, provider,
+          split_infra_pct, split_l1_pct, split_l2_pct, wallet_applied_paise)
+       VALUES ($1,$2,$3,'pending','manual',$4,$5,$6,$7)
+       RETURNING id, shop_id, tier, amount_paise, status`,
+      [shopId, tier, amount, infra_pct, l1_pct, l2_pct, applied || null]
+    );
+    if (applied > 0) {
+      await spendCredits(
+        { shop: shopId, amount_paise: applied, purpose: 'redeem_enrolment', ref_note: `enrolment ${ins.rows[0].id}`, created_by: createdBy },
+        c
+      );
+    }
+    return ins.rows[0];
+  });
+  const paidRow = await markPaid(enrolRow, null);
+  logger.info({ shopId, enrolmentId: paidRow.id, applied }, 'Enrolment order created + paid (manual mode)');
+  // Keep the plain (no-credit) response shape unchanged; surface the credit
+  // fields only when credits were actually applied.
+  const body = { manual: true, status: paidRow.status };
+  if (applied > 0) {
+    body.wallet_applied_paise = applied;
+    body.amount_paise = amount;
+  }
+  return res.json(body);
 };
 
 // POST /api/enrolment/confirm — verify + mark paid. Only when the flag is on.

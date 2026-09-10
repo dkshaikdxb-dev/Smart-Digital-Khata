@@ -5,9 +5,12 @@ const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/enrolment.controller');
 
-// Body for POST /order — the tier the shop is enrolling into.
+// Body for POST /order — the tier the shop is enrolling into. use_wallet (a.k.a.
+// use_credits) opts to redeem the shop's Khata Credits against the fee first.
 const orderSchema = Joi.object({
   tier: Joi.string().valid('basic', 'premium').required(),
+  use_wallet: Joi.boolean().default(false),
+  use_credits: Joi.boolean(), // accepted alias for use_wallet
 });
 
 // Body for POST /confirm — either the Razorpay checkout triple, or the manual

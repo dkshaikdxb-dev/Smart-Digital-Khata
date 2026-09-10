@@ -1,5 +1,11 @@
 const crypto = require('crypto');
 const { query } = require('../config/db');
+const {
+  inTx,
+  resolveWalletOwner,
+  getOrCreateWallet,
+  creditWallet,
+} = require('./wallet');
 
 // Referral helpers (Phase D). Code generation, get-or-create for a principal,
 // and the capture path that attributes a new signup to a code. Everything here
@@ -224,18 +230,34 @@ async function maybeActivateReferral(shopId) {
 
     let rewarded = false;
 
+    // Batch R3: each flat-bounty reward is inserted AND (when autosettle is on)
+    // settled into the beneficiary's Khata Credits wallet in ONE transaction, so
+    // accrual + real-time credit are atomic. Per-side try/catch keeps this whole
+    // path best-effort: a settle hiccup on one side never rolls back activation
+    // (already stamped) or the other side.
+    const autosettle = await getAutosettle();
+
     // Referee side → the new shop owner's OWN code.
     if (rule.referee_paise > 0) {
       const sh = await query('SELECT owner_id FROM shops WHERE id = $1', [shopId]);
       const ownerId = sh.rowCount ? sh.rows[0].owner_id : null;
       if (ownerId) {
         const refereeCode = await getOrCreateCodeForUser(ownerId, 'owner');
-        await query(
-          `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
-           VALUES ($1,$2,'referral',$3,'accrued','referee')`,
-          [referral.id, refereeCode.id, rule.referee_paise]
-        );
-        rewarded = true;
+        try {
+          await inTx(null, async (c) => {
+            const ins = await c.query(
+              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
+               VALUES ($1,$2,'referral',$3,'accrued','referee')
+               RETURNING id, beneficiary_code_id, amount_paise, status`,
+              [referral.id, refereeCode.id, rule.referee_paise]
+            );
+            if (autosettle) await settleReward(ins.rows[0], c);
+          });
+          rewarded = true;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`[referral] referee reward insert/settle failed: ${e.message}`);
+        }
       }
     }
 
@@ -245,12 +267,21 @@ async function maybeActivateReferral(shopId) {
       const role = isMitra ? 'mitra' : 'referrer';
       const amount = isMitra ? rule.mitra_paise : rule.referrer_paise;
       if (amount > 0) {
-        await query(
-          `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
-           VALUES ($1,$2,'referral',$3,'accrued',$4)`,
-          [referral.id, referringCode.id, amount, role]
-        );
-        rewarded = true;
+        try {
+          await inTx(null, async (c) => {
+            const ins = await c.query(
+              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
+               VALUES ($1,$2,'referral',$3,'accrued',$4)
+               RETURNING id, beneficiary_code_id, amount_paise, status`,
+              [referral.id, referringCode.id, amount, role]
+            );
+            if (autosettle) await settleReward(ins.rows[0], c);
+          });
+          rewarded = true;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn(`[referral] ${role} reward insert/settle failed: ${e.message}`);
+        }
       }
     }
 
@@ -266,6 +297,140 @@ async function maybeActivateReferral(shopId) {
 // reward; non-peer bounties (mitra now, influencer in R3) are handled elsewhere.
 function isPeerCode(code) {
   return !!code && (code.owner_type === 'owner' || code.owner_type === 'staff') && code.is_mitra !== true;
+}
+
+// The real-time settlement flag (Batch R3). 'true' (default) => a reward is
+// credited to the beneficiary's Khata Credits wallet the instant it accrues, in
+// the SAME transaction. 'false' => accrual leaves rewards 'accrued' and an admin
+// settles them later. Read live from platform_settings so an admin toggle takes
+// effect immediately; any error / unset value defaults to true.
+async function getAutosettle(run) {
+  try {
+    const q = run || query;
+    const r = await q("SELECT value FROM platform_settings WHERE key = 'referral_autosettle'");
+    if (!r.rowCount) return true;
+    return r.rows[0].value !== 'false';
+  } catch (_e) {
+    return true;
+  }
+}
+
+// Real-time settlement (Batch R3). Settle ONE reward into its beneficiary's
+// closed-loop Khata Credits wallet, in a single transaction so the reward status
+// and the wallet balance can NEVER diverge.
+//
+// IDEMPOTENT: a guarded UPDATE flips only a row still status='accrued' to
+// 'settled' (stamping settled_at); a missing / void / already-settled row is a
+// clean no-op ({ settled:false, reason:'noop' }) — re-settling never double-credits.
+//
+// It THROWS only on a genuine failure (the beneficiary wallet cannot be
+// resolved). Sharing the caller's transaction, that rolls back the whole
+// insert+settle rather than leaving a reward marked settled but never credited.
+// The accrual callers are best-effort and swallow the throw, so a payment /
+// collection can never fail because settlement hiccuped.
+async function settleReward(rewardRow, client) {
+  if (!rewardRow || !rewardRow.id) return { settled: false, reason: 'no_row' };
+  return inTx(client, async (c) => {
+    // Claim the reward: only the first settle of an 'accrued' row proceeds.
+    const upd = await c.query(
+      `UPDATE referral_rewards
+          SET status = 'settled', settled_at = NOW()
+        WHERE id = $1 AND status = 'accrued'
+        RETURNING id, beneficiary_code_id, amount_paise`,
+      [rewardRow.id]
+    );
+    if (!upd.rowCount) return { settled: false, reason: 'noop' };
+    const r = upd.rows[0];
+    const amount = Number(r.amount_paise);
+    if (!Number.isFinite(amount) || amount <= 0) return { settled: false, reason: 'no_amount' };
+    if (!r.beneficiary_code_id) throw new Error('settleReward: reward has no beneficiary code');
+
+    const cr = await c.query(
+      'SELECT id, owner_type, owner_user_id, owner_customer_id FROM referral_codes WHERE id = $1',
+      [r.beneficiary_code_id]
+    );
+    if (!cr.rowCount) throw new Error('settleReward: beneficiary code not found');
+    const owner = await resolveWalletOwner(cr.rows[0], c);
+    if (!owner) throw new Error('settleReward: cannot resolve wallet owner');
+
+    const wallet = await getOrCreateWallet(owner.owner_type, owner.owner_id, c);
+    const balance = await creditWallet(
+      { wallet, amount_paise: amount, kind: 'reward_settled', ref_reward_id: r.id },
+      c
+    );
+    return { settled: true, wallet_id: wallet.id, balance_after_paise: balance };
+  });
+}
+
+// Settle every currently-accrued reward (used when referral_autosettle='false'
+// and an admin drains the backlog, and as a manual reconcile). Best-effort per
+// row: one unresolvable beneficiary never blocks the rest. Returns counts.
+async function settleAllAccrued() {
+  const r = await query("SELECT id FROM referral_rewards WHERE status = 'accrued' ORDER BY created_at ASC");
+  let settled = 0;
+  let skipped = 0;
+  for (const row of r.rows) {
+    try {
+      const res = await settleReward({ id: row.id });
+      if (res.settled) settled += 1; else skipped += 1;
+    } catch (_e) {
+      skipped += 1;
+    }
+  }
+  return { settled, skipped, total: r.rows.length };
+}
+
+// Influencer flat-bounty accrual (Batch R3) — the non-peer path R2 left open,
+// kept STRICTLY zero-burn. Called from accrueEnrolmentChainRewards when the direct
+// referrer is a non-peer code. Only a code carrying an explicit flat_bounty_paise
+// earns; the bounty is the minimum of three caps so it can never overspend:
+//   flat_bounty_paise  — the per-referral flat amount the admin configured,
+//   remainingBudget    — budget_cap_paise minus what this code already earned
+//                        (NULL cap = uncapped), so a code never exceeds its budget,
+//   poolCap            — floor(fee*(l1+l2)%), the same zero-burn cap as the chain,
+//                        so the bounty never exceeds the pool the fee funds.
+// The reward accrues (beneficiary_role='influencer', level NULL, source fields set)
+// and, when autosettle is on, settles into the code's EARMARKED wallet — atomic.
+// No L2 for an influencer chain. Budget exhausted -> accrue nothing.
+async function accrueInfluencerBounty({ l1Code, amount, poolCap, referral, enrolmentId, shopId, run, client }) {
+  const flat = l1Code && l1Code.flat_bounty_paise != null ? Number(l1Code.flat_bounty_paise) : null;
+  if (flat == null || !Number.isFinite(flat) || flat <= 0) {
+    // A non-peer code with no configured flat bounty accrues nothing (e.g. a mitra
+    // whose bounty is the settings-driven maybeActivateReferral path instead).
+    return { accrued: false, reason: 'non_peer_referrer' };
+  }
+
+  // What this code has already earned (accrued + settled) — its budget spend.
+  const spentR = await run(
+    `SELECT COALESCE(SUM(amount_paise),0)::bigint AS s FROM referral_rewards
+       WHERE beneficiary_code_id = $1 AND status IN ('accrued','settled')`,
+    [l1Code.id]
+  );
+  const spent = Number(spentR.rows[0].s) || 0;
+  const cap = l1Code.budget_cap_paise != null ? Number(l1Code.budget_cap_paise) : null;
+  const remainingBudget = cap == null ? Infinity : Math.max(0, cap - spent);
+
+  const bounty = Math.min(flat, remainingBudget, Math.max(poolCap, 0));
+  if (!(bounty > 0)) {
+    const reason = cap != null && remainingBudget <= 0 ? 'budget_exhausted' : 'no_bounty';
+    return { accrued: false, reason };
+  }
+
+  const autosettle = await getAutosettle(run);
+  let rewardId = null;
+  await inTx(client, async (c) => {
+    const ins = await c.query(
+      `INSERT INTO referral_rewards
+         (referral_id, beneficiary_code_id, kind, amount_paise, status,
+          beneficiary_role, level, source_enrolment_id, source_shop_id)
+       VALUES ($1,$2,'referral',$3,'accrued','influencer',NULL,$4,$5)
+       RETURNING id, beneficiary_code_id, amount_paise, status`,
+      [referral.id, l1Code.id, bounty, enrolmentId, shopId]
+    );
+    rewardId = ins.rows[0].id;
+    if (autosettle) await settleReward(ins.rows[0], c);
+  });
+  return { accrued: true, influencer_amount: bounty, poolCap, reward_id: rewardId };
 }
 
 // Fee-funded 2-level chain accrual (Batch R2). Called by enrolment.onEnrolmentPaid
@@ -339,15 +504,21 @@ async function accrueEnrolmentChainRewards(shopId, enrolmentId, client) {
     let l1Code = null;
     if (referral.referral_code_id) {
       const cr = await run(
-        `SELECT id, owner_type, owner_user_id, is_mitra FROM referral_codes WHERE id = $1`,
+        `SELECT id, owner_type, owner_user_id, is_mitra, flat_bounty_paise, budget_cap_paise
+           FROM referral_codes WHERE id = $1`,
         [referral.referral_code_id]
       );
       l1Code = cr.rowCount ? cr.rows[0] : null;
     }
     if (!isPeerCode(l1Code)) {
-      // Non-peer (mitra/influencer/customer/other) or a deleted code: no %-chain
-      // reward here — their flat bounty is handled elsewhere (R3 owns influencers).
-      return { accrued: false, reason: 'non_peer_referrer' };
+      // Non-peer referrer (influencer / other / mitra) or a deleted code: no
+      // %-chain reward. Batch R3 fills R2's gap — an influencer/other code that
+      // carries an explicit flat_bounty_paise earns a flat, budget-capped,
+      // pool-capped bounty here (see accrueInfluencerBounty). No L2 for a non-peer
+      // chain. A code without a flat bounty accrues nothing.
+      return await accrueInfluencerBounty({
+        l1Code, amount, poolCap, referral, enrolmentId, shopId, run, client,
+      });
     }
 
     let l1Amount = Math.floor((amount * l1Pct) / 100);
@@ -403,26 +574,36 @@ async function accrueEnrolmentChainRewards(shopId, enrolmentId, client) {
       l2Amount = l2Clamped;
     }
 
-    // Insert the chain reward rows (skip any non-positive amount). Keyed by
-    // source_enrolment_id / level, which the guard above enforces as unique.
-    if (l1Amount > 0) {
-      await run(
-        `INSERT INTO referral_rewards
-           (referral_id, beneficiary_code_id, kind, amount_paise, status,
-            beneficiary_role, level, source_enrolment_id, source_shop_id)
-         VALUES ($1,$2,'referral',$3,'accrued','chain_l1',1,$4,$5)`,
-        [referral.id, l1Code.id, l1Amount, enrolmentId, shopId]
-      );
-    }
-    if (l2Code && l2Amount > 0) {
-      await run(
-        `INSERT INTO referral_rewards
-           (referral_id, beneficiary_code_id, kind, amount_paise, status,
-            beneficiary_role, level, source_enrolment_id, source_shop_id)
-         VALUES ($1,$2,'referral',$3,'accrued','chain_l2',2,$4,$5)`,
-        [null, l2Code.id, l2Amount, enrolmentId, shopId]
-      );
-    }
+    // Insert the chain reward rows (skip any non-positive amount) and, when
+    // autosettle is on, settle each into the beneficiary's Khata Credits wallet —
+    // insert+settle in ONE transaction so accrual and the real-time credit are
+    // atomic (no partial credit). Keyed by source_enrolment_id / level, which the
+    // idempotency guard above enforces as unique.
+    const autosettle = await getAutosettle(run);
+    await inTx(client, async (c) => {
+      if (l1Amount > 0) {
+        const ins = await c.query(
+          `INSERT INTO referral_rewards
+             (referral_id, beneficiary_code_id, kind, amount_paise, status,
+              beneficiary_role, level, source_enrolment_id, source_shop_id)
+           VALUES ($1,$2,'referral',$3,'accrued','chain_l1',1,$4,$5)
+           RETURNING id, beneficiary_code_id, amount_paise, status`,
+          [referral.id, l1Code.id, l1Amount, enrolmentId, shopId]
+        );
+        if (autosettle) await settleReward(ins.rows[0], c);
+      }
+      if (l2Code && l2Amount > 0) {
+        const ins = await c.query(
+          `INSERT INTO referral_rewards
+             (referral_id, beneficiary_code_id, kind, amount_paise, status,
+              beneficiary_role, level, source_enrolment_id, source_shop_id)
+           VALUES ($1,$2,'referral',$3,'accrued','chain_l2',2,$4,$5)
+           RETURNING id, beneficiary_code_id, amount_paise, status`,
+          [null, l2Code.id, l2Amount, enrolmentId, shopId]
+        );
+        if (autosettle) await settleReward(ins.rows[0], c);
+      }
+    });
 
     return { accrued: true, l1_amount: l1Amount, l2_amount: l2Amount, poolCap };
   } catch (e) {
@@ -441,4 +622,7 @@ module.exports = {
   captureReferral,
   maybeActivateReferral,
   accrueEnrolmentChainRewards,
+  settleReward,
+  settleAllAccrued,
+  getAutosettle,
 };
