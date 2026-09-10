@@ -241,11 +241,13 @@ exports.overview = async (_req, res) => {
     ),
     query('SELECT referred_type, COUNT(*)::int AS c FROM referrals GROUP BY referred_type ORDER BY c DESC'),
     query(
-      `SELECT rc.id, rc.code, rc.owner_type, rc.label,
+      `SELECT rc.id, rc.code, rc.owner_type, rc.label, rc.is_mitra,
+              rc.flat_bounty_paise, rc.budget_cap_paise,
               COUNT(r.id)::int AS referred_count
        FROM referral_codes rc
        JOIN referrals r ON r.referral_code_id = rc.id
-       GROUP BY rc.id, rc.code, rc.owner_type, rc.label
+       GROUP BY rc.id, rc.code, rc.owner_type, rc.label, rc.is_mitra,
+                rc.flat_bounty_paise, rc.budget_cap_paise
        ORDER BY referred_count DESC, rc.created_at ASC
        LIMIT 20`
     ),
@@ -261,6 +263,7 @@ exports.overview = async (_req, res) => {
     // and the bounty (its 'mitra' rewards) it has accrued.
     query(
       `SELECT rc.id, rc.code, rc.label, rc.owner_user_id, rc.owner_customer_id,
+              rc.is_mitra, rc.flat_bounty_paise, rc.budget_cap_paise,
               COUNT(r.id)::int AS onboarded,
               COUNT(r.id) FILTER (WHERE r.activated_at IS NOT NULL)::int AS activated,
               COALESCE((SELECT SUM(rr.amount_paise) FROM referral_rewards rr
@@ -270,7 +273,8 @@ exports.overview = async (_req, res) => {
        FROM referral_codes rc
        LEFT JOIN referrals r ON r.referral_code_id = rc.id
        WHERE rc.is_mitra = true
-       GROUP BY rc.id, rc.code, rc.label, rc.owner_user_id, rc.owner_customer_id
+       GROUP BY rc.id, rc.code, rc.label, rc.owner_user_id, rc.owner_customer_id,
+                rc.is_mitra, rc.flat_bounty_paise, rc.budget_cap_paise
        ORDER BY activated DESC, onboarded DESC, rc.created_at ASC`
     ),
   ]);
@@ -281,9 +285,13 @@ exports.overview = async (_req, res) => {
     let label = row.label;
     if (!label) label = await labelForCode(row);
     topReferrers.push({
+      id: row.id,
       code: row.code,
       owner_type: row.owner_type,
       label: label || null,
+      is_mitra: row.is_mitra === true,
+      flat_bounty_paise: row.flat_bounty_paise == null ? null : Number(row.flat_bounty_paise),
+      budget_cap_paise: row.budget_cap_paise == null ? null : Number(row.budget_cap_paise),
       referred_count: row.referred_count,
     });
   }
@@ -294,8 +302,12 @@ exports.overview = async (_req, res) => {
     let label = row.label;
     if (!label) label = await labelForCode(row);
     mitraRollup.push({
+      id: row.id,
       code: row.code,
       label: label || null,
+      is_mitra: row.is_mitra === true,
+      flat_bounty_paise: row.flat_bounty_paise == null ? null : Number(row.flat_bounty_paise),
+      budget_cap_paise: row.budget_cap_paise == null ? null : Number(row.budget_cap_paise),
       onboarded: row.onboarded,
       activated: row.activated,
       bounty_accrued_paise: row.bounty_accrued_paise,
