@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import HelpFaq from '../components/HelpFaq';
 import ReferralCard from '../components/ReferralCard';
+import CreditsCard from '../components/CreditsCard';
 import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
@@ -112,6 +113,10 @@ export default function Account() {
               { key: 'outstanding', label: t('dl.outstanding'), filename: 'khata-outstanding.csv', path: '/api/reports/khata-outstanding.csv' },
             ]}
           />
+        </div>
+
+        <div style={{ maxWidth: 520 }}>
+          <CreditsCard />
         </div>
 
         <div style={{ maxWidth: 520 }}>
