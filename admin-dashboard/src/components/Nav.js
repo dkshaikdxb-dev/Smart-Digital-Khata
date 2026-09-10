@@ -37,6 +37,7 @@ export default function Nav() {
           <Link href="/admin">{t('nav.platform')}</Link>
           {has('customers:view') && <Link href="/admin/customers">{t('mod.navConsumers')}</Link>}
           {has('revenue:view') && <Link href="/admin/referrals">{t('ref.navReferrals')}</Link>}
+          {has('revenue:view') && <Link href="/admin/referral-campaigns">{t('rc.nav')}</Link>}
           {has('content:manage') && <Link href="/admin/content">{t('content.nav')}</Link>}
           {has('ads:view') && <Link href="/admin/ads">Campaigns</Link>}
           {has('audit:view') && <Link href="/admin/moderation">{t('mod.navModeration')}</Link>}
