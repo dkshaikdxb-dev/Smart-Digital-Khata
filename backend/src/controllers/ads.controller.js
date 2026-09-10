@@ -1,5 +1,8 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+// Reuse the ONE set of CSV helpers so quoting/CRLF/attachment behaviour matches
+// every other export in the app (admin-export.controller.js does the same).
+const { csvRow, isoDate, sendCsv } = require('../utils/statement');
 
 // Admin CRUD for the geo-targeted promo campaigns (batch ADS2). Routes live in
 // admin.routes.js under /api/admin/ads, gated per-verb by requirePerm:
@@ -92,6 +95,51 @@ exports.list = async (req, res) => {
     LIMIT 500`;
   const r = await query(sql, params);
   res.json({ items: r.rows });
+};
+
+// One target → its CSV token: 'all' for the everywhere row, else geo_type:geo_value.
+function targetToken(t) {
+  return t.geo_type === 'all' ? 'all' : `${t.geo_type}:${t.geo_value}`;
+}
+
+// clicks/impressions*100 rounded to 1 decimal; 0 when there are no impressions.
+function ctrPercent(impressions, clicks) {
+  const i = Number(impressions) || 0;
+  const c = Number(clicks) || 0;
+  if (i === 0) return 0;
+  return Math.round((c / i) * 1000) / 10;
+}
+
+// GET /api/admin/ads/export.csv — gated by ads:view. Registered BEFORE /ads/:id
+// so 'export.csv' is not captured as a campaign id. Read-only, whole-list report
+// with the same fields the admin matrix already shows, plus a computed CTR.
+exports.exportCsv = async (_req, res) => {
+  const r = await query(`${CAMPAIGN_SELECT} ORDER BY c.created_at DESC LIMIT 500`);
+
+  const rows = [csvRow([
+    'id', 'title', 'advertiser', 'style', 'status', 'targets',
+    'starts_at', 'ends_at', 'priority', 'impressions', 'clicks',
+    'ctr_percent', 'created_at',
+  ])];
+  for (const c of r.rows) {
+    const targets = (c.targets || []).map(targetToken).join(' ');
+    rows.push(csvRow([
+      c.id,
+      c.title,
+      c.advertiser,
+      c.style,
+      c.status,
+      targets,
+      isoDate(c.starts_at),
+      isoDate(c.ends_at),
+      c.priority,
+      Number(c.impressions) || 0,
+      Number(c.clicks) || 0,
+      ctrPercent(c.impressions, c.clicks),
+      isoDate(c.created_at),
+    ]));
+  }
+  sendCsv(res, 'campaigns.csv', rows);
 };
 
 // GET /api/admin/ads/:id

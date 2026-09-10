@@ -4,6 +4,8 @@ import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { usePermissions } from '../../lib/adminPerms';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 // Campaigns desk (batch ADS3) — the marketing role's geo-targeted promo manager.
 // Guarded by admin + ads:view; create/edit/pause/delete are hidden without
 // ads:manage. A create/edit builder (left) with a live consumer-slide preview
@@ -84,6 +86,15 @@ function fmtDate(iso) {
   try { return new Date(iso).toLocaleDateString(); } catch (e) { return iso; }
 }
 
+// Click-through rate as a 1-dp percentage label; "—" when there are no
+// impressions. Computed client-side from the fields the list already returns.
+function ctrLabel(impressions, clicks) {
+  const i = Number(impressions) || 0;
+  const c = Number(clicks) || 0;
+  if (i === 0) return '—';
+  return `${(Math.round((c / i) * 1000) / 10).toFixed(1)}%`;
+}
+
 // Derive the display state pill: paused; scheduled (active but not started yet);
 // ended (active but past ends_at); live; or the raw draft.
 function derivedState(c) {
@@ -134,6 +145,7 @@ export default function AdminAds() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  const [dlBusy, setDlBusy] = useState(false);
 
   const setF = (patch) => setForm((prev) => ({ ...prev, ...patch }));
 
@@ -275,6 +287,30 @@ export default function AdminAds() {
     } catch (e) { setError(e.message); }
   }
 
+  // Download the campaigns CSV. Mirrors the authed-download pattern used by
+  // DownloadList / the statement buttons: the endpoint needs the Authorization
+  // header, so a plain <a href> can't carry the bearer token — we fetch the CSV
+  // as a blob with the token and trigger a client-side download. No token in a URL.
+  async function downloadCsv() {
+    setError('');
+    try {
+      setDlBusy(true);
+      const token = typeof window !== 'undefined' ? window.localStorage.getItem('skhata_token') : null;
+      const res = await fetch(`${API}/api/admin/ads/export.csv`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'campaigns.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setDlBusy(false);
+    }
+  }
+
   const summary = useMemo(() => {
     const s = { total: items.length, active: 0, paused: 0, draft: 0, impressions: 0, clicks: 0 };
     for (const c of items) {
@@ -311,6 +347,7 @@ export default function AdminAds() {
         <Tile label="Draft" value={summary.draft} />
         <Tile label="Impressions" value={summary.impressions} />
         <Tile label="Clicks" value={summary.clicks} />
+        <Tile label="CTR" value={ctrLabel(summary.impressions, summary.clicks)} />
       </div>
 
       {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
@@ -490,7 +527,13 @@ export default function AdminAds() {
 
       {/* Matrix table */}
       <div className="card">
-        <h3 style={{ marginTop: 0 }}>Running campaigns</h3>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <h3 style={{ marginTop: 0, marginBottom: 0 }}>Running campaigns</h3>
+          <button type="button" className="secondary" disabled={dlBusy} onClick={downloadCsv}>
+            {dlBusy ? 'Preparing…' : 'Download CSV'}
+          </button>
+        </div>
+        <p className="muted" style={{ marginTop: 8 }}>CTR reflects the impression/click beacons (no per-viewer dedup) — treat as directional.</p>
         {items.length === 0 ? (
           <div className="muted">No campaigns yet.</div>
         ) : (
@@ -503,7 +546,7 @@ export default function AdminAds() {
                   <th>Ranging</th>
                   <th>Window</th>
                   <th>Status</th>
-                  <th>Impr. / clicks</th>
+                  <th>Impr. / clicks / CTR</th>
                   {canManage && <th>Actions</th>}
                 </tr>
               </thead>
@@ -539,7 +582,10 @@ function CampaignRow({ c, canManage, onEdit, onToggle, onDelete }) {
         {c.is_seasonal && <span className="badge" style={{ background: '#78350f', color: '#fde68a' }}>seasonal</span>}
       </td>
       <td style={cell}><span className="badge" style={{ background: st.bg, color: st.fg }}>{st.label}</span></td>
-      <td style={cell}>{Number(c.impressions) || 0} / {Number(c.clicks) || 0}</td>
+      <td style={cell}>
+        <div>{Number(c.impressions) || 0} / {Number(c.clicks) || 0}</div>
+        <div className="muted" style={{ fontSize: 12 }}>{ctrLabel(c.impressions, c.clicks)}</div>
+      </td>
       {canManage && (
         <td style={cell} onClick={(e) => e.stopPropagation()}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>

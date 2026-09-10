@@ -174,6 +174,8 @@ router.get('/exports/revenue.csv', requirePerm('revenue:view'), asyncHandler(exp
 // registered BEFORE the :id routes so it is not captured as a campaign id.
 router.get('/ads', requirePerm('ads:view'), asyncHandler(adsCtrl.list));
 router.get('/ads/geo-options', requirePerm('ads:view'), asyncHandler(adsCtrl.geoOptions));
+// Registered BEFORE /ads/:id so 'export.csv' is not captured as a campaign id.
+router.get('/ads/export.csv', requirePerm('ads:view'), asyncHandler(adsCtrl.exportCsv));
 router.get('/ads/:id', requirePerm('ads:view'), asyncHandler(adsCtrl.getOne));
 router.post('/ads', requirePerm('ads:manage'), validate(campaignSchema), asyncHandler(adsCtrl.create));
 router.put('/ads/:id', requirePerm('ads:manage'), validate(campaignSchema), asyncHandler(adsCtrl.update));
