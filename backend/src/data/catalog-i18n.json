@@ -10528,5 +10528,7025 @@
         "needs_review": true
       }
     }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "24 Mantra",
+    "translations": {
+      "hi": {
+        "name": "24 मंत्रा",
+        "aliases": "mantra",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "24 மந்திரா",
+        "aliases": "mantra",
+        "needs_review": true
+      },
+      "te": {
+        "name": "24 మంత్రా",
+        "aliases": "mantra",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "24 ಮಂತ್ರಾ",
+        "aliases": "mantra",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "24 മന്ത്ര",
+        "aliases": "mantra",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "24 منترا",
+        "aliases": "mantra",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Aachi",
+    "translations": {
+      "hi": {
+        "name": "आची",
+        "aliases": "aachi",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆச்சி",
+        "aliases": "aachi",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆచీ",
+        "aliases": "aachi",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆಚಿ",
+        "aliases": "aachi",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ആച്ചി",
+        "aliases": "aachi",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آچی",
+        "aliases": "aachi",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Aashirvaad",
+    "translations": {
+      "hi": {
+        "name": "आशीर्वाद",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆசீர்வாத்",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆశీర్వాద్",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆಶೀರ್ವಾದ್",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ആശിർവാദ്",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آشیرواد",
+        "aliases": "aashirvaad ashirwad",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Aavin",
+    "translations": {
+      "hi": {
+        "name": "आविन",
+        "aliases": "aavin",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆவின்",
+        "aliases": "aavin",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆవిన్",
+        "aliases": "aavin",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆವಿನ್",
+        "aliases": "aavin",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ആവിൻ",
+        "aliases": "aavin",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آوِن",
+        "aliases": "aavin",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "All Out",
+    "translations": {
+      "hi": {
+        "name": "ऑल आउट",
+        "aliases": "all out",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆல் அவுட்",
+        "aliases": "all out",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆల్ అవుట్",
+        "aliases": "all out",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆಲ್ ಔಟ್",
+        "aliases": "all out",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഓൾ ഔട്ട്",
+        "aliases": "all out",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آل آؤٹ",
+        "aliases": "all out",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Amazon Brand",
+    "translations": {
+      "hi": {
+        "name": "ऐमज़ॉन ब्रांड",
+        "aliases": "amazon brand",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "அமேசான் பிராண்ட்",
+        "aliases": "amazon brand",
+        "needs_review": true
+      },
+      "te": {
+        "name": "అమెజాన్ బ్రాండ్",
+        "aliases": "amazon brand",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಮೆಜಾನ್ ಬ್ರಾಂಡ್",
+        "aliases": "amazon brand",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ആമസോൺ ബ്രാൻഡ്",
+        "aliases": "amazon brand",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایمازون برانڈ",
+        "aliases": "amazon brand",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "American Garden",
+    "translations": {
+      "hi": {
+        "name": "अमेरिकन गार्डन",
+        "aliases": "american garden",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "அமெரிக்கன் கார்டன்",
+        "aliases": "american garden",
+        "needs_review": true
+      },
+      "te": {
+        "name": "అమెరికన్ గార్డెన్",
+        "aliases": "american garden",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಮೆರಿಕನ್ ಗಾರ್ಡನ್",
+        "aliases": "american garden",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "അമേരിക്കൻ ഗാർഡൻ",
+        "aliases": "american garden",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "امریکن گارڈن",
+        "aliases": "american garden",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Amul",
+    "translations": {
+      "hi": {
+        "name": "अमूल",
+        "aliases": "amul",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "அமுல்",
+        "aliases": "amul",
+        "needs_review": true
+      },
+      "te": {
+        "name": "అమూల్",
+        "aliases": "amul",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಮುಲ್",
+        "aliases": "amul",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "അമുൽ",
+        "aliases": "amul",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "امول",
+        "aliases": "amul",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Apis",
+    "translations": {
+      "hi": {
+        "name": "एपिस",
+        "aliases": "apis",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "அபிஸ்",
+        "aliases": "apis",
+        "needs_review": true
+      },
+      "te": {
+        "name": "అపిస్",
+        "aliases": "apis",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಅಪಿಸ್",
+        "aliases": "apis",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "അപിസ്",
+        "aliases": "apis",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایپس",
+        "aliases": "apis",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Ariel",
+    "translations": {
+      "hi": {
+        "name": "एरियल",
+        "aliases": "ariel",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஏரியல்",
+        "aliases": "ariel",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఏరియల్",
+        "aliases": "ariel",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಏರಿಯಲ್",
+        "aliases": "ariel",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഏരിയൽ",
+        "aliases": "ariel",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایریل",
+        "aliases": "ariel",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bagrry's",
+    "translations": {
+      "hi": {
+        "name": "बैगरीज़",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேக்ரிஸ்",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్యాగ్రీస్",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ಯಾಗ್ರೀಸ್",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാഗ്രീസ്",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیگریز",
+        "aliases": "bagrry bagrrys",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bajaj Almond Drops",
+    "translations": {
+      "hi": {
+        "name": "बजाज आल्मंड ड्रॉप्स",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பஜாஜ் ஆல்மண்ட் டிராப்ஸ்",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బజాజ్ ఆల్మండ్ డ్రాప్స్",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಜಾಜ್ ಆಲ್ಮಂಡ್ ಡ್ರಾಪ್ಸ್",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബജാജ് ആൽമണ്ട് ഡ്രോപ്സ്",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بجاج آلمنڈ ڈراپس",
+        "aliases": "bajaj almond drops",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Balaji",
+    "translations": {
+      "hi": {
+        "name": "बालाजी",
+        "aliases": "balaji",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாலாஜி",
+        "aliases": "balaji",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాలాజీ",
+        "aliases": "balaji",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾಲಾಜಿ",
+        "aliases": "balaji",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാലാജി",
+        "aliases": "balaji",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بالاجی",
+        "aliases": "balaji",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bambino",
+    "translations": {
+      "hi": {
+        "name": "बैम्बिनो",
+        "aliases": "bambino",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாம்பினோ",
+        "aliases": "bambino",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాంబినో",
+        "aliases": "bambino",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾಂಬಿನೊ",
+        "aliases": "bambino",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബാംബിനോ",
+        "aliases": "bambino",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیمبینو",
+        "aliases": "bambino",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Barilla",
+    "translations": {
+      "hi": {
+        "name": "बरीला",
+        "aliases": "barilla",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பரில்லா",
+        "aliases": "barilla",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బరిల్లా",
+        "aliases": "barilla",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬರಿಲ್ಲಾ",
+        "aliases": "barilla",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബരില്ല",
+        "aliases": "barilla",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "باریلا",
+        "aliases": "barilla",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Baygon",
+    "translations": {
+      "hi": {
+        "name": "बेगॉन",
+        "aliases": "baygon",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேகான்",
+        "aliases": "baygon",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బేగాన్",
+        "aliases": "baygon",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೇಗಾನ್",
+        "aliases": "baygon",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബേഗോൺ",
+        "aliases": "baygon",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بےگون",
+        "aliases": "baygon",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bedekar",
+    "translations": {
+      "hi": {
+        "name": "बेडेकर",
+        "aliases": "bedekar",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேடேகர்",
+        "aliases": "bedekar",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బేడేకర్",
+        "aliases": "bedekar",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೇಡೇಕರ್",
+        "aliases": "bedekar",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബേഡേകർ",
+        "aliases": "bedekar",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیڈیکر",
+        "aliases": "bedekar",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bikaji",
+    "translations": {
+      "hi": {
+        "name": "बीकाजी",
+        "aliases": "bikaji",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிகாஜி",
+        "aliases": "bikaji",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బికాజీ",
+        "aliases": "bikaji",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಿಕಾಜಿ",
+        "aliases": "bikaji",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബികാജി",
+        "aliases": "bikaji",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بیکاجی",
+        "aliases": "bikaji",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bingo",
+    "translations": {
+      "hi": {
+        "name": "बिंगो",
+        "aliases": "bingo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிங்கோ",
+        "aliases": "bingo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బింగో",
+        "aliases": "bingo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಿಂಗೊ",
+        "aliases": "bingo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബിംഗോ",
+        "aliases": "bingo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بنگو",
+        "aliases": "bingo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Boost",
+    "translations": {
+      "hi": {
+        "name": "बूस्ट",
+        "aliases": "boost",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பூஸ்ட்",
+        "aliases": "boost",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బూస్ట్",
+        "aliases": "boost",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೂಸ್ಟ್",
+        "aliases": "boost",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബൂസ്റ്റ്",
+        "aliases": "boost",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بوسٹ",
+        "aliases": "boost",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Borges",
+    "translations": {
+      "hi": {
+        "name": "बोर्जेस",
+        "aliases": "borges",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "போர்ஜஸ்",
+        "aliases": "borges",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బోర్జెస్",
+        "aliases": "borges",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೋರ್ಜೆಸ್",
+        "aliases": "borges",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബോർജെസ്",
+        "aliases": "borges",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بورخیس",
+        "aliases": "borges",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bosch",
+    "translations": {
+      "hi": {
+        "name": "बॉश",
+        "aliases": "bosch",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாஷ்",
+        "aliases": "bosch",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బాష్",
+        "aliases": "bosch",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಾಷ್",
+        "aliases": "bosch",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബോഷ്",
+        "aliases": "bosch",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بوش",
+        "aliases": "bosch",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bournvita",
+    "translations": {
+      "hi": {
+        "name": "बॉर्नविटा",
+        "aliases": "bournvita",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "போர்ன்விட்டா",
+        "aliases": "bournvita",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బోర్న్‌విటా",
+        "aliases": "bournvita",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬೋರ್ನ್‌ವಿಟಾ",
+        "aliases": "bournvita",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബോൺവിറ്റ",
+        "aliases": "bournvita",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بورنویٹا",
+        "aliases": "bournvita",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Britannia",
+    "translations": {
+      "hi": {
+        "name": "ब्रिटानिया",
+        "aliases": "britannia",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிரிட்டானியா",
+        "aliases": "britannia",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్రిటానియా",
+        "aliases": "britannia",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ರಿಟಾನಿಯಾ",
+        "aliases": "britannia",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്രിട്ടാനിയ",
+        "aliases": "britannia",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "برٹانیہ",
+        "aliases": "britannia",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Brooke Bond",
+    "translations": {
+      "hi": {
+        "name": "ब्रुक बॉन्ड",
+        "aliases": "brooke bond",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "புரூக் பாண்ட்",
+        "aliases": "brooke bond",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్రూక్ బాండ్",
+        "aliases": "brooke bond",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ರೂಕ್ ಬಾಂಡ್",
+        "aliases": "brooke bond",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്രൂക്ക് ബോണ്ട്",
+        "aliases": "brooke bond",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بروک بونڈ",
+        "aliases": "brooke bond",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Bru",
+    "translations": {
+      "hi": {
+        "name": "ब्रू",
+        "aliases": "bru",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "புரூ",
+        "aliases": "bru",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బ్రూ",
+        "aliases": "bru",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬ್ರೂ",
+        "aliases": "bru",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബ്രൂ",
+        "aliases": "bru",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "برو",
+        "aliases": "bru",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Catch",
+    "translations": {
+      "hi": {
+        "name": "कैच",
+        "aliases": "catch",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கேட்ச்",
+        "aliases": "catch",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్యాచ్",
+        "aliases": "catch",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ಯಾಚ್",
+        "aliases": "catch",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്യാച്ച്",
+        "aliases": "catch",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کیچ",
+        "aliases": "catch",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Ching's Secret",
+    "translations": {
+      "hi": {
+        "name": "चिंग्स सीक्रेट",
+        "aliases": "chings secret",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சிங்ஸ் சீக்ரெட்",
+        "aliases": "chings secret",
+        "needs_review": true
+      },
+      "te": {
+        "name": "చింగ్స్ సీక్రెట్",
+        "aliases": "chings secret",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಚಿಂಗ್ಸ್ ಸೀಕ್ರೆಟ್",
+        "aliases": "chings secret",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ചിങ്സ് സീക്രട്ട്",
+        "aliases": "chings secret",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "چنگز سیکریٹ",
+        "aliases": "chings secret",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Cif",
+    "translations": {
+      "hi": {
+        "name": "सिफ़",
+        "aliases": "cif",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சிஃப்",
+        "aliases": "cif",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సిఫ్",
+        "aliases": "cif",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಿಫ್",
+        "aliases": "cif",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സിഫ്",
+        "aliases": "cif",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سِف",
+        "aliases": "cif",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Clinic Plus",
+    "translations": {
+      "hi": {
+        "name": "क्लिनिक प्लस",
+        "aliases": "clinic plus",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிளினிக் பிளஸ்",
+        "aliases": "clinic plus",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్లినిక్ ప్లస్",
+        "aliases": "clinic plus",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ಲಿನಿಕ್ ಪ್ಲಸ್",
+        "aliases": "clinic plus",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്ലിനിക് പ്ലസ്",
+        "aliases": "clinic plus",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کلینک پلس",
+        "aliases": "clinic plus",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Clorox",
+    "translations": {
+      "hi": {
+        "name": "क्लोरॉक्स",
+        "aliases": "clorox",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குளோராக்ஸ்",
+        "aliases": "clorox",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్లోరాక్స్",
+        "aliases": "clorox",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ಲೋರಾಕ್ಸ್",
+        "aliases": "clorox",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്ലോറോക്സ്",
+        "aliases": "clorox",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کلوراکس",
+        "aliases": "clorox",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Closeup",
+    "translations": {
+      "hi": {
+        "name": "क्लोज़अप",
+        "aliases": "closeup",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குளோஸ்அப்",
+        "aliases": "closeup",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్లోజ్‌అప్",
+        "aliases": "closeup",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ಲೋಸ್‌ಅಪ್",
+        "aliases": "closeup",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്ലോസപ്പ്",
+        "aliases": "closeup",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کلوز اپ",
+        "aliases": "closeup",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Colgate",
+    "translations": {
+      "hi": {
+        "name": "कोलगेट",
+        "aliases": "colgate",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோல்கேட்",
+        "aliases": "colgate",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కోల్‌గేట్",
+        "aliases": "colgate",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೋಲ್ಗೇಟ್",
+        "aliases": "colgate",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോൾഗേറ്റ്",
+        "aliases": "colgate",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کولگیٹ",
+        "aliases": "colgate",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Colin",
+    "translations": {
+      "hi": {
+        "name": "कोलिन",
+        "aliases": "colin",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோலின்",
+        "aliases": "colin",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కోలిన్",
+        "aliases": "colin",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೋಲಿನ್",
+        "aliases": "colin",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോളിൻ",
+        "aliases": "colin",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کولن",
+        "aliases": "colin",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Comfort",
+    "translations": {
+      "hi": {
+        "name": "कम्फ़र्ट",
+        "aliases": "comfort",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கம்ஃபர்ட்",
+        "aliases": "comfort",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కంఫర్ట్",
+        "aliases": "comfort",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಂಫರ್ಟ್",
+        "aliases": "comfort",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കംഫർട്ട്",
+        "aliases": "comfort",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کمفرٹ",
+        "aliases": "comfort",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Complan",
+    "translations": {
+      "hi": {
+        "name": "कॉम्प्लान",
+        "aliases": "complan",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "காம்ப்ளான்",
+        "aliases": "complan",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కాంప్లాన్",
+        "aliases": "complan",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಾಂಪ್ಲಾನ್",
+        "aliases": "complan",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോംപ്ലാൻ",
+        "aliases": "complan",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کامپلان",
+        "aliases": "complan",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Continental",
+    "translations": {
+      "hi": {
+        "name": "कॉन्टिनेंटल",
+        "aliases": "continental",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "காண்டினென்டல்",
+        "aliases": "continental",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కాంటినెంటల్",
+        "aliases": "continental",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಾಂಟಿನೆಂಟಲ್",
+        "aliases": "continental",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കോണ്ടിനെന്റൽ",
+        "aliases": "continental",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کانٹیننٹل",
+        "aliases": "continental",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Daawat",
+    "translations": {
+      "hi": {
+        "name": "दावत",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தாவத்",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      },
+      "te": {
+        "name": "దావత్",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ದಾವತ್",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ദാവത്ത്",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "دعوت",
+        "aliases": "daawat dawat",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dabur",
+    "translations": {
+      "hi": {
+        "name": "डाबर",
+        "aliases": "dabur",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாபர்",
+        "aliases": "dabur",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డాబర్",
+        "aliases": "dabur",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಾಬರ್",
+        "aliases": "dabur",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡാബർ",
+        "aliases": "dabur",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈابر",
+        "aliases": "dabur",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Del Monte",
+    "translations": {
+      "hi": {
+        "name": "डेल मोंटे",
+        "aliases": "del monte",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டெல் மான்டே",
+        "aliases": "del monte",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డెల్ మోంటే",
+        "aliases": "del monte",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡೆಲ್ ಮಾಂಟೆ",
+        "aliases": "del monte",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡെൽ മോണ്ടെ",
+        "aliases": "del monte",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈیل مونٹے",
+        "aliases": "del monte",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dettol",
+    "translations": {
+      "hi": {
+        "name": "डेटॉल",
+        "aliases": "dettol",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டெட்டால்",
+        "aliases": "dettol",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డెటాల్",
+        "aliases": "dettol",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡೆಟಾಲ್",
+        "aliases": "dettol",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡെറ്റോൾ",
+        "aliases": "dettol",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈیٹول",
+        "aliases": "dettol",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dhampur",
+    "translations": {
+      "hi": {
+        "name": "धामपुर",
+        "aliases": "dhampur",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தாம்பூர்",
+        "aliases": "dhampur",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ధామ్‌పూర్",
+        "aliases": "dhampur",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಧಾಂಪುರ್",
+        "aliases": "dhampur",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ധാംപൂർ",
+        "aliases": "dhampur",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "دھامپور",
+        "aliases": "dhampur",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dhara",
+    "translations": {
+      "hi": {
+        "name": "धारा",
+        "aliases": "dhara",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தாரா",
+        "aliases": "dhara",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ధారా",
+        "aliases": "dhara",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಧಾರಾ",
+        "aliases": "dhara",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ധാര",
+        "aliases": "dhara",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "دھارا",
+        "aliases": "dhara",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "DiSano",
+    "translations": {
+      "hi": {
+        "name": "डिसानो",
+        "aliases": "disano",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிசானோ",
+        "aliases": "disano",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డిసానో",
+        "aliases": "disano",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಿಸಾನೊ",
+        "aliases": "disano",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡിസാനോ",
+        "aliases": "disano",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈیسانو",
+        "aliases": "disano",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Domex",
+    "translations": {
+      "hi": {
+        "name": "डोमेक्स",
+        "aliases": "domex",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டோமெக்ஸ்",
+        "aliases": "domex",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డోమెక్స్",
+        "aliases": "domex",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡೋಮೆಕ್ಸ್",
+        "aliases": "domex",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡോമെക്സ്",
+        "aliases": "domex",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈومیکس",
+        "aliases": "domex",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dorco",
+    "translations": {
+      "hi": {
+        "name": "डोर्को",
+        "aliases": "dorco",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டோர்கோ",
+        "aliases": "dorco",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డోర్కో",
+        "aliases": "dorco",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡೋರ್ಕೊ",
+        "aliases": "dorco",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡോർകോ",
+        "aliases": "dorco",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈورکو",
+        "aliases": "dorco",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Double Horse",
+    "translations": {
+      "hi": {
+        "name": "डबल हॉर्स",
+        "aliases": "double horse",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டபுள் ஹார்ஸ்",
+        "aliases": "double horse",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డబుల్ హార్స్",
+        "aliases": "double horse",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಬಲ್ ಹಾರ್ಸ್",
+        "aliases": "double horse",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡബിൾ ഹോഴ്സ്",
+        "aliases": "double horse",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈبل ہارس",
+        "aliases": "double horse",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dove",
+    "translations": {
+      "hi": {
+        "name": "डव",
+        "aliases": "dove",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டவ்",
+        "aliases": "dove",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డవ్",
+        "aliases": "dove",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡವ್",
+        "aliases": "dove",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡവ്",
+        "aliases": "dove",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈو",
+        "aliases": "dove",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dr Beckmann",
+    "translations": {
+      "hi": {
+        "name": "डॉ बेकमैन",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாக்டர் பெக்மேன்",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డాక్టర్ బెక్‌మాన్",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಾ ಬೆಕ್‌ಮನ್",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡോ ബെക്ക്മാൻ",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈاکٹر بیکمین",
+        "aliases": "dr beckmann",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Dr. Oetker",
+    "translations": {
+      "hi": {
+        "name": "डॉ ओटकर",
+        "aliases": "dr oetker",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாக்டர் ஓட்கர்",
+        "aliases": "dr oetker",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డాక్టర్ ఓట్కర్",
+        "aliases": "dr oetker",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡಾ ಓಟ್ಕರ್",
+        "aliases": "dr oetker",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡോ ഓട്കർ",
+        "aliases": "dr oetker",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈاکٹر اوٹکر",
+        "aliases": "dr oetker",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Druk",
+    "translations": {
+      "hi": {
+        "name": "ड्रुक",
+        "aliases": "druk",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டிரக்",
+        "aliases": "druk",
+        "needs_review": true
+      },
+      "te": {
+        "name": "డ్రుక్",
+        "aliases": "druk",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಡ್ರುಕ್",
+        "aliases": "druk",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഡ്രുക്ക്",
+        "aliases": "druk",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ڈرک",
+        "aliases": "druk",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Emami Healthy & Tasty",
+    "translations": {
+      "hi": {
+        "name": "इमामी हेल्दी एंड टेस्टी",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "இமாமி ஹெல்தி அண்ட் டேஸ்டி",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇమామీ హెల్తీ & టేస్టీ",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಮಾಮಿ ಹೆಲ್ದಿ & ಟೇಸ್ಟಿ",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഇമാമി ഹെൽത്തി & ടേസ്റ്റി",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "امامی ہیلدی اینڈ ٹیسٹی",
+        "aliases": "emami healthy tasty",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Engine",
+    "translations": {
+      "hi": {
+        "name": "इंजन",
+        "aliases": "engine",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எஞ்சின்",
+        "aliases": "engine",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇంజన్",
+        "aliases": "engine",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಇಂಜಿನ್",
+        "aliases": "engine",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എൻജിൻ",
+        "aliases": "engine",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "انجن",
+        "aliases": "engine",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Epigamia",
+    "translations": {
+      "hi": {
+        "name": "एपिगामिया",
+        "aliases": "epigamia",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எபிகாமியா",
+        "aliases": "epigamia",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎపిగామియా",
+        "aliases": "epigamia",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಪಿಗಾಮಿಯಾ",
+        "aliases": "epigamia",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എപ്പിഗാമിയ",
+        "aliases": "epigamia",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایپیگامیا",
+        "aliases": "epigamia",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Everest",
+    "translations": {
+      "hi": {
+        "name": "एवरेस्ट",
+        "aliases": "everest",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எவரெஸ்ட்",
+        "aliases": "everest",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎవరెస్ట్",
+        "aliases": "everest",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎವರೆಸ್ಟ್",
+        "aliases": "everest",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എവറസ്റ്റ്",
+        "aliases": "everest",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایورسٹ",
+        "aliases": "everest",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Exo",
+    "translations": {
+      "hi": {
+        "name": "एक्सो",
+        "aliases": "exo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எக்ஸோ",
+        "aliases": "exo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎక్సో",
+        "aliases": "exo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಕ್ಸೊ",
+        "aliases": "exo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എക്സോ",
+        "aliases": "exo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایکسو",
+        "aliases": "exo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Ezee",
+    "translations": {
+      "hi": {
+        "name": "ईज़ी",
+        "aliases": "ezee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஈஸி",
+        "aliases": "ezee",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఈజీ",
+        "aliases": "ezee",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಈಜಿ",
+        "aliases": "ezee",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഈസി",
+        "aliases": "ezee",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایزی",
+        "aliases": "ezee",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Fiama",
+    "translations": {
+      "hi": {
+        "name": "फियामा",
+        "aliases": "fiama",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபியாமா",
+        "aliases": "fiama",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫియామా",
+        "aliases": "fiama",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫಿಯಾಮಾ",
+        "aliases": "fiama",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫിയാമ",
+        "aliases": "fiama",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فیاما",
+        "aliases": "fiama",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Figaro",
+    "translations": {
+      "hi": {
+        "name": "फिगारो",
+        "aliases": "figaro",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபிகாரோ",
+        "aliases": "figaro",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫిగారో",
+        "aliases": "figaro",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫಿಗಾರೊ",
+        "aliases": "figaro",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫിഗാരോ",
+        "aliases": "figaro",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فگارو",
+        "aliases": "figaro",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Finish",
+    "translations": {
+      "hi": {
+        "name": "फ़िनिश",
+        "aliases": "finish",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபினிஷ்",
+        "aliases": "finish",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫినిష్",
+        "aliases": "finish",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫಿನಿಷ್",
+        "aliases": "finish",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫിനിഷ്",
+        "aliases": "finish",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فِنِش",
+        "aliases": "finish",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Fogg",
+    "translations": {
+      "hi": {
+        "name": "फॉग",
+        "aliases": "fogg",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபாக்",
+        "aliases": "fogg",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫాగ్",
+        "aliases": "fogg",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫಾಗ್",
+        "aliases": "fogg",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫോഗ്",
+        "aliases": "fogg",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فوگ",
+        "aliases": "fogg",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Fortune",
+    "translations": {
+      "hi": {
+        "name": "फॉर्च्यून",
+        "aliases": "fortune",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃபார்ச்சூன்",
+        "aliases": "fortune",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫార్చ్యూన్",
+        "aliases": "fortune",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫಾರ್ಚೂನ್",
+        "aliases": "fortune",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫോർച്യൂൺ",
+        "aliases": "fortune",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فارچون",
+        "aliases": "fortune",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Freedom",
+    "translations": {
+      "hi": {
+        "name": "फ्रीडम",
+        "aliases": "freedom",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரீடம்",
+        "aliases": "freedom",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రీడం",
+        "aliases": "freedom",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೀಡಂ",
+        "aliases": "freedom",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രീഡം",
+        "aliases": "freedom",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فریڈم",
+        "aliases": "freedom",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Freshwrapp",
+    "translations": {
+      "hi": {
+        "name": "फ्रेशरैप",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஃப்ரெஷ்ராப்",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఫ్రెష్‌ర్యాప్",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಫ್ರೆಶ್‌ರ್ಯಾಪ್",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഫ്രെഷ്റാപ്പ്",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "فریش ریپ",
+        "aliases": "freshwrapp",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Gala",
+    "translations": {
+      "hi": {
+        "name": "गाला",
+        "aliases": "gala",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கலா",
+        "aliases": "gala",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గాలా",
+        "aliases": "gala",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗಾಲಾ",
+        "aliases": "gala",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗാല",
+        "aliases": "gala",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گالا",
+        "aliases": "gala",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Garnier",
+    "translations": {
+      "hi": {
+        "name": "गार्नियर",
+        "aliases": "garnier",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கார்னியர்",
+        "aliases": "garnier",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గార్నియర్",
+        "aliases": "garnier",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗಾರ್ನಿಯರ್",
+        "aliases": "garnier",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗാർണിയർ",
+        "aliases": "garnier",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گارنیئر",
+        "aliases": "garnier",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Gemini",
+    "translations": {
+      "hi": {
+        "name": "जेमिनी",
+        "aliases": "gemini",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஜெமினி",
+        "aliases": "gemini",
+        "needs_review": true
+      },
+      "te": {
+        "name": "జెమిని",
+        "aliases": "gemini",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಜೆಮಿನಿ",
+        "aliases": "gemini",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ജെമിനി",
+        "aliases": "gemini",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "جیمنی",
+        "aliases": "gemini",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Giffy",
+    "translations": {
+      "hi": {
+        "name": "गिफ़ी",
+        "aliases": "giffy",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிஃபி",
+        "aliases": "giffy",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గిఫీ",
+        "aliases": "giffy",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗಿಫಿ",
+        "aliases": "giffy",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗിഫി",
+        "aliases": "giffy",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گِفی",
+        "aliases": "giffy",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Gillette",
+    "translations": {
+      "hi": {
+        "name": "जिलेट",
+        "aliases": "gillette",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஜிலெட்",
+        "aliases": "gillette",
+        "needs_review": true
+      },
+      "te": {
+        "name": "జిల్లెట్",
+        "aliases": "gillette",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಜಿಲೆಟ್",
+        "aliases": "gillette",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ജിലറ്റ്",
+        "aliases": "gillette",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "جیلیٹ",
+        "aliases": "gillette",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Go Cheese",
+    "translations": {
+      "hi": {
+        "name": "गो चीज़",
+        "aliases": "go cheese",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோ சீஸ்",
+        "aliases": "go cheese",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గో చీజ్",
+        "aliases": "go cheese",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗೋ ಚೀಸ್",
+        "aliases": "go cheese",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗോ ചീസ്",
+        "aliases": "go cheese",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گو چیز",
+        "aliases": "go cheese",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Godrej Ezee",
+    "translations": {
+      "hi": {
+        "name": "गोदरेज ईज़ी",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோத்ரேஜ் ஈஸி",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గోద్రెజ్ ఈజీ",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗೋದ್ರೆಜ್ ಈಜಿ",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗോദ്‌റെജ് ഈസി",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گودریج ایزی",
+        "aliases": "godrej ezee",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Goodknight",
+    "translations": {
+      "hi": {
+        "name": "गुडनाइट",
+        "aliases": "goodknight",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குட்நைட்",
+        "aliases": "goodknight",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గుడ్‌నైట్",
+        "aliases": "goodknight",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗುಡ್‌ನೈಟ್",
+        "aliases": "goodknight",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗുഡ്നൈറ്റ്",
+        "aliases": "goodknight",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گڈ نائٹ",
+        "aliases": "goodknight",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Gowardhan",
+    "translations": {
+      "hi": {
+        "name": "गोवर्धन",
+        "aliases": "gowardhan",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கோவர்தன்",
+        "aliases": "gowardhan",
+        "needs_review": true
+      },
+      "te": {
+        "name": "గోవర్ధన్",
+        "aliases": "gowardhan",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಗೋವರ್ಧನ್",
+        "aliases": "gowardhan",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഗോവർധൻ",
+        "aliases": "gowardhan",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "گووردھن",
+        "aliases": "gowardhan",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "HIT",
+    "translations": {
+      "hi": {
+        "name": "हिट",
+        "aliases": "hit",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹிட்",
+        "aliases": "hit",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హిట్",
+        "aliases": "hit",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಿಟ್",
+        "aliases": "hit",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹിറ്റ്",
+        "aliases": "hit",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہٹ",
+        "aliases": "hit",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Haldiram's",
+    "translations": {
+      "hi": {
+        "name": "हल्दीराम",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹல்திராம்ஸ்",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హల్దీరామ్స్",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಲ್ದಿರಾಮ್ಸ್",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹൽദിറാംസ്",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہلدیرام",
+        "aliases": "haldiram haldirams",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Happilo",
+    "translations": {
+      "hi": {
+        "name": "हैपिलो",
+        "aliases": "happilo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹேப்பிலோ",
+        "aliases": "happilo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హ్యాపిలో",
+        "aliases": "happilo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹ್ಯಾಪಿಲೊ",
+        "aliases": "happilo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹാപ്പിലോ",
+        "aliases": "happilo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہیپیلو",
+        "aliases": "happilo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Harpic",
+    "translations": {
+      "hi": {
+        "name": "हार्पिक",
+        "aliases": "harpic",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹார்பிக்",
+        "aliases": "harpic",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హార్పిక్",
+        "aliases": "harpic",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಾರ್ಪಿಕ್",
+        "aliases": "harpic",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹാർപിക്",
+        "aliases": "harpic",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہارپک",
+        "aliases": "harpic",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Head & Shoulders",
+    "translations": {
+      "hi": {
+        "name": "हेड एंड शोल्डर्स",
+        "aliases": "head shoulders",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹெட் அண்ட் ஷோல்டர்ஸ்",
+        "aliases": "head shoulders",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హెడ్ & షోల్డర్స్",
+        "aliases": "head shoulders",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹೆಡ್ & ಶೋಲ್ಡರ್ಸ್",
+        "aliases": "head shoulders",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹെഡ് & ഷോൾഡേഴ്സ്",
+        "aliases": "head shoulders",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہیڈ اینڈ شولڈرز",
+        "aliases": "head shoulders",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Heinz",
+    "translations": {
+      "hi": {
+        "name": "हाइंज़",
+        "aliases": "heinz",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹைன்ஸ்",
+        "aliases": "heinz",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హైంజ్",
+        "aliases": "heinz",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹೈಂಜ್",
+        "aliases": "heinz",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹെയിൻസ്",
+        "aliases": "heinz",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہائنز",
+        "aliases": "heinz",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Hellmann's",
+    "translations": {
+      "hi": {
+        "name": "हेलमन्स",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹெல்மன்ஸ்",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హెల్మన్స్",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹೆಲ್ಮನ್ಸ್",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹെൽമൻസ്",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہیلمینز",
+        "aliases": "hellmann hellmanns",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Hershey's",
+    "translations": {
+      "hi": {
+        "name": "हर्षे",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹெர்ஷிஸ்",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హెర్షీస్",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹರ್ಷೀಸ್",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹെർഷീസ്",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہرشیز",
+        "aliases": "hershey hersheys",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Himalaya",
+    "translations": {
+      "hi": {
+        "name": "हिमालया",
+        "aliases": "himalaya",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹிமாலயா",
+        "aliases": "himalaya",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హిమాలయ",
+        "aliases": "himalaya",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಿಮಾಲಯ",
+        "aliases": "himalaya",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹിമാലയ",
+        "aliases": "himalaya",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہمالیہ",
+        "aliases": "himalaya",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Homelites",
+    "translations": {
+      "hi": {
+        "name": "होमलाइट्स",
+        "aliases": "homelites",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹோம்லைட்ஸ்",
+        "aliases": "homelites",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హోమ్‌లైట్స్",
+        "aliases": "homelites",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹೋಮ್‌ಲೈಟ್ಸ್",
+        "aliases": "homelites",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹോംലൈറ്റ്സ്",
+        "aliases": "homelites",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہوم لائٹس",
+        "aliases": "homelites",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Horlicks",
+    "translations": {
+      "hi": {
+        "name": "हॉर्लिक्स",
+        "aliases": "horlicks",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஹார்லிக்ஸ்",
+        "aliases": "horlicks",
+        "needs_review": true
+      },
+      "te": {
+        "name": "హార్లిక్స్",
+        "aliases": "horlicks",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಹಾರ್ಲಿಕ್ಸ್",
+        "aliases": "horlicks",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഹോർലിക്സ്",
+        "aliases": "horlicks",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ہارلکس",
+        "aliases": "horlicks",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "IFB",
+    "translations": {
+      "hi": {
+        "name": "आईएफबी",
+        "aliases": "ifb",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஐஎஃப்பி",
+        "aliases": "ifb",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఐఎఫ్‌బి",
+        "aliases": "ifb",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಐಎಫ್‌ಬಿ",
+        "aliases": "ifb",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഐഎഫ്ബി",
+        "aliases": "ifb",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آئی ایف بی",
+        "aliases": "ifb",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "India Gate",
+    "translations": {
+      "hi": {
+        "name": "इंडिया गेट",
+        "aliases": "india gate",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "இந்தியா கேட்",
+        "aliases": "india gate",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఇండియా గేట్",
+        "aliases": "india gate",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಇಂಡಿಯಾ ಗೇಟ್",
+        "aliases": "india gate",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഇന്ത്യ ഗേറ്റ്",
+        "aliases": "india gate",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "انڈیا گیٹ",
+        "aliases": "india gate",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "KLF Coconad",
+    "translations": {
+      "hi": {
+        "name": "केएलएफ कोकोनैड",
+        "aliases": "klf coconad",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கேஎல்எஃப் கோகோனாட்",
+        "aliases": "klf coconad",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కేఎల్ఎఫ్ కోకోనాడ్",
+        "aliases": "klf coconad",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೆಎಲ್ಎಫ್ ಕೊಕೊನಾಡ್",
+        "aliases": "klf coconad",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കെഎൽഎഫ് കോക്കോനാഡ്",
+        "aliases": "klf coconad",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کے ایل ایف کوکوناد",
+        "aliases": "klf coconad",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Kellogg's",
+    "translations": {
+      "hi": {
+        "name": "केलॉग्स",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கெல்லாக்ஸ்",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కెల్లాగ్స్",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕೆಲ್ಲಾಗ್ಸ್",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കെല്ലോഗ്സ്",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کیلاگز",
+        "aliases": "kellogg kelloggs",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Kikkoman",
+    "translations": {
+      "hi": {
+        "name": "किक्कोमन",
+        "aliases": "kikkoman",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிக்கோமன்",
+        "aliases": "kikkoman",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిక్కోమన్",
+        "aliases": "kikkoman",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಕ್ಕೊಮನ್",
+        "aliases": "kikkoman",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിക്കോമൻ",
+        "aliases": "kikkoman",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کیکومن",
+        "aliases": "kikkoman",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Kissan",
+    "translations": {
+      "hi": {
+        "name": "किसान",
+        "aliases": "kissan",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "கிசான்",
+        "aliases": "kissan",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కిసాన్",
+        "aliases": "kissan",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕಿಸಾನ್",
+        "aliases": "kissan",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കിസാൻ",
+        "aliases": "kissan",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کسان",
+        "aliases": "kissan",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Knorr",
+    "translations": {
+      "hi": {
+        "name": "नॉर",
+        "aliases": "knorr",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நார்",
+        "aliases": "knorr",
+        "needs_review": true
+      },
+      "te": {
+        "name": "నార్",
+        "aliases": "knorr",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನಾರ್",
+        "aliases": "knorr",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "നോർ",
+        "aliases": "knorr",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نار",
+        "aliases": "knorr",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Kurkure",
+    "translations": {
+      "hi": {
+        "name": "कुरकुरे",
+        "aliases": "kurkure",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குர்குரே",
+        "aliases": "kurkure",
+        "needs_review": true
+      },
+      "te": {
+        "name": "కుర్కురే",
+        "aliases": "kurkure",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕುರ್ಕುರೆ",
+        "aliases": "kurkure",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "കുർകുരെ",
+        "aliases": "kurkure",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کرکرے",
+        "aliases": "kurkure",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "LG",
+    "translations": {
+      "hi": {
+        "name": "एलजी",
+        "aliases": "lg",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எல்ஜி",
+        "aliases": "lg",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎల్‌జి",
+        "aliases": "lg",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಲ್‌ಜಿ",
+        "aliases": "lg",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എൽജി",
+        "aliases": "lg",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایل جی",
+        "aliases": "lg",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lakme",
+    "translations": {
+      "hi": {
+        "name": "लैक्मे",
+        "aliases": "lakme",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லாக்மே",
+        "aliases": "lakme",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లాక్మే",
+        "aliases": "lakme",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲ್ಯಾಕ್ಮೆ",
+        "aliases": "lakme",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലാക്മേ",
+        "aliases": "lakme",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لیکمے",
+        "aliases": "lakme",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lay's",
+    "translations": {
+      "hi": {
+        "name": "लेज़",
+        "aliases": "lays",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லேஸ்",
+        "aliases": "lays",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లేస్",
+        "aliases": "lays",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೇಸ್",
+        "aliases": "lays",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലേയ്സ്",
+        "aliases": "lays",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لیز",
+        "aliases": "lays",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lee Kum Kee",
+    "translations": {
+      "hi": {
+        "name": "ली कुम की",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லீ கும் கீ",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లీ కుం కీ",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೀ ಕುಂ ಕೀ",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലീ കും കീ",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لی کم کی",
+        "aliases": "lee kum kee",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lenor",
+    "translations": {
+      "hi": {
+        "name": "लेनोर",
+        "aliases": "lenor",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லெனார்",
+        "aliases": "lenor",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లెనార్",
+        "aliases": "lenor",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೆನಾರ್",
+        "aliases": "lenor",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലെനോർ",
+        "aliases": "lenor",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لینور",
+        "aliases": "lenor",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Leonardo",
+    "translations": {
+      "hi": {
+        "name": "लियोनार्डो",
+        "aliases": "leonardo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லியோனார்டோ",
+        "aliases": "leonardo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లియోనార్డో",
+        "aliases": "leonardo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲಿಯೊನಾರ್ಡೊ",
+        "aliases": "leonardo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലിയനാർഡോ",
+        "aliases": "leonardo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لیوناردو",
+        "aliases": "leonardo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Levista",
+    "translations": {
+      "hi": {
+        "name": "लेविस्ता",
+        "aliases": "levista",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லெவிஸ்தா",
+        "aliases": "levista",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లెవిస్తా",
+        "aliases": "levista",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೆವಿಸ್ತಾ",
+        "aliases": "levista",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലെവിസ്റ്റ",
+        "aliases": "levista",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لیوسٹا",
+        "aliases": "levista",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lifebuoy",
+    "translations": {
+      "hi": {
+        "name": "लाइफबॉय",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லைஃப்பாய்",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లైఫ్‌బాయ్",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೈಫ್‌ಬಾಯ್",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലൈഫ്ബോയ്",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لائف بوائے",
+        "aliases": "lifebuoy",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lipton",
+    "translations": {
+      "hi": {
+        "name": "लिप्टन",
+        "aliases": "lipton",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லிப்டன்",
+        "aliases": "lipton",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లిప్టన్",
+        "aliases": "lipton",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲಿಪ್ಟನ್",
+        "aliases": "lipton",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലിപ്റ്റൺ",
+        "aliases": "lipton",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لپٹن",
+        "aliases": "lipton",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Listerine",
+    "translations": {
+      "hi": {
+        "name": "लिस्टरीन",
+        "aliases": "listerine",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லிஸ்டரின்",
+        "aliases": "listerine",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లిస్టరిన్",
+        "aliases": "listerine",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲಿಸ್ಟರಿನ್",
+        "aliases": "listerine",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലിസ്റ്ററിൻ",
+        "aliases": "listerine",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لسٹرین",
+        "aliases": "listerine",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lizol",
+    "translations": {
+      "hi": {
+        "name": "लाइज़ॉल",
+        "aliases": "lizol",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லைசால்",
+        "aliases": "lizol",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లైజాల్",
+        "aliases": "lizol",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲೈಜಾಲ್",
+        "aliases": "lizol",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലൈസോൾ",
+        "aliases": "lizol",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لائزول",
+        "aliases": "lizol",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Lux",
+    "translations": {
+      "hi": {
+        "name": "लक्स",
+        "aliases": "lux",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "லக்ஸ்",
+        "aliases": "lux",
+        "needs_review": true
+      },
+      "te": {
+        "name": "లక్స్",
+        "aliases": "lux",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಲಕ್ಸ್",
+        "aliases": "lux",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ലക്സ്",
+        "aliases": "lux",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "لکس",
+        "aliases": "lux",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "MDH",
+    "translations": {
+      "hi": {
+        "name": "एमडीएच",
+        "aliases": "mdh",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எம்டிஎச்",
+        "aliases": "mdh",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎండిహెచ్",
+        "aliases": "mdh",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಂಡಿಎಚ್",
+        "aliases": "mdh",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എംഡിഎച്ച്",
+        "aliases": "mdh",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایم ڈی ایچ",
+        "aliases": "mdh",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "MTR",
+    "translations": {
+      "hi": {
+        "name": "एमटीआर",
+        "aliases": "mtr",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "எம்டிஆர்",
+        "aliases": "mtr",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఎంటిఆర్",
+        "aliases": "mtr",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಎಂಟಿಆರ್",
+        "aliases": "mtr",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "എംടിആർ",
+        "aliases": "mtr",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ایم ٹی آر",
+        "aliases": "mtr",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Madhur",
+    "translations": {
+      "hi": {
+        "name": "मधुर",
+        "aliases": "madhur",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மதுர்",
+        "aliases": "madhur",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మధుర్",
+        "aliases": "madhur",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಧುರ್",
+        "aliases": "madhur",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മധുർ",
+        "aliases": "madhur",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مدھر",
+        "aliases": "madhur",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Maggi",
+    "translations": {
+      "hi": {
+        "name": "मैगी",
+        "aliases": "maggi",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மேகி",
+        "aliases": "maggi",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మ్యాగీ",
+        "aliases": "maggi",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮ್ಯಾಗಿ",
+        "aliases": "maggi",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മാഗി",
+        "aliases": "maggi",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میگی",
+        "aliases": "maggi",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mapro",
+    "translations": {
+      "hi": {
+        "name": "मैप्रो",
+        "aliases": "mapro",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மேப்ரோ",
+        "aliases": "mapro",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మ్యాప్రో",
+        "aliases": "mapro",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮ್ಯಾಪ್ರೊ",
+        "aliases": "mapro",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മാപ്രോ",
+        "aliases": "mapro",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میپرو",
+        "aliases": "mapro",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Max Care",
+    "translations": {
+      "hi": {
+        "name": "मैक्स केयर",
+        "aliases": "max care",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மேக்ஸ் கேர்",
+        "aliases": "max care",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మ్యాక్స్ కేర్",
+        "aliases": "max care",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮ್ಯಾಕ್ಸ್ ಕೇರ್",
+        "aliases": "max care",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മാക്സ് കെയർ",
+        "aliases": "max care",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میکس کیئر",
+        "aliases": "max care",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Maxo",
+    "translations": {
+      "hi": {
+        "name": "मैक्सो",
+        "aliases": "maxo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மேக்ஸோ",
+        "aliases": "maxo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మ్యాక్సో",
+        "aliases": "maxo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮ್ಯಾಕ್ಸೊ",
+        "aliases": "maxo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മാക്സോ",
+        "aliases": "maxo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میکسو",
+        "aliases": "maxo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "McCain",
+    "translations": {
+      "hi": {
+        "name": "मैककेन",
+        "aliases": "mccain",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மெக்கெயின்",
+        "aliases": "mccain",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మెక్‌కెయిన్",
+        "aliases": "mccain",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೆಕೇನ್",
+        "aliases": "mccain",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മക്കെയിൻ",
+        "aliases": "mccain",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "میک کین",
+        "aliases": "mccain",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Milky Mist",
+    "translations": {
+      "hi": {
+        "name": "मिल्की मिस्ट",
+        "aliases": "milky mist",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மில்கி மிஸ்ட்",
+        "aliases": "milky mist",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మిల్కీ మిస్ట్",
+        "aliases": "milky mist",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಿಲ್ಕಿ ಮಿಸ್ಟ್",
+        "aliases": "milky mist",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മിൽക്കി മിസ്റ്റ്",
+        "aliases": "milky mist",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ملکی مسٹ",
+        "aliases": "milky mist",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Minimalist",
+    "translations": {
+      "hi": {
+        "name": "मिनिमलिस्ट",
+        "aliases": "minimalist",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மினிமலிஸ்ட்",
+        "aliases": "minimalist",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మినిమలిస్ట్",
+        "aliases": "minimalist",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಿನಿಮಲಿಸ್ಟ್",
+        "aliases": "minimalist",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മിനിമലിസ്റ്റ്",
+        "aliases": "minimalist",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "منیملسٹ",
+        "aliases": "minimalist",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mixed Fruit",
+    "translations": {
+      "hi": {
+        "name": "मिक्स्ड फ्रूट",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மிக்ஸ்டு ஃப்ரூட்",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మిక్స్‌డ్ ఫ్రూట్",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಿಕ್ಸ್‌ಡ್ ಫ್ರೂಟ್",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മിക്സഡ് ഫ്രൂട്ട്",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مکسڈ فروٹ",
+        "aliases": "mixed fruit",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mortein",
+    "translations": {
+      "hi": {
+        "name": "मॉर्टिन",
+        "aliases": "mortein",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மார்டீன்",
+        "aliases": "mortein",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మార్టిన్",
+        "aliases": "mortein",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಾರ್ಟಿನ್",
+        "aliases": "mortein",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മോർട്ടിൻ",
+        "aliases": "mortein",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مورٹین",
+        "aliases": "mortein",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mother Dairy",
+    "translations": {
+      "hi": {
+        "name": "मदर डेयरी",
+        "aliases": "mother dairy",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மதர் டெய்ரி",
+        "aliases": "mother dairy",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మదర్ డెయిరీ",
+        "aliases": "mother dairy",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮದರ್ ಡೈರಿ",
+        "aliases": "mother dairy",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മദർ ഡയറി",
+        "aliases": "mother dairy",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مدر ڈیری",
+        "aliases": "mother dairy",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mother's Recipe",
+    "translations": {
+      "hi": {
+        "name": "मदर्स रेसिपी",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மதர்ஸ் ரெசிபி",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మదర్స్ రెసిపీ",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮದರ್ಸ್ ರೆಸಿಪಿ",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മദേഴ്സ് റെസിപ്പി",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مدرز ریسپی",
+        "aliases": "mothers recipe",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Mr Muscle",
+    "translations": {
+      "hi": {
+        "name": "मिस्टर मसल",
+        "aliases": "mr muscle",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மிஸ்டர் மசில்",
+        "aliases": "mr muscle",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మిస్టర్ మజిల్",
+        "aliases": "mr muscle",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮಿಸ್ಟರ್ ಮಸಲ್",
+        "aliases": "mr muscle",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മിസ്റ്റർ മസിൽ",
+        "aliases": "mr muscle",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مسٹر مسل",
+        "aliases": "mr muscle",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "MyFitness",
+    "translations": {
+      "hi": {
+        "name": "माईफिटनेस",
+        "aliases": "myfitness",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "மைஃபிட்னஸ்",
+        "aliases": "myfitness",
+        "needs_review": true
+      },
+      "te": {
+        "name": "మైఫిట్‌నెస్",
+        "aliases": "myfitness",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಮೈಫಿಟ್‌ನೆಸ್",
+        "aliases": "myfitness",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "മൈഫിറ്റ്നസ്",
+        "aliases": "myfitness",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "مائی فٹنس",
+        "aliases": "myfitness",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Nandini",
+    "translations": {
+      "hi": {
+        "name": "नंदिनी",
+        "aliases": "nandini",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நந்தினி",
+        "aliases": "nandini",
+        "needs_review": true
+      },
+      "te": {
+        "name": "నందిని",
+        "aliases": "nandini",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನಂದಿನಿ",
+        "aliases": "nandini",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "നന്ദിനി",
+        "aliases": "nandini",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نندنی",
+        "aliases": "nandini",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Nescafé",
+    "translations": {
+      "hi": {
+        "name": "नेस्कैफे",
+        "aliases": "nescafe",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நெஸ்கஃபே",
+        "aliases": "nescafe",
+        "needs_review": true
+      },
+      "te": {
+        "name": "నెస్కేఫే",
+        "aliases": "nescafe",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನೆಸ್ಕೆಫೆ",
+        "aliases": "nescafe",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "നെസ്കഫേ",
+        "aliases": "nescafe",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نیسکیفے",
+        "aliases": "nescafe",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Nivea",
+    "translations": {
+      "hi": {
+        "name": "निविया",
+        "aliases": "nivea",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நிவியா",
+        "aliases": "nivea",
+        "needs_review": true
+      },
+      "te": {
+        "name": "నివియా",
+        "aliases": "nivea",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನಿವಿಯಾ",
+        "aliases": "nivea",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "നിവിയ",
+        "aliases": "nivea",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نیویا",
+        "aliases": "nivea",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Nutrela",
+    "translations": {
+      "hi": {
+        "name": "न्यूट्रेला",
+        "aliases": "nutrela",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "நியூட்ரெலா",
+        "aliases": "nutrela",
+        "needs_review": true
+      },
+      "te": {
+        "name": "న్యూట్రెలా",
+        "aliases": "nutrela",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ನ್ಯೂಟ್ರೆಲಾ",
+        "aliases": "nutrela",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ന്യൂട്രെല",
+        "aliases": "nutrela",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "نیوٹریلا",
+        "aliases": "nutrela",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Oddy",
+    "translations": {
+      "hi": {
+        "name": "ऑडी",
+        "aliases": "oddy",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆடி",
+        "aliases": "oddy",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆడీ",
+        "aliases": "oddy",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆಡಿ",
+        "aliases": "oddy",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഓഡി",
+        "aliases": "oddy",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آڈی",
+        "aliases": "oddy",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Oral-B",
+    "translations": {
+      "hi": {
+        "name": "ओरल-बी",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஓரல்-பி",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఓరల్-బి",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಓರಲ್-ಬಿ",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഓറൽ-ബി",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اورل بی",
+        "aliases": "oral b oralb",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Organic India",
+    "translations": {
+      "hi": {
+        "name": "ऑर्गेनिक इंडिया",
+        "aliases": "organic india",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆர்கானிக் இந்தியா",
+        "aliases": "organic india",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆర్గానిక్ ఇండియా",
+        "aliases": "organic india",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆರ್ಗ್ಯಾನಿಕ್ ಇಂಡಿಯಾ",
+        "aliases": "organic india",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഓർഗാനിക് ഇന്ത്യ",
+        "aliases": "organic india",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آرگینک انڈیا",
+        "aliases": "organic india",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Organic Tattva",
+    "translations": {
+      "hi": {
+        "name": "ऑर्गेनिक तत्त्व",
+        "aliases": "organic tattva",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஆர்கானிக் தத்வா",
+        "aliases": "organic tattva",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఆర్గానిక్ తత్త్వ",
+        "aliases": "organic tattva",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಆರ್ಗ್ಯಾನಿಕ್ ತತ್ವ",
+        "aliases": "organic tattva",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഓർഗാനിക് തത്ത്വ",
+        "aliases": "organic tattva",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آرگینک تتوا",
+        "aliases": "organic tattva",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Origami",
+    "translations": {
+      "hi": {
+        "name": "ओरिगामी",
+        "aliases": "origami",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஒரிகாமி",
+        "aliases": "origami",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఒరిగామి",
+        "aliases": "origami",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಒರಿಗಾಮಿ",
+        "aliases": "origami",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഒറിഗാമി",
+        "aliases": "origami",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اوریگامی",
+        "aliases": "origami",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pantene",
+    "translations": {
+      "hi": {
+        "name": "पैंटीन",
+        "aliases": "pantene",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேன்டீன்",
+        "aliases": "pantene",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పాంటీన్",
+        "aliases": "pantene",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪ್ಯಾಂಟೀನ್",
+        "aliases": "pantene",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാന്റീൻ",
+        "aliases": "pantene",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پینٹین",
+        "aliases": "pantene",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Paper Boat",
+    "translations": {
+      "hi": {
+        "name": "पेपर बोट",
+        "aliases": "paper boat",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பேப்பர் போட்",
+        "aliases": "paper boat",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పేపర్ బోట్",
+        "aliases": "paper boat",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೇಪರ್ ಬೋಟ್",
+        "aliases": "paper boat",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പേപ്പർ ബോട്ട്",
+        "aliases": "paper boat",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیپر بوٹ",
+        "aliases": "paper boat",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Parachute",
+    "translations": {
+      "hi": {
+        "name": "पैराशूट",
+        "aliases": "parachute",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாரசூட்",
+        "aliases": "parachute",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పారాచూట్",
+        "aliases": "parachute",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪ್ಯಾರಾಚೂಟ್",
+        "aliases": "parachute",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാരച്യൂട്ട്",
+        "aliases": "parachute",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیراشوٹ",
+        "aliases": "parachute",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Park Avenue",
+    "translations": {
+      "hi": {
+        "name": "पार्क एवेन्यू",
+        "aliases": "park avenue",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பார்க் அவென்யூ",
+        "aliases": "park avenue",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పార్క్ అవెన్యూ",
+        "aliases": "park avenue",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಾರ್ಕ್ ಅವೆನ್ಯೂ",
+        "aliases": "park avenue",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാർക്ക് അവന്യൂ",
+        "aliases": "park avenue",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پارک ایوینیو",
+        "aliases": "park avenue",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Parle",
+    "translations": {
+      "hi": {
+        "name": "पार्ले",
+        "aliases": "parle",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பார்லே",
+        "aliases": "parle",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పార్లే",
+        "aliases": "parle",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಾರ್ಲೆ",
+        "aliases": "parle",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പാർലെ",
+        "aliases": "parle",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پارلے",
+        "aliases": "parle",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Patanjali",
+    "translations": {
+      "hi": {
+        "name": "पतंजलि",
+        "aliases": "patanjali",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பதஞ்சலி",
+        "aliases": "patanjali",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పతంజలి",
+        "aliases": "patanjali",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪತಂಜಲಿ",
+        "aliases": "patanjali",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പതഞ്ജലി",
+        "aliases": "patanjali",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پتنجلی",
+        "aliases": "patanjali",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pears",
+    "translations": {
+      "hi": {
+        "name": "पीयर्स",
+        "aliases": "pears",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பியர்ஸ்",
+        "aliases": "pears",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పియర్స్",
+        "aliases": "pears",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಿಯರ್ಸ್",
+        "aliases": "pears",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പിയേഴ്സ്",
+        "aliases": "pears",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیئرز",
+        "aliases": "pears",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pepsodent",
+    "translations": {
+      "hi": {
+        "name": "पेप्सोडेंट",
+        "aliases": "pepsodent",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பெப்சோடென்ட்",
+        "aliases": "pepsodent",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పెప్సోడెంట్",
+        "aliases": "pepsodent",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೆಪ್ಸೋಡೆಂಟ್",
+        "aliases": "pepsodent",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പെപ്സോഡെന്റ്",
+        "aliases": "pepsodent",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پیپسوڈینٹ",
+        "aliases": "pepsodent",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pigeon",
+    "translations": {
+      "hi": {
+        "name": "पिजन",
+        "aliases": "pigeon",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிஜன்",
+        "aliases": "pigeon",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పిజన్",
+        "aliases": "pigeon",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಿಜನ್",
+        "aliases": "pigeon",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പിജിയൻ",
+        "aliases": "pigeon",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پجن",
+        "aliases": "pigeon",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pillsbury",
+    "translations": {
+      "hi": {
+        "name": "पिल्सबरी",
+        "aliases": "pillsbury",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பில்ஸ்பரி",
+        "aliases": "pillsbury",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పిల్స్‌బరీ",
+        "aliases": "pillsbury",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಿಲ್ಸ್‌ಬರಿ",
+        "aliases": "pillsbury",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പിൽസ്ബറി",
+        "aliases": "pillsbury",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پلسبری",
+        "aliases": "pillsbury",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pintola",
+    "translations": {
+      "hi": {
+        "name": "पिंटोला",
+        "aliases": "pintola",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிண்டோலா",
+        "aliases": "pintola",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పింటోలా",
+        "aliases": "pintola",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಿಂಟೊಲಾ",
+        "aliases": "pintola",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പിന്റോള",
+        "aliases": "pintola",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پنٹولا",
+        "aliases": "pintola",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pond's",
+    "translations": {
+      "hi": {
+        "name": "पॉन्ड्स",
+        "aliases": "pond ponds",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பாண்ட்ஸ்",
+        "aliases": "pond ponds",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పాండ్స్",
+        "aliases": "pond ponds",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪಾಂಡ್ಸ್",
+        "aliases": "pond ponds",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പോണ്ട്സ്",
+        "aliases": "pond ponds",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پونڈز",
+        "aliases": "pond ponds",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Ponni",
+    "translations": {
+      "hi": {
+        "name": "पोन्नी",
+        "aliases": "ponni",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பொன்னி",
+        "aliases": "ponni",
+        "needs_review": true
+      },
+      "te": {
+        "name": "పొన్ని",
+        "aliases": "ponni",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪೊನ್ನಿ",
+        "aliases": "ponni",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പൊന്നി",
+        "aliases": "ponni",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پونی",
+        "aliases": "ponni",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Presto",
+    "translations": {
+      "hi": {
+        "name": "प्रेस्टो",
+        "aliases": "presto",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிரெஸ்டோ",
+        "aliases": "presto",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ప్రెస్టో",
+        "aliases": "presto",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪ್ರೆಸ್ಟೊ",
+        "aliases": "presto",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പ്രെസ്റ്റോ",
+        "aliases": "presto",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پریسٹو",
+        "aliases": "presto",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Pril",
+    "translations": {
+      "hi": {
+        "name": "प्रिल",
+        "aliases": "pril",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிரில்",
+        "aliases": "pril",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ప్రిల్",
+        "aliases": "pril",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪ್ರಿಲ್",
+        "aliases": "pril",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പ്രിൽ",
+        "aliases": "pril",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پریل",
+        "aliases": "pril",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Priya",
+    "translations": {
+      "hi": {
+        "name": "प्रिया",
+        "aliases": "priya",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிரியா",
+        "aliases": "priya",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ప్రియ",
+        "aliases": "priya",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಪ್ರಿಯಾ",
+        "aliases": "priya",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "പ്രിയ",
+        "aliases": "priya",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "پریا",
+        "aliases": "priya",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Quaker",
+    "translations": {
+      "hi": {
+        "name": "क्वेकर",
+        "aliases": "quaker",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "குவேக்கர்",
+        "aliases": "quaker",
+        "needs_review": true
+      },
+      "te": {
+        "name": "క్వేకర్",
+        "aliases": "quaker",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಕ್ವೇಕರ್",
+        "aliases": "quaker",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ക്വേക്കർ",
+        "aliases": "quaker",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "کویکر",
+        "aliases": "quaker",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Rajdhani",
+    "translations": {
+      "hi": {
+        "name": "राजधानी",
+        "aliases": "rajdhani",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ராஜ்தானி",
+        "aliases": "rajdhani",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రాజధాని",
+        "aliases": "rajdhani",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರಾಜಧಾನಿ",
+        "aliases": "rajdhani",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "രാജധാനി",
+        "aliases": "rajdhani",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "راجدھانی",
+        "aliases": "rajdhani",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Rasna",
+    "translations": {
+      "hi": {
+        "name": "रसना",
+        "aliases": "rasna",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரஸ்னா",
+        "aliases": "rasna",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రస్నా",
+        "aliases": "rasna",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರಸ್ನಾ",
+        "aliases": "rasna",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റസ്ന",
+        "aliases": "rasna",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "رسنا",
+        "aliases": "rasna",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Raw Pressery",
+    "translations": {
+      "hi": {
+        "name": "रॉ प्रेसरी",
+        "aliases": "raw pressery",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரா பிரெசரி",
+        "aliases": "raw pressery",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రా ప్రెసరీ",
+        "aliases": "raw pressery",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರಾ ಪ್ರೆಸರಿ",
+        "aliases": "raw pressery",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റോ പ്രെസ്സറി",
+        "aliases": "raw pressery",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "را پریسری",
+        "aliases": "raw pressery",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Real",
+    "translations": {
+      "hi": {
+        "name": "रियल",
+        "aliases": "real",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரியல்",
+        "aliases": "real",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రియల్",
+        "aliases": "real",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರಿಯಲ್",
+        "aliases": "real",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റിയൽ",
+        "aliases": "real",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ریئل",
+        "aliases": "real",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Red Label",
+    "translations": {
+      "hi": {
+        "name": "रेड लेबल",
+        "aliases": "red label",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரெட் லேபிள்",
+        "aliases": "red label",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రెడ్ లేబుల్",
+        "aliases": "red label",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೆಡ್ ಲೇಬಲ್",
+        "aliases": "red label",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റെഡ് ലേബൽ",
+        "aliases": "red label",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ریڈ لیبل",
+        "aliases": "red label",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Rexona",
+    "translations": {
+      "hi": {
+        "name": "रेक्सोना",
+        "aliases": "rexona",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரெக்சோனா",
+        "aliases": "rexona",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రెక్సోనా",
+        "aliases": "rexona",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೆಕ್ಸೊನಾ",
+        "aliases": "rexona",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റെക്സോണ",
+        "aliases": "rexona",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ریکسونا",
+        "aliases": "rexona",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Reynolds",
+    "translations": {
+      "hi": {
+        "name": "रेनॉल्ड्स",
+        "aliases": "reynolds",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ரெனால்ட்ஸ்",
+        "aliases": "reynolds",
+        "needs_review": true
+      },
+      "te": {
+        "name": "రేనాల్డ్స్",
+        "aliases": "reynolds",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ರೆನಾಲ್ಡ್ಸ್",
+        "aliases": "reynolds",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "റെയ്നോൾഡ്സ്",
+        "aliases": "reynolds",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "رینالڈز",
+        "aliases": "reynolds",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Saffola",
+    "translations": {
+      "hi": {
+        "name": "सैफोला",
+        "aliases": "saffola",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சஃபோலா",
+        "aliases": "saffola",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సఫోలా",
+        "aliases": "saffola",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಫೋಲಾ",
+        "aliases": "saffola",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സഫോള",
+        "aliases": "saffola",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سیفولا",
+        "aliases": "saffola",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Santoor",
+    "translations": {
+      "hi": {
+        "name": "संतूर",
+        "aliases": "santoor",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சந்தூர்",
+        "aliases": "santoor",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సంతూర్",
+        "aliases": "santoor",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಂತೂರ್",
+        "aliases": "santoor",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സന്തൂർ",
+        "aliases": "santoor",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سنتور",
+        "aliases": "santoor",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Savlon",
+    "translations": {
+      "hi": {
+        "name": "सैवलॉन",
+        "aliases": "savlon",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சாவ்லான்",
+        "aliases": "savlon",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సావ్లాన్",
+        "aliases": "savlon",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸಾವ್ಲಾನ್",
+        "aliases": "savlon",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സാവ്‌ലോൺ",
+        "aliases": "savlon",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سیولون",
+        "aliases": "savlon",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Schick",
+    "translations": {
+      "hi": {
+        "name": "शिक",
+        "aliases": "schick",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஷிக்",
+        "aliases": "schick",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షిక్",
+        "aliases": "schick",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶಿಕ್",
+        "aliases": "schick",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷിക്ക്",
+        "aliases": "schick",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "شک",
+        "aliases": "schick",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Scotch-Brite",
+    "translations": {
+      "hi": {
+        "name": "स्कॉच-ब्राइट",
+        "aliases": "scotch brite",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்காட்ச்-பிரைட்",
+        "aliases": "scotch brite",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్కాచ్-బ్రైట్",
+        "aliases": "scotch brite",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಕಾಚ್-ಬ್ರೈಟ್",
+        "aliases": "scotch brite",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്കോച്ച്-ബ്രൈറ്റ്",
+        "aliases": "scotch brite",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسکاچ برائٹ",
+        "aliases": "scotch brite",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Scott",
+    "translations": {
+      "hi": {
+        "name": "स्कॉट",
+        "aliases": "scott",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்காட்",
+        "aliases": "scott",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్కాట్",
+        "aliases": "scott",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಕಾಟ್",
+        "aliases": "scott",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്കോട്ട്",
+        "aliases": "scott",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسکاٹ",
+        "aliases": "scott",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Sensodyne",
+    "translations": {
+      "hi": {
+        "name": "सेंसोडाइन",
+        "aliases": "sensodyne",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "செண்சோடைன்",
+        "aliases": "sensodyne",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సెన్సోడైన్",
+        "aliases": "sensodyne",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೆನ್ಸೊಡೈನ್",
+        "aliases": "sensodyne",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സെൻസോഡൈൻ",
+        "aliases": "sensodyne",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سینسوڈائن",
+        "aliases": "sensodyne",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Shan",
+    "translations": {
+      "hi": {
+        "name": "शान",
+        "aliases": "shan",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஷான்",
+        "aliases": "shan",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షాన్",
+        "aliases": "shan",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶಾನ್",
+        "aliases": "shan",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷാൻ",
+        "aliases": "shan",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "شان",
+        "aliases": "shan",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Ship",
+    "translations": {
+      "hi": {
+        "name": "शिप",
+        "aliases": "ship",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஷிப்",
+        "aliases": "ship",
+        "needs_review": true
+      },
+      "te": {
+        "name": "షిప్",
+        "aliases": "ship",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಶಿಪ್",
+        "aliases": "ship",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഷിപ്പ്",
+        "aliases": "ship",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "شپ",
+        "aliases": "ship",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Slurrp Farm",
+    "translations": {
+      "hi": {
+        "name": "स्लर्प फार्म",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்லர்ப் ஃபார்ம்",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్లర్ప్ ఫార్మ్",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಲರ್ಪ್ ಫಾರ್ಮ್",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്ലർപ്പ് ഫാം",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سلرپ فارم",
+        "aliases": "slurrp farm",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Sofy",
+    "translations": {
+      "hi": {
+        "name": "सोफ़ी",
+        "aliases": "sofy",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சோஃபி",
+        "aliases": "sofy",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సోఫీ",
+        "aliases": "sofy",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೋಫಿ",
+        "aliases": "sofy",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സോഫി",
+        "aliases": "sofy",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سوفی",
+        "aliases": "sofy",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Solimo",
+    "translations": {
+      "hi": {
+        "name": "सोलिमो",
+        "aliases": "solimo",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சோலிமோ",
+        "aliases": "solimo",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సోలిమో",
+        "aliases": "solimo",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸೊಲಿಮೊ",
+        "aliases": "solimo",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സോളിമോ",
+        "aliases": "solimo",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سولیمو",
+        "aliases": "solimo",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Spotzero",
+    "translations": {
+      "hi": {
+        "name": "स्पॉटज़ीरो",
+        "aliases": "spotzero",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்பாட்ஸீரோ",
+        "aliases": "spotzero",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్పాట్‌జీరో",
+        "aliases": "spotzero",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಪಾಟ್‌ಜೀರೊ",
+        "aliases": "spotzero",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്പോട്ട്സീറോ",
+        "aliases": "spotzero",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسپاٹ زیرو",
+        "aliases": "spotzero",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Stayfree",
+    "translations": {
+      "hi": {
+        "name": "स्टेफ्री",
+        "aliases": "stayfree",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஸ்டேஃப்ரி",
+        "aliases": "stayfree",
+        "needs_review": true
+      },
+      "te": {
+        "name": "స్టేఫ్రీ",
+        "aliases": "stayfree",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸ್ಟೇಫ್ರೀ",
+        "aliases": "stayfree",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സ്റ്റേഫ്രീ",
+        "aliases": "stayfree",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "اسٹے فری",
+        "aliases": "stayfree",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Sumeru",
+    "translations": {
+      "hi": {
+        "name": "सुमेरु",
+        "aliases": "sumeru",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சுமேரு",
+        "aliases": "sumeru",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సుమేరు",
+        "aliases": "sumeru",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸುಮೇರು",
+        "aliases": "sumeru",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സുമേരു",
+        "aliases": "sumeru",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سمیرو",
+        "aliases": "sumeru",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Sundrop",
+    "translations": {
+      "hi": {
+        "name": "सनड्रॉप",
+        "aliases": "sundrop",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சன்டிராப்",
+        "aliases": "sundrop",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సన్‌డ్రాప్",
+        "aliases": "sundrop",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸನ್‌ಡ್ರಾಪ್",
+        "aliases": "sundrop",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സൺഡ്രോപ്പ്",
+        "aliases": "sundrop",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سن ڈراپ",
+        "aliases": "sundrop",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Sunfeast",
+    "translations": {
+      "hi": {
+        "name": "सनफीस्ट",
+        "aliases": "sunfeast",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சன்ஃபீஸ்ட்",
+        "aliases": "sunfeast",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సన్‌ఫీస్ట్",
+        "aliases": "sunfeast",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸನ್‌ಫೀಸ್ಟ್",
+        "aliases": "sunfeast",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സൺഫീസ്റ്റ്",
+        "aliases": "sunfeast",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سن فیسٹ",
+        "aliases": "sunfeast",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Surf Excel",
+    "translations": {
+      "hi": {
+        "name": "सर्फ़ एक्सेल",
+        "aliases": "surf excel",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "சர்ஃப் எக்செல்",
+        "aliases": "surf excel",
+        "needs_review": true
+      },
+      "te": {
+        "name": "సర్ఫ్ ఎక్సెల్",
+        "aliases": "surf excel",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಸರ್ಫ್ ಎಕ್ಸೆಲ್",
+        "aliases": "surf excel",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "സർഫ് എക്സൽ",
+        "aliases": "surf excel",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "سرف ایکسل",
+        "aliases": "surf excel",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tata",
+    "translations": {
+      "hi": {
+        "name": "टाटा",
+        "aliases": "tata",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாடா",
+        "aliases": "tata",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాటా",
+        "aliases": "tata",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಟಾ",
+        "aliases": "tata",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടാറ്റ",
+        "aliases": "tata",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹاٹا",
+        "aliases": "tata",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tata Coffee",
+    "translations": {
+      "hi": {
+        "name": "टाटा कॉफ़ी",
+        "aliases": "tata coffee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாடா காஃபி",
+        "aliases": "tata coffee",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాటా కాఫీ",
+        "aliases": "tata coffee",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಟಾ ಕಾಫಿ",
+        "aliases": "tata coffee",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടാറ്റ കോഫി",
+        "aliases": "tata coffee",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹاٹا کافی",
+        "aliases": "tata coffee",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tata Sampann",
+    "translations": {
+      "hi": {
+        "name": "टाटा संपन्न",
+        "aliases": "tata sampann",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாடா சம்பன்",
+        "aliases": "tata sampann",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాటా సంపన్న",
+        "aliases": "tata sampann",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಟಾ ಸಂಪನ್ನ",
+        "aliases": "tata sampann",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടാറ്റ സമ്പന്ന",
+        "aliases": "tata sampann",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹاٹا سمپن",
+        "aliases": "tata sampann",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tata Tea",
+    "translations": {
+      "hi": {
+        "name": "टाटा टी",
+        "aliases": "tata tea",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டாடா டீ",
+        "aliases": "tata tea",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టాటా టీ",
+        "aliases": "tata tea",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟಾಟಾ ಟೀ",
+        "aliases": "tata tea",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടാറ്റ ടീ",
+        "aliases": "tata tea",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹاٹا ٹی",
+        "aliases": "tata tea",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tetley",
+    "translations": {
+      "hi": {
+        "name": "टेटली",
+        "aliases": "tetley",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டெட்லி",
+        "aliases": "tetley",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టెట్లీ",
+        "aliases": "tetley",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟೆಟ್ಲಿ",
+        "aliases": "tetley",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടെറ്റ്ലി",
+        "aliases": "tetley",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹیٹلی",
+        "aliases": "tetley",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Thermoseal",
+    "translations": {
+      "hi": {
+        "name": "थर्मोसील",
+        "aliases": "thermoseal",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "தெர்மோசீல்",
+        "aliases": "thermoseal",
+        "needs_review": true
+      },
+      "te": {
+        "name": "థర్మోసీల్",
+        "aliases": "thermoseal",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಥರ್ಮೋಸೀಲ್",
+        "aliases": "thermoseal",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "തെർമോസീൽ",
+        "aliases": "thermoseal",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "تھرموسیل",
+        "aliases": "thermoseal",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tide",
+    "translations": {
+      "hi": {
+        "name": "टाइड",
+        "aliases": "tide",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "டைட்",
+        "aliases": "tide",
+        "needs_review": true
+      },
+      "te": {
+        "name": "టైడ్",
+        "aliases": "tide",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟೈಡ್",
+        "aliases": "tide",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ടൈഡ്",
+        "aliases": "tide",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹائیڈ",
+        "aliases": "tide",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tresemme",
+    "translations": {
+      "hi": {
+        "name": "ट्रेसमे",
+        "aliases": "tresemme",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ட்ரெசெமே",
+        "aliases": "tresemme",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ట్రెసెమ్మే",
+        "aliases": "tresemme",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟ್ರೆಸೆಮ್ಮೆ",
+        "aliases": "tresemme",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ട്രെസെമ്മെ",
+        "aliases": "tresemme",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹریسمے",
+        "aliases": "tresemme",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Tropicana",
+    "translations": {
+      "hi": {
+        "name": "ट्रॉपिकाना",
+        "aliases": "tropicana",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ட்ராபிகானா",
+        "aliases": "tropicana",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ట్రాపికానా",
+        "aliases": "tropicana",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟ್ರಾಪಿಕಾನಾ",
+        "aliases": "tropicana",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ട്രോപ്പിക്കാന",
+        "aliases": "tropicana",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹراپیکانا",
+        "aliases": "tropicana",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "True Elements",
+    "translations": {
+      "hi": {
+        "name": "ट्रू एलिमेंट्स",
+        "aliases": "true elements",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ட்ரூ எலிமென்ட்ஸ்",
+        "aliases": "true elements",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ట్రూ ఎలిమెంట్స్",
+        "aliases": "true elements",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಟ್ರೂ ಎಲಿಮೆಂಟ್ಸ್",
+        "aliases": "true elements",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ട്രൂ എലമെന്റ്സ്",
+        "aliases": "true elements",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ٹرو ایلیمنٹس",
+        "aliases": "true elements",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Vanish",
+    "translations": {
+      "hi": {
+        "name": "वैनिश",
+        "aliases": "vanish",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வேனிஷ்",
+        "aliases": "vanish",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వానిష్",
+        "aliases": "vanish",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವ್ಯಾನಿಷ್",
+        "aliases": "vanish",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വാനിഷ്",
+        "aliases": "vanish",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وینش",
+        "aliases": "vanish",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Vaseline",
+    "translations": {
+      "hi": {
+        "name": "वैसलीन",
+        "aliases": "vaseline",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வேஸ்லின்",
+        "aliases": "vaseline",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వాజ్‌లిన్",
+        "aliases": "vaseline",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವ್ಯಾಸ್‌ಲಿನ್",
+        "aliases": "vaseline",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വാസ്‌ലിൻ",
+        "aliases": "vaseline",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ویزلین",
+        "aliases": "vaseline",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Veeba",
+    "translations": {
+      "hi": {
+        "name": "वीबा",
+        "aliases": "veeba",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வீபா",
+        "aliases": "veeba",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వీబా",
+        "aliases": "veeba",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವೀಬಾ",
+        "aliases": "veeba",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വീബ",
+        "aliases": "veeba",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ویبا",
+        "aliases": "veeba",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Vi-John",
+    "translations": {
+      "hi": {
+        "name": "वी-जॉन",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வி-ஜான்",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వి-జాన్",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಿ-ಜಾನ್",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വി-ജോൺ",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وی جان",
+        "aliases": "vi john vijohn",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Vim",
+    "translations": {
+      "hi": {
+        "name": "विम",
+        "aliases": "vim",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "விம்",
+        "aliases": "vim",
+        "needs_review": true
+      },
+      "te": {
+        "name": "విమ్",
+        "aliases": "vim",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಿಮ್",
+        "aliases": "vim",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വിം",
+        "aliases": "vim",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وم",
+        "aliases": "vim",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Wagh Bakri",
+    "translations": {
+      "hi": {
+        "name": "वाघ बकरी",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வாக் பக்ரி",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వాఘ్ బక్రీ",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಾಘ್ ಬಕ್ರಿ",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വാഗ് ബക്രി",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "واگھ بکری",
+        "aliases": "wagh bakri",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Wai Wai",
+    "translations": {
+      "hi": {
+        "name": "वाई वाई",
+        "aliases": "wai wai",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வாய் வாய்",
+        "aliases": "wai wai",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వై వై",
+        "aliases": "wai wai",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಾಯ್ ವಾಯ್",
+        "aliases": "wai wai",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വൈ വൈ",
+        "aliases": "wai wai",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وائی وائی",
+        "aliases": "wai wai",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Weikfield",
+    "translations": {
+      "hi": {
+        "name": "वेकफील्ड",
+        "aliases": "weikfield",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வேக்ஃபீல்ட்",
+        "aliases": "weikfield",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వేక్‌ఫీల్డ్",
+        "aliases": "weikfield",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವೇಕ್‌ಫೀಲ್ಡ್",
+        "aliases": "weikfield",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വേക്ക്ഫീൽഡ്",
+        "aliases": "weikfield",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "ویک فیلڈ",
+        "aliases": "weikfield",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Wheel",
+    "translations": {
+      "hi": {
+        "name": "व्हील",
+        "aliases": "wheel",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "வீல்",
+        "aliases": "wheel",
+        "needs_review": true
+      },
+      "te": {
+        "name": "వీల్",
+        "aliases": "wheel",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವೀಲ್",
+        "aliases": "wheel",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വീൽ",
+        "aliases": "wheel",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وہیل",
+        "aliases": "wheel",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Whisper",
+    "translations": {
+      "hi": {
+        "name": "व्हिस्पर",
+        "aliases": "whisper",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "விஸ்பர்",
+        "aliases": "whisper",
+        "needs_review": true
+      },
+      "te": {
+        "name": "విస్పర్",
+        "aliases": "whisper",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ವಿಸ್ಪರ್",
+        "aliases": "whisper",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "വിസ്പർ",
+        "aliases": "whisper",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "وسپر",
+        "aliases": "whisper",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Yippee",
+    "translations": {
+      "hi": {
+        "name": "यिप्पी",
+        "aliases": "yippee",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "யிப்பி",
+        "aliases": "yippee",
+        "needs_review": true
+      },
+      "te": {
+        "name": "యిప్పీ",
+        "aliases": "yippee",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಯಿಪ್ಪಿ",
+        "aliases": "yippee",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "യിപ്പീ",
+        "aliases": "yippee",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "یپی",
+        "aliases": "yippee",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "Yoga Bar",
+    "translations": {
+      "hi": {
+        "name": "योगा बार",
+        "aliases": "yoga bar",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "யோகா பார்",
+        "aliases": "yoga bar",
+        "needs_review": true
+      },
+      "te": {
+        "name": "యోగా బార్",
+        "aliases": "yoga bar",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಯೋಗಾ ಬಾರ್",
+        "aliases": "yoga bar",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "യോഗ ബാർ",
+        "aliases": "yoga bar",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "یوگا بار",
+        "aliases": "yoga bar",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "bb Royal",
+    "translations": {
+      "hi": {
+        "name": "बीबी रॉयल",
+        "aliases": "bb royal",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "பிபி ராயல்",
+        "aliases": "bb royal",
+        "needs_review": true
+      },
+      "te": {
+        "name": "బిబి రాయల్",
+        "aliases": "bb royal",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಬಿಬಿ ರಾಯಲ್",
+        "aliases": "bb royal",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ബിബി റോയൽ",
+        "aliases": "bb royal",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "بی بی رائل",
+        "aliases": "bb royal",
+        "needs_review": true
+      }
+    }
+  },
+  {
+    "term_type": "brand",
+    "term_en": "iD Fresh",
+    "translations": {
+      "hi": {
+        "name": "आईडी फ्रेश",
+        "aliases": "id fresh",
+        "needs_review": true
+      },
+      "ta": {
+        "name": "ஐடி ஃப்ரெஷ்",
+        "aliases": "id fresh",
+        "needs_review": true
+      },
+      "te": {
+        "name": "ఐడి ఫ్రెష్",
+        "aliases": "id fresh",
+        "needs_review": true
+      },
+      "kn": {
+        "name": "ಐಡಿ ಫ್ರೆಶ್",
+        "aliases": "id fresh",
+        "needs_review": true
+      },
+      "ml": {
+        "name": "ഐഡി ഫ്രെഷ്",
+        "aliases": "id fresh",
+        "needs_review": true
+      },
+      "ur": {
+        "name": "آئی ڈی فریش",
+        "aliases": "id fresh",
+        "needs_review": true
+      }
+    }
   }
 ]
