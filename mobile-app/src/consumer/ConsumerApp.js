@@ -22,6 +22,7 @@ import CartScreen from './screens/CartScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 import AccountScreen from './screens/AccountScreen';
+import FeatureWebView from '../screens/FeatureWebView';
 
 const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -75,6 +76,11 @@ function AccountStackScreen() {
   return (
     <AccountStack.Navigator screenOptions={stackScreenOptions}>
       <AccountStack.Screen name="AccountHome" component={AccountScreen} options={{ title: t('account.title') }} />
+      <AccountStack.Screen
+        name="FeatureWebView"
+        component={FeatureWebView}
+        options={({ route }) => ({ title: route.params?.title || t('account.title') })}
+      />
     </AccountStack.Navigator>
   );
 }
