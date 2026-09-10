@@ -165,6 +165,132 @@ async function captureReferral({ code, referredType, referredUserId, referredSho
   }
 }
 
+// ===========================================================================
+// Seasonal + geo referral campaigns (Batch CAMP1). A campaign OVERRIDES the
+// default referral reward for a time window + place + audience, funded by a
+// PRE-FUNDED budget cap so it can never overspend its own budget (zero-burn
+// against budget). Everything here is best-effort: on ANY problem we fall back
+// to the BASE reward exactly as before, so a campaign can never break accrual.
+// ===========================================================================
+
+// Resolve the single BEST-matching ACTIVE campaign for the referred shop and a
+// given audience, or NULL. A match requires: status='active'; NOW within
+// [starts_at, ends_at] treating NULLs as open; the campaign audience is the
+// given audience or 'all'; some target geo matches the shop's town(=city)/
+// village/pincode OR a geo_type='all' row; and there is remaining budget
+// (spent_paise < budget_cap_paise). Ties break by priority DESC, then by most-
+// specific geo (pincode > village > town > all). NEVER throws — any error → NULL.
+async function resolveCampaign(shopId, audience, client) {
+  const run = client && typeof client.query === 'function'
+    ? (text, params) => client.query(text, params)
+    : query;
+  try {
+    if (!shopId) return null;
+    const sh = await run('SELECT city, village, pincode FROM shops WHERE id = $1', [shopId]);
+    if (!sh.rowCount) return null;
+    const { city, village, pincode } = sh.rows[0];
+
+    const r = await run(
+      `SELECT c.id, c.reward_type, c.reward_value, c.budget_cap_paise, c.spent_paise
+         FROM referral_campaigns c
+         JOIN referral_campaign_targets t ON t.campaign_id = c.id
+        WHERE c.status = 'active'
+          AND (c.starts_at IS NULL OR c.starts_at <= NOW())
+          AND (c.ends_at   IS NULL OR c.ends_at   >= NOW())
+          AND (c.audience = 'all' OR c.audience = $1)
+          AND c.spent_paise < c.budget_cap_paise
+          AND (
+                t.geo_type = 'all'
+             OR (t.geo_type = 'town'    AND t.geo_value = $2)
+             OR (t.geo_type = 'village' AND t.geo_value = $3)
+             OR (t.geo_type = 'pincode' AND t.geo_value = $4)
+          )
+        ORDER BY c.priority DESC,
+                 CASE t.geo_type
+                   WHEN 'pincode' THEN 3
+                   WHEN 'village' THEN 2
+                   WHEN 'town'    THEN 1
+                   ELSE 0
+                 END DESC,
+                 c.created_at DESC
+        LIMIT 1`,
+      [audience, city, village, pincode]
+    );
+    return r.rowCount ? r.rows[0] : null;
+  } catch (_e) {
+    // Best-effort: a campaign lookup hiccup must never break accrual.
+    return null;
+  }
+}
+
+// Given the base reward for ONE role and the matched campaign, return the
+// overridden amount AND charge the campaign's pre-funded budget for it, or fall
+// back to the base amount when the budget can't cover it. `role` is the
+// beneficiary role ('referrer'/'referee'/'mitra') used to pick a flat_override
+// value. Returns { amount, campaignId } — campaignId is set ONLY when the
+// campaign actually funded the (overridden) amount, so the reward row records
+// its funding source and spend stays auditable.
+//
+// The budget cap is enforced by an ATOMIC guarded UPDATE:
+//   UPDATE ... SET spent_paise = spent_paise + $final
+//    WHERE id = $id AND spent_paise + $final <= budget_cap_paise
+// so two concurrent accruals can NEVER push spent past the cap — this guard is
+// the zero-burn-against-budget guarantee. If it affects no row (a concurrent
+// accrual raced past the cap) we fall back to the base reward and charge nothing.
+//
+// MUST be called inside the same transaction (client) as the reward insert +
+// settle so the spend and the reward it funds commit atomically.
+async function applyCampaign(campaign, basePaise, role, client) {
+  const run = client && typeof client.query === 'function'
+    ? (text, params) => client.query(text, params)
+    : query;
+  try {
+    const base = Number(basePaise) || 0;
+    if (!campaign || base <= 0) return { amount: base, campaignId: null };
+
+    const rv = campaign.reward_value && typeof campaign.reward_value === 'object'
+      ? campaign.reward_value : {};
+
+    let override;
+    if (campaign.reward_type === 'multiplier') {
+      let x = Number(rv.x);
+      if (!Number.isFinite(x) || x <= 0) return { amount: base, campaignId: null };
+      x = Math.min(x, 10); // clamp to a sane 0 < x <= 10
+      override = Math.floor(base * x);
+    } else if (campaign.reward_type === 'flat_override') {
+      const key = `${role}_paise`;
+      const raw = rv[key];
+      const v = Number(raw);
+      // Fall back to base when the role key is absent / not a positive integer.
+      if (raw == null || !Number.isFinite(v) || v <= 0) return { amount: base, campaignId: null };
+      override = Math.floor(v);
+    } else {
+      return { amount: base, campaignId: null };
+    }
+    if (!(override > 0)) return { amount: base, campaignId: null };
+
+    // ALL-OR-NOTHING against the budget: charge the FULL override, or fall back to
+    // the base reward — never a budget-boundary PARTIAL. A partial (min(override,
+    // remaining)) could pay a referrer LESS than the default base reward when the
+    // remaining budget is smaller than the base, which is a shortchange. Charging
+    // the whole override under the atomic guard means the referrer always gets
+    // either the full boosted reward or exactly the base, and a race can never push
+    // spent past the cap.
+    const upd = await run(
+      `UPDATE referral_campaigns
+          SET spent_paise = spent_paise + $1, updated_at = NOW()
+        WHERE id = $2 AND spent_paise + $1 <= budget_cap_paise
+        RETURNING spent_paise`,
+      [override, campaign.id]
+    );
+    if (!upd.rowCount) return { amount: base, campaignId: null };
+    return { amount: override, campaignId: campaign.id };
+  } catch (_e) {
+    // NEVER throw into accrual — on any error use the base reward exactly as today.
+    return { amount: Number(basePaise) || 0, campaignId: null };
+  }
+}
+
 // Activate a referral on the referred shop's FIRST collection and accrue the
 // double-sided reward. Idempotent and NEVER throws — a failure here must never
 // break (or roll back) a real collection, so every error resolves to
@@ -243,13 +369,25 @@ async function maybeActivateReferral(shopId) {
       const ownerId = sh.rowCount ? sh.rows[0].owner_id : null;
       if (ownerId) {
         const refereeCode = await getOrCreateCodeForUser(ownerId, 'owner');
+        // Batch CAMP1: a seasonal/geo campaign for a shop audience may override
+        // the referee bounty (best-effort; NULL when none matches). The override
+        // + budget charge + insert + settle all run in ONE transaction so the
+        // campaign spend and the reward it funds are atomic.
+        const refereeCampaign = await resolveCampaign(shopId, 'shop');
         try {
           await inTx(null, async (c) => {
+            let amount = rule.referee_paise;
+            let campaignId = null;
+            if (refereeCampaign) {
+              const applied = await applyCampaign(refereeCampaign, rule.referee_paise, 'referee', c);
+              amount = applied.amount;
+              campaignId = applied.campaignId;
+            }
             const ins = await c.query(
-              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
-               VALUES ($1,$2,'referral',$3,'accrued','referee')
+              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role, campaign_id)
+               VALUES ($1,$2,'referral',$3,'accrued','referee',$4)
                RETURNING id, beneficiary_code_id, amount_paise, status`,
-              [referral.id, refereeCode.id, rule.referee_paise]
+              [referral.id, refereeCode.id, amount, campaignId]
             );
             if (autosettle) await settleReward(ins.rows[0], c);
           });
@@ -265,15 +403,26 @@ async function maybeActivateReferral(shopId) {
     if (referringCode) {
       const isMitra = referringCode.is_mitra === true;
       const role = isMitra ? 'mitra' : 'referrer';
-      const amount = isMitra ? rule.mitra_paise : rule.referrer_paise;
-      if (amount > 0) {
+      const baseAmount = isMitra ? rule.mitra_paise : rule.referrer_paise;
+      if (baseAmount > 0) {
+        // Batch CAMP1: a Mitra bounty resolves against the 'mitra' audience; a
+        // peer referrer against the 'shop' audience. Best-effort override + the
+        // atomic budget charge, all inside the insert+settle transaction.
+        const refCampaign = await resolveCampaign(shopId, isMitra ? 'mitra' : 'shop');
         try {
           await inTx(null, async (c) => {
+            let amount = baseAmount;
+            let campaignId = null;
+            if (refCampaign) {
+              const applied = await applyCampaign(refCampaign, baseAmount, role, c);
+              amount = applied.amount;
+              campaignId = applied.campaignId;
+            }
             const ins = await c.query(
-              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role)
-               VALUES ($1,$2,'referral',$3,'accrued',$4)
+              `INSERT INTO referral_rewards (referral_id, beneficiary_code_id, kind, amount_paise, status, beneficiary_role, campaign_id)
+               VALUES ($1,$2,'referral',$3,'accrued',$4,$5)
                RETURNING id, beneficiary_code_id, amount_paise, status`,
-              [referral.id, referringCode.id, amount, role]
+              [referral.id, referringCode.id, amount, role, campaignId]
             );
             if (autosettle) await settleReward(ins.rows[0], c);
           });
@@ -444,6 +593,14 @@ async function accrueInfluencerBounty({ l1Code, amount, poolCap, referral, enrol
 //
 // `client` (optional) is a pg client/transaction to run within; defaults to the
 // pooled query. All money is integer paise; every split is integer floor math.
+//
+// Batch CAMP1 NOTE — seasonal/geo campaign overrides are DEFERRED on this path:
+// they are applied only to the flat-bounty path (maybeActivateReferral) in this
+// batch. Layering a campaign multiplier onto the L1/L2 chain requires splitting
+// the reward into a fee-funded BASE (bounded by poolCap, the enrolment-fee
+// zero-burn cap that must never be weakened) plus a campaign-funded EXTRA charged
+// separately to the campaign budget — intricate enough to warrant its own batch.
+// The enrolment-fee poolCap invariant below is therefore untouched here.
 async function accrueEnrolmentChainRewards(shopId, enrolmentId, client) {
   const run = client && typeof client.query === 'function'
     ? (text, params) => client.query(text, params)
@@ -625,4 +782,6 @@ module.exports = {
   settleReward,
   settleAllAccrued,
   getAutosettle,
+  resolveCampaign,
+  applyCampaign,
 };

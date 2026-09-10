@@ -12,6 +12,7 @@ const dashboardCtrl = require('../controllers/dashboard.controller');
 const distributorCtrl = require('../controllers/distributor.controller');
 const analyticsCtrl = require('../controllers/admin-analytics.controller');
 const adsCtrl = require('../controllers/ads.controller');
+const refCampaignCtrl = require('../controllers/referral-campaigns.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -111,6 +112,37 @@ const adStatusSchema = Joi.object({
   status: Joi.string().valid('draft', 'active', 'paused').required(),
 });
 
+// Seasonal + geo referral campaigns (CAMP1). A campaign carries geo targets
+// (town(=shop.city)/village/pincode, or 'all'); its budget must be > 0 (uncapped
+// is not allowed). reward_value's SHAPE is validated per reward_type in the
+// controller (needs the enum + budget together); here we validate shape/enums.
+const refCampaignTargetSchema = Joi.object({
+  geo_type: Joi.string().valid('town', 'village', 'pincode', 'all').required(),
+  geo_value: Joi.string().trim().max(120).when('geo_type', {
+    is: 'all',
+    then: Joi.optional().allow(null, ''),
+    otherwise: Joi.required(),
+  }),
+});
+
+const refCampaignSchema = Joi.object({
+  name: Joi.string().max(200).required(),
+  status: Joi.string().valid('draft', 'active', 'paused', 'ended').default('draft'),
+  audience: Joi.string().valid('all', 'shop', 'mitra', 'influencer', 'consumer').default('all'),
+  reward_type: Joi.string().valid('multiplier', 'flat_override').required(),
+  reward_value: Joi.object().default({}),
+  budget_cap_paise: Joi.number().integer().min(1).max(100000000000).required(),
+  starts_at: Joi.date().iso().allow(null),
+  ends_at: Joi.date().iso().allow(null),
+  is_seasonal: Joi.boolean().default(false),
+  priority: Joi.number().integer().min(0).max(1000000).default(0),
+  targets: Joi.array().items(refCampaignTargetSchema).min(1).required(),
+});
+
+const refCampaignStatusSchema = Joi.object({
+  status: Joi.string().valid('draft', 'active', 'paused', 'ended').required(),
+});
+
 // auth guarantees role='admin'; loadAdminRole resolves the admin SUB-role onto
 // req.adminRole for requirePerm() and the controllers.
 router.use(auth('admin'));
@@ -176,6 +208,18 @@ router.patch('/referral-codes/:id', requirePerm('settings:manage'), validate(set
 router.get('/referral/economics', requirePerm('revenue:view'), asyncHandler(referralCtrl.economics));
 router.patch('/referral/codes/:id', requirePerm('settings:manage'), validate(patchCodeSchema), asyncHandler(referralCtrl.patchCode));
 router.post('/referral/settle', requirePerm('settings:manage'), asyncHandler(referralCtrl.settlePending));
+
+// Seasonal + geo referral campaigns (CAMP1). Reward overrides for a window +
+// place + audience, hard-capped by a pre-funded budget. Same referral-admin
+// permissions as above: reads with revenue:view, writes with settings:manage.
+// The geo-options route is registered BEFORE /:id so it is not captured as an id.
+router.get('/referral/campaigns', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.list));
+router.get('/referral/campaigns-geo-options', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.geoOptions));
+router.get('/referral/campaigns/:id', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.getOne));
+router.post('/referral/campaigns', requirePerm('settings:manage'), validate(refCampaignSchema), asyncHandler(refCampaignCtrl.create));
+router.put('/referral/campaigns/:id', requirePerm('settings:manage'), validate(refCampaignSchema), asyncHandler(refCampaignCtrl.update));
+router.patch('/referral/campaigns/:id/status', requirePerm('settings:manage'), validate(refCampaignStatusSchema), asyncHandler(refCampaignCtrl.setStatus));
+router.delete('/referral/campaigns/:id', requirePerm('settings:manage'), asyncHandler(refCampaignCtrl.remove));
 
 // Role-based CSV exports. Each is gated by the permission for the data it emits,
 // so a caller only downloads what their admin sub-role is allowed to see.
