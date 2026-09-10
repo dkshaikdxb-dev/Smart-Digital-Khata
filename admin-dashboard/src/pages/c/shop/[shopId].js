@@ -249,7 +249,37 @@ export default function ShopCatalog() {
       {loading && <div className="card">{t('c.loadingCatalog')}</div>}
 
       {shop && (
-        <div className="card">
+        // Branded Store (batch STORE1): while premium is active the storefront
+        // header takes the shop's accent colour (a top tint), shows a small
+        // "Premium" badge, and a tagline under the shop name. Not branded -> the
+        // header renders exactly as before. Kept 2G-light: pure CSS tint + text,
+        // no extra assets. `brand_accent` is a server-validated #RRGGBB, only ever
+        // sent while branded, so it is safe to use as a style value.
+        <div
+          className="card"
+          style={shop.is_branded && shop.brand_accent
+            ? { borderTop: `4px solid ${shop.brand_accent}` }
+            : undefined}
+        >
+          {shop.is_branded && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+              <span style={{ fontWeight: 600 }}>{shop.name}</span>
+              <span
+                style={{
+                  background: shop.brand_accent || 'var(--accent, #0a7e4f)',
+                  color: '#fff', borderRadius: 999, padding: '2px 10px',
+                  fontSize: 12, fontWeight: 700, letterSpacing: 0.2,
+                }}
+              >
+                ✨ {t('brand.badge')}
+              </span>
+            </div>
+          )}
+          {shop.is_branded && shop.brand_tagline && (
+            <div style={{ color: shop.brand_accent || 'var(--accent, #0a7e4f)', fontWeight: 500, marginBottom: 8 }}>
+              {shop.brand_tagline}
+            </div>
+          )}
           {/* Shop cover (batch IMG1): shown when the owner has uploaded one;
               absent -> the header renders exactly as before. Already <=400KB
               WebP, so lazy-load and let it scale to the card width. */}

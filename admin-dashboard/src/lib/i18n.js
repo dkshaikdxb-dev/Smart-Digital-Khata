@@ -7714,6 +7714,72 @@ for (const code of Object.keys(PROMO)) {
   Object.assign(DICT[code], PROMO[code]);
 }
 
+// Owner "Branded Store" premium strings (batch STORE1). A shop spends Khata
+// Credits to unlock a time-boxed premium storefront theme (accent + tagline +
+// "Premium" badge) and a promo-priority bump. en + hi authored; ta/te/kn/ml/ur
+// fall back to English. Money is framed as Khata Credits, never cash. Merged into
+// DICT like the blocks above.
+const BRAND_EN = {
+  'brand.title': 'Branded Store',
+  'brand.subtitle': 'Spend your Khata Credits to give your storefront a premium look — your own accent colour, a tagline, a "Premium" badge, and a small boost for your promos. Time-boxed and extendable.',
+  'brand.statusActive': 'Premium active until {date}',
+  'brand.statusInactive': 'Not active',
+  'brand.balanceLabel': 'Your Khata Credits',
+  'brand.disabledNote': 'Branded Store is not available right now. Please check back later.',
+  'brand.days': 'How many days',
+  'brand.perDay': '{amount} / day',
+  'brand.costLabel': 'Cost',
+  'brand.activate': 'Activate for {amount}',
+  'brand.extend': 'Extend for {amount}',
+  'brand.activating': 'Activating…',
+  'brand.lowBalance': 'Not enough Khata Credits for this. Reduce the days or earn more credits.',
+  'brand.activated': 'Premium is live. Your storefront theme is now showing.',
+  'brand.errGeneric': 'Could not do that right now. Please try again.',
+  'brand.themeTitle': 'Your storefront theme',
+  'brand.themeNote': 'Your accent colour and tagline show on your storefront while premium is active. You can set them anytime.',
+  'brand.accentLabel': 'Accent colour',
+  'brand.taglineLabel': 'Tagline (optional)',
+  'brand.taglinePlaceholder': 'e.g. Your neighbourhood favourite',
+  'brand.save': 'Save theme',
+  'brand.saving': 'Saving…',
+  'brand.saved': 'Theme saved.',
+  'brand.badge': 'Premium',
+};
+const BRAND_HI = {
+  'brand.title': 'ब्रांडेड स्टोर',
+  'brand.subtitle': 'अपने खाता क्रेडिट खर्च करके अपने स्टोरफ़्रंट को प्रीमियम लुक दें — अपना एक्सेंट रंग, एक टैगलाइन, "प्रीमियम" बैज, और आपके प्रचार को थोड़ा बढ़ावा। समय-सीमित और बढ़ाने योग्य।',
+  'brand.statusActive': 'प्रीमियम {date} तक सक्रिय',
+  'brand.statusInactive': 'सक्रिय नहीं',
+  'brand.balanceLabel': 'आपके खाता क्रेडिट',
+  'brand.disabledNote': 'अभी ब्रांडेड स्टोर उपलब्ध नहीं है। कृपया बाद में देखें।',
+  'brand.days': 'कितने दिन',
+  'brand.perDay': '{amount} / दिन',
+  'brand.costLabel': 'लागत',
+  'brand.activate': '{amount} में सक्रिय करें',
+  'brand.extend': '{amount} में बढ़ाएँ',
+  'brand.activating': 'सक्रिय किया जा रहा है…',
+  'brand.lowBalance': 'इसके लिए पर्याप्त खाता क्रेडिट नहीं हैं। दिन कम करें या और क्रेडिट कमाएँ।',
+  'brand.activated': 'प्रीमियम लाइव है। आपका स्टोरफ़्रंट थीम अब दिख रहा है।',
+  'brand.errGeneric': 'अभी यह नहीं हो सका। कृपया फिर से प्रयास करें।',
+  'brand.themeTitle': 'आपका स्टोरफ़्रंट थीम',
+  'brand.themeNote': 'प्रीमियम सक्रिय रहने तक आपका एक्सेंट रंग और टैगलाइन आपके स्टोरफ़्रंट पर दिखते हैं। आप इन्हें कभी भी सेट कर सकते हैं।',
+  'brand.accentLabel': 'एक्सेंट रंग',
+  'brand.taglineLabel': 'टैगलाइन (वैकल्पिक)',
+  'brand.taglinePlaceholder': 'जैसे आपके मोहल्ले की पसंदीदा दुकान',
+  'brand.save': 'थीम सहेजें',
+  'brand.saving': 'सहेजा जा रहा है…',
+  'brand.saved': 'थीम सहेजा गया।',
+  'brand.badge': 'प्रीमियम',
+};
+const BRAND = {
+  en: BRAND_EN, hi: BRAND_HI,
+  ta: BRAND_EN, te: BRAND_EN, kn: BRAND_EN, ml: BRAND_EN, ur: BRAND_EN,
+};
+for (const code of Object.keys(BRAND)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], BRAND[code]);
+}
+
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
 // the other languages' wording here, so strip it from their strings — English
 // keeps it and receives 's'/'' at call time; every other language ignores the
