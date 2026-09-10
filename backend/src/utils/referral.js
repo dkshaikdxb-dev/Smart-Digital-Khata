@@ -185,6 +185,30 @@ async function maybeActivateReferral(shopId) {
     if (!claim.rowCount) return { activated: false };
     const referral = claim.rows[0];
 
+    // Zero-burn REPLACES the flat bounty (Batch R2): when the enrolment-fee
+    // feature is ON and this shop has already PAID its fee, the fee itself has
+    // funded the L1/L2 chain (see accrueEnrolmentChainRewards), so we must NOT
+    // also fire the platform-funded flat bounty for it. Activation is still real
+    // (activated_at was just stamped above); we simply insert no flat reward rows.
+    // Cheap + defensive: any lookup failure falls through to the normal bounty
+    // path so a shop is never silently denied its legacy bounty. The require is
+    // lazy to avoid a circular require between referral.js and enrolment.js.
+    try {
+      const { getEnrolmentConfig } = require('./enrolment');
+      const feeCfg = await getEnrolmentConfig();
+      if (feeCfg && feeCfg.enabled) {
+        const paid = await query(
+          `SELECT 1 FROM enrolments WHERE shop_id = $1 AND status = 'paid' LIMIT 1`,
+          [shopId]
+        );
+        if (paid.rowCount) {
+          return { activated: true, rewarded: false, reason: 'fee_funded' };
+        }
+      }
+    } catch (_e) {
+      // Fall through to the existing flat-bounty path — never throw, never skip.
+    }
+
     const rule = await getRewardRule();
     if (!rule.enabled) return { activated: true, rewarded: false };
 
@@ -237,6 +261,176 @@ async function maybeActivateReferral(shopId) {
   }
 }
 
+// A peer referrer is a real shop principal (owner/staff) sharing their own code,
+// NOT a mitra/influencer/customer/other. Only peers earn the fee-funded %-chain
+// reward; non-peer bounties (mitra now, influencer in R3) are handled elsewhere.
+function isPeerCode(code) {
+  return !!code && (code.owner_type === 'owner' || code.owner_type === 'staff') && code.is_mitra !== true;
+}
+
+// Fee-funded 2-level chain accrual (Batch R2). Called by enrolment.onEnrolmentPaid
+// exactly once, right after an enrolment transitions pending -> paid. Splits the
+// fee JUST COLLECTED across the referral chain — the direct referrer (L1) and the
+// referrer's referrer (L2) — so the platform never advances its own capital
+// (zero burn). Everything is drawn from this one fee and capped at the pool.
+//
+// Best-effort and NEVER throws: a payment confirm must not fail because accrual
+// hiccuped, so every problem resolves to { accrued:false, reason }.
+//
+// `client` (optional) is a pg client/transaction to run within; defaults to the
+// pooled query. All money is integer paise; every split is integer floor math.
+async function accrueEnrolmentChainRewards(shopId, enrolmentId, client) {
+  const run = client && typeof client.query === 'function'
+    ? (text, params) => client.query(text, params)
+    : query;
+  try {
+    if (!shopId || !enrolmentId) return { accrued: false, reason: 'bad_args' };
+
+    // 1) Idempotency guard: one paid enrolment funds at most ONE set of chain
+    //    rewards. A re-run / retried confirm must never double-accrue.
+    const dup = await run(
+      `SELECT 1 FROM referral_rewards WHERE source_enrolment_id = $1 LIMIT 1`,
+      [enrolmentId]
+    );
+    if (dup.rowCount) return { accrued: false, reason: 'already_accrued' };
+
+    // 2) Load the enrolment; it must be paid. Read the split snapshot captured
+    //    at payment time so later rate changes never retro-alter what was owed.
+    const er = await run(
+      `SELECT shop_id, status, amount_paise, split_l1_pct, split_l2_pct
+         FROM enrolments WHERE id = $1`,
+      [enrolmentId]
+    );
+    if (!er.rowCount) return { accrued: false, reason: 'enrolment_not_found' };
+    const enrol = er.rows[0];
+    if (enrol.status !== 'paid') return { accrued: false, reason: 'not_paid' };
+
+    const amount = Number(enrol.amount_paise);
+    if (!Number.isFinite(amount) || amount <= 0) return { accrued: false, reason: 'no_amount' };
+
+    // Split snapshot is the source of truth; fall back to LIVE config only when a
+    // snapshot column is null. Lazy require avoids a circular require w/ enrolment.js.
+    let l1Pct = enrol.split_l1_pct;
+    let l2Pct = enrol.split_l2_pct;
+    if (l1Pct == null || l2Pct == null) {
+      const { getEnrolmentConfig } = require('./enrolment');
+      const cfg = await getEnrolmentConfig();
+      if (l1Pct == null) l1Pct = cfg.split.l1_pct;
+      if (l2Pct == null) l2Pct = cfg.split.l2_pct;
+    }
+    l1Pct = Number(l1Pct) || 0;
+    l2Pct = Number(l2Pct) || 0;
+
+    // The pool: the total the referral chain may draw from this fee. Nothing
+    // accrued may ever exceed it (zero-burn cap).
+    const poolCap = Math.floor((amount * (l1Pct + l2Pct)) / 100);
+
+    // 3) This shop's attribution. No row → organic/seeded shop: infra + the
+    //    unspent pool simply stay with the platform. Still zero burn.
+    const ref = await run(
+      `SELECT id, referral_code_id FROM referrals
+         WHERE referred_shop_id = $1 ORDER BY created_at ASC LIMIT 1`,
+      [shopId]
+    );
+    if (!ref.rowCount) return { accrued: false, reason: 'no_referrer' };
+    const referral = ref.rows[0];
+
+    // 4) L1 = the referring code. Chain %-rewards apply only to a PEER referrer.
+    let l1Code = null;
+    if (referral.referral_code_id) {
+      const cr = await run(
+        `SELECT id, owner_type, owner_user_id, is_mitra FROM referral_codes WHERE id = $1`,
+        [referral.referral_code_id]
+      );
+      l1Code = cr.rowCount ? cr.rows[0] : null;
+    }
+    if (!isPeerCode(l1Code)) {
+      // Non-peer (mitra/influencer/customer/other) or a deleted code: no %-chain
+      // reward here — their flat bounty is handled elsewhere (R3 owns influencers).
+      return { accrued: false, reason: 'non_peer_referrer' };
+    }
+
+    let l1Amount = Math.floor((amount * l1Pct) / 100);
+
+    // 5) L2 = the grandparent: the L1 referrer's OWN attribution. Resolve the L1
+    //    code's owner shop (a peer code is owned by a users.id → shops.owner_id),
+    //    then look up who referred THAT shop. Only a peer grandparent earns L2.
+    let l2Amount = 0;
+    let l2Code = null;
+    try {
+      if (l1Code.owner_user_id) {
+        const os = await run(
+          `SELECT id FROM shops WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1`,
+          [l1Code.owner_user_id]
+        );
+        if (os.rowCount) {
+          const gpRef = await run(
+            `SELECT referral_code_id FROM referrals
+               WHERE referred_shop_id = $1 ORDER BY created_at ASC LIMIT 1`,
+            [os.rows[0].id]
+          );
+          if (gpRef.rowCount && gpRef.rows[0].referral_code_id) {
+            const gc = await run(
+              `SELECT id, owner_type, is_mitra FROM referral_codes WHERE id = $1`,
+              [gpRef.rows[0].referral_code_id]
+            );
+            if (gc.rowCount && isPeerCode(gc.rows[0])) {
+              l2Code = gc.rows[0];
+              l2Amount = Math.floor((amount * l2Pct) / 100);
+            }
+          }
+        }
+      }
+    } catch (_gp) {
+      // Grandparent resolution is best-effort: a hiccup here just means no L2.
+      l2Code = null;
+      l2Amount = 0;
+    }
+
+    // 6) Zero-burn assertion (defensive): l1 + l2 <= poolCap by construction. If a
+    //    mis-set split ever made it exceed, clamp — trim L2 first, then L1 — so we
+    //    NEVER accrue more than the pool the fee actually funds.
+    if (l1Amount + l2Amount > poolCap) {
+      const room = Math.max(poolCap, 0);
+      const l1Clamped = Math.min(l1Amount, room);
+      const l2Clamped = Math.max(Math.min(l2Amount, room - l1Clamped), 0);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[referral] chain accrual clamped to pool cap: l1=${l1Amount}->${l1Clamped} ` +
+        `l2=${l2Amount}->${l2Clamped} poolCap=${poolCap} enrolment=${enrolmentId}`
+      );
+      l1Amount = l1Clamped;
+      l2Amount = l2Clamped;
+    }
+
+    // Insert the chain reward rows (skip any non-positive amount). Keyed by
+    // source_enrolment_id / level, which the guard above enforces as unique.
+    if (l1Amount > 0) {
+      await run(
+        `INSERT INTO referral_rewards
+           (referral_id, beneficiary_code_id, kind, amount_paise, status,
+            beneficiary_role, level, source_enrolment_id, source_shop_id)
+         VALUES ($1,$2,'referral',$3,'accrued','chain_l1',1,$4,$5)`,
+        [referral.id, l1Code.id, l1Amount, enrolmentId, shopId]
+      );
+    }
+    if (l2Code && l2Amount > 0) {
+      await run(
+        `INSERT INTO referral_rewards
+           (referral_id, beneficiary_code_id, kind, amount_paise, status,
+            beneficiary_role, level, source_enrolment_id, source_shop_id)
+         VALUES ($1,$2,'referral',$3,'accrued','chain_l2',2,$4,$5)`,
+        [null, l2Code.id, l2Amount, enrolmentId, shopId]
+      );
+    }
+
+    return { accrued: true, l1_amount: l1Amount, l2_amount: l2Amount, poolCap };
+  } catch (e) {
+    // A payment confirm must never fail because accrual hiccuped.
+    return { accrued: false, reason: 'error', error: e.message };
+  }
+}
+
 module.exports = {
   ALPHABET,
   genCode,
@@ -246,4 +440,5 @@ module.exports = {
   getRewardRule,
   captureReferral,
   maybeActivateReferral,
+  accrueEnrolmentChainRewards,
 };
