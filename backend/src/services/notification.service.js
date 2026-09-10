@@ -62,6 +62,13 @@ async function onTransaction(shopId, customer, tx) {
 async function sendReminder(shopId, customer) {
   try {
     if (customer.notifications_enabled === false) return;
+    // Never dun a customer with no dues. A balance <= 0 means the khata is settled
+    // or the customer is in ADVANCE (a negative balance = a single-merchant pre-pay,
+    // batch WALLET1); a "please pay your outstanding ₹-50" reminder would be wrong.
+    // The automated daily-reminder enqueue and the outstanding broadcast already
+    // filter `balance > 0`; this is the last-line guard so the manual per-customer
+    // remind path can never dun an advance/settled customer either.
+    if (Number(customer.balance) <= 0) return;
     const shopRes = await query('SELECT name FROM shops WHERE id=$1', [shopId]);
     if (!shopRes.rowCount) return;
     const { name: shopName } = shopRes.rows[0];
@@ -123,7 +130,11 @@ async function sendOwnerDigest(shopId) {
         [shopId]
       ),
       query(
-        `SELECT COALESCE(SUM(balance),0) AS total,
+        // "Total outstanding" is a RECEIVABLES figure: sum only positive balances,
+        // matching the debtor COUNT filter. A customer in advance (negative balance
+        // = a single-merchant pre-pay, batch WALLET1) must never net down the
+        // receivables owed by other customers.
+        `SELECT COALESCE(SUM(balance) FILTER (WHERE balance > 0),0) AS total,
                 COUNT(*) FILTER (WHERE balance > 0) AS debtors
          FROM customers WHERE shop_id = $1 AND status='active'`,
         [shopId]
