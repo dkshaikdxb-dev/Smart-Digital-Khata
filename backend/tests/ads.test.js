@@ -146,6 +146,43 @@ describe('validation', () => {
   });
 });
 
+describe('CSV export', () => {
+  test('marketing (ads:view) downloads text/csv with the header row and a row incl. a computed ctr', async () => {
+    const created = await auth(request(app).post('/api/admin/ads'), admins.marketing.token)
+      .send({
+        style: 'offer', title: 'CTR export test', advertiser: 'Acme',
+        targets: [{ geo_type: 'town', geo_value: 'Pune' }, { geo_type: 'all' }],
+      });
+    expect(created.status).toBe(201);
+    const id = created.body.campaign.id;
+    // Seed impressions/clicks so the export computes a non-zero CTR (5/20 = 25.0).
+    await pool.query('UPDATE ad_campaigns SET impressions = 20, clicks = 5 WHERE id = $1', [id]);
+
+    const res = await auth(request(app).get('/api/admin/ads/export.csv'), admins.marketing.token);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/text\/csv/);
+    expect(res.headers['content-disposition']).toMatch(/campaigns\.csv/);
+    const lines = res.text.split('\r\n');
+    expect(lines[0]).toBe(
+      'id,title,advertiser,style,status,targets,starts_at,ends_at,priority,impressions,clicks,ctr_percent,created_at'
+    );
+    const row = lines.find((l) => l.startsWith(id));
+    expect(row).toBeTruthy();
+    // targets space-joined (town:Pune + the everywhere 'all' row), then the
+    // seeded impressions/clicks and their computed ctr_percent.
+    expect(row).toContain('town:Pune');
+    expect(row).toContain('all');
+    expect(row).toContain(',20,5,25,');
+
+    await auth(request(app).delete(`/api/admin/ads/${id}`), admins.marketing.token);
+  });
+
+  test('a support admin (no ads:view) is refused with 403', async () => {
+    const res = await auth(request(app).get('/api/admin/ads/export.csv'), admins.support.token);
+    expect(res.status).toBe(403);
+  });
+});
+
 describe('marketing CRUD lifecycle', () => {
   let campaignId;
 
