@@ -269,25 +269,22 @@ async function applyCampaign(campaign, basePaise, role, client) {
     }
     if (!(override > 0)) return { amount: base, campaignId: null };
 
-    const cap = Number(campaign.budget_cap_paise) || 0;
-    const spent = Number(campaign.spent_paise) || 0;
-    const remaining = cap - spent;
-    const final = Math.min(override, remaining);
-    // Budget exhausted (or misconfigured) → base reward, and do NOT touch spent.
-    if (!(final > 0)) return { amount: base, campaignId: null };
-
-    // Atomic budget guard: only charge (and thus override) when spent + final
-    // still fits under the cap. A race that already consumed the budget affects
-    // no row → fall back to base.
+    // ALL-OR-NOTHING against the budget: charge the FULL override, or fall back to
+    // the base reward — never a budget-boundary PARTIAL. A partial (min(override,
+    // remaining)) could pay a referrer LESS than the default base reward when the
+    // remaining budget is smaller than the base, which is a shortchange. Charging
+    // the whole override under the atomic guard means the referrer always gets
+    // either the full boosted reward or exactly the base, and a race can never push
+    // spent past the cap.
     const upd = await run(
       `UPDATE referral_campaigns
           SET spent_paise = spent_paise + $1, updated_at = NOW()
         WHERE id = $2 AND spent_paise + $1 <= budget_cap_paise
         RETURNING spent_paise`,
-      [final, campaign.id]
+      [override, campaign.id]
     );
     if (!upd.rowCount) return { amount: base, campaignId: null };
-    return { amount: final, campaignId: campaign.id };
+    return { amount: override, campaignId: campaign.id };
   } catch (_e) {
     // NEVER throw into accrual — on any error use the base reward exactly as today.
     return { amount: Number(basePaise) || 0, campaignId: null };

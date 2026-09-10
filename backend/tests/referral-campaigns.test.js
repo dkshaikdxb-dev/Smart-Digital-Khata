@@ -305,28 +305,29 @@ describe('resolveCampaign + applyCampaign (matching + atomic budget guard)', () 
     expect(await campaignSpent(campId)).toBe(20000);
   });
 
-  it('applyCampaign clamps a wild multiplier to x<=10 and never overspends the guard', async () => {
-    // Direct unit-style check of the atomic guard: base 3000, x=50 -> clamped to
-    // 10 -> override 30000, but budget only 5000 -> final=min(30000,5000)=5000,
-    // guard charges 5000, spent=5000 (never exceeds cap).
+  it('applyCampaign clamps a wild multiplier to x<=10 and charges all-or-nothing', async () => {
+    // base 3000, x=50 -> clamped to 10 -> override 30000. Budget is exactly 30000,
+    // so the FULL override fits and is charged (proving the clamp: an unclamped x=50
+    // would be 150000 > budget -> base fallback; getting 30000 proves clamp to 10).
     const campId = await makeCampaign({
       name: 'Wild multiplier',
       reward_value: { x: 50 },
-      budget_cap_paise: 5000,
+      budget_cap_paise: 30000,
       targets: [{ geo_type: 'all' }],
     });
     const camp = await pool.query('SELECT id, reward_type, reward_value, budget_cap_paise, spent_paise FROM referral_campaigns WHERE id = $1', [campId]);
     const applied = await referral.applyCampaign(camp.rows[0], 3000, 'referee');
-    expect(applied.amount).toBe(5000); // min(clamped 30000, remaining 5000)
+    expect(applied.amount).toBe(30000); // full clamped override, all-or-nothing
     expect(applied.campaignId).toBe(campId);
-    expect(await campaignSpent(campId)).toBe(5000);
+    expect(await campaignSpent(campId)).toBe(30000);
 
-    // A second apply finds no remaining budget -> base, no charge.
+    // A second apply: remaining budget (0) cannot fund the full override -> base,
+    // NO partial (never pays below base), no charge. spent stays under the cap.
     const camp2 = await pool.query('SELECT id, reward_type, reward_value, budget_cap_paise, spent_paise FROM referral_campaigns WHERE id = $1', [campId]);
     const applied2 = await referral.applyCampaign(camp2.rows[0], 3000, 'referee');
-    expect(applied2.amount).toBe(3000); // base
+    expect(applied2.amount).toBe(3000); // base — never a boundary partial
     expect(applied2.campaignId).toBeNull();
-    expect(await campaignSpent(campId)).toBe(5000); // unchanged, never exceeds budget
+    expect(await campaignSpent(campId)).toBe(30000); // unchanged, never exceeds budget
   });
 });
 
