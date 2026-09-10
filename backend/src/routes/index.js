@@ -22,6 +22,7 @@ router.use('/families', require('./family.routes'));
 router.use('/transactions', require('./transaction.routes'));
 router.use('/payments', require('./payment.routes'));
 router.use('/subscriptions', require('./subscription.routes'));
+router.use('/enrolment', require('./enrolment.routes'));
 router.use('/summaries', require('./summary.routes'));
 router.use('/reports', require('./report.routes'));
 router.use('/analytics', require('./analytics.routes'));
