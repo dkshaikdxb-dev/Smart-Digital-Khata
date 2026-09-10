@@ -275,9 +275,11 @@ describe('activation-triggered double-sided rewards', () => {
     const row = await pool.query('SELECT activated_at FROM referrals WHERE referred_shop_id = $1', [shopB]);
     expect(row.rows[0].activated_at).not.toBeNull();
 
-    // Exactly one referrer (5000) reward to A, and one referee (3000) to B's own code.
+    // Exactly one referrer (5000) reward to A, and one referee (3000) to B's own
+    // code. Batch R3 settles rewards into the wallet in real time, so the row is
+    // now 'settled' rather than 'accrued' (either counts as earned here).
     const refReward = await pool.query(
-      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referrer' AND status = 'accrued'",
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referrer' AND status IN ('accrued','settled')",
       [codeIdA]
     );
     expect(refReward.rowCount).toBe(1);
@@ -285,7 +287,7 @@ describe('activation-triggered double-sided rewards', () => {
 
     const codeIdB = (await pool.query('SELECT id FROM referral_codes WHERE owner_user_id = $1', [ownerB])).rows[0].id;
     const refereeReward = await pool.query(
-      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status = 'accrued'",
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status IN ('accrued','settled')",
       [codeIdB]
     );
     expect(refereeReward.rowCount).toBe(1);
@@ -396,9 +398,10 @@ describe('activation-triggered double-sided rewards', () => {
     expect(res.activated).toBe(true);
     expect(res.rewarded).toBe(true);
 
-    // A 'mitra' bounty (7000) to the Mitra code — and NO 'referrer' row.
+    // A 'mitra' bounty (7000) to the Mitra code — and NO 'referrer' row. R3
+    // settles the bounty into the wallet in real time, so the row is 'settled'.
     const mitraReward = await pool.query(
-      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'mitra' AND status = 'accrued'",
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'mitra' AND status IN ('accrued','settled')",
       [mitraCodeId]
     );
     expect(mitraReward.rowCount).toBe(1);
@@ -412,7 +415,7 @@ describe('activation-triggered double-sided rewards', () => {
     // The referee (N) still gets theirs.
     const codeIdN = (await pool.query('SELECT id FROM referral_codes WHERE owner_user_id = $1', [ownerN])).rows[0].id;
     const refereeReward = await pool.query(
-      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status = 'accrued'",
+      "SELECT amount_paise FROM referral_rewards WHERE beneficiary_code_id = $1 AND beneficiary_role = 'referee' AND status IN ('accrued','settled')",
       [codeIdN]
     );
     expect(refereeReward.rowCount).toBe(1);

@@ -64,6 +64,15 @@ const setMitraSchema = Joi.object({
   is_mitra: Joi.boolean().required(),
 });
 
+// Batch R3: configure a referral code — label, mitra flag, and the influencer
+// flat bounty + budget cap (integer paise >= 0; budget nullable = uncapped).
+const patchCodeSchema = Joi.object({
+  label: Joi.string().max(120).allow('', null),
+  is_mitra: Joi.boolean(),
+  flat_bounty_paise: Joi.number().integer().min(0).max(100000000).allow(null),
+  budget_cap_paise: Joi.number().integer().min(0).max(100000000000).allow(null),
+}).min(1);
+
 // Geo-targeted promo campaigns (ADS2). A campaign carries its geo targets; a
 // target is a town(=shop.city)/village/pincode value, or 'all' (everyone, one
 // row, geo_value null). link_* consistency + reference existence are checked in
@@ -160,6 +169,13 @@ router.get('/referrals/reward-rule', requirePerm('revenue:view'), asyncHandler(r
 router.patch('/referrals/reward-rule', requirePerm('settings:manage'), validate(rewardRuleSchema), asyncHandler(referralCtrl.setRewardRule));
 router.post('/referral-codes', requirePerm('settings:manage'), validate(createCodeSchema), asyncHandler(referralCtrl.createReferralCode));
 router.patch('/referral-codes/:id', requirePerm('settings:manage'), validate(setMitraSchema), asyncHandler(referralCtrl.setMitra));
+
+// Batch R3 — Khata Credits admin. Economics reuses the referral read permission
+// (revenue:view, like the referral overview); code config + manual settle reuse
+// the referral write permission (settings:manage, like reward-rule / code mgmt).
+router.get('/referral/economics', requirePerm('revenue:view'), asyncHandler(referralCtrl.economics));
+router.patch('/referral/codes/:id', requirePerm('settings:manage'), validate(patchCodeSchema), asyncHandler(referralCtrl.patchCode));
+router.post('/referral/settle', requirePerm('settings:manage'), asyncHandler(referralCtrl.settlePending));
 
 // Role-based CSV exports. Each is gated by the permission for the data it emits,
 // so a caller only downloads what their admin sub-role is allowed to see.

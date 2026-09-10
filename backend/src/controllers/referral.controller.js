@@ -6,7 +6,9 @@ const {
   getOrCreateCodeForCustomer,
   createUniqueCode,
   getRewardRule,
+  settleAllAccrued,
 } = require('../utils/referral');
+const { getOrCreateWallet } = require('../utils/wallet');
 
 // Referrals API (Phase D). Participant endpoints (owner/staff under /api/me,
 // consumer under /api/customer-auth) expose the caller's own code + link, who
@@ -117,12 +119,15 @@ async function referralPayload(req, codeRow, principal) {
   const path = linkPathFor(codeRow);
   const referred = await referredList(codeRow.id);
   const referred_by = await referredByFor(principal);
-  // Accrued balance this code has earned (referrer + referee + mitra rewards),
-  // and how many of its referrals have activated (recorded a first collection).
+  // Total credit this code has earned (referrer + referee + mitra + chain +
+  // influencer rewards), and how many of its referrals have activated (recorded a
+  // first collection). Batch R3: rewards now settle into the wallet in real time,
+  // so "earned" spans BOTH still-accrued and already-settled rows — the value is
+  // the same whether or not it has landed in the wallet yet.
   const [accrued, activated] = await Promise.all([
     query(
       `SELECT COALESCE(SUM(amount_paise),0)::bigint AS s
-       FROM referral_rewards WHERE beneficiary_code_id = $1 AND status = 'accrued'`,
+       FROM referral_rewards WHERE beneficiary_code_id = $1 AND status IN ('accrued','settled')`,
       [codeRow.id]
     ),
     query(
@@ -245,7 +250,7 @@ exports.overview = async (_req, res) => {
        LIMIT 20`
     ),
     query('SELECT COUNT(*)::int AS total_referrals FROM referrals'),
-    query("SELECT COALESCE(SUM(amount_paise),0)::bigint AS s, COUNT(*)::int AS c FROM referral_rewards WHERE status = 'accrued'"),
+    query("SELECT COALESCE(SUM(amount_paise),0)::bigint AS s, COUNT(*)::int AS c FROM referral_rewards WHERE status IN ('accrued','settled')"),
     // Acquisition funnel: everyone captured vs those who activated (first collection).
     query(
       `SELECT COUNT(*)::int AS captured,
@@ -261,7 +266,7 @@ exports.overview = async (_req, res) => {
               COALESCE((SELECT SUM(rr.amount_paise) FROM referral_rewards rr
                         WHERE rr.beneficiary_code_id = rc.id
                           AND rr.beneficiary_role = 'mitra'
-                          AND rr.status = 'accrued'), 0)::bigint AS bounty_accrued_paise
+                          AND rr.status IN ('accrued','settled')), 0)::bigint AS bounty_accrued_paise
        FROM referral_codes rc
        LEFT JOIN referrals r ON r.referral_code_id = rc.id
        WHERE rc.is_mitra = true
@@ -368,4 +373,164 @@ exports.setMitra = async (req, res) => {
   );
   if (!r.rowCount) throw ApiError.notFound('Referral code not found');
   res.json({ referral_code: r.rows[0] });
+};
+
+// ===========================================================================
+// Batch R3 — Khata Credits: owner wallet + earnings, admin economics + config
+// ===========================================================================
+
+// Shape a ledger row for the API (Khata Credits framing; amounts are paise).
+function ledgerView(row) {
+  return {
+    direction: row.direction,
+    amount_paise: Number(row.amount_paise),
+    kind: row.kind,
+    ref_note: row.ref_note,
+    balance_after_paise: Number(row.balance_after_paise),
+    created_at: row.created_at,
+  };
+}
+
+// GET /api/referral/wallet — the caller's shop Khata Credits balance + recent
+// ledger (last 50). Owner/staff share the one SHOP wallet. Read-only.
+exports.meWallet = async (req, res) => {
+  const shopId = req.user.shopId;
+  if (!shopId) return res.json({ balance_paise: 0, currency: 'INR', ledger: [] });
+  const wallet = await getOrCreateWallet('shop', shopId);
+  const ledger = await query(
+    `SELECT direction, amount_paise, kind, ref_note, balance_after_paise, created_at
+       FROM referral_ledger WHERE wallet_id = $1 ORDER BY created_at DESC LIMIT 50`,
+    [wallet.id]
+  );
+  res.json({
+    balance_paise: Number(wallet.balance_paise),
+    currency: wallet.currency,
+    ledger: ledger.rows.map(ledgerView),
+  });
+};
+
+// GET /api/referral/earnings — the caller's own referral earnings, split by the
+// stage they sit in (accrued vs settled-into-credits) and by beneficiary role.
+exports.meEarnings = async (req, res) => {
+  const codeRow = await getOrCreateCodeForUser(req.user.sub, ownerTypeForRole(req.user.role));
+  const shopId = req.user.shopId;
+
+  const ROLES = ['chain_l1', 'chain_l2', 'referrer', 'referee', 'mitra', 'influencer'];
+  const [rows, wallet] = await Promise.all([
+    query(
+      `SELECT beneficiary_role, status, COALESCE(SUM(amount_paise),0)::bigint AS s
+         FROM referral_rewards
+        WHERE beneficiary_code_id = $1 AND status IN ('accrued','settled')
+        GROUP BY beneficiary_role, status`,
+      [codeRow.id]
+    ),
+    shopId
+      ? query("SELECT balance_paise FROM referral_wallets WHERE owner_type = 'shop' AND owner_id = $1", [shopId])
+      : Promise.resolve({ rowCount: 0, rows: [] }),
+  ]);
+
+  const by_role = Object.fromEntries(ROLES.map((r) => [r, 0]));
+  let accrued = 0;
+  let settled = 0;
+  for (const row of rows.rows) {
+    const amt = Number(row.s);
+    if (row.beneficiary_role && by_role[row.beneficiary_role] !== undefined) {
+      by_role[row.beneficiary_role] += amt;
+    }
+    if (row.status === 'accrued') accrued += amt;
+    else if (row.status === 'settled') settled += amt;
+  }
+
+  res.json({
+    code: codeRow.code,
+    accrued_paise: accrued,
+    settled_paise: settled,
+    wallet_balance_paise: wallet.rowCount ? Number(wallet.rows[0].balance_paise) : 0,
+    by_role,
+  });
+};
+
+// GET /api/admin/referral/economics — the zero-burn dashboard aggregate. Proves
+// the referral network never pays out more than the fees funded it (zero burn).
+exports.economics = async (_req, res) => {
+  const [fees, chain, influencer, liability] = await Promise.all([
+    query(
+      `SELECT COUNT(*)::int AS n,
+              COALESCE(SUM(amount_paise),0)::bigint AS gross,
+              COALESCE(SUM(FLOOR(amount_paise * (COALESCE(split_l1_pct,0)+COALESCE(split_l2_pct,0)) / 100.0)),0)::bigint AS pool
+         FROM enrolments WHERE status = 'paid'`
+    ),
+    query(
+      `SELECT COALESCE(SUM(amount_paise),0)::bigint AS s
+         FROM referral_rewards
+        WHERE beneficiary_role IN ('chain_l1','chain_l2') AND status IN ('accrued','settled')`
+    ),
+    query(
+      `SELECT COALESCE(SUM(amount_paise),0)::bigint AS s
+         FROM referral_rewards
+        WHERE beneficiary_role = 'influencer' AND status IN ('accrued','settled')`
+    ),
+    query('SELECT COALESCE(SUM(balance_paise),0)::bigint AS s FROM referral_wallets'),
+  ]);
+
+  const gross = Number(fees.rows[0].gross);
+  const pool = Number(fees.rows[0].pool);
+  const chainPaid = Number(chain.rows[0].s);
+  const influencerSpend = Number(influencer.rows[0].s);
+
+  res.json({
+    total_paid_enrolments: fees.rows[0].n,
+    gross_fees_paise: gross,
+    referral_pool_collected_paise: pool,
+    chain_paid_paise: chainPaid,
+    influencer_spend_paise: influencerSpend,
+    // What the platform keeps after paying the referral network from the fees.
+    infra_retained_paise: gross - chainPaid - influencerSpend,
+    // Outstanding Khata Credits the platform owes as future service redemption.
+    wallet_liability_paise: Number(liability.rows[0].s),
+    // The invariant: the network never pays out more than the pool the fees funded.
+    zero_burn_ok: chainPaid + influencerSpend <= pool,
+  });
+};
+
+// PATCH /api/admin/referral/codes/:id — configure a code: label, is_mitra, and
+// the influencer flat bounty + budget cap. Validated (ints >= 0; budget nullable)
+// by the route schema. Only the fields present in the body are changed.
+exports.patchCode = async (req, res) => {
+  const sets = [];
+  const params = [];
+  let i = 1;
+  const push = (col, val) => {
+    sets.push(`${col} = $${i}`);
+    params.push(val);
+    i += 1;
+  };
+  if (req.body.label !== undefined) push('label', (req.body.label && String(req.body.label).trim()) || null);
+  if (req.body.is_mitra !== undefined) push('is_mitra', req.body.is_mitra === true);
+  if (req.body.flat_bounty_paise !== undefined) push('flat_bounty_paise', req.body.flat_bounty_paise === null ? null : Number(req.body.flat_bounty_paise));
+  if (req.body.budget_cap_paise !== undefined) push('budget_cap_paise', req.body.budget_cap_paise === null ? null : Number(req.body.budget_cap_paise));
+
+  if (!sets.length) throw ApiError.badRequest('no_fields');
+  params.push(req.params.id);
+  const r = await query(
+    `UPDATE referral_codes SET ${sets.join(', ')} WHERE id = $${i}
+     RETURNING id, code, owner_type, label, is_mitra, flat_bounty_paise, budget_cap_paise, created_at`,
+    params
+  );
+  if (!r.rowCount) throw ApiError.notFound('Referral code not found');
+  const row = r.rows[0];
+  res.json({
+    referral_code: {
+      ...row,
+      flat_bounty_paise: row.flat_bounty_paise == null ? null : Number(row.flat_bounty_paise),
+      budget_cap_paise: row.budget_cap_paise == null ? null : Number(row.budget_cap_paise),
+    },
+  });
+};
+
+// POST /api/admin/referral/settle — settle every currently-accrued reward into
+// its beneficiary wallet. The manual drain for when referral_autosettle='false'.
+exports.settlePending = async (_req, res) => {
+  const result = await settleAllAccrued();
+  res.json(result);
 };
