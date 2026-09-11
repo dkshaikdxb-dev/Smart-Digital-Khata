@@ -2,7 +2,7 @@ const Joi = require('joi');
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { spendCredits } = require('../utils/wallet');
-const { getShopPromoConfig } = require('../utils/shopPromo');
+const { getShopPromoConfig, getShopPromoFreeConfig } = require('../utils/shopPromo');
 
 // Public, unauthenticated promo serving (batch ADS4). Serves the localized,
 // geo-matched, in-window, active campaigns to the consumer app and records
@@ -194,17 +194,42 @@ async function shopBalancePaise(shopId) {
   return r.rowCount ? Number(r.rows[0].balance_paise) : 0;
 }
 
+// The count of this shop's currently-outstanding FREE promos — self-serve, paid
+// nothing (credits_spent_paise=0), and still pending review or live. This is what
+// the per-shop free cap is measured against.
+async function freePromoActiveCount(shopId, client) {
+  const run = client && typeof client.query === 'function' ? (t, p) => client.query(t, p) : query;
+  const r = await run(
+    `SELECT COUNT(*)::int AS n FROM ad_campaigns
+      WHERE self_serve = true AND link_shop_id = $1
+        AND credits_spent_paise = 0
+        AND status IN ('pending_review','active')`,
+    [shopId]
+  );
+  return r.rows[0].n;
+}
+
 // GET /api/promos/config — the live pricing + the shop's spendable balance, so
 // the Boost UI can render the day picker, the live cost and the disabled state.
+// The `free` block drives the parallel "request a free promo" path: its own
+// on/off flag, the (shorter) day ceiling, the per-shop cap and how many free
+// promos this shop already has outstanding against that cap.
 exports.mineConfig = async (req, res) => {
   const shopId = req.user.shopId;
-  const cfg = await getShopPromoConfig();
+  const [cfg, free] = await Promise.all([getShopPromoConfig(), getShopPromoFreeConfig()]);
   const balance = shopId ? await shopBalancePaise(shopId) : 0;
+  const activeCount = shopId ? await freePromoActiveCount(shopId) : 0;
   res.json({
     enabled: cfg.enabled,
     credits_per_day_paise: cfg.credits_per_day_paise,
     max_days: cfg.max_days,
     balance_paise: balance,
+    free: {
+      enabled: free.enabled,
+      max_days: free.max_days,
+      max_active: free.max_active,
+      active_count: activeCount,
+    },
   });
 };
 
@@ -247,11 +272,16 @@ function shopTargets(shop) {
   return out;
 }
 
-// POST /api/promos/mine — buy a moderated promo placement. Validated by Joi in the
-// route: { days (1..max), offer_text? (<=60), subtitle? (<=80) }.
+// POST /api/promos/mine — create a moderated promo placement. Validated by Joi in
+// the route: { mode ('paid'|'free'), days (1..max), offer_text? (<=60),
+// subtitle? (<=80) }. mode='free' takes the no-cost request path (below) that
+// NEVER touches the wallet; mode='paid' (default) keeps the credit-spending path
+// unchanged.
 exports.mineCreate = async (req, res) => {
   const shopId = req.user.shopId;
   if (!shopId) throw ApiError.badRequest('No shop associated with this account');
+
+  if (req.body.mode === 'free') return mineCreateFree(req, res, shopId);
 
   const cfg = await getShopPromoConfig();
   if (!cfg.enabled) throw new ApiError(403, 'shop_promo_disabled', ['Self-serve promos are currently disabled']);
@@ -333,13 +363,88 @@ exports.mineCreate = async (req, res) => {
   }
 };
 
+// The FREE request path (batch PROMO free). A shop asks for a promo at NO Khata-
+// Credit cost. It is gated by shop_promo_free_enabled, its window is clamped to
+// shop_promo_free_max_days, and it is throttled to shop_promo_free_max_active
+// concurrent pending+active free promos per shop. It inserts the SAME row shape as
+// the paid path but with credits_spent_paise=0 and NO spendCredits call and NO
+// balance check — the wallet is never touched. It is admin-moderated exactly like
+// a paid promo (starts 'pending_review'); a rejection needs no refund because
+// nothing was spent (the reject-refund already no-ops when credits_spent_paise=0).
+async function mineCreateFree(req, res, shopId) {
+  const free = await getShopPromoFreeConfig();
+  if (!free.enabled) {
+    throw new ApiError(403, 'free_promo_disabled', ['Free promo requests are currently disabled']);
+  }
+
+  let days = Number(req.body.days);
+  if (!Number.isInteger(days) || days < 1) {
+    throw ApiError.badRequest('Validation failed', ['days must be a positive integer']);
+  }
+  // Clamp (not reject) to the free ceiling — free promos are capped shorter than
+  // paid ones. The owner UI shows the cap; a value above it is simply trimmed.
+  if (days > free.max_days) days = free.max_days;
+
+  const offer_text = req.body.offer_text ? String(req.body.offer_text).trim() || null : null;
+  const subtitle = req.body.subtitle ? String(req.body.subtitle).trim() || null : null;
+
+  const i18n = await buildShopNameI18n(shopId);
+
+  // Serialize per-shop free creation on the shop row (FOR UPDATE) so two
+  // simultaneous requests cannot both slip past the concurrency cap. The count and
+  // the insert run in ONE transaction; nothing here debits credits.
+  const result = await withTx(async (client) => {
+    const shopRow = await client.query(
+      `SELECT id, name, city, village, pincode,
+              (branded_until IS NOT NULL AND branded_until > NOW()) AS is_branded
+         FROM shops WHERE id = $1 FOR UPDATE`,
+      [shopId]
+    );
+    if (!shopRow.rowCount) throw ApiError.notFound('Shop not found');
+    const shop = shopRow.rows[0];
+
+    const activeCount = await freePromoActiveCount(shopId, client);
+    if (activeCount >= free.max_active) {
+      throw new ApiError(409, 'free_promo_limit_reached', [
+        `You already have ${activeCount} free promo(s) pending or live (limit ${free.max_active}). Wait for one to finish or be reviewed.`,
+      ]);
+    }
+
+    // Branded Store priority bump — mirror the paid path exactly.
+    const priority = shop.is_branded ? 10 : 0;
+    const targets = shopTargets(shop);
+
+    const ins = await client.query(
+      `INSERT INTO ad_campaigns
+         (style, title, offer_text, subtitle, glyph, i18n, advertiser,
+          link_type, link_shop_id, is_seasonal, starts_at, ends_at, priority,
+          status, self_serve, credits_spent_paise, created_by)
+       VALUES ('shop', $1, $2, $3, '🏪', $4::jsonb, $5,
+               'shop', $6, false, NOW(), NOW() + make_interval(days => $7), $8,
+               'pending_review', true, 0, $9)
+       RETURNING id, ends_at`,
+      [shop.name, offer_text, subtitle, JSON.stringify(i18n), shop.name, shopId, days, priority, req.user.sub]
+    );
+    const campaignId = ins.rows[0].id;
+    for (const t of targets) {
+      await client.query(
+        'INSERT INTO ad_targets (campaign_id, geo_type, geo_value) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
+        [campaignId, t.geo_type, t.geo_value]
+      );
+    }
+    return { id: campaignId, ends_at: ins.rows[0].ends_at };
+  });
+
+  res.status(201).json({ id: result.id, status: 'pending_review', mode: 'free', cost_paise: 0, ends_at: result.ends_at });
+}
+
 // GET /api/promos/mine — this shop's own self-serve placements, newest first.
 exports.mineList = async (req, res) => {
   const shopId = req.user.shopId;
   if (!shopId) return res.json({ promos: [] });
   const r = await query(
     `SELECT id, status, offer_text, subtitle, starts_at, ends_at,
-            credits_spent_paise, impressions, clicks, created_at
+            credits_spent_paise, review_note, impressions, clicks, created_at
        FROM ad_campaigns
       WHERE self_serve = true AND link_shop_id = $1
       ORDER BY created_at DESC
@@ -355,6 +460,12 @@ exports.mineList = async (req, res) => {
       starts_at: row.starts_at,
       ends_at: row.ends_at,
       credits_spent_paise: row.credits_spent_paise == null ? null : Number(row.credits_spent_paise),
+      // The admin's moderation note (e.g. why a promo was rejected), so the owner
+      // sees the reason on their own placement. NULL when the admin left none.
+      review_note: row.review_note || null,
+      // A free request paid nothing; the UI reads this to label it "Free" vs a
+      // paid boost without a separate field.
+      is_free: Number(row.credits_spent_paise) === 0,
       impressions: Number(row.impressions) || 0,
       clicks: Number(row.clicks) || 0,
       created_at: row.created_at,

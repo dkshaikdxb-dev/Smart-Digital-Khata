@@ -17,6 +17,10 @@ router.get('/config', asyncHandler(ctrl.mineConfig));
 // The upper bound (days) is clamped again against the LIVE max_days in the
 // controller; this Joi cap is a coarse guard so an absurd value never reaches it.
 const createSchema = Joi.object({
+  // 'paid' (default) spends Khata Credits; 'free' asks for a no-cost, admin-
+  // approved, throttled placement (the wallet is never touched). The controller
+  // branches on this — the paid path is unchanged.
+  mode: Joi.string().valid('paid', 'free').default('paid'),
   days: Joi.number().integer().min(1).max(365).required(),
   offer_text: Joi.string().trim().allow('', null).max(60),
   subtitle: Joi.string().trim().allow('', null).max(80),

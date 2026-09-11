@@ -25,6 +25,14 @@ const reasonSchema = Joi.object({
   reason: Joi.string().max(1000).allow('', null),
 });
 
+// Optional moderation note captured on a shop-promo approve/reject and persisted to
+// ad_campaigns.review_note (shown to the owner). `review_note` is the canonical
+// field; `reason` is still accepted for backward compatibility with the old queue.
+const promoReviewSchema = Joi.object({
+  review_note: Joi.string().max(1000).allow('', null),
+  reason: Joi.string().max(1000).allow('', null),
+});
+
 const adminRoleSchema = Joi.object({
   admin_role: Joi.string().valid('super', 'support', 'finance', 'moderation', 'marketing').allow(null),
   reason: Joi.string().max(1000).allow('', null),
@@ -270,7 +278,7 @@ router.delete('/ads/:id', requirePerm('ads:manage'), asyncHandler(adsCtrl.remove
 // or rejects it (→ rejected, credits refunded once). Same ads:manage perm as the
 // campaign CRUD above.
 router.get('/promos/pending', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingPromos));
-router.post('/promos/:id/approve', requirePerm('ads:manage'), asyncHandler(adsCtrl.approvePromo));
-router.post('/promos/:id/reject', requirePerm('ads:manage'), validate(reasonSchema), asyncHandler(adsCtrl.rejectPromo));
+router.post('/promos/:id/approve', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.approvePromo));
+router.post('/promos/:id/reject', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.rejectPromo));
 
 module.exports = router;

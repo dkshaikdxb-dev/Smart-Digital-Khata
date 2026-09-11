@@ -58,6 +58,15 @@ export default function Promote() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
+  // Free-request path (no Khata Credits, admin-approved, throttled). Its own day
+  // picker + creative + status, independent of the paid form above.
+  const [freeDays, setFreeDays] = useState(3);
+  const [freeOfferText, setFreeOfferText] = useState('');
+  const [freeSubtitle, setFreeSubtitle] = useState('');
+  const [freeBusy, setFreeBusy] = useState(false);
+  const [freeError, setFreeError] = useState('');
+  const [freeMsg, setFreeMsg] = useState('');
+
   // Branded Store premium (batch STORE1). Its own config/status block + local
   // state for the days picker, the accent colour and the tagline.
   const [brand, setBrand] = useState(null); // { config, is_branded, branded_until, brand_accent, brand_tagline, balance_paise }
@@ -78,6 +87,9 @@ export default function Promote() {
     setPlacements(mine.promos || []);
     // Clamp the initial day pick into the allowed range.
     setDays((d) => Math.min(Math.max(1, d), Math.max(1, c.max_days || 1)));
+    // Clamp the free day pick into the (shorter) free range.
+    const fMax = Math.max(1, Number(c.free && c.free.max_days) || 1);
+    setFreeDays((d) => Math.min(Math.max(1, d), fMax));
 
     // Branded Store is additive — a failure here must never break the Boost page.
     try {
@@ -127,6 +139,37 @@ export default function Promote() {
       else setError(err.message || t('promo.errGeneric'));
     } finally {
       setBusy(false);
+    }
+  }
+
+  // Free-request derived values from cfg.free.
+  const free = cfg && cfg.free ? cfg.free : null;
+  const freeEnabled = !!(free && free.enabled);
+  const freeMaxDays = free ? Math.max(1, Number(free.max_days) || 1) : 1;
+  const freeMaxActive = free ? Number(free.max_active) || 0 : 0;
+  const freeActiveCount = free ? Number(free.active_count) || 0 : 0;
+  const freeLimitReached = freeEnabled && freeActiveCount >= freeMaxActive;
+
+  async function submitFree(e) {
+    e.preventDefault();
+    if (!freeEnabled || freeLimitReached || freeBusy) return;
+    setFreeBusy(true); setFreeError(''); setFreeMsg('');
+    try {
+      await apiPost('/api/promos/mine', {
+        mode: 'free',
+        days: freeDays,
+        offer_text: freeOfferText.trim() || undefined,
+        subtitle: freeSubtitle.trim() || undefined,
+      });
+      setFreeMsg(t('promo.freeSubmitted'));
+      setFreeOfferText(''); setFreeSubtitle('');
+      await load();
+    } catch (err) {
+      if (err && err.status === 409) setFreeError(t('promo.freeLimit'));
+      else if (err && err.status === 403) setFreeError(t('promo.freeDisabledNote'));
+      else setFreeError(err.message || t('promo.errGeneric'));
+    } finally {
+      setFreeBusy(false);
     }
   }
 
@@ -309,6 +352,62 @@ export default function Promote() {
               </form>
             )}
 
+            {/* Free-request path — no Khata Credits, admin-approved, throttled. Shown
+                whenever the free feature is available, independent of the paid form. */}
+            {free && (
+              <div className="card" style={{ display: 'grid', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <strong style={{ fontSize: 16 }}>🎁 {t('promo.freeTitle')}</strong>
+                  <span style={{ background: '#dbeafe', color: '#1e40af', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
+                    {t('promo.freeBadge')}
+                  </span>
+                </div>
+                <p className="muted" style={{ margin: 0, fontSize: 13 }}>{t('promo.freeSubtitle')}</p>
+
+                {freeError && <div style={{ color: 'var(--danger)' }}>{freeError}</div>}
+                {freeMsg && <div style={{ color: 'var(--accent)' }}>{freeMsg}</div>}
+
+                {!freeEnabled ? (
+                  <div className="muted">{t('promo.freeDisabledNote')}</div>
+                ) : (
+                  <form onSubmit={submitFree} style={{ display: 'grid', gap: 12 }}>
+                    <div className="muted" style={{ fontSize: 12 }}>
+                      {t('promo.freeCap', { days: freeMaxDays, max: freeMaxActive })}
+                      {' '}
+                      {t('promo.freeUsed', { count: freeActiveCount, max: freeMaxActive })}
+                    </div>
+                    <div>
+                      <label className="muted">{t('promo.days')}</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <input
+                          type="range" min={1} max={freeMaxDays} step={1}
+                          value={freeDays} onChange={(e) => setFreeDays(Number(e.target.value))}
+                          style={{ flex: 1 }} aria-label={t('promo.days')}
+                        />
+                        <input
+                          type="number" min={1} max={freeMaxDays} value={freeDays}
+                          onChange={(e) => setFreeDays(Math.min(freeMaxDays, Math.max(1, Number(e.target.value) || 1)))}
+                          style={{ width: 72 }}
+                        />
+                      </div>
+                    </div>
+                    <label>
+                      <span className="muted">{t('promo.offerText')}</span>
+                      <input value={freeOfferText} onChange={(e) => setFreeOfferText(e.target.value)} maxLength={60} placeholder={t('promo.offerPlaceholder')} />
+                    </label>
+                    <label>
+                      <span className="muted">{t('promo.subtitleField')}</span>
+                      <input value={freeSubtitle} onChange={(e) => setFreeSubtitle(e.target.value)} maxLength={80} placeholder={t('promo.subtitlePlaceholder')} />
+                    </label>
+                    {freeLimitReached && <div className="muted" style={{ color: 'var(--danger)' }}>{t('promo.freeLimit')}</div>}
+                    <button type="submit" disabled={freeBusy || freeLimitReached}>
+                      {freeBusy ? t('promo.freeSubmitting') : t('promo.freeSubmit')}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+
             {/* My placements */}
             <h2 style={{ marginTop: 24 }}>{t('promo.myPlacements')}</h2>
             {placements.length === 0 ? (
@@ -320,12 +419,20 @@ export default function Promote() {
                   return (
                     <div key={p.id} className="card" style={{ display: 'grid', gap: 6 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <strong>{p.offer_text || t('promo.title')}</strong>
+                        <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          {p.offer_text || t('promo.title')}
+                          <span style={{ background: p.is_free ? '#dbeafe' : '#e5e7eb', color: p.is_free ? '#1e40af' : '#374151', borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 600 }}>
+                            {p.is_free ? t('promo.freeBadge') : t('promo.paidBadge')}
+                          </span>
+                        </strong>
                         <span style={{ background: pl.bg, color: pl.ink, borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
                           {pl.label}
                         </span>
                       </div>
                       {p.subtitle && <div className="muted" style={{ fontSize: 13 }}>{p.subtitle}</div>}
+                      {p.status === 'rejected' && p.review_note && (
+                        <div style={{ fontSize: 12, color: '#991b1b' }}>{t('promo.reviewNote')}: {p.review_note}</div>
+                      )}
                       <div className="muted" style={{ fontSize: 12, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                         <span>{t('promo.window')}: {fmtDate(p.starts_at)} – {fmtDate(p.ends_at)}</span>
                         <span>{t('promo.spent')}: {rupees(p.credits_spent_paise)}</span>
