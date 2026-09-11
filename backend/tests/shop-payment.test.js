@@ -239,6 +239,132 @@ describe('per-shop webhook route', () => {
       .send(rawStr);
     expect(res.status).toBe(404);
   });
+
+  // Fix 1 (double-count race). Two DIFFERENT Razorpay events for the SAME
+  // payment (e.g. payment.captured + payment_link.paid, distinct event ids) each
+  // pass the dedupe and each call reconcilePayment. The balance must move EXACTLY
+  // once and exactly ONE upi transaction row must exist.
+  it('two payment events for the same order settle the balance exactly once', async () => {
+    const token = await tokenForShop();
+    const orderRowId = `idem_${uniq}`;
+    const providerOrderId = `order_idem_${uniq}`;
+    const amount = 7000;
+
+    await pool.query(
+      `INSERT INTO payment_orders
+         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,NULL)`,
+      [orderRowId, shopId, customerId, amount, providerOrderId]
+    );
+
+    const before = await pool.query('SELECT balance FROM customers WHERE id = $1', [customerId]);
+    const beforeBalance = Number(before.rows[0].balance);
+
+    const eventNames = ['payment.captured', 'order.paid', 'payment_link.paid'];
+    const deliver = (i) => {
+      const event = {
+        event: eventNames[i % eventNames.length],
+        id: `evt_idem_${i}_${uniq}`, // distinct event ids → each passes dedupe
+        payload: { payment: { entity: { id: `pay_idem_${uniq}`, order_id: providerOrderId, amount } } },
+      };
+      const rawStr = JSON.stringify(event);
+      const sig = crypto.createHmac('sha256', 'whooksecret').update(Buffer.from(rawStr)).digest('hex');
+      return request(app)
+        .post(`/api/webhooks/razorpay/shop/${token}`)
+        .set('x-razorpay-signature', sig)
+        .set('Content-Type', 'application/json')
+        .send(rawStr);
+    };
+
+    // Fire many deliveries CONCURRENTLY so several handlers read the row while it
+    // is still 'created' — the real double-count race. Every one returns 200
+    // (each is either the settler or an idempotent no-op). Only the atomic
+    // conditional UPDATE (WHERE status <> 'paid') keeps the settlement to one.
+    const results = await Promise.all(Array.from({ length: 8 }, (_, i) => deliver(i)));
+    for (const r of results) expect(r.status).toBe(200);
+
+    // Decremented ONCE, not twice.
+    const after = await pool.query('SELECT balance FROM customers WHERE id = $1', [customerId]);
+    expect(Number(after.rows[0].balance)).toBe(beforeBalance - amount);
+
+    // Exactly one credit transaction for this amount.
+    const tx = await pool.query(
+      `SELECT * FROM transactions WHERE customer_id = $1 AND source = 'razorpay' AND amount = $2`,
+      [customerId, amount]
+    );
+    expect(tx.rowCount).toBe(1);
+
+    const order = await pool.query('SELECT status FROM payment_orders WHERE id = $1', [orderRowId]);
+    expect(order.rows[0].status).toBe('paid');
+  });
+
+  // Fix 2 (dropped payment). A transient failure inside reconcilePayment (a DB
+  // blip) must NOT leave the event marked processed — otherwise Razorpay's retry
+  // is deduped away and the payment is lost forever. A subsequent valid
+  // re-delivery of the same event id must reconcile and move the balance.
+  it('a transient reconcile failure does not permanently drop the payment', async () => {
+    const token = await tokenForShop();
+    const orderRowId = `drop_${uniq}`;
+    const providerOrderId = `order_drop_${uniq}`;
+    const amount = 8000;
+    const eventId = `evt_drop_${uniq}`;
+
+    await pool.query(
+      `INSERT INTO payment_orders
+         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,NULL)`,
+      [orderRowId, shopId, customerId, amount, providerOrderId]
+    );
+
+    const before = await pool.query('SELECT balance FROM customers WHERE id = $1', [customerId]);
+    const beforeBalance = Number(before.rows[0].balance);
+
+    const event = {
+      event: 'payment.captured',
+      id: eventId,
+      payload: { payment: { entity: { id: `pay_drop_${uniq}`, order_id: providerOrderId, amount } } },
+    };
+    const rawStr = JSON.stringify(event);
+    const sig = crypto.createHmac('sha256', 'whooksecret').update(Buffer.from(rawStr)).digest('hex');
+    const send = () =>
+      request(app)
+        .post(`/api/webhooks/razorpay/shop/${token}`)
+        .set('x-razorpay-signature', sig)
+        .set('Content-Type', 'application/json')
+        .send(rawStr);
+
+    // Deterministically blow up INSIDE reconcilePayment — after the event has
+    // been marked processed. We poison ONLY the reconcile SELECT (the first
+    // `FROM payment_orders` read), leaving alreadyProcessed's insert and every
+    // other query intact. One-shot: the retry below runs unpoisoned.
+    const realQuery = pool.query.bind(pool);
+    let poisoned = true;
+    const spy = jest.spyOn(pool, 'query').mockImplementation((text, params) => {
+      if (poisoned && typeof text === 'string' && text.includes('FROM payment_orders')) {
+        poisoned = false;
+        return Promise.reject(new Error('simulated DB blip'));
+      }
+      return realQuery(text, params);
+    });
+    const failed = await send();
+    spy.mockRestore();
+    expect(failed.status).toBeGreaterThanOrEqual(500);
+
+    // The processed_events row must NOT be left behind.
+    const pe = await pool.query('SELECT 1 FROM processed_events WHERE id = $1', [`razorpay:${token}:${eventId}`]);
+    expect(pe.rowCount).toBe(0);
+
+    // The failed delivery moved no money.
+    const mid = await pool.query('SELECT balance FROM customers WHERE id = $1', [customerId]);
+    expect(Number(mid.rows[0].balance)).toBe(beforeBalance);
+
+    // Razorpay retries the SAME event id — it must now reconcile.
+    const ok = await send();
+    expect(ok.status).toBe(200);
+
+    const after = await pool.query('SELECT balance FROM customers WHERE id = $1', [customerId]);
+    expect(Number(after.rows[0].balance)).toBe(beforeBalance - amount);
+  });
 });
 
 describe('platform webhook still rejects bad signatures', () => {
