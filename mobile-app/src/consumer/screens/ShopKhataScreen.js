@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
 } from 'react-native';
@@ -23,6 +23,9 @@ export default function ShopKhataScreen({ route, navigation }) {
   const [amount, setAmount] = useState('');
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState('');
+  // Synchronous double-submit guard — React state disable has a one-frame race,
+  // so a fast double-tap can start two payment links before `paying` re-renders.
+  const submittingRef = useRef(false);
 
   const load = useCallback(async () => {
     setError('');
@@ -45,13 +48,17 @@ export default function ShopKhataScreen({ route, navigation }) {
   const owes = balance > 0;
 
   async function pay() {
-    setPayError('');
-    const paise = toPaise(amount);
-    if (paise <= 0) { setPayError(t('shopkhata.enterAmount')); return; }
-    if (!owes) { setPayError(t('shopkhata.nothingDue')); return; }
-    if (paise > balance) { setPayError(t('shopkhata.overpay')); return; }
-    setPaying(true);
+    // Synchronous lock first — bail if a payment is already being started so a
+    // fast double-tap can't create two payment links. Released in finally.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     try {
+      setPayError('');
+      const paise = toPaise(amount);
+      if (paise <= 0) { setPayError(t('shopkhata.enterAmount')); return; }
+      if (!owes) { setPayError(t('shopkhata.nothingDue')); return; }
+      if (paise > balance) { setPayError(t('shopkhata.overpay')); return; }
+      setPaying(true);
       // POST /my/pay -> { link, order_id }. The backend ALWAYS returns a hosted
       // Razorpay Payment Link, so open it in the in-app PayWebView; a return to
       // the callback URL is treated as done and the khata is refreshed.
@@ -64,6 +71,7 @@ export default function ShopKhataScreen({ route, navigation }) {
       setPayError(err.message);
     } finally {
       setPaying(false);
+      submittingRef.current = false;
     }
   }
 

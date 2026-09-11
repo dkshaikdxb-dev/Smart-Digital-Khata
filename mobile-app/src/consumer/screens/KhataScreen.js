@@ -39,6 +39,14 @@ export default function KhataScreen({ navigation }) {
   const total = data ? Number(data.total_outstanding || 0) : 0;
   const shops = data ? (data.shops || []) : [];
 
+  // total_outstanding can be negative (a net advance across shops). Mirror the
+  // per-shop rows: pick the owe / advance / settled word by sign and always show
+  // an absolute amount, so a net advance never renders as "₹-50.00 outstanding".
+  const totalOwes = total > 0;
+  const totalAdvance = total < 0;
+  const totalWord = totalOwes ? t('khata.owe') : totalAdvance ? t('khata.advance') : t('khata.settled');
+  const totalTone = totalOwes ? colors.danger : totalAdvance ? colors.accent : colors.textMuted;
+
   return (
     <ScrollView
       style={styles.container}
@@ -52,9 +60,9 @@ export default function KhataScreen({ navigation }) {
       ) : (
         <>
           <Card style={styles.totalCard}>
-            <Text style={styles.totalLabel}>{t('khata.totalOutstanding')}</Text>
-            <Text style={[styles.totalValue, { color: total > 0 ? colors.danger : colors.accent }]}>
-              {money(total)}
+            <Text style={styles.totalLabel}>{totalWord}</Text>
+            <Text style={[styles.totalValue, { color: totalTone }]}>
+              {money(Math.abs(total))}
             </Text>
           </Card>
 
