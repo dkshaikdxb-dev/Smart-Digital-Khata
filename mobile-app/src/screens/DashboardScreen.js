@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { summary } from '../services/api';
 import AskShop from './AskShop';
 
@@ -15,7 +16,14 @@ export default function DashboardScreen({ navigation }) {
     setToday(t); setOut(o);
   }, []);
 
-  useEffect(() => { load().catch(() => {}); }, [load]);
+  // Refetch every time the screen regains focus (not just on first mount), so
+  // returning to Home — e.g. after adding a transaction, or switching back from
+  // another tab — always shows the current totals instead of a stale snapshot.
+  useFocusEffect(
+    useCallback(() => {
+      load().catch(() => {});
+    }, [load])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
