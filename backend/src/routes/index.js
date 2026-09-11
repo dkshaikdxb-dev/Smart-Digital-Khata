@@ -8,6 +8,7 @@ router.use('/staff', require('./staff.routes'));
 router.use('/shops', require('./shop.routes'));
 router.use('/shops', require('./shop-payment.routes'));
 router.use('/shops', require('./shop-faq.routes')); // owner/staff: per-store FAQ CRUD
+router.use('/shop-images', require('./shop-image.routes')); // PUBLIC: storefront gallery photo bytes
 router.use('/customers', require('./customer.routes'));
 router.use('/products', require('./product.routes'));
 router.use('/catalog', require('./catalog.routes'));

@@ -379,14 +379,18 @@ describe('GET /public/shops/:shopId', () => {
     expect(res.body.shop.products[0].subcategory).toBeNull();
     expect(res.body.shop.products[0].base_product).toBeNull();
     // No owner/sensitive fields leaked; fulfillment fields (M7) are exposed, plus
-    // the shop cover image_url (batch IMG1 — null when no cover uploaded) and the
-    // Branded Store flags (batch STORE1 — is_branded, and accent/tagline which are
-    // null here since this shop is not branded). The raw branded_until never leaks.
+    // the shop cover image_url (batch IMG1 — null when no cover uploaded), the
+    // storefront photo gallery `images` array (batch LITE — [] when no photos and
+    // no legacy cover), and the Branded Store flags (batch STORE1 — is_branded,
+    // and accent/tagline which are null here since this shop is not branded). The
+    // raw branded_until never leaks.
     expect(Object.keys(res.body.shop).sort()).toEqual([
       'area', 'brand_accent', 'brand_tagline', 'city', 'delivery_fee', 'delivery_hours',
       'delivery_min_order', 'delivery_radius_km', 'free_delivery_min', 'id', 'image_url',
-      'is_branded', 'name', 'offers_delivery', 'offers_pickup', 'products',
+      'images', 'is_branded', 'name', 'offers_delivery', 'offers_pickup', 'products',
     ]);
+    // No photos and no legacy cover on this shop → images is an empty array.
+    expect(res.body.shop.images).toEqual([]);
     // Not branded → the theming fields are present but nulled, and is_branded false.
     expect(res.body.shop.is_branded).toBe(false);
     expect(res.body.shop.brand_accent).toBeNull();

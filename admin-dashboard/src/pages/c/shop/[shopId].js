@@ -8,11 +8,7 @@ import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineT
 import { useLang, canUseVoice, useLanguageCapability } from '../../../lib/i18n';
 import { useVoiceSearch } from '../../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../../components/VoiceSearchHint';
-
-// Cover image src resolver: relative /api paths get the API base prefixed, same
-// base as customerApi/publicFetch. Absolute URLs pass through untouched.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API_BASE}${url}`));
+import ShopCarousel from '../../../components/ShopCarousel';
 
 // Quick-pick weight chips (grams) offered for loose/weighed items.
 const WEIGHT_CHIPS = [250, 500, 1000];
@@ -283,20 +279,12 @@ export default function ShopCatalog() {
               {shop.brand_tagline}
             </div>
           )}
-          {/* Shop cover (batch IMG1): shown when the owner has uploaded one;
-              absent -> the header renders exactly as before. Already <=400KB
-              WebP, so lazy-load and let it scale to the card width. */}
-          {shop.image_url && (
-            <img
-              src={resolveImg(shop.image_url)}
-              alt={shop.name || ''}
-              loading="lazy"
-              style={{
-                display: 'block', width: '100%', aspectRatio: '16 / 9',
-                objectFit: 'cover', borderRadius: 10, marginBottom: 10,
-              }}
-            />
-          )}
+          {/* Storefront photos (batch LITE): the owner's up-to-3 photos as a
+              lightweight, data-saver-aware carousel, sitting where the single
+              cover used to. `shop.images` comes back in the SAME getShop request
+              (0..3 entries, with a legacy fallback to the old image_url cover),
+              so nothing renders when there are no photos — exactly as before. */}
+          <ShopCarousel images={shop.images} alt={shop.name || ''} />
           <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || t('c.locationNotSet')}</div>
           {fulfillmentSummary(shop).map((line, i) => (
             <div key={i} className="cpwa-ful-summary">{line}</div>
