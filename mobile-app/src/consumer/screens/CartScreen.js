@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, Image, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
@@ -41,6 +41,9 @@ export default function CartScreen({ navigation }) {
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  // Synchronous double-submit guard — React state disable has a one-frame race,
+  // so a fast double-tap can fire two orders before `placing` re-renders.
+  const submittingRef = useRef(false);
 
   const activeShopId = cart.cart && cart.cart.shop_id;
   const shopName = cart.cart && cart.cart.shop_name;
@@ -94,11 +97,15 @@ export default function CartScreen({ navigation }) {
   }
 
   async function placeOrder() {
-    setError('');
-    if (belowMin) return;
-    if (isDelivery && !address.trim()) { setError(t('cart.addressRequired')); return; }
-    setPlacing(true);
+    // Synchronous lock first — bail if a submit is already in flight so a fast
+    // double-tap can't create two orders. Released in finally on every path.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     try {
+      setError('');
+      if (belowMin) return;
+      if (isDelivery && !address.trim()) { setError(t('cart.addressRequired')); return; }
+      setPlacing(true);
       const items = cart.lines.map((l) => (l.sold_by_weight
         ? { product_id: l.product_id, weight_grams: Number(l.weight_grams) }
         : { product_id: l.product_id, quantity: Number(l.quantity) }));
@@ -127,6 +134,8 @@ export default function CartScreen({ navigation }) {
     } catch (err) {
       setError(err.message);
       setPlacing(false);
+    } finally {
+      submittingRef.current = false;
     }
   }
 
@@ -197,7 +206,7 @@ export default function CartScreen({ navigation }) {
             {offersPickup ? <Seg value="pickup" current={fulfillment} onPress={() => setFulfillment('pickup')} label={t('cart.pickup')} /> : null}
             {offersDelivery ? <Seg value="delivery" current={fulfillment} onPress={() => setFulfillment('delivery')} label={t('cart.delivery')} /> : null}
           </View>
-          {belowMin ? <Text style={styles.warn}>{money(minOrder)}</Text> : null}
+          {belowMin ? <Text style={styles.warn}>{t('cart.belowMin', { amt: money(minOrder) })}</Text> : null}
           {isDelivery ? (
             <View style={styles.addrWrap}>
               <Field

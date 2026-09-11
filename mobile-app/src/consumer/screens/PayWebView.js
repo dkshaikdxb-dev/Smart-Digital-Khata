@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { colors, sizes } from '../theme';
 import { Button } from '../components';
@@ -44,6 +44,14 @@ export default function PayWebView({ route, navigation }) {
         }}
         onShouldStartLoadWithRequest={(req) => {
           if (isReturnUrl(req.url)) { finish(); return false; }
+          // Razorpay checkout can emit UPI / app deep links (upi://, tez://,
+          // phonepe://, intent://) the WebView can't load. Hand any non-http(s)
+          // scheme to the OS so the UPI app opens, and don't load it here.
+          const scheme = String(req.url || '').split(':')[0].toLowerCase();
+          if (scheme && scheme !== 'http' && scheme !== 'https') {
+            Linking.openURL(req.url).catch(() => {});
+            return false;
+          }
           return true;
         }}
         style={styles.web}
