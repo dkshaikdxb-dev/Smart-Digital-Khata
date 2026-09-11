@@ -28,8 +28,8 @@ jobs:
       DATABASE_URL: postgres://user:pass@localhost:5432/db
       JWT_SECRET: test_secret_test_secret_test_secret_abc
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -49,8 +49,8 @@ jobs:
     name: Admin build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -68,7 +68,7 @@ jobs:
     name: Docker build sanity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Stub env for compose
         run: cp .env.example .env
       - name: Build images
