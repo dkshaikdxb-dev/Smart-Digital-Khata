@@ -1,0 +1,104 @@
+name: EAS Update (OTA)
+
+# One-click over-the-air (OTA) update for the two app flavors — Shop Owner and
+# Consumer. Ships JS-shell changes (a new WebView entry, a tweaked native screen,
+# a bug fix) to already-installed apps WITHOUT a rebuild. Installed apps pick the
+# update up on their next launch.
+#
+# IMPORTANT — this is only for JS/asset changes that are compatible with the
+# installed native runtime. Anything native (a new permission, a new native
+# dependency, an SDK bump) needs a fresh build via `eas-build.yml`, NOT an OTA
+# update. `runtimeVersion` (sdkVersion policy in app.config.js) gates
+# compatibility, so an incompatible update simply won't be served — it won't
+# brick an install — but it also won't reach users, so use `eas-build.yml` for
+# native changes.
+#
+# The `--branch` input must match the channel the installed build was made with
+# (eas.json): the `*-preview` profiles use channel `preview`, the
+# `*-production` profiles use channel `production`. Update the branch whose
+# channel the target installs are on (the sideloaded test APKs are `preview`).
+#
+# Prerequisites are the SAME as eas-build.yml (see mobile-app/EAS_BUILD.md):
+#   1. Expo access token in the Actions secret EXPO_TOKEN.
+#   2. Per-flavor project id in the Actions variables EAS_PROJECT_ID_OWNER /
+#      EAS_PROJECT_ID_CONSUMER (printed by the first build; also created here if
+#      missing). This also fills the expo-updates URL (https://u.expo.dev/<id>).
+#   3. Each flavor's project has had `eas update:configure` run once (documented
+#      in EAS_BUILD.md) — otherwise the first `eas update` here configures it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: Which app to update
+        type: choice
+        options: [consumer, owner]
+        default: consumer
+      branch:
+        description: Update channel/branch (match the installed build's channel)
+        type: choice
+        options: [preview, production]
+        default: preview
+      message:
+        description: Update message (shown in the Expo dashboard)
+        type: string
+        default: JS-shell OTA update
+
+jobs:
+  ota-update:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      APP_FLAVOR: ${{ inputs.flavor }}
+      # Owner and consumer are separate EAS projects (different slugs), so each
+      # has its own project id — and its own expo-updates URL. Pick the right one.
+      EAS_PROJECT_ID: ${{ inputs.flavor == 'owner' && vars.EAS_PROJECT_ID_OWNER || vars.EAS_PROJECT_ID_CONSUMER }}
+    steps:
+      - name: Guard — token must be configured
+        run: |
+          if [ -z "${EXPO_TOKEN}" ]; then
+            echo "::error::EXPO_TOKEN secret is not set. Create an Expo access token at https://expo.dev/settings/access-tokens and add it as an Actions secret named EXPO_TOKEN."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install eas-cli
+        run: npm i -g eas-cli
+
+      - name: Verify Expo auth
+        run: eas whoami
+
+      - name: Install app dependencies
+        working-directory: mobile-app
+        run: npm ci
+
+      - name: Resolve or create the EAS project id
+        working-directory: mobile-app
+        run: |
+          set -o pipefail
+          VARNAME="EAS_PROJECT_ID_$(echo "${APP_FLAVOR}" | tr '[:lower:]' '[:upper:]')"
+          if [ -n "${EAS_PROJECT_ID}" ]; then
+            echo "Using ${VARNAME}=${EAS_PROJECT_ID}"
+            exit 0
+          fi
+          echo "No ${VARNAME} variable set — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
+          out=$(eas init --non-interactive --force 2>&1 | tee /dev/stderr) || true
+          pid=$(printf '%s\n' "$out" | grep -oiE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+          if [ -z "$pid" ]; then
+            echo "::error::Could not determine the EAS project id from 'eas init'. See the log above; then create it once and add its id as the Actions variable ${VARNAME}."
+            exit 1
+          fi
+          echo "EAS_PROJECT_ID=$pid" >> "$GITHUB_ENV"
+          echo "::notice title=Save this::Project id for '${APP_FLAVOR}' is $pid. Add it as an Actions *variable* named ${VARNAME} to skip this step on future runs."
+
+      - name: Publish OTA update (${{ inputs.flavor }} → ${{ inputs.branch }})
+        working-directory: mobile-app
+        run: |
+          echo "Publishing an OTA update for the ${APP_FLAVOR} app to branch '${{ inputs.branch }}'. Installed apps on that channel pick it up on next launch."
+          eas update --branch "${{ inputs.branch }}" --message "${{ inputs.message }}" --non-interactive
+          echo "Done. The update group + its branch/channel appear above (also on https://expo.dev under this project's Updates)."

@@ -197,8 +197,21 @@ APP_FLAVOR=owner    eas update --branch production --message "…"
 APP_FLAVOR=consumer eas update --branch production --message "…"
 ```
 
+> Match `--branch` to the channel the installed build was made with (`eas.json`): the
+> `*-preview` profiles use channel `preview`, the `*-production` profiles use channel
+> `production`. The sideloaded test APKs are `preview`, so push those to `--branch preview`.
+
 Installed apps pick it up on next launch. Web-only feature changes need **no** update at
 all — they arrive the moment the web app is deployed, because the WebView loads it live.
+
+### OTA via GitHub Actions (one-click, no local setup)
+
+The `.github/workflows/eas-update.yml` workflow does the `eas update` for you on GitHub's
+runners (same `EXPO_TOKEN` secret + `EAS_PROJECT_ID_*` variables as the build workflow).
+Actions tab → **EAS Update (OTA)** → Run workflow → pick the `flavor`, the `branch`
+(`preview` / `production` — match the installed build's channel), and an update message.
+Use this for JS-shell changes only; anything native (new permission/dependency/SDK bump)
+still needs a fresh build via **EAS Build (Android APK)**.
 
 ## On-device QA checklist (run on the APK, per flavor)
 
