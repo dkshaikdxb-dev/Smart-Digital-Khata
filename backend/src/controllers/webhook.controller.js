@@ -17,6 +17,24 @@ async function alreadyProcessed(id, channel) {
   return r.rowCount === 0;
 }
 
+/**
+ * Best-effort UNMARK of a just-inserted processed_events row. Used when the
+ * handler that runs AFTER `alreadyProcessed` returned false (a freshly inserted
+ * key) throws before it durably settled the event — so the provider's retry is
+ * allowed to re-deliver and reconcile instead of being deduped away and lost.
+ * Never throws (a failed delete only means a retry is deduped; the reconcile is
+ * idempotent so nothing is double-applied).
+ */
+async function unmarkProcessed(id, channel) {
+  if (!id) return;
+  const key = `${channel}:${id}`;
+  try {
+    await query(`DELETE FROM processed_events WHERE id = $1`, [key]);
+  } catch (err) {
+    logger.error({ err: err.message, key }, 'Failed to unmark processed event');
+  }
+}
+
 const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
 
 /**
@@ -26,38 +44,78 @@ const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
  *     advance a still-pending order to 'accepted'). Never touches the khata.
  *   - payment_orders.order_id NULL → a khata settlement (unchanged): insert the
  *     credit transaction and decrement the customer's balance.
- * Idempotent: an already-paid row is a no-op. Shared by the platform and
- * per-shop webhook handlers so both stay DRY.
+ * Idempotent: the paid-transition is an atomic conditional UPDATE, so duplicate
+ * deliveries of the SAME payment (different Razorpay event ids for
+ * payment.captured / order.paid / payment_link.paid) settle EXACTLY ONCE — the
+ * balance is never double-decremented. Shared by the platform and per-shop
+ * webhook handlers so both stay DRY.
+ * @param {object} event  the parsed Razorpay webhook event
+ * @param {string|null} shopId  the resolved shop (per-shop handler) — when
+ *   present the match is additionally scoped by shop_id so a cross-shop
+ *   reconciliation is impossible by construction. The platform handler has no
+ *   shop, so the argument is optional.
  * @returns {boolean} true if a matching order was found (and reconciled/duplicate).
  */
-async function reconcilePayment(event) {
+async function reconcilePayment(event, shopId = null) {
   const p = event.payload.payment?.entity || {};
   const orderEntity = event.payload.order?.entity || {};
   const linkEntity = event.payload.payment_link?.entity || {};
   const orderId = p.order_id || orderEntity.id;
   const linkId = linkEntity.id || p.notes?.payment_link_id;
-  const amount = p.amount || orderEntity.amount_paid || linkEntity.amount_paid || linkEntity.amount;
+  const eventAmount = p.amount || orderEntity.amount_paid || linkEntity.amount_paid || linkEntity.amount;
 
+  // Defense-in-depth (scope the match by shop when the caller knows it).
+  const params = [orderId || null, linkId || null, linkEntity.reference_id || null];
+  let shopClause = '';
+  if (shopId != null) {
+    params.push(shopId);
+    shopClause = ` AND shop_id = $${params.length}`;
+  }
   const orderRes = await query(
     `SELECT * FROM payment_orders
-     WHERE provider_order_id = $1
+     WHERE (provider_order_id = $1
         OR provider_link_id = $2
-        OR id = $3
+        OR id = $3)${shopClause}
      LIMIT 1`,
-    [orderId || null, linkId || null, linkEntity.reference_id || null]
+    params
   );
   if (!orderRes.rowCount) {
-    logger.warn({ orderId, linkId }, 'Razorpay webhook: no matching local order');
+    logger.warn({ orderId, linkId, shopId }, 'Razorpay webhook: no matching local order');
     return false;
   }
   const order = orderRes.rows[0];
+  // Fast-path optimization for an already-paid row read OUTSIDE the tx. The
+  // AUTHORITATIVE idempotency guard is the conditional UPDATE below.
   if (order.status === 'paid') return true;
 
+  // Never write NULL/garbage into the BIGINT amount column: default to the
+  // locally recorded order amount. If both are present but differ, trust the
+  // amount WE created the order for and warn (a mismatched webhook amount must
+  // not silently move the wrong sum).
+  let amount = eventAmount ?? order.amount;
+  if (eventAmount != null && order.amount != null && Number(eventAmount) !== Number(order.amount)) {
+    logger.warn(
+      { orderId, linkId, eventAmount, orderAmount: order.amount },
+      'Razorpay webhook: amount mismatch — using local order amount'
+    );
+    amount = order.amount;
+  }
+
+  // Did THIS delivery flip the row to paid? Only the winner runs side effects.
+  let settled = false;
   await withTx(async (client) => {
-    await client.query(
-      `UPDATE payment_orders SET status='paid', paid_at = NOW(), provider_payment_id = $1 WHERE id = $2`,
+    const upd = await client.query(
+      `UPDATE payment_orders SET status='paid', paid_at = NOW(), provider_payment_id = $1
+       WHERE id = $2 AND status <> 'paid'`,
       [p.id || null, order.id]
     );
+    if (upd.rowCount !== 1) {
+      // Another delivery already settled this order inside its own tx →
+      // idempotent no-op. Do NOT re-apply any side effect.
+      return;
+    }
+    settled = true;
+
     if (order.order_id) {
       // Payment is a PREPAID ORDER settlement — mark the order paid (and move a
       // still-pending order to 'accepted'). The order was never on the khata,
@@ -86,9 +144,9 @@ async function reconcilePayment(event) {
   });
 
   // A khata settlement records a `upi` collection for the shop — activate its
-  // referral on the first one. AFTER the commit; never for a prepaid-order
-  // payment (which touches no khata). Swallows its own errors.
-  if (!order.order_id) {
+  // referral on the first one. AFTER the commit; only when THIS call performed a
+  // real khata settlement (settled && !order.order_id). Swallows its own errors.
+  if (settled && !order.order_id) {
     await maybeActivateReferral(order.shop_id);
   }
   return true;
@@ -121,7 +179,14 @@ exports.razorpay = async (req, res) => {
   }
 
   if (event.event && event.event.startsWith('subscription.')) {
-    await handleSubscriptionEvent(event);
+    try {
+      await handleSubscriptionEvent(event);
+    } catch (err) {
+      // Reconciliation failed after we marked the event processed — unmark it so
+      // Razorpay's retry re-delivers instead of getting deduped and dropped.
+      await unmarkProcessed(event.id, 'razorpay');
+      throw err;
+    }
   }
 
   res.json({ ok: true });
@@ -167,7 +232,16 @@ exports.razorpayShop = async (req, res) => {
   }
 
   if (PAYMENT_EVENTS.includes(event.event)) {
-    await reconcilePayment(event);
+    try {
+      await reconcilePayment(event, shopId);
+    } catch (err) {
+      // A transient reconcile failure must NOT permanently drop the payment:
+      // unmark the event so Razorpay's retry reconciles it. Fix 1 makes the
+      // reconcile idempotent, so a retry after a crash that DID commit is a
+      // safe no-op.
+      await unmarkProcessed(event.id, `razorpay:${token}`);
+      throw err;
+    }
   }
 
   res.json({ ok: true });

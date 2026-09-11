@@ -124,3 +124,22 @@ describe('transaction idempotency', () => {
     expect(over.status).toBe(422);
   });
 });
+
+// Fix 4 — amount must be integer paise. A fractional or exponential value must
+// be a clean 400 at the validation layer, never a 500 / BIGINT error.
+describe('transaction amount is integer-paise validated', () => {
+  it('rejects a fractional amount with 400 (not 500)', async () => {
+    const res = await post({ customer_id: alice.id, type: 'purchase', amount: 250.5 });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects an oversized/exponential amount with 400 (not 500)', async () => {
+    const res = await post({ customer_id: alice.id, type: 'purchase', amount: 1e21 });
+    expect(res.status).toBe(400);
+  });
+
+  it('accepts a valid positive integer amount', async () => {
+    const res = await post({ customer_id: alice.id, type: 'cash', amount: 100 });
+    expect(res.status).toBe(201);
+  });
+});
