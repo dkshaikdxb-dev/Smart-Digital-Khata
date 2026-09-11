@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
 import { customers, transactions } from '../services/api';
+import { useT } from '../i18n';
 
 export default function AddTransactionScreen({ navigation, route }) {
+  const { t } = useT();
   const preId = route?.params?.customerId || '';
   const preName = route?.params?.customerName || '';
   const [list, setList] = useState([]);
@@ -17,7 +19,7 @@ export default function AddTransactionScreen({ navigation, route }) {
   }, [preId]);
 
   async function save() {
-    if (!customerId || !amount) return Alert.alert('Missing', 'Pick a customer and amount');
+    if (!customerId || !amount) return Alert.alert(t('common.missing'), t('addtx.missingBody'));
     try {
       await transactions.create({
         customer_id: customerId,
@@ -28,25 +30,25 @@ export default function AddTransactionScreen({ navigation, route }) {
       });
       navigation.goBack();
     } catch (e) {
-      Alert.alert('Failed', e.response?.data?.error || e.message);
+      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     }
   }
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 16 }}>
-      <Text style={s.label}>Type</Text>
+      <Text style={s.label}>{t('addtx.type')}</Text>
       <View style={s.typeRow}>
-        {['purchase', 'cash', 'upi'].map((t) => (
-          <Pressable key={t} onPress={() => setType(t)} style={[s.pill, type === t && s.pillActive]}>
-            <Text style={[s.pillText, type === t && s.pillTextActive]}>{t}</Text>
+        {['purchase', 'cash', 'upi'].map((ty) => (
+          <Pressable key={ty} onPress={() => setType(ty)} style={[s.pill, type === ty && s.pillActive]}>
+            <Text style={[s.pillText, type === ty && s.pillTextActive]}>{t(`txn.${ty}`)}</Text>
           </Pressable>
         ))}
       </View>
 
-      <Text style={s.label}>Customer</Text>
+      <Text style={s.label}>{t('addtx.customer')}</Text>
       {preId ? (
         <View style={[s.cust, s.custActive]}>
-          <Text style={{ color: '#e2e8f0' }}>{preName || 'Selected customer'}</Text>
+          <Text style={{ color: '#e2e8f0' }}>{preName || t('addtx.selectedCustomer')}</Text>
         </View>
       ) : (
         <View style={{ gap: 6 }}>
@@ -58,13 +60,13 @@ export default function AddTransactionScreen({ navigation, route }) {
         </View>
       )}
 
-      <Text style={s.label}>Amount (₹)</Text>
+      <Text style={s.label}>{t('addtx.amount')}</Text>
       <TextInput style={s.input} placeholder="0" placeholderTextColor="#64748b" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
-      <Text style={s.label}>Note (optional)</Text>
-      <TextInput style={s.input} placeholder="note" placeholderTextColor="#64748b" value={note} onChangeText={setNote} />
+      <Text style={s.label}>{t('addtx.note')}</Text>
+      <TextInput style={s.input} placeholder={t('addtx.notePlaceholder')} placeholderTextColor="#64748b" value={note} onChangeText={setNote} />
 
       <Pressable style={s.button} onPress={save}>
-        <Text style={s.buttonText}>Save</Text>
+        <Text style={s.buttonText}>{t('common.save')}</Text>
       </Pressable>
     </ScrollView>
   );

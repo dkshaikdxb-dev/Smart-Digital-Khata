@@ -3,10 +3,15 @@ import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { orders } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 const TERMINAL = ['completed', 'cancelled'];
+const OSTATUS = new Set(['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled']);
+const FUL = new Set(['delivery', 'pickup']);
+const PMODE = new Set(['credit', 'prepaid', 'cash']);
+const PSTATUS = new Set(['paid', 'pending', 'failed', 'not_required']);
 
 const statusColor = (s) => {
   if (s === 'completed') return '#22c55e';
@@ -28,6 +33,9 @@ function nextStatuses(order) {
 }
 
 export default function OrderDetailScreen({ route, navigation }) {
+  const { t } = useT();
+  // Localize known order enums; fall back to the de-underscored raw value.
+  const enumT = (prefix, set, v) => (set.has(v) ? t(`${prefix}.${v}`) : label(v));
   const { id } = route.params;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,12 +49,12 @@ export default function OrderDetailScreen({ route, navigation }) {
   }, [id]);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   async function setStatus(status) {
@@ -54,23 +62,23 @@ export default function OrderDetailScreen({ route, navigation }) {
     try {
       await orders.setStatus(id, status);
       await load();
-      setMsg(`Order marked ${label(status)}.`);
+      setMsg(t('ord.marked', { s: enumT('ostatus', OSTATUS, status) }));
     } catch (e) {
-      Alert.alert('Failed', e.response?.data?.error || e.message);
+      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setBusy(false);
     }
   }
 
   function cancel() {
-    Alert.alert('Cancel order', 'Cancel this order? This cannot be undone.', [
-      { text: 'Keep', style: 'cancel' },
-      { text: 'Cancel order', style: 'destructive', onPress: () => setStatus('cancelled') },
+    Alert.alert(t('ord.cancelOrder'), t('ord.cancelConfirm'), [
+      { text: t('common.keep'), style: 'cancel' },
+      { text: t('ord.cancelOrder'), style: 'destructive', onPress: () => setStatus('cancelled') },
     ]);
   }
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
-  if (!order) return <View style={s.center}><Text style={s.muted}>Order not found.</Text></View>;
+  if (!order) return <View style={s.center}><Text style={s.muted}>{t('ord.notFound')}</Text></View>;
 
   const terminal = TERMINAL.includes(order.status);
   const forwards = nextStatuses(order);
@@ -85,39 +93,39 @@ export default function OrderDetailScreen({ route, navigation }) {
       <View style={s.card}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Text style={s.title}>{order.customer_name || 'Order'}</Text>
+            <Text style={s.title}>{order.customer_name || t('title.order')}</Text>
             {order.customer_phone ? <Text style={s.muted}>{order.customer_phone}</Text> : null}
             <Text style={s.muted}>{new Date(order.created_at).toLocaleString()}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={s.kpi}>{fmt(order.subtotal)}</Text>
-            <Text style={[s.statusText, { color: statusColor(order.status) }]}>{label(order.status)}</Text>
+            <Text style={[s.statusText, { color: statusColor(order.status) }]}>{enumT('ostatus', OSTATUS, order.status)}</Text>
           </View>
         </View>
         <View style={s.badgeRow}>
-          <Text style={s.badge}>{label(order.fulfillment_type)}</Text>
-          <Text style={s.badge}>{order.payment_mode}</Text>
-          <Text style={s.badge}>{label(order.payment_status)}</Text>
+          <Text style={s.badge}>{enumT('ful', FUL, order.fulfillment_type)}</Text>
+          <Text style={s.badge}>{enumT('pmode', PMODE, order.payment_mode)}</Text>
+          <Text style={s.badge}>{enumT('pstatus', PSTATUS, order.payment_status)}</Text>
         </View>
 
         <View style={s.actions}>
           {forwards.map((st) => (
             <Pressable key={st} style={[s.primary, (busy || terminal) && { opacity: 0.5 }]} onPress={() => setStatus(st)} disabled={busy || terminal}>
-              <Text style={s.primaryText}>Mark {label(st)}</Text>
+              <Text style={s.primaryText}>{t('ord.mark', { s: enumT('ostatus', OSTATUS, st) })}</Text>
             </Pressable>
           ))}
           <Pressable style={[s.secondary, (busy || terminal) && { opacity: 0.5 }]} onPress={cancel} disabled={busy || terminal}>
-            <Text style={s.secondaryText}>Cancel order</Text>
+            <Text style={s.secondaryText}>{t('ord.cancelOrder')}</Text>
           </Pressable>
         </View>
-        {terminal ? <Text style={[s.muted, { marginTop: 10 }]}>This order is {label(order.status)} — no further changes.</Text> : null}
+        {terminal ? <Text style={[s.muted, { marginTop: 10 }]}>{t('ord.terminal', { s: enumT('ostatus', OSTATUS, order.status) })}</Text> : null}
         {msg ? <Text style={[s.muted, { marginTop: 10 }]}>{msg}</Text> : null}
       </View>
 
       <View style={s.card}>
-        <Text style={s.sectionTitle}>Items</Text>
+        <Text style={s.sectionTitle}>{t('ord.items')}</Text>
         {items.length === 0 ? (
-          <Text style={s.muted}>No items on this order.</Text>
+          <Text style={s.muted}>{t('ord.noItems')}</Text>
         ) : items.map((it) => (
           <View key={it.id} style={s.itemRow}>
             <View style={{ flex: 1 }}>
@@ -128,16 +136,16 @@ export default function OrderDetailScreen({ route, navigation }) {
           </View>
         ))}
         <View style={s.subtotalRow}>
-          <Text style={s.muted}>Subtotal</Text>
+          <Text style={s.muted}>{t('ord.subtotal')}</Text>
           <Text style={s.itemTotal}>{fmt(order.subtotal)}</Text>
         </View>
       </View>
 
       {(order.address || order.note) ? (
         <View style={s.card}>
-          <Text style={s.sectionTitle}>Delivery</Text>
-          {order.address ? (<><Text style={s.muted}>Address</Text><Text style={s.body}>{order.address}</Text></>) : null}
-          {order.note ? (<><Text style={[s.muted, { marginTop: 8 }]}>Note</Text><Text style={s.body}>{order.note}</Text></>) : null}
+          <Text style={s.sectionTitle}>{t('ord.delivery')}</Text>
+          {order.address ? (<><Text style={s.muted}>{t('ord.address')}</Text><Text style={s.body}>{order.address}</Text></>) : null}
+          {order.note ? (<><Text style={[s.muted, { marginTop: 8 }]}>{t('ord.note')}</Text><Text style={s.body}>{order.note}</Text></>) : null}
         </View>
       ) : null}
     </ScrollView>

@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Pressable, Alert, RefreshControl } from 'react-native';
 import { customers } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function CustomersScreen({ navigation }) {
+  const { t } = useT();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -14,9 +16,9 @@ export default function CustomersScreen({ navigation }) {
       const r = await customers.list(search);
       setItems(r.items);
     } catch (e) {
-      Alert.alert('Error', e.response?.data?.error || e.message);
+      Alert.alert(t('common.error'), e.response?.data?.error || e.message);
     }
-  }, [search]);
+  }, [search, t]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => navigation.addListener('focus', () => { load(); }), [navigation, load]);
@@ -29,14 +31,14 @@ export default function CustomersScreen({ navigation }) {
   return (
     <View style={s.container}>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-        <TextInput style={[s.input, { flex: 1 }]} placeholder="Search" placeholderTextColor="#64748b" value={search} onChangeText={setSearch} onSubmitEditing={load} />
-        <Pressable style={s.button} onPress={load}><Text style={s.buttonText}>Go</Text></Pressable>
+        <TextInput style={[s.input, { flex: 1 }]} placeholder={t('common.search')} placeholderTextColor="#64748b" value={search} onChangeText={setSearch} onSubmitEditing={load} />
+        <Pressable style={s.button} onPress={load}><Text style={s.buttonText}>{t('common.go')}</Text></Pressable>
       </View>
       <FlatList
         data={items}
         keyExtractor={(i) => i.id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}
-        ListEmptyComponent={<Text style={s.empty}>No customers yet.</Text>}
+        ListEmptyComponent={<Text style={s.empty}>{t('cust.empty')}</Text>}
         renderItem={({ item }) => (
           <Pressable style={s.row} onPress={() => navigation.navigate('CustomerDetail', { id: item.id, name: item.name })}>
             <View>

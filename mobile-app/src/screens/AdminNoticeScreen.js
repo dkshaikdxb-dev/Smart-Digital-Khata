@@ -1,17 +1,19 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { AuthContext } from '../AuthContext';
+import { useT } from '../i18n';
 
 export default function AdminNoticeScreen() {
+  const { t } = useT();
   const { signOut } = useContext(AuthContext);
   return (
     <View style={s.container}>
-      <Text style={s.title}>Admin account</Text>
+      <Text style={s.title}>{t('admin.title')}</Text>
       <Text style={s.body}>
-        This app is for shop owners. Please use the web admin console to manage the platform.
+        {t('admin.body')}
       </Text>
       <Pressable style={s.button} onPress={signOut}>
-        <Text style={s.buttonText}>Sign out</Text>
+        <Text style={s.buttonText}>{t('admin.signOut')}</Text>
       </Pressable>
     </View>
   );

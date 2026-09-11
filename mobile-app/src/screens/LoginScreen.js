@@ -2,8 +2,10 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { auth } from '../services/api';
 import { AuthContext } from '../AuthContext';
+import { useT } from '../i18n';
 
 export default function LoginScreen() {
+  const { t } = useT();
   const { signIn } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ export default function LoginScreen() {
       const data = await auth.login(email, password);
       signIn(data.user?.role || 'owner');
     } catch (e) {
-      Alert.alert('Login failed', e.response?.data?.error || e.message);
+      Alert.alert(t('login.failed'), e.response?.data?.error || e.message);
     } finally {
       setLoading(false);
     }
@@ -23,12 +25,12 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Text style={s.title}>Smart Digital Khata</Text>
-      <Text style={s.subtitle}>Sign in to manage your shop</Text>
-      <TextInput style={s.input} placeholder="Email" placeholderTextColor="#64748b" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
-      <TextInput style={s.input} placeholder="Password" placeholderTextColor="#64748b" secureTextEntry value={password} onChangeText={setPassword} />
+      <Text style={s.title}>{t('app.name')}</Text>
+      <Text style={s.subtitle}>{t('login.subtitle')}</Text>
+      <TextInput style={s.input} placeholder={t('login.email')} placeholderTextColor="#64748b" autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail} />
+      <TextInput style={s.input} placeholder={t('login.password')} placeholderTextColor="#64748b" secureTextEntry value={password} onChangeText={setPassword} />
       <Pressable style={s.button} onPress={submit} disabled={loading}>
-        <Text style={s.buttonText}>{loading ? 'Signing in…' : 'Sign in'}</Text>
+        <Text style={s.buttonText}>{loading ? t('login.signingIn') : t('login.signIn')}</Text>
       </Pressable>
     </KeyboardAvoidingView>
   );

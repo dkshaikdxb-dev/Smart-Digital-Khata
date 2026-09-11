@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 import { AuthContext } from './src/AuthContext';
 import { auth, getToken, getRole, setUnauthorizedHandler } from './src/services/api';
 import ConsumerApp from './src/consumer/ConsumerApp';
+import { LanguageProvider, useT } from './src/i18n';
 
 import LoginScreen from './src/screens/LoginScreen';
 import AdminNoticeScreen from './src/screens/AdminNoticeScreen';
@@ -40,54 +41,63 @@ const stackScreenOptions = {
   contentStyle: { backgroundColor: '#0f172a' },
 };
 
+// Navigation titles read `t` from the language context. Each *StackScreen /
+// OwnerTabs is a component rendered inside LanguageProvider, so it re-renders on a
+// language change and React Navigation re-applies the localized `options` titles —
+// the least invasive way to localize headers without per-screen setOptions.
 function HomeStackScreen() {
+  const { t } = useT();
   return (
     <HomeStack.Navigator screenOptions={stackScreenOptions}>
-      <HomeStack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Smart Khata' }} />
-      <HomeStack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: 'Add transaction' }} />
+      <HomeStack.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('title.dashboard') }} />
+      <HomeStack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: t('title.addTransaction') }} />
     </HomeStack.Navigator>
   );
 }
 
 function OrdersStackScreen() {
+  const { t } = useT();
   return (
     <OrdersStack.Navigator screenOptions={stackScreenOptions}>
-      <OrdersStack.Screen name="Orders" component={OrdersScreen} />
-      <OrdersStack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: 'Order' }} />
+      <OrdersStack.Screen name="Orders" component={OrdersScreen} options={{ title: t('tab.orders') }} />
+      <OrdersStack.Screen name="OrderDetail" component={OrderDetailScreen} options={{ title: t('title.order') }} />
     </OrdersStack.Navigator>
   );
 }
 
 function CatalogStackScreen() {
+  const { t } = useT();
   return (
     <CatalogStack.Navigator screenOptions={stackScreenOptions}>
-      <CatalogStack.Screen name="Catalog" component={CatalogScreen} />
+      <CatalogStack.Screen name="Catalog" component={CatalogScreen} options={{ title: t('tab.catalog') }} />
     </CatalogStack.Navigator>
   );
 }
 
 function CustomersStackScreen() {
+  const { t } = useT();
   return (
     <CustomersStack.Navigator screenOptions={stackScreenOptions}>
-      <CustomersStack.Screen name="Customers" component={CustomersScreen} />
-      <CustomersStack.Screen name="CustomerDetail" component={CustomerDetailScreen} options={{ title: 'Customer' }} />
-      <CustomersStack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: 'Add transaction' }} />
+      <CustomersStack.Screen name="Customers" component={CustomersScreen} options={{ title: t('tab.customers') }} />
+      <CustomersStack.Screen name="CustomerDetail" component={CustomerDetailScreen} options={{ title: t('title.customer') }} />
+      <CustomersStack.Screen name="AddTransaction" component={AddTransactionScreen} options={{ title: t('title.addTransaction') }} />
     </CustomersStack.Navigator>
   );
 }
 
 function MoreStackScreen() {
+  const { t } = useT();
   return (
     <MoreStack.Navigator screenOptions={stackScreenOptions}>
-      <MoreStack.Screen name="More" component={MoreScreen} />
-      <MoreStack.Screen name="Families" component={FamiliesScreen} />
-      <MoreStack.Screen name="FamilyDetail" component={FamilyDetailScreen} options={{ title: 'Family' }} />
-      <MoreStack.Screen name="Insights" component={InsightsScreen} />
-      <MoreStack.Screen name="Settings" component={SettingsScreen} />
+      <MoreStack.Screen name="More" component={MoreScreen} options={{ title: t('tab.more') }} />
+      <MoreStack.Screen name="Families" component={FamiliesScreen} options={{ title: t('title.families') }} />
+      <MoreStack.Screen name="FamilyDetail" component={FamilyDetailScreen} options={{ title: t('title.family') }} />
+      <MoreStack.Screen name="Insights" component={InsightsScreen} options={{ title: t('title.insights') }} />
+      <MoreStack.Screen name="Settings" component={SettingsScreen} options={{ title: t('title.settings') }} />
       <MoreStack.Screen
         name="FeatureWebView"
         component={FeatureWebView}
-        options={({ route }) => ({ title: route.params?.title || 'Smart Khata' })}
+        options={({ route }) => ({ title: route.params?.title || t('title.dashboard') })}
       />
     </MoreStack.Navigator>
   );
@@ -96,6 +106,7 @@ function MoreStackScreen() {
 const tabIcon = (glyph) => ({ color }) => <Text style={{ fontSize: 18, color }}>{glyph}</Text>;
 
 function OwnerTabs() {
+  const { t } = useT();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -105,11 +116,11 @@ function OwnerTabs() {
         tabBarInactiveTintColor: '#94a3b8',
       }}
     >
-      <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: 'Home', tabBarIcon: tabIcon('🏠') }} />
-      <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: 'Orders', tabBarIcon: tabIcon('🧾') }} />
-      <Tab.Screen name="CatalogTab" component={CatalogStackScreen} options={{ title: 'Catalog', tabBarIcon: tabIcon('📦') }} />
-      <Tab.Screen name="CustomersTab" component={CustomersStackScreen} options={{ title: 'Customers', tabBarIcon: tabIcon('👥') }} />
-      <Tab.Screen name="MoreTab" component={MoreStackScreen} options={{ title: 'More', tabBarIcon: tabIcon('⋯') }} />
+      <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: t('tab.home'), tabBarIcon: tabIcon('🏠') }} />
+      <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: t('tab.orders'), tabBarIcon: tabIcon('🧾') }} />
+      <Tab.Screen name="CatalogTab" component={CatalogStackScreen} options={{ title: t('tab.catalog'), tabBarIcon: tabIcon('📦') }} />
+      <Tab.Screen name="CustomersTab" component={CustomersStackScreen} options={{ title: t('tab.customers'), tabBarIcon: tabIcon('👥') }} />
+      <Tab.Screen name="MoreTab" component={MoreStackScreen} options={{ title: t('tab.more'), tabBarIcon: tabIcon('⋯') }} />
     </Tab.Navigator>
   );
 }
@@ -175,5 +186,12 @@ function OwnerApp() {
 
 export default function App() {
   const flavor = Constants.expoConfig?.extra?.flavor || 'owner';
-  return flavor === 'consumer' ? <ConsumerApp /> : <OwnerApp />;
+  // The owner flavor is wrapped in LanguageProvider so every owner screen and the
+  // navigation chrome can localize via useT. The consumer flavor keeps its own,
+  // separate provider inside ConsumerApp — the two are untouched by each other.
+  return flavor === 'consumer' ? <ConsumerApp /> : (
+    <LanguageProvider>
+      <OwnerApp />
+    </LanguageProvider>
+  );
 }

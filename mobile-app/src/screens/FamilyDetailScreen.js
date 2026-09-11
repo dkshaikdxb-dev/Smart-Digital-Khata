@@ -3,11 +3,15 @@ import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { families, customers } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 
 export default function FamilyDetailScreen({ route, navigation }) {
+  const { t } = useT();
+  // Localize the known transaction type words; fall back to the raw enum otherwise.
+  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' ? t(`txn.${v}`) : label(v));
   const { id } = route.params;
   const [detail, setDetail] = useState(null);
   const [statement, setStatement] = useState([]);
@@ -29,28 +33,28 @@ export default function FamilyDetailScreen({ route, navigation }) {
   }, [id]);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   async function addMember(customerId) {
     setBusy(true);
     try { await families.addMember(id, { customer_id: customerId }); setShowPicker(false); await load(); }
-    catch (e) { Alert.alert('Failed', e.response?.data?.error || e.message); }
+    catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
   function confirmRemove(member) {
-    Alert.alert('Remove member', `Remove ${member.name} from this family?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('famd.removeTitle'), t('famd.removeConfirm', { name: member.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Remove', style: 'destructive', onPress: async () => {
+        text: t('common.remove'), style: 'destructive', onPress: async () => {
           try { await families.removeMember(id, member.id); await load(); }
-          catch (e) { Alert.alert('Failed', e.response?.data?.error || e.message); }
+          catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
         },
       },
     ]);
@@ -61,20 +65,20 @@ export default function FamilyDetailScreen({ route, navigation }) {
     try {
       const r = await families.remind(id);
       Alert.alert(
-        'Reminder',
+        t('famd.reminderTitle'),
         r.sent
-          ? `WhatsApp reminder sent. Combined outstanding: ${fmt(r.combined_outstanding)}.`
-          : `Not sent (payer may have notifications off). Combined outstanding: ${fmt(r.combined_outstanding)}.`
+          ? t('famd.reminderSent', { amt: fmt(r.combined_outstanding) })
+          : t('famd.reminderNotSent', { amt: fmt(r.combined_outstanding) })
       );
     } catch (e) {
-      Alert.alert('Failed', e.response?.data?.error || e.message);
+      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setBusy(false);
     }
   }
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
-  if (!detail) return <View style={s.center}><Text style={s.muted}>Family not found.</Text></View>;
+  if (!detail) return <View style={s.center}><Text style={s.muted}>{t('famd.notFound')}</Text></View>;
 
   const memberIds = new Set((detail.members || []).map((m) => m.id));
   const candidates = allCustomers.filter((c) => !memberIds.has(c.id));
@@ -89,30 +93,30 @@ export default function FamilyDetailScreen({ route, navigation }) {
         <Text style={s.title}>{detail.family?.name}</Text>
         <View style={s.kpiRow}>
           <View style={{ flex: 1 }}>
-            <Text style={s.kpiLabel}>Combined outstanding</Text>
+            <Text style={s.kpiLabel}>{t('famd.combinedOutstanding')}</Text>
             <Text style={[s.kpiValue, Number(detail.combined_balance) > 0 ? { color: '#f87171' } : null]}>{fmt(detail.combined_balance)}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={s.kpiLabel}>Combined limit</Text>
+            <Text style={s.kpiLabel}>{t('famd.combinedLimit')}</Text>
             <Text style={s.kpiValue}>{Number(detail.combined_limit) > 0 ? fmt(detail.combined_limit) : '—'}</Text>
           </View>
         </View>
-        <Text style={s.muted}>Payer: {detail.payer?.name || 'not set'}</Text>
+        <Text style={s.muted}>{t('famd.payerLabel')}: {detail.payer?.name || t('famd.notSet')}</Text>
         <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={remind} disabled={busy}>
-          <Text style={s.primaryText}>Send WhatsApp reminder</Text>
+          <Text style={s.primaryText}>{t('famd.sendReminder')}</Text>
         </Pressable>
       </View>
 
       <View style={s.card}>
         <View style={s.sectionHead}>
-          <Text style={s.sectionTitle}>Members</Text>
-          <Pressable onPress={() => setShowPicker((v) => !v)}><Text style={s.action}>{showPicker ? 'Close' : '+ Add'}</Text></Pressable>
+          <Text style={s.sectionTitle}>{t('famd.members')}</Text>
+          <Pressable onPress={() => setShowPicker((v) => !v)}><Text style={s.action}>{showPicker ? t('common.close') : `+ ${t('common.add')}`}</Text></Pressable>
         </View>
 
         {showPicker ? (
           <View style={s.picker}>
             {candidates.length === 0 ? (
-              <Text style={s.muted}>No other customers available to add.</Text>
+              <Text style={s.muted}>{t('famd.noCandidates')}</Text>
             ) : candidates.map((c) => (
               <Pressable key={c.id} style={s.pickRow} onPress={() => addMember(c.id)} disabled={busy}>
                 <Text style={s.body}>{c.name}</Text>
@@ -123,30 +127,30 @@ export default function FamilyDetailScreen({ route, navigation }) {
         ) : null}
 
         {(detail.members || []).length === 0 ? (
-          <Text style={s.muted}>No members yet.</Text>
+          <Text style={s.muted}>{t('famd.noMembers')}</Text>
         ) : detail.members.map((m) => (
           <View key={m.id} style={s.memberRow}>
             <View style={{ flex: 1 }}>
-              <Text style={s.body}>{m.name}{detail.payer?.id === m.id ? '  (payer)' : ''}</Text>
-              <Text style={s.muted}>{m.phone} · {fmt(m.balance)}{m.sub_limit != null ? ` · sub-limit ${fmt(m.sub_limit)}` : ''}</Text>
+              <Text style={s.body}>{m.name}{detail.payer?.id === m.id ? `  ${t('famd.payerTag')}` : ''}</Text>
+              <Text style={s.muted}>{m.phone} · {fmt(m.balance)}{m.sub_limit != null ? ` · ${t('famd.subLimit', { amt: fmt(m.sub_limit) })}` : ''}</Text>
             </View>
-            <Pressable onPress={() => confirmRemove(m)}><Text style={[s.action, { color: '#f87171' }]}>Remove</Text></Pressable>
+            <Pressable onPress={() => confirmRemove(m)}><Text style={[s.action, { color: '#f87171' }]}>{t('common.remove')}</Text></Pressable>
           </View>
         ))}
       </View>
 
       <View style={s.card}>
-        <Text style={s.sectionTitle}>Combined statement</Text>
+        <Text style={s.sectionTitle}>{t('famd.combinedStatement')}</Text>
         {statement.length === 0 ? (
-          <Text style={s.muted}>No transactions yet.</Text>
-        ) : statement.map((t) => (
-          <View key={t.id} style={s.txRow}>
+          <Text style={s.muted}>{t('famd.noTransactions')}</Text>
+        ) : statement.map((row) => (
+          <View key={row.id} style={s.txRow}>
             <View style={{ flex: 1 }}>
-              <Text style={s.body}>{t.customer_name} · {label(t.type)}</Text>
-              <Text style={s.muted}>{new Date(t.created_at).toLocaleString()}{t.note ? ` · ${t.note}` : ''}</Text>
+              <Text style={s.body}>{row.customer_name} · {typeLabel(row.type)}</Text>
+              <Text style={s.muted}>{new Date(row.created_at).toLocaleString()}{row.note ? ` · ${row.note}` : ''}</Text>
             </View>
-            <Text style={[s.txAmount, { color: t.type === 'purchase' ? '#f87171' : '#22c55e' }]}>
-              {t.type === 'purchase' ? '+' : '−'}{fmt(t.amount)}
+            <Text style={[s.txAmount, { color: row.type === 'purchase' ? '#f87171' : '#22c55e' }]}>
+              {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
             </Text>
           </View>
         ))}

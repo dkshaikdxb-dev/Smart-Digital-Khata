@@ -1,46 +1,48 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { useT } from '../i18n';
 
-// Native screens.
+// Native screens. Titles/subtitles are i18n keys resolved at render time.
 const ITEMS = [
-  { route: 'Families', title: 'Families', subtitle: 'Group customers, shared credit & reminders' },
-  { route: 'Insights', title: 'Insights', subtitle: 'Analytics overview & aging' },
-  { route: 'Settings', title: 'Settings', subtitle: 'Shop, payments & discovery' },
+  { route: 'Families', titleKey: 'title.families', subKey: 'more.familiesSub' },
+  { route: 'Insights', titleKey: 'title.insights', subKey: 'more.insightsSub' },
+  { route: 'Settings', titleKey: 'title.settings', subKey: 'more.settingsSub' },
 ];
 
 // Web features rendered through the auth-bridged FeatureWebView. Each targets a
 // live web route (confirmed against admin-dashboard/src/pages) so new web deploys
 // show up here with no app rebuild. `path` is appended to the API base.
 const WEB_ITEMS = [
-  { key: 'credits', path: '/account', title: 'Khata Credits & Referral', subtitle: 'Earn & spend credits, invite shops' },
-  { key: 'promote', path: '/promote', title: 'Boost & Branded Store', subtitle: 'Promote your shop, premium storefront' },
-  { key: 'delivery', path: '/delivery', title: 'Delivery Champions', subtitle: 'Assign deliveries & share status links' },
-  { key: 'poster', path: '/dashboard', title: 'Share Poster', subtitle: 'Shareable shop poster for WhatsApp/IG/FB' },
+  { key: 'credits', path: '/account', titleKey: 'more.credits', subKey: 'more.creditsSub' },
+  { key: 'promote', path: '/promote', titleKey: 'more.promote', subKey: 'more.promoteSub' },
+  { key: 'delivery', path: '/delivery', titleKey: 'more.delivery', subKey: 'more.deliverySub' },
+  { key: 'poster', path: '/dashboard', titleKey: 'more.poster', subKey: 'more.posterSub' },
 ];
 
 export default function MoreScreen({ navigation }) {
+  const { t } = useT();
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 16 }}>
       {ITEMS.map((it) => (
         <Pressable key={it.route} style={s.row} onPress={() => navigation.navigate(it.route)}>
           <View style={{ flex: 1 }}>
-            <Text style={s.title}>{it.title}</Text>
-            <Text style={s.muted}>{it.subtitle}</Text>
+            <Text style={s.title}>{t(it.titleKey)}</Text>
+            <Text style={s.muted}>{t(it.subKey)}</Text>
           </View>
           <Text style={s.chevron}>›</Text>
         </Pressable>
       ))}
 
-      <Text style={s.section}>More features</Text>
+      <Text style={s.section}>{t('more.moreFeatures')}</Text>
       {WEB_ITEMS.map((it) => (
         <Pressable
           key={it.key}
           style={s.row}
-          onPress={() => navigation.navigate('FeatureWebView', { path: it.path, title: it.title })}
+          onPress={() => navigation.navigate('FeatureWebView', { path: it.path, title: t(it.titleKey) })}
         >
           <View style={{ flex: 1 }}>
-            <Text style={s.title}>{it.title}</Text>
-            <Text style={s.muted}>{it.subtitle}</Text>
+            <Text style={s.title}>{t(it.titleKey)}</Text>
+            <Text style={s.muted}>{t(it.subKey)}</Text>
           </View>
           <Text style={s.chevron}>›</Text>
         </Pressable>
