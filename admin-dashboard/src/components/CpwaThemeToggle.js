@@ -86,9 +86,12 @@ function PaletteIcon() {
   );
 }
 
+// Tiny appearance-menu preview swatches. Kept in step with the retuned per-theme
+// accents in globals.css (deep emerald in light, brighter green in dark, forest
+// green on warm paper) so the preview is truthful.
 const SWATCHES = {
-  light: { '--sw-bg': '#f6f8fa', '--sw-accent': '#22c55e' },
-  dark: { '--sw-bg': '#0f172a', '--sw-accent': '#22c55e' },
+  light: { '--sw-bg': '#f6f8fa', '--sw-accent': '#15803d' },
+  dark: { '--sw-bg': '#0f172a', '--sw-accent': '#2dd36a' },
   warm: { '--sw-bg': '#FBF6EB', '--sw-accent': '#157A3A' },
 };
 

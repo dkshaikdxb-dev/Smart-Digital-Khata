@@ -33,8 +33,38 @@ export function useCustomerGuard() {
 
 // Page shell: centered mobile column (max ~480px), Head metadata for PWA
 // installability, an optional title bar, and the bottom tab bar when `tabs`.
+//
+// Embed gate: when the page is opened inside the native app's WebView it is
+// loaded with ?embed=1. The app already renders its own header + bottom tab bar,
+// so we render NO web chrome (no top bar, no CustomerTabBar, no has-tabs padding)
+// to avoid a doubled navigation. This mirrors Nav.js exactly, including the sticky
+// `skhata_embed` sessionStorage flag so internal link navigation (which may drop
+// the query param) keeps the chrome hidden for the whole WebView session. A normal
+// browser user never sets this.
 export default function CustomerShell({ title, children, tabs = true, back }) {
   const router = useRouter();
+
+  const [embedded, setEmbedded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (new URLSearchParams(window.location.search).get('embed') === '1') return true;
+      return window.sessionStorage.getItem('skhata_embed') === '1';
+    } catch (e) { return false; }
+  });
+
+  useEffect(() => {
+    try {
+      const urlEmbed = new URLSearchParams(window.location.search).get('embed') === '1' || router.query.embed === '1';
+      if (urlEmbed) { try { window.sessionStorage.setItem('skhata_embed', '1'); } catch (e) { /* ignore */ } }
+      let sticky = false;
+      try { sticky = window.sessionStorage.getItem('skhata_embed') === '1'; } catch (e) { /* ignore */ }
+      setEmbedded(urlEmbed || sticky);
+    } catch (e) { /* ignore */ }
+  }, [router.query.embed]);
+
+  const showChrome = !embedded;
+  const showTabs = showChrome && tabs;
+
   return (
     <div className="cpwa">
       <Head>
@@ -48,20 +78,25 @@ export default function CustomerShell({ title, children, tabs = true, back }) {
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </Head>
       <div className="cpwa-shell">
-        <header className="cpwa-topbar">
-          {back && (
-            <button type="button" className="secondary cpwa-back" onClick={() => router.push(back)} aria-label="Back">
-              ‹
-            </button>
-          )}
-          {title && <h1>{title}</h1>}
-          <span style={{ flex: 1 }} />
-          <CpwaLocationPicker />
-          <CpwaThemeToggle />
-          <LangSwitch variant="cpwa" />
-        </header>
-        <main className={tabs ? 'cpwa-main has-tabs' : 'cpwa-main'}>{children}</main>
-        {tabs && <CustomerTabBar />}
+        {showChrome && (
+          <header className="cpwa-topbar">
+            <div className="cpwa-topbar-lead">
+              {back && (
+                <button type="button" className="secondary cpwa-back" onClick={() => router.push(back)} aria-label="Back">
+                  ‹
+                </button>
+              )}
+              {title && <h1 className="cpwa-topbar-title">{title}</h1>}
+            </div>
+            <div className="cpwa-topbar-tools">
+              <CpwaLocationPicker />
+              <CpwaThemeToggle />
+              <LangSwitch variant="cpwa" />
+            </div>
+          </header>
+        )}
+        <main className={showTabs ? 'cpwa-main has-tabs' : 'cpwa-main'}>{children}</main>
+        {showTabs && <CustomerTabBar />}
       </div>
     </div>
   );
