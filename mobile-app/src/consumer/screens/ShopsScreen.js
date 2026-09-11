@@ -6,6 +6,7 @@ import { colors, sizes } from '../theme';
 import { ErrorBanner, Loading, Empty, Badge } from '../components';
 import { publicApi } from '../consumerApi';
 import { useT } from '../i18n';
+import { useNativeVoice } from '../../lib/useNativeVoice';
 
 // Priority 3 — public shop directory from GET /public/shops. Search by name/city
 // (server matches either). GPS is intentionally NOT used here: no location
@@ -30,6 +31,30 @@ export default function ShopsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+
+  // OS-native voice search. The mic shows only when this device can recognize
+  // speech AND the current language maps to a recognizer locale; bn/gu/mr get an
+  // honest "not in this language yet" note instead of a dead button.
+  const voice = useNativeVoice(lang);
+  const canVoice = voice.supported && voice.localeSupported(lang);
+  const showLangNote = voice.supported && !voice.localeSupported(lang);
+  const [voiceHint, setVoiceHint] = useState('');
+
+  // Surface the hook's mapped error as a localized, auto-clearing hint.
+  useEffect(() => {
+    if (!voice.lastError) return undefined;
+    setVoiceHint(t(`voice.hint.${voice.lastError}`));
+    const timer = setTimeout(() => setVoiceHint(''), 5000);
+    return () => clearTimeout(timer);
+  }, [voice.lastError, t]);
+
+  const startVoice = () => {
+    setVoiceHint('');
+    voice.listen((transcript) => {
+      setSearch(transcript);
+      load(transcript);
+    });
+  };
 
   const load = useCallback(async (term) => {
     setError('');
@@ -74,7 +99,24 @@ export default function ShopsScreen({ navigation }) {
               <Text style={styles.clearText}>✕</Text>
             </Pressable>
           ) : null}
+          {canVoice ? (
+            <Pressable
+              onPress={voice.listening ? voice.stop : startVoice}
+              style={styles.micBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('voice.search')}
+            >
+              <Text style={[styles.micText, voice.listening && styles.micTextActive]}>🎤</Text>
+            </Pressable>
+          ) : null}
         </View>
+        {voice.listening ? (
+          <Text style={styles.voiceListening}>{t('voice.listening')}</Text>
+        ) : voiceHint ? (
+          <Text style={styles.voiceHint}>{voiceHint}</Text>
+        ) : showLangNote ? (
+          <Text style={styles.voiceHint}>{t('voice.notInLanguage')}</Text>
+        ) : null}
       </View>
 
       <ErrorBanner>{error}</ErrorBanner>
@@ -132,6 +174,11 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, color: colors.text, fontSize: 16, paddingVertical: 8 },
   clearBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   clearText: { color: colors.textMuted, fontSize: 16 },
+  micBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginLeft: 2 },
+  micText: { fontSize: 18, opacity: 0.75 },
+  micTextActive: { opacity: 1 },
+  voiceListening: { color: colors.accent, fontSize: 13, marginTop: 8, marginLeft: 6 },
+  voiceHint: { color: colors.textMuted, fontSize: 13, marginTop: 8, marginLeft: 6 },
   card: {
     backgroundColor: colors.card,
     borderRadius: sizes.radius,

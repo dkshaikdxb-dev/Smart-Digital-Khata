@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl } from 'react-native';
 import { summary } from '../services/api';
+import AskShop from './AskShop';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -23,6 +24,7 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <ScrollView style={s.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}>
+      <AskShop />
       <View style={s.row}>
         <Card label="Today purchases" value={today ? fmt(today.purchases) : '—'} />
         <Card label="Today collections" value={today ? fmt(today.collections) : '—'} />
