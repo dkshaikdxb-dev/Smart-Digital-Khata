@@ -19,6 +19,7 @@ const CAMPAIGN_SELECT = `
   SELECT c.id, c.style, c.title, c.offer_text, c.subtitle, c.glyph, c.image_url,
          c.i18n, c.advertiser, c.link_type, c.link_shop_id, c.link_product_id,
          c.link_url, c.is_seasonal, c.starts_at, c.ends_at, c.priority, c.status,
+         c.self_serve, c.credits_spent_paise, c.review_note,
          c.impressions, c.clicks, c.created_by, c.created_at, c.updated_at,
          COALESCE((
            SELECT json_agg(json_build_object('id', t.id, 'geo_type', t.geo_type, 'geo_value', t.geo_value)
@@ -275,6 +276,10 @@ exports.pendingPromos = async (_req, res) => {
     items: r.rows.map((row) => ({
       ...row,
       credits_spent_paise: row.credits_spent_paise == null ? null : Number(row.credits_spent_paise),
+      // A free request paid nothing (credits_spent_paise=0). The queue UI uses this
+      // to show a "Free" vs "Paid" pill and to word the reject confirmation (a free
+      // reject refunds nothing).
+      is_free: Number(row.credits_spent_paise) === 0,
     })),
   });
 };
@@ -283,12 +288,17 @@ exports.pendingPromos = async (_req, res) => {
 // status='pending_review' means only a promo actually awaiting review can be
 // approved (an already-active/rejected one 409s), so serving picks it up next.
 exports.approvePromo = async (req, res) => {
+  // Optional note the admin may leave on approval (canonical field review_note;
+  // reason accepted for back-compat). COALESCE so an approve with no note never
+  // wipes a note left earlier.
+  const rawNote = req.body && (req.body.review_note != null ? req.body.review_note : req.body.reason);
+  const reviewNote = rawNote ? String(rawNote).trim().slice(0, 500) || null : null;
   const r = await query(
     `UPDATE ad_campaigns
-        SET status = 'active', updated_at = NOW()
+        SET status = 'active', review_note = COALESCE($2, review_note), updated_at = NOW()
       WHERE id = $1 AND self_serve = true AND status = 'pending_review'
       RETURNING id`,
-    [req.params.id]
+    [req.params.id, reviewNote]
   );
   if (!r.rowCount) {
     // Distinguish "no such self-serve promo" from "not awaiting review".
@@ -311,15 +321,19 @@ exports.approvePromo = async (req, res) => {
 // or repeated reject finds status='rejected' (rowCount 0) and refunds NOTHING, so
 // a double-reject can never double-refund.
 exports.rejectPromo = async (req, res) => {
-  const reason = req.body && req.body.reason ? String(req.body.reason).trim().slice(0, 500) : null;
+  // Canonical field review_note (reason accepted for back-compat). Persisted to the
+  // review_note column AND woven into the refund ledger note, so the owner sees the
+  // reason on their placement and the ledger row records it too.
+  const rawNote = req.body && (req.body.review_note != null ? req.body.review_note : req.body.reason);
+  const reason = rawNote ? String(rawNote).trim().slice(0, 500) || null : null;
 
   const outcome = await withTx(async (client) => {
     const upd = await client.query(
       `UPDATE ad_campaigns
-          SET status = 'rejected', updated_at = NOW()
+          SET status = 'rejected', review_note = $2, updated_at = NOW()
         WHERE id = $1 AND self_serve = true AND status = 'pending_review'
         RETURNING id, link_shop_id, credits_spent_paise`,
-      [req.params.id]
+      [req.params.id, reason]
     );
     if (!upd.rowCount) return { transitioned: false };
 

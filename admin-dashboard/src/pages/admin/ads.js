@@ -95,10 +95,14 @@ function ctrLabel(impressions, clicks) {
   return `${(Math.round((c / i) * 1000) / 10).toFixed(1)}%`;
 }
 
-// Derive the display state pill: paused; scheduled (active but not started yet);
-// ended (active but past ends_at); live; or the raw draft.
+// Derive the display state pill: pending review; rejected; paused; scheduled
+// (active but not started yet); ended (active but past ends_at); live; or the raw
+// draft. The two review states (pending_review/rejected) belong to shop self-serve
+// promos and must render as themselves, never fall through to the "Live" default.
 function derivedState(c) {
   const now = Date.now();
+  if (c.status === 'pending_review') return { label: 'Pending review', bg: '#78350f', fg: '#fde68a' };
+  if (c.status === 'rejected') return { label: 'Rejected', bg: '#7f1d1d', fg: '#fecaca' };
   if (c.status === 'paused') return { label: 'Paused', bg: '#7f1d1d', fg: '#fecaca' };
   if (c.status === 'draft') return { label: 'Draft', bg: '#334155', fg: '#cbd5e1' };
   // active
@@ -200,13 +204,16 @@ export default function AdminAds() {
 
   // Approve → the promo goes active and starts serving. Reject → it is declined
   // and the shop's Khata Credits are refunded (idempotently, server-side).
-  async function moderate(id, action, reason) {
+  async function moderate(id, action, note, isFree) {
     if (!canManage || modBusy) return;
     setModBusy(id); setError(''); setMsg('');
     try {
-      const body = action === 'reject' ? { reason: reason || undefined } : {};
+      // review_note is the canonical field; it is captured on both approve and
+      // reject and shown back to the owner on their placement.
+      const body = note ? { review_note: note } : {};
       await apiFetch(`/api/admin/promos/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
-      setMsg(action === 'approve' ? 'Promo approved — now live.' : 'Promo rejected — credits refunded.');
+      const rejectMsg = isFree ? 'Promo rejected.' : 'Promo rejected — credits refunded.';
+      setMsg(action === 'approve' ? 'Promo approved — now live.' : rejectMsg);
       await Promise.all([loadPending(), load()]);
     } catch (e) { setError(e.message); }
     finally { setModBusy(null); }
@@ -338,6 +345,12 @@ export default function AdminAds() {
       setDlBusy(false);
     }
   }
+
+  // Shop self-serve promos are moderated ONLY through the "Shop requests" queue
+  // above — never through the generic builder, which would let an admin flip their
+  // status out of the review states or otherwise corrupt a paid/free placement. So
+  // the editable "Running campaigns" matrix shows admin-authored campaigns only.
+  const manageable = useMemo(() => items.filter((c) => !c.self_serve), [items]);
 
   const summary = useMemo(() => {
     const s = { total: items.length, active: 0, paused: 0, draft: 0, impressions: 0, clicks: 0 };
@@ -597,8 +610,8 @@ export default function AdminAds() {
             {dlBusy ? 'Preparing…' : 'Download CSV'}
           </button>
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>CTR reflects the impression/click beacons (no per-viewer dedup) — treat as directional.</p>
-        {items.length === 0 ? (
+        <p className="muted" style={{ marginTop: 8 }}>CTR reflects the impression/click beacons (no per-viewer dedup) — treat as directional. Shop self-serve promos are managed in the Shop requests queue above, not here.</p>
+        {manageable.length === 0 ? (
           <div className="muted">No campaigns yet.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -615,7 +628,7 @@ export default function AdminAds() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((c) => (
+                {manageable.map((c) => (
                   <CampaignRow
                     key={c.id} c={c} canManage={canManage}
                     onEdit={startEdit} onToggle={toggleStatus} onDelete={remove}
@@ -684,16 +697,17 @@ function GeoChips({ targets }) {
   );
 }
 
-// One row in the shop self-serve moderation queue. Approve → live; Reject asks
-// for an optional reason (prompt) and refunds the shop's credits server-side.
+// One row in the shop self-serve moderation queue. Approve → live; Reject captures
+// an optional note (shown to the owner) and, for a PAID promo, refunds the shop's
+// credits server-side. A FREE request (is_free) paid nothing, so its reject refunds
+// nothing — the row makes that explicit with a "Free" pill.
 function PendingRow({ p, busy, onModerate }) {
+  const [note, setNote] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+  const isFree = !!p.is_free || (Number(p.credits_spent_paise) || 0) === 0;
   const paid = `₹${((Number(p.credits_spent_paise) || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const win = (v) => (v ? new Date(v).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
-  const reject = () => {
-    const reason = typeof window !== 'undefined' ? window.prompt('Reason for rejecting (optional):', '') : '';
-    if (reason === null) return; // cancelled
-    onModerate(p.id, 'reject', reason.trim());
-  };
+  const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined, isFree);
   return (
     <tr>
       <td style={cell}>
@@ -706,14 +720,36 @@ function PendingRow({ p, busy, onModerate }) {
       </td>
       <td style={cell}><GeoChips targets={p.targets} /></td>
       <td style={cell}>{win(p.starts_at)} – {win(p.ends_at)}</td>
-      <td style={cell}>{paid}</td>
       <td style={cell}>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve')}>
-            {busy ? '…' : 'Approve'}
-          </button>
-          <button type="button" className="secondary" disabled={busy} onClick={reject}>Reject</button>
-        </div>
+        {isFree
+          ? <span className="badge" style={{ background: '#1e3a8a', color: '#bfdbfe' }}>Free</span>
+          : paid}
+      </td>
+      <td style={cell}>
+        {rejecting ? (
+          <div style={{ display: 'grid', gap: 6, minWidth: 200 }}>
+            <input
+              value={note}
+              placeholder={isFree ? 'Reason (optional)' : 'Reason (optional) — credits are refunded'}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={1000}
+              aria-label="Rejection reason"
+            />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={doReject}>
+                {busy ? '…' : 'Confirm reject'}
+              </button>
+              <button type="button" className="secondary" disabled={busy} onClick={() => { setRejecting(false); setNote(''); }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve', undefined, isFree)}>
+              {busy ? '…' : 'Approve'}
+            </button>
+            <button type="button" className="secondary" disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
+          </div>
+        )}
       </td>
     </tr>
   );

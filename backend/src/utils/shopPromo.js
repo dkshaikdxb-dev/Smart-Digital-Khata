@@ -51,4 +51,38 @@ async function getShopPromoConfig() {
   }
 }
 
-module.exports = { getShopPromoConfig, MAX_DAYS_CEILING };
+// The live FREE-request config from platform_settings (migration 0061). A shop may
+// REQUEST a promo at no Khata-Credit cost (admin-moderated, throttled). Read LIVE
+// like getShopPromoConfig, and just as disabled-safe: on any error, or a malformed
+// value, it reports enabled:false so the free path stays dormant. The free path
+// never touches the wallet, so there is no price to validate here — only the day
+// ceiling and the per-shop concurrency cap.
+//
+// Returns { enabled, max_days, max_active }.
+async function getShopPromoFreeConfig() {
+  try {
+    const r = await query(
+      `SELECT key, value FROM platform_settings
+        WHERE key IN ('shop_promo_free_enabled','shop_promo_free_max_days','shop_promo_free_max_active')`
+    );
+    const m = {};
+    for (const row of r.rows) m[row.key] = row.value;
+
+    // Default-safe: a missing/blank flag reads as disabled, not enabled.
+    const enabled = m.shop_promo_free_enabled === 'true';
+    const maxDays = Math.min(clampPosInt(m.shop_promo_free_max_days, 0), MAX_DAYS_CEILING);
+    const maxActive = clampPosInt(m.shop_promo_free_max_active, 0);
+
+    return {
+      // A day ceiling or an active cap of 0 makes the feature unusable even if the
+      // flag says enabled — treat that as disabled so the endpoint stays locked.
+      enabled: enabled && maxDays > 0 && maxActive > 0,
+      max_days: maxDays,
+      max_active: maxActive,
+    };
+  } catch (_e) {
+    return { enabled: false, max_days: 0, max_active: 0 };
+  }
+}
+
+module.exports = { getShopPromoConfig, getShopPromoFreeConfig, MAX_DAYS_CEILING };
