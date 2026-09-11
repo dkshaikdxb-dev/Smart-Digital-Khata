@@ -362,6 +362,42 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 640px) { .cpwa-promo-slide { flex-basis: 88%; } }
 
 /* ==========================================================================
+   STOREFRONT PHOTO CAROUSEL (batch LITE) — up to 3 owner photos at the top of a
+   shop page, where the single cover used to sit. CSS-only: a horizontal
+   scroll-snap track with a dots row, no JS slider library. Fixed 20/9 aspect so
+   the header height never jumps as photos lazy-load. Data-saver (handled in the
+   component) collapses this to the single first image. 2G-light.
+   ========================================================================== */
+.cpwa-shopcar-single {
+  display: block; width: 100%; aspect-ratio: 20 / 9; max-width: 100%;
+  object-fit: cover; border-radius: 10px; margin-bottom: 10px;
+}
+.cpwa-shopcar { margin-bottom: 10px; }
+.cpwa-shopcar-track {
+  display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  border-radius: 10px;
+}
+.cpwa-shopcar-track::-webkit-scrollbar { display: none; }
+.cpwa-shopcar-slide { scroll-snap-align: start; flex: 0 0 100%; max-width: 100%; }
+.cpwa-shopcar-img {
+  display: block; width: 100%; aspect-ratio: 20 / 9; max-width: 100%;
+  object-fit: cover; border-radius: 10px;
+}
+.cpwa-shopcar-dots { display: flex; justify-content: center; gap: 7px; margin-top: 8px; }
+.cpwa-shopcar-dot {
+  width: 8px; height: 8px; padding: 0; border-radius: 999px; cursor: pointer;
+  background: var(--c-border-strong); border: none;
+}
+.cpwa-shopcar-dot.active { background: var(--c-accent); }
+.cpwa-shopcar-dot:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+/* Respect reduced-motion for the tap-to-scroll snap too (auto-advance is already
+   disabled in JS under reduced-motion). */
+@media (prefers-reduced-motion: reduce) {
+  .cpwa-shopcar-track { scroll-behavior: auto; }
+}
+
+/* ==========================================================================
    HOOK DEFAULTS — inert in the STANDARD layout.
    These leading elements exist in the markup on every render so a single
    component tree serves both layouts, but they are hidden unless the Gaon

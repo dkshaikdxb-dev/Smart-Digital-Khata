@@ -289,6 +289,159 @@ exports.uploadImage = async (req, res) => {
   res.json({ image_url: r.rows[0].image_url });
 };
 
+// ===========================================================================
+// Storefront photo gallery (batch LITE). Up to 3 owner-uploaded photos per
+// shop, stored IN Postgres exactly like the single cover above and served under
+// /api/shop-images/<id>. Same trust model as the cover (owner-controlled, no
+// moderation). The 3-photo cap is enforced HERE, in the app — a 4th upload is
+// rejected with 409 shop_images_full — not in the DB.
+// ===========================================================================
+
+// Hard cap of photos per shop (spec §1/§2). Enforced in the app, not the schema.
+const MAX_SHOP_IMAGES = 3;
+
+// Cache-busted public URL for a gallery image row. The epoch comes from
+// updated_at so an owner re-uploading (a future feature) would bust the cache;
+// today rows are immutable once created, so it is stable per row.
+function galleryImageUrl(id, updatedAt) {
+  const epoch = updatedAt ? Math.floor(new Date(updatedAt).getTime() / 1000) : 0;
+  return `/api/shop-images/${id}?v=${epoch}`;
+}
+
+/**
+ * Owner/staff, shop-scoped: list this shop's storefront photos ordered by
+ * position. Never returns the raw BYTEA — only { id, url, position } with a
+ * cache-busted url pointing at the public serve endpoint.
+ */
+exports.listImages = async (req, res) => {
+  const r = await query(
+    `SELECT id, position, updated_at
+       FROM shop_images
+      WHERE shop_id = $1
+      ORDER BY position, updated_at, id`,
+    [req.user.shopId]
+  );
+  const images = r.rows.map((row) => ({
+    id: row.id,
+    url: galleryImageUrl(row.id, row.updated_at),
+    position: row.position,
+  }));
+  res.json({ images });
+};
+
+/**
+ * Owner/staff, shop-scoped: add one storefront photo (multipart field `image`,
+ * SAME multer config as the cover). Runs the SAME sharp pipeline as the cover,
+ * stores the processed bytes IN Postgres at the next position, and returns the
+ * new { id, url, position }. Rejects with 409 shop_images_full once the shop
+ * already has MAX_SHOP_IMAGES photos. The count + insert run in one transaction
+ * so two concurrent uploads can't both slip past the cap.
+ */
+exports.uploadGalleryImage = async (req, res) => {
+  if (!req.file || !req.file.buffer || !req.file.buffer.length) {
+    throw ApiError.badRequest('No image file uploaded (multipart field "image")');
+  }
+  if (!ALLOWED_IMAGE_MIMES.has(req.file.mimetype)) {
+    throw ApiError.badRequest('Unsupported image type; allowed: JPEG, PNG, WebP');
+  }
+
+  // Same pipeline as the cover: wide long edge (storefront header), WebP, sharp
+  // backstop even though the client ImageStudio already compressed on-device.
+  const { data, mime } = await processImage(req.file.buffer, {
+    maxDim: 1600,
+    quality: 80,
+    fallbackMime: req.file.mimetype,
+  });
+
+  const created = await withTx(async (client) => {
+    // Lock the owning shop row so a concurrent upload for the same shop
+    // serializes behind us — the cap check below then sees a stable count.
+    const shop = await client.query('SELECT id FROM shops WHERE id = $1 FOR UPDATE', [req.user.shopId]);
+    if (!shop.rowCount) throw ApiError.notFound('Shop not found');
+
+    const cnt = await client.query('SELECT COUNT(*)::int AS n FROM shop_images WHERE shop_id = $1', [
+      req.user.shopId,
+    ]);
+    if (cnt.rows[0].n >= MAX_SHOP_IMAGES) {
+      throw ApiError.conflict('shop_images_full', [`A shop can have at most ${MAX_SHOP_IMAGES} photos`]);
+    }
+
+    const ins = await client.query(
+      `INSERT INTO shop_images (shop_id, position, mime, data, updated_at)
+       VALUES ($1,
+               COALESCE((SELECT MAX(position) + 1 FROM shop_images WHERE shop_id = $1), 0),
+               $2, $3, NOW())
+       RETURNING id, position, updated_at`,
+      [req.user.shopId, mime, data]
+    );
+    return ins.rows[0];
+  });
+
+  res.status(201).json({
+    id: created.id,
+    url: galleryImageUrl(created.id, created.updated_at),
+    position: created.position,
+  });
+};
+
+/**
+ * Owner/staff, shop-scoped: delete one storefront photo. Scoped to the caller's
+ * shop — deleting a row that belongs to another shop (or does not exist) 404s.
+ * Renumbers the remaining photos to stay 0..n-1 so positions never gap.
+ */
+exports.deleteImage = async (req, res) => {
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) throw ApiError.notFound('Image not found');
+
+  await withTx(async (client) => {
+    const del = await client.query(
+      'DELETE FROM shop_images WHERE id = $1 AND shop_id = $2 RETURNING id',
+      [id, req.user.shopId]
+    );
+    if (!del.rowCount) throw ApiError.notFound('Image not found');
+    // Compact positions to 0..n-1 (ordered by the old position) so the gallery
+    // never carries a gap after a middle photo is removed.
+    await client.query(
+      `WITH ordered AS (
+         SELECT id, ROW_NUMBER() OVER (ORDER BY position, updated_at, id) - 1 AS rn
+           FROM shop_images WHERE shop_id = $1
+       )
+       UPDATE shop_images s SET position = ordered.rn
+         FROM ordered WHERE s.id = ordered.id AND s.position <> ordered.rn`,
+      [req.user.shopId]
+    );
+  });
+
+  res.json({ ok: true });
+};
+
+/**
+ * PUBLIC (no auth): stream a storefront gallery photo by its own id. Mirrors
+ * serveImage (the single cover): long immutable cache (callers use the
+ * cache-busted ?v= URL), cross-origin CORP so the storefront can <img> it, and
+ * an ETag for 304s. 404 when the id is malformed or the row is gone.
+ */
+exports.serveGalleryImage = async (req, res) => {
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) throw ApiError.notFound('Image not found');
+
+  const r = await query('SELECT mime, data, updated_at FROM shop_images WHERE id = $1', [id]);
+  if (!r.rowCount || !r.rows[0].data) throw ApiError.notFound('Image not found');
+
+  const { mime, data, updated_at: updatedAt } = r.rows[0];
+  const epoch = updatedAt ? Math.floor(new Date(updatedAt).getTime() / 1000) : 0;
+  const etag = `"shopimg-${id}-${epoch}"`;
+
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.set('ETag', etag);
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  if (req.headers['if-none-match'] === etag) {
+    return res.status(304).end();
+  }
+  res.set('Content-Type', mime || 'application/octet-stream');
+  return res.send(data);
+};
+
 /**
  * PUBLIC (no auth): stream a shop's stored cover image so the storefront header
  * can embed it. Mirrors product.controller.serveImage — long immutable cache is

@@ -397,7 +397,29 @@ exports.getShop = async (req, res) => {
     params
   );
 
-  const body = { ...shop.rows[0], products: products.rows };
+  // Storefront photo gallery (batch LITE): the up-to-3 owner photos, returned in
+  // THIS request (no extra round-trip) so the consumer carousel renders on first
+  // load. Ordered by position; each url is the cache-busted public serve
+  // endpoint. LEGACY FALLBACK: a shop with no shop_images rows but a legacy
+  // single cover (image_url) still returns images:[{url:image_url}] so existing
+  // covers keep showing; neither → images:[]. image_url stays in the payload.
+  const gallery = await query(
+    `SELECT id, updated_at FROM shop_images WHERE shop_id = $1 ORDER BY position, updated_at, id`,
+    [shopId]
+  );
+  let images;
+  if (gallery.rowCount) {
+    images = gallery.rows.map((row) => {
+      const epoch = row.updated_at ? Math.floor(new Date(row.updated_at).getTime() / 1000) : 0;
+      return { url: `/api/shop-images/${row.id}?v=${epoch}` };
+    });
+  } else if (shop.rows[0].image_url) {
+    images = [{ url: shop.rows[0].image_url }];
+  } else {
+    images = [];
+  }
+
+  const body = { ...shop.rows[0], products: products.rows, images };
 
   // Only expose the accent/tagline while premium is active. When not branded,
   // return is_branded:false and null out the theming fields so a lapsed shop's

@@ -41,10 +41,26 @@ export default function Settings() {
   const { t } = useLang();
   const [shop, setShop] = useState(null);
   const [msg, setMsg] = useState('');
-  // Shop cover image (batch IMG1): a compressed WebP Blob awaiting upload.
-  const [coverBlob, setCoverBlob] = useState(null);
-  const [coverBusy, setCoverBusy] = useState(false);
-  const [coverMsg, setCoverMsg] = useState('');
+  // Storefront photos (batch LITE): the shop's up-to-3 gallery photos, plus a
+  // compressed WebP Blob awaiting upload. Extends the old single-cover uploader
+  // into a small multi-photo manager (add / remove), reusing the SAME ImageStudio
+  // compress → the SAME sharp/BYTEA pipeline on the server.
+  const MAX_PHOTOS = 3;
+  const [photos, setPhotos] = useState([]);
+  const [photoBlob, setPhotoBlob] = useState(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoMsg, setPhotoMsg] = useState('');
+  const [photosFull, setPhotosFull] = useState(false);
+
+  function loadPhotos() {
+    apiFetch('/api/shops/me/images')
+      .then((r) => {
+        const list = r.images || [];
+        setPhotos(list);
+        setPhotosFull(list.length >= MAX_PHOTOS);
+      })
+      .catch(console.error);
+  }
   const [plans, setPlans] = useState([]);
   const [sub, setSub] = useState(null);
   const [billingMsg, setBillingMsg] = useState('');
@@ -108,6 +124,7 @@ export default function Settings() {
     loadPayment();
     loadFaqs();
     loadNameI18n();
+    loadPhotos();
   }, [router]);
 
   // Build the consumer link and render its QR client-side (window + the qrcode
@@ -167,30 +184,48 @@ export default function Settings() {
     } catch (e) { setMsg(e.message); }
   }
 
-  // Upload the compressed shop cover Blob (multipart) — raw fetch so the browser
-  // sets the multipart boundary itself. The server sharp pipeline is the backstop.
-  async function saveCover() {
-    if (!coverBlob) return;
-    setCoverMsg('');
-    setCoverBusy(true);
+  // Upload the compressed photo Blob (multipart) to the gallery endpoint — raw
+  // fetch so the browser sets the multipart boundary itself. The server runs the
+  // SAME sharp pipeline as the cover (the backstop). A 409 means the shop already
+  // has the max photos — surface the friendly "up to 3" note and hide the adder.
+  async function addPhoto() {
+    if (!photoBlob) return;
+    setPhotoMsg('');
+    setPhotoBusy(true);
     try {
       const token = typeof window !== 'undefined' ? window.localStorage.getItem('skhata_token') : '';
       const fd = new FormData();
-      fd.append('image', coverBlob, coverBlob.name || 'cover.webp');
-      const res = await fetch(`${API_BASE}/api/shops/me/image`, {
+      fd.append('image', photoBlob, photoBlob.name || 'photo.webp');
+      const res = await fetch(`${API_BASE}/api/shops/me/images`, {
         method: 'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
       });
       const body = await res.json().catch(() => ({}));
+      if (res.status === 409 || body.error === 'shop_images_full') {
+        setPhotosFull(true);
+        setPhotoMsg(t('set.photosFull'));
+        return;
+      }
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-      setShop((s) => ({ ...s, image_url: body.image_url }));
-      setCoverBlob(null);
-      setCoverMsg(t('common.saved'));
+      setPhotoBlob(null);
+      setPhotoMsg(t('common.saved'));
+      loadPhotos();
     } catch (e) {
-      setCoverMsg(e.message);
+      setPhotoMsg(e.message);
     } finally {
-      setCoverBusy(false);
+      setPhotoBusy(false);
+    }
+  }
+
+  async function removePhoto(id) {
+    setPhotoMsg('');
+    try {
+      await apiFetch(`/api/shops/me/images/${id}`, { method: 'DELETE' });
+      setPhotosFull(false);
+      loadPhotos();
+    } catch (e) {
+      setPhotoMsg(e.message);
     }
   }
 
@@ -370,37 +405,64 @@ export default function Settings() {
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
         </div>
 
-        {/* Shop cover photo (batch IMG1): compressed client-side to ~400KB WebP
-            before upload; shown on the storefront header. */}
+        {/* Storefront photos (batch LITE): up to 3 photos shown at the top of the
+            storefront as a lightweight carousel. Each is compressed client-side
+            to ~400KB WebP before upload (the server sharp pipeline is the
+            backstop). Simple add/remove for low-literacy owners. */}
         <div className="card" style={{ maxWidth: 520 }}>
-          <h3>{t('set.shopCover')}</h3>
-          <p className="muted">{t('set.shopCoverDesc')}</p>
-          {shop.image_url && (
-            <div style={{ marginBottom: 12 }}>
-              <div className="muted" style={{ marginBottom: 4 }}>{t('set.shopCoverCurrent')}</div>
-              <img
-                src={resolveImg(shop.image_url)}
-                alt={shop.name || ''}
-                loading="lazy"
-                style={{ display: 'block', width: '100%', maxWidth: 480, borderRadius: 10 }}
+          <h3>{t('set.shopPhotos')}</h3>
+          <p className="muted">{t('set.shopPhotosDesc')}</p>
+          {photos.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+              {photos.map((p, i) => (
+                <div key={p.id} style={{ position: 'relative', width: 120 }}>
+                  <img
+                    src={resolveImg(p.url)}
+                    alt={`${shop.name || ''} ${i + 1}`}
+                    loading="lazy"
+                    style={{
+                      display: 'block', width: 120, height: 80,
+                      objectFit: 'cover', borderRadius: 8, border: '1px solid #334155',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => removePhoto(p.id)}
+                    aria-label={t('set.removePhoto')}
+                    title={t('set.removePhoto')}
+                    style={{
+                      position: 'absolute', top: 4, right: 4, width: 26, height: 26,
+                      padding: 0, borderRadius: 999, lineHeight: 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {photosFull ? (
+            <p className="muted">{t('set.photosFull')}</p>
+          ) : (
+            <>
+              <ImageStudio
+                aspect={20 / 9}
+                maxDim={1600}
+                targetBytes={400 * 1024}
+                label={t('set.choosePhoto')}
+                onReady={(blob) => setPhotoBlob(blob)}
               />
-            </div>
+              {photoBlob && (
+                <div style={{ marginTop: 12 }}>
+                  <button onClick={addPhoto} disabled={photoBusy}>
+                    {photoBusy ? t('set.savingPhoto') : t('set.addPhoto')}
+                  </button>
+                </div>
+              )}
+            </>
           )}
-          <ImageStudio
-            aspect={16 / 9}
-            maxDim={1600}
-            targetBytes={400 * 1024}
-            label={t('set.chooseCover')}
-            onReady={(blob) => setCoverBlob(blob)}
-          />
-          {coverBlob && (
-            <div style={{ marginTop: 12 }}>
-              <button onClick={saveCover} disabled={coverBusy}>
-                {coverBusy ? t('set.savingCover') : t('set.saveCover')}
-              </button>
-            </div>
-          )}
-          {coverMsg && <div className="muted" style={{ marginTop: 8 }}>{coverMsg}</div>}
+          {photoMsg && <div className="muted" style={{ marginTop: 8 }}>{photoMsg}</div>}
         </div>
 
         {nameI18n && nameI18n.languages && nameI18n.languages.length > 0 && (

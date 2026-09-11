@@ -105,6 +105,12 @@ router.get('/me', asyncHandler(ctrl.getMine));
 router.patch('/me', validate(updateSchema), asyncHandler(ctrl.updateMine));
 // Owner/staff, shop-scoped cover upload.
 router.post('/me/image', uploadImageField, asyncHandler(ctrl.uploadImage));
+// Owner/staff, shop-scoped storefront photo gallery (batch LITE). Up to 3
+// photos; the SAME multer + sharp pipeline as the cover. list / add (409 when
+// full) / delete (scoped).
+router.get('/me/images', asyncHandler(ctrl.listImages));
+router.post('/me/images', uploadImageField, asyncHandler(ctrl.uploadGalleryImage));
+router.delete('/me/images/:id', asyncHandler(ctrl.deleteImage));
 router.get('/me/name-i18n', asyncHandler(ctrl.getNameI18n));
 router.put(
   '/me/name-i18n/:lang',
