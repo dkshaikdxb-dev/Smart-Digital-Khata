@@ -23,6 +23,22 @@ function langTag() {
   return BCP47[getLang()] || 'en-IN';
 }
 
+// iOS/iPadOS WebKit is a KNOWN FALSE POSITIVE for speech recognition: the
+// webkit-prefixed constructor exists (so feature-detection passes and a mic
+// appears), but Apple's engine never actually performs recognition — start()
+// silently no-ops with no result and no error. So we detect the device and
+// treat recognition as unreliable there, letting callers be honest instead of
+// showing a dead mic. Guarded on navigator so it is SSR-safe (returns false).
+// Every iOS browser is WebKit under the hood, so the device check is sufficient.
+function isIosWebkit() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  const maxTouch = navigator.maxTouchPoints || 0;
+  // Classic iPhone/iPad/iPod, plus iPadOS 13+ which reports as a touch "MacIntel".
+  return /iP(hone|ad|od)/.test(ua) || (platform === 'MacIntel' && maxTouch > 1);
+}
+
 // The two-letter primary subtag, lower-cased (e.g. 'hi-IN' → 'hi'). Used to match
 // a synthesis voice to the current language by prefix.
 function primarySubtag(tag) {
@@ -78,6 +94,11 @@ export function useSpeech() {
   const [lastAlternatives, setLastAlternatives] = useState([]);
   const [lowConfidence, setLowConfidence] = useState(false);
   const [lastStatus, setLastStatus] = useState(null);
+  //  - lastError: the recognition failure REASON captured from onerror's
+  //    `e.error` ('not-allowed' | 'no-speech' | 'network' | 'service-not-allowed'
+  //    | 'aborted' | …), or null. Reset to null at the start of each listen() so a
+  //    caller can distinguish a fresh empty result from a stale earlier error.
+  const [lastError, setLastError] = useState(null);
   // Whether a real LOCAL synthesis voice exists for the current language. Drives
   // honest read-aloud gating so a language with no voice never offers a button
   // that would speak the wrong language.
@@ -89,10 +110,24 @@ export function useSpeech() {
   // Feature-detect once. During SSR `window` is undefined → everything is off,
   // and buttons stay hidden until the client re-renders with real capabilities.
   const flags = useMemo(() => {
-    if (typeof window === 'undefined') return { stt: false, tts: false };
+    if (typeof window === 'undefined') return { stt: false, tts: false, sttReliable: false, ios: false };
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    return { stt: !!SR, tts: !!window.speechSynthesis };
+    const stt = !!SR;
+    const ios = isIosWebkit();
+    // STT is PRESENT but known-unreliable on iOS WebKit (start() no-ops), so a
+    // caller must not treat the mic as usable there.
+    return { stt, tts: !!window.speechSynthesis, sttReliable: stt && !ios, ios };
   }, []);
+
+  // A small, honest support summary a caller can gate on: recognition is
+  // `supported` (constructor present) but only `reliable` when it will actually
+  // recognize (false on iOS WebKit). `reason` is null when reliable, 'ios' when
+  // present-but-unreliable, 'unsupported' when absent.
+  const voiceSupport = useMemo(() => ({
+    supported: flags.stt,
+    reliable: flags.sttReliable,
+    reason: flags.stt ? (flags.sttReliable ? null : 'ios') : 'unsupported',
+  }), [flags]);
 
   // Recompute ttsVoiceAvailable for the current language whenever the installed
   // voices change (async on first load) or the UI language changes (same-tab
@@ -171,6 +206,9 @@ export function useSpeech() {
   // read the optional second arg `{ confidence, alternatives }`.
   const listen = useCallback((onResult) => {
     if (typeof window === 'undefined') return;
+    // Fresh cycle: clear any error reason from a previous listen() so callers can
+    // tell an empty result apart from a stale earlier failure.
+    setLastError(null);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       // Local STT unavailable on this device. Offer the (disabled-by-default) seam.
@@ -223,8 +261,12 @@ export function useSpeech() {
         }
       };
       rec.onend = () => setListening(false);
-      rec.onerror = () => {
+      rec.onerror = (e) => {
         setListening(false);
+        // Capture the REASON ('not-allowed' | 'no-speech' | 'network' |
+        // 'service-not-allowed' | 'aborted' | …) so a caller can surface a
+        // specific message instead of a generic failure.
+        setLastError(e && e.error ? String(e.error) : 'error');
         setLastStatus('error');
         // Local recognition errored — offer the disabled-by-default seam (no-op).
         attemptCloudAsr(onResult);
@@ -320,6 +362,10 @@ export function useSpeech() {
   return {
     supported: flags.stt || flags.tts,
     sttSupported: flags.stt,
+    // Recognition is present but actually usable — false on iOS WebKit. Kept
+    // alongside sttSupported (unchanged) so existing callers keep working.
+    sttReliable: flags.sttReliable,
+    voiceSupport,
     ttsSupported: flags.tts,
     ttsVoiceAvailable,
     listening,
@@ -329,6 +375,7 @@ export function useSpeech() {
     lastAlternatives,
     lowConfidence,
     lastStatus,
+    lastError,
     listen,
     stop,
     speak,

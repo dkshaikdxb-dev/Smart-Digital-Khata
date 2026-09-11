@@ -665,6 +665,8 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-search-voice input { flex: 1 1 auto; min-width: 0; }
 .cpwa-mic, .cat-mic { flex: 0 0 auto; }
 .cpwa-mic.listening, .cat-mic.listening, .listening { outline: 2px solid var(--accent); }
+/* Voice-search feedback line (Listening… / denied / empty / offline / iOS). */
+.cpwa-voice-hint { margin-top: 8px; font-size: 0.9em; }
 .cat-search-voice { display: inline-flex; gap: 8px; align-items: stretch; flex: 1 1 auto; min-width: 0; }
 .cat-search-voice input { flex: 1 1 auto; min-width: 0; }
 

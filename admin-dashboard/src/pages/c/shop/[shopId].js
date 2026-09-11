@@ -6,7 +6,8 @@ import ProductThumb from '../../../components/ProductThumb';
 import { publicFetch } from '../../../lib/customerApi';
 import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineTotalPaise } from '../../../lib/customerCart';
 import { useLang, canUseVoice, useLanguageCapability } from '../../../lib/i18n';
-import { useSpeech } from '../../../lib/useSpeech';
+import { useVoiceSearch } from '../../../lib/useVoiceSearch';
+import VoiceSearchHint from '../../../components/VoiceSearchHint';
 
 // Cover image src resolver: relative /api paths get the API base prefixed, same
 // base as customerApi/publicFetch. Absolute URLs pass through untouched.
@@ -32,9 +33,11 @@ function gramsLabel(g) {
 export default function ShopCatalog() {
   const router = useRouter();
   const { t, lang } = useLang();
-  const { sttSupported, listening, listen } = useSpeech();
+  // Voice search with real feedback + honest iOS handling (see useVoiceSearch). A
+  // real transcript fills the catalog search box exactly as before.
+  const voice = useVoiceSearch((tx) => setSearch(tx));
   // Hide the mic for languages the browser can't reliably recognize (Batch B).
-  const voiceOk = sttSupported && canUseVoice(lang, useLanguageCapability(lang));
+  const voiceOk = voice.sttSupported && canUseVoice(lang, useLanguageCapability(lang));
   const { shopId } = router.query;
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
@@ -314,15 +317,16 @@ export default function ShopCatalog() {
             {voiceOk && (
               <button
                 type="button"
-                className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
-                onClick={() => listen((tx) => setSearch(tx))}
+                className={`secondary cpwa-mic${voice.listening ? ' listening' : ''}`}
+                onClick={voice.start}
                 aria-label={t('voice.listen')}
-                title={listening ? t('voice.listening') : t('voice.listen')}
+                title={voice.listening ? t('voice.listening') : t('voice.listen')}
               >
                 🎤
               </button>
             )}
           </div>
+          {voiceOk && <VoiceSearchHint listening={voice.listening} hint={voice.hint} />}
           {categories.length > 0 && (
             <div className="cpwa-chips" role="group" aria-label={t('c.category')}>
               <button type="button" className={`cpwa-chip ${activeCat === '' ? 'active' : ''}`} onClick={() => setActiveCat('')}>
