@@ -48,7 +48,23 @@ export async function clearSession() {
   try { await SecureStore.deleteItemAsync(ROLE_KEY); } catch (e) { /* ignore */ }
 }
 
-const api = axios.create({ baseURL: API_URL, timeout: 15000 });
+const api = axios.create({ baseURL: API_URL, timeout: 20000 });
+
+// Retry tuning. Two retries (three attempts total) with a short, growing
+// backoff so a cold-start blip self-heals instead of surfacing as a dead error.
+const MAX_RETRIES = 2;
+const RETRY_BACKOFF_MS = [400, 1000];
+
+// A failure worth retrying is a TRANSIENT one: no HTTP response at all (network
+// error), a client timeout (ECONNABORTED), or a 5xx from the server. Any 4xx
+// (400/401/404/…) is a real answer and is NOT retried.
+function isTransient(error) {
+  if (!error) return false;
+  if (error.code === 'ECONNABORTED') return true; // timeout
+  if (!error.response) return true; // network error (no response received)
+  const status = error.response.status;
+  return status >= 500 && status <= 599;
+}
 
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
@@ -56,6 +72,9 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// 401 handler — kept as-is: any 401 clears the session and bounces to login. It
+// runs first and simply re-rejects, so the retry interceptor below never retries
+// a 401 (it's a 4xx and not transient).
 api.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -65,6 +84,28 @@ api.interceptors.response.use(
       if (onUnauthorized) onUnauthorized();
     }
     return Promise.reject(error);
+  }
+);
+
+// Retry interceptor — composed after the 401 handler. Retries only transient
+// failures, at most MAX_RETRIES times, with a growing backoff tracked on the
+// request config. Re-runs through the same axios instance so the request
+// interceptor re-attaches the Bearer token. Never throws synchronously and can
+// never loop past the cap.
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const config = error && error.config;
+    if (!config || !isTransient(error)) return Promise.reject(error);
+
+    const attempted = config.__retryCount || 0;
+    if (attempted >= MAX_RETRIES) return Promise.reject(error);
+
+    config.__retryCount = attempted + 1;
+    const base = RETRY_BACKOFF_MS[attempted] || RETRY_BACKOFF_MS[RETRY_BACKOFF_MS.length - 1];
+    const wait = base + Math.floor(Math.random() * 100); // tiny jitter
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    return api(config);
   }
 );
 
@@ -102,6 +143,23 @@ export const products = {
   create: (body) => api.post('/api/products', body).then((r) => r.data),
   update: (id, body) => api.patch(`/api/products/${id}`, body).then((r) => r.data),
   remove: (id) => api.delete(`/api/products/${id}`).then((r) => r.data),
+};
+
+// Inbuilt base catalogue (owner/staff, shop-scoped). `list` browses the shared
+// catalogue annotated with whether this shop already carries each item; `select`
+// adds (or reprices) an item into the shop at an integer-paise price.
+export const catalog = {
+  list: ({ search = '', lang = '', cursor = '', limit } = {}) => {
+    const parts = [];
+    if (search) parts.push(`search=${encodeURIComponent(search)}`);
+    if (lang) parts.push(`lang=${encodeURIComponent(lang)}`);
+    if (cursor) parts.push(`cursor=${encodeURIComponent(cursor)}`);
+    if (limit != null && limit !== '') parts.push(`limit=${encodeURIComponent(limit)}`);
+    const qs = parts.length ? `?${parts.join('&')}` : '';
+    return api.get(`/api/catalog${qs}`).then((r) => r.data);
+  },
+  select: (catalogItemId, pricePaise) =>
+    api.post('/api/catalog/select', { catalog_item_id: catalogItemId, price: pricePaise }).then((r) => r.data),
 };
 
 export const orders = {

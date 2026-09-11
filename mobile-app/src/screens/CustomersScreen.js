@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Pressable, Alert, RefreshControl } from 'react-native';
 import { customers } from '../services/api';
 import { useT } from '../i18n';
@@ -11,14 +11,23 @@ export default function CustomersScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
+  // Keep the live search text in a ref so `load` can read it WITHOUT depending on
+  // the search state. That keeps `load` stable across keystrokes, so typing never
+  // triggers a fetch — only mount, screen focus, and an explicit Go/submit do.
+  const searchRef = useRef('');
+  const onChangeSearch = useCallback((v) => {
+    setSearch(v);
+    searchRef.current = v;
+  }, []);
+
   const load = useCallback(async () => {
     try {
-      const r = await customers.list(search);
+      const r = await customers.list(searchRef.current);
       setItems(r.items);
     } catch (e) {
       Alert.alert(t('common.error'), e.response?.data?.error || e.message);
     }
-  }, [search, t]);
+  }, [t]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => navigation.addListener('focus', () => { load(); }), [navigation, load]);
@@ -31,7 +40,7 @@ export default function CustomersScreen({ navigation }) {
   return (
     <View style={s.container}>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-        <TextInput style={[s.input, { flex: 1 }]} placeholder={t('common.search')} placeholderTextColor="#64748b" value={search} onChangeText={setSearch} onSubmitEditing={load} />
+        <TextInput style={[s.input, { flex: 1 }]} placeholder={t('common.search')} placeholderTextColor="#64748b" value={search} onChangeText={onChangeSearch} onSubmitEditing={load} returnKeyType="search" />
         <Pressable style={s.button} onPress={load}><Text style={s.buttonText}>{t('common.go')}</Text></Pressable>
       </View>
       <FlatList
