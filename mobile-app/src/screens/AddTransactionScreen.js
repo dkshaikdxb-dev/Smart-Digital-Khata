@@ -4,7 +4,7 @@ import { customers, transactions, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 export default function AddTransactionScreen({ navigation, route }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const preId = route?.params?.customerId || '';
   const preName = route?.params?.customerName || '';
   const [list, setList] = useState([]);
@@ -15,8 +15,8 @@ export default function AddTransactionScreen({ navigation, route }) {
 
   useEffect(() => {
     if (preId) return; // customer already chosen from their detail screen
-    customers.list().then((r) => setList(r.items)).catch(() => {});
-  }, [preId]);
+    customers.list('', lang).then((r) => setList(r.items)).catch(() => {});
+  }, [preId, lang]);
 
   async function save() {
     if (!customerId || !amount) return Alert.alert(t('common.missing'), t('addtx.missingBody'));
@@ -58,7 +58,7 @@ export default function AddTransactionScreen({ navigation, route }) {
         <View style={{ gap: 6 }}>
           {list.map((c) => (
             <Pressable key={c.id} onPress={() => setCustomerId(c.id)} style={[s.cust, customerId === c.id && s.custActive]}>
-              <Text style={{ color: '#e2e8f0' }}>{c.name} — {c.phone}</Text>
+              <Text style={{ color: '#e2e8f0' }}>{c.name_local || c.name} — {c.phone}</Text>
             </Pressable>
           ))}
         </View>

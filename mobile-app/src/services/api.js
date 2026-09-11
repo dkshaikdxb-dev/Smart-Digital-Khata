@@ -66,6 +66,27 @@ function isTransient(error) {
   return status >= 500 && status <= 599;
 }
 
+// Only idempotent reads are safe to auto-retry. A POST (create a transaction,
+// customer, product, family, …) that TIMED OUT client-side may already have
+// committed on the server, so silently re-sending it would DUPLICATE the write
+// — e.g. double-count a khata entry. We therefore never auto-retry writes; a
+// transient write failure surfaces to the caller instead (money-critical writes
+// also carry a client_request_id so the backend dedups an intentional retry).
+function isRetryableMethod(config) {
+  const m = (config && config.method ? String(config.method) : 'get').toLowerCase();
+  return m === 'get' || m === 'head';
+}
+
+// RFC-4122 v4 id for idempotency keys. Not used for security — only so the
+// backend can dedup a retried write — so Math.random is acceptable here.
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -101,7 +122,7 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const config = error && error.config;
-    if (!config || !isTransient(error)) return Promise.reject(error);
+    if (!config || !isTransient(error) || !isRetryableMethod(config)) return Promise.reject(error);
 
     const attempted = config.__retryCount || 0;
     if (attempted >= MAX_RETRIES) return Promise.reject(error);
@@ -131,16 +152,26 @@ export const auth = {
   },
 };
 
+// `lang` (the owner's selected language) asks the API to also return a
+// `name_local` — the customer's name rendered into that script — so screens can
+// show `name_local || name`. Omitted/blank/unknown-lang → only the raw name.
+function langQ(lang) {
+  return lang ? `&lang=${encodeURIComponent(lang)}` : '';
+}
+
 export const customers = {
-  list: (search = '') => api.get(`/api/customers?search=${encodeURIComponent(search)}`).then((r) => r.data),
+  list: (search = '', lang = '') => api.get(`/api/customers?search=${encodeURIComponent(search)}${langQ(lang)}`).then((r) => r.data),
   create: (body) => api.post('/api/customers', body).then((r) => r.data),
-  get: (id) => api.get(`/api/customers/${id}`).then((r) => r.data),
-  ledger: (id) => api.get(`/api/customers/${id}/ledger`).then((r) => r.data),
+  get: (id, lang = '') => api.get(`/api/customers/${id}${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
+  ledger: (id, lang = '') => api.get(`/api/customers/${id}/ledger${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
   update: (id, body) => api.patch(`/api/customers/${id}`, body).then((r) => r.data),
 };
 
 export const transactions = {
-  create: (body) => api.post('/api/transactions', body).then((r) => r.data),
+  // A client_request_id makes the create idempotent: if a retry (or a re-tap
+  // after a timed-out-but-committed request) re-sends the SAME id, the backend
+  // returns the existing row instead of inserting a duplicate khata entry.
+  create: (body) => api.post('/api/transactions', { client_request_id: uuidv4(), ...body }).then((r) => r.data),
   list: (params = '') => api.get(`/api/transactions${params}`).then((r) => r.data),
 };
 

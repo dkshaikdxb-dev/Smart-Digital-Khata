@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, Platform, View } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 // Lightweight i18n for the native OWNER app. A flat key -> string map per
@@ -1143,17 +1143,27 @@ const LangContext = createContext({
 
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState('en');
+  // Gate the first paint until the stored language is read, so the app never
+  // flashes English before switching to the saved language on a cold start.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    loadStoredLang().then((l) => { if (alive) setLangState(l); });
+    loadStoredLang().then((l) => {
+      if (!alive) return;
+      setLangState(l);
+      setReady(true);
+    });
     return () => { alive = false; };
   }, []);
 
-  const setLang = useCallback((l) => {
+  const setLang = useCallback(async (l) => {
     if (!DICTS[l]) return;
     setLangState(l);
-    SecureStore.setItemAsync(LANG_KEY, l).catch(() => {});
+    // AWAIT the write so the choice is durably flushed before we move on — a
+    // fire-and-forget write can be lost if the app is closed right after, which
+    // made the language appear to reset to English on the next open.
+    try { await SecureStore.setItemAsync(LANG_KEY, l); } catch (e) { /* ignore */ }
   }, []);
 
   const value = useMemo(() => ({
@@ -1161,6 +1171,11 @@ export function LanguageProvider({ children }) {
     setLang,
     t: (key, vars) => translate(lang, key, vars),
   }), [lang, setLang]);
+
+  // Dark splash (matches the app background) until the stored language resolves.
+  if (!ready) {
+    return <View style={{ flex: 1, backgroundColor: '#0f172a' }} />;
+  }
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
 }

@@ -6,7 +6,7 @@ import { useT } from '../i18n';
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function CustomersScreen({ navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -22,12 +22,12 @@ export default function CustomersScreen({ navigation }) {
 
   const load = useCallback(async () => {
     try {
-      const r = await customers.list(searchRef.current);
+      const r = await customers.list(searchRef.current, lang);
       setItems(r.items);
     } catch (e) {
       if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message);
     }
-  }, [t]);
+  }, [t, lang]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => navigation.addListener('focus', () => { load(); }), [navigation, load]);
@@ -49,9 +49,9 @@ export default function CustomersScreen({ navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}
         ListEmptyComponent={<Text style={s.empty}>{t('cust.empty')}</Text>}
         renderItem={({ item }) => (
-          <Pressable style={s.row} onPress={() => navigation.navigate('CustomerDetail', { id: item.id, name: item.name })}>
+          <Pressable style={s.row} onPress={() => navigation.navigate('CustomerDetail', { id: item.id, name: item.name_local || item.name })}>
             <View>
-              <Text style={s.name}>{item.name}</Text>
+              <Text style={s.name}>{item.name_local || item.name}</Text>
               <Text style={s.muted}>{item.phone}</Text>
             </View>
             <Text style={[s.balance, Number(item.balance) > 0 ? { color: '#f87171' } : { color: '#94a3b8' }]}>{fmt(item.balance)}</Text>

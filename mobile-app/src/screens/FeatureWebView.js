@@ -130,7 +130,12 @@ export default function FeatureWebView(props) {
   const params = (props.route && props.route.params) || {};
   const path = props.path != null ? props.path : (params.path || '');
   const base = props.base || params.base || APP_URL;
-  const uri = `${String(base).replace(/\/+$/, '')}${path}`;
+  // Load the web feature in EMBED mode: the web app hides its own top nav +
+  // bottom tab bar (which otherwise stack under the native tab bar) and skips
+  // heavy first-load side effects. Appended as a query param so the web app can
+  // read it synchronously on the very first render (no hydration flash).
+  const rawUri = `${String(base).replace(/\/+$/, '')}${path}`;
+  const uri = `${rawUri}${rawUri.includes('?') ? '&' : '?'}embed=1`;
 
   const webRef = useRef(null);
   const canGoBackRef = useRef(false);

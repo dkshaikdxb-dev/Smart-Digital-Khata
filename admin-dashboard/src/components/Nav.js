@@ -14,9 +14,37 @@ export default function Nav() {
   // Only admins have a permission set; skip the /api/admin/me fetch otherwise.
   const { has } = usePermissions(role === 'admin');
 
+  // When the page is loaded inside the native app's WebView it is opened with
+  // ?embed=1. In that case the app already provides its own header + bottom tab
+  // bar, so we render NO web chrome (this whole component) to avoid a doubled
+  // navigation. Read synchronously from the URL so the first paint is already
+  // correct; the effect re-checks after client-side route changes.
+  const [embedded, setEmbedded] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (new URLSearchParams(window.location.search).get('embed') === '1') return true;
+      // Sticky for the WebView session so internal link navigation (which may
+      // drop the query param) keeps hiding the chrome. A normal browser user
+      // never sets this.
+      return window.sessionStorage.getItem('skhata_embed') === '1';
+    } catch (e) { return false; }
+  });
+
   useEffect(() => {
     setRole(window.localStorage.getItem('skhata_role') || 'owner');
   }, []);
+
+  useEffect(() => {
+    try {
+      const urlEmbed = new URLSearchParams(window.location.search).get('embed') === '1' || router.query.embed === '1';
+      if (urlEmbed) { try { window.sessionStorage.setItem('skhata_embed', '1'); } catch (e) { /* ignore */ } }
+      let sticky = false;
+      try { sticky = window.sessionStorage.getItem('skhata_embed') === '1'; } catch (e) { /* ignore */ }
+      setEmbedded(urlEmbed || sticky);
+    } catch (e) { /* ignore */ }
+  }, [router.query.embed]);
+
+  if (embedded) return null;
 
   const logout = () => {
     window.localStorage.removeItem('skhata_token');

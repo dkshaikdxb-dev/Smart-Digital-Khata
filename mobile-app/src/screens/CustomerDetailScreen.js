@@ -11,7 +11,7 @@ const label = (s) => (s || '').replace(/_/g, ' ');
 const typeColor = (ty) => (ty === 'purchase' ? '#f87171' : '#22c55e');
 
 export default function CustomerDetailScreen({ route, navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { id } = route.params;
   // Localize the known transaction type words; fall back to the raw enum for any
   // other value so nothing shows blank.
@@ -22,10 +22,10 @@ export default function CustomerDetailScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const r = await customers.ledger(id);
+    const r = await customers.ledger(id, lang);
     setCustomer(r.customer);
     setTx(r.transactions || []);
-  }, [id]);
+  }, [id, lang]);
 
   useEffect(() => {
     load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
@@ -48,7 +48,7 @@ export default function CustomerDetailScreen({ route, navigation }) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}
     >
       <View style={s.card}>
-        <Text style={s.title}>{customer.name}</Text>
+        <Text style={s.title}>{customer.name_local || customer.name}</Text>
         <Text style={s.muted}>{customer.phone}</Text>
         <View style={s.kpiRow}>
           <View style={{ flex: 1 }}>
@@ -62,7 +62,7 @@ export default function CustomerDetailScreen({ route, navigation }) {
         </View>
       </View>
 
-      <Pressable style={s.primary} onPress={() => navigation.navigate('AddTransaction', { customerId: id, customerName: customer.name })}>
+      <Pressable style={s.primary} onPress={() => navigation.navigate('AddTransaction', { customerId: id, customerName: customer.name_local || customer.name })}>
         <Text style={s.primaryText}>+ {t('custd.recordAction')}</Text>
       </Pressable>
 
