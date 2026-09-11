@@ -5,22 +5,77 @@ import * as SecureStore from 'expo-secure-store';
 const API_URL =
   Constants.expoConfig?.extra?.apiUrl || 'http://localhost:4000';
 
+// The owner session lives in SecureStore until sign-out (or token expiry), so
+// the app can restore it on launch instead of asking for credentials every
+// open. The role is stored alongside the token so boot can pick the right
+// screen (owner tabs vs the admin web-console notice) without a network call.
+const TOKEN_KEY = 'skhata_token';
+const ROLE_KEY = 'skhata_role';
+
+// A single registered callback the app sets so ANY 401 (expired/revoked token)
+// clears the session and returns the owner to the Login screen.
+let onUnauthorized = null;
+export function setUnauthorizedHandler(fn) {
+  onUnauthorized = fn;
+}
+
+export async function getToken() {
+  try {
+    return await SecureStore.getItemAsync(TOKEN_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function getRole() {
+  try {
+    return await SecureStore.getItemAsync(ROLE_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function saveSession(token, role) {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  try {
+    if (role) await SecureStore.setItemAsync(ROLE_KEY, role);
+    else await SecureStore.deleteItemAsync(ROLE_KEY);
+  } catch (e) { /* role is best-effort; token is what gates the session */ }
+}
+
+export async function clearSession() {
+  try { await SecureStore.deleteItemAsync(TOKEN_KEY); } catch (e) { /* ignore */ }
+  try { await SecureStore.deleteItemAsync(ROLE_KEY); } catch (e) { /* ignore */ }
+}
+
 const api = axios.create({ baseURL: API_URL, timeout: 15000 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync('skhata_token');
+  const token = await getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Expired or revoked session — drop it and bounce to login.
+      clearSession();
+      if (onUnauthorized) onUnauthorized();
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const auth = {
   async login(email, password) {
     const { data } = await api.post('/api/auth/login', { email, password });
-    await SecureStore.setItemAsync('skhata_token', data.token);
+    await saveSession(data.token, data.user?.role || 'owner');
     return data;
   },
   async logout() {
-    await SecureStore.deleteItemAsync('skhata_token');
+    await clearSession();
   },
 };
 

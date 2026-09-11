@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Text } from 'react-native';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Text, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 
 import { AuthContext } from './src/AuthContext';
-import { auth } from './src/services/api';
+import { auth, getToken, getRole, setUnauthorizedHandler } from './src/services/api';
 import ConsumerApp from './src/consumer/ConsumerApp';
 
 import LoginScreen from './src/screens/LoginScreen';
@@ -115,13 +115,45 @@ function OwnerTabs() {
 }
 
 function OwnerApp() {
-  // 'out' = signed out, 'owner' = owner tabs, 'admin' = web-console notice.
-  const [status, setStatus] = useState('out');
+  // 'loading' = restoring a persisted session, 'out' = signed out,
+  // 'owner' = owner tabs, 'admin' = web-console notice.
+  const [status, setStatus] = useState('loading');
+
+  // Restore a persisted session on launch so a signed-in owner is NOT asked to
+  // log in again every time the app opens — the token lives in SecureStore
+  // until sign-out or expiry. Mirrors the consumer app's boot gate.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const token = await getToken();
+      if (!alive) return;
+      if (!token) { setStatus('out'); return; }
+      const role = await getRole();
+      if (!alive) return;
+      setStatus(role === 'admin' ? 'admin' : 'owner');
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const authActions = useMemo(() => ({
     signIn: (role) => setStatus(role === 'admin' ? 'admin' : 'owner'),
     signOut: async () => { await auth.logout(); setStatus('out'); },
   }), []);
+
+  // Any 401 (expired/revoked token) drops the session and returns to Login.
+  const handleUnauthorized = useCallback(() => setStatus('out'), []);
+  useEffect(() => {
+    setUnauthorizedHandler(handleUnauthorized);
+    return () => setUnauthorizedHandler(null);
+  }, [handleUnauthorized]);
+
+  if (status === 'loading') {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#22c55e" />
+      </View>
+    );
+  }
 
   return (
     <AuthContext.Provider value={authActions}>
