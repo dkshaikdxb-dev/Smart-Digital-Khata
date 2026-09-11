@@ -72,6 +72,16 @@ const HOUSE_PROMOS = [
 ];
 
 async function main() {
+  // Remove the legacy inverted-language demo banners ('DEMO Seed') if any remain
+  // from a previous run, so this seed is a true REPLACE. Runs every time (even
+  // when the house promos already exist) and is a no-op once they are gone; their
+  // ad_targets cascade on delete.
+  const purged = await pool.query("DELETE FROM ad_campaigns WHERE advertiser = 'DEMO Seed'");
+  if (purged.rowCount) {
+    // eslint-disable-next-line no-console
+    console.log(`🧹 Removed ${purged.rowCount} legacy 'DEMO Seed' campaign(s).`);
+  }
+
   // Skip creation if the house campaigns already exist (idempotent).
   const existing = await pool.query('SELECT COUNT(*)::int AS n FROM ad_campaigns WHERE advertiser = $1', [ADVERTISER]);
   if (existing.rows[0].n > 0) {
