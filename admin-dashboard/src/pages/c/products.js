@@ -5,7 +5,8 @@ import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
 import { publicFetch } from '../../lib/customerApi';
 import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
-import { useSpeech } from '../../lib/useSpeech';
+import { useVoiceSearch } from '../../lib/useVoiceSearch';
+import VoiceSearchHint from '../../components/VoiceSearchHint';
 
 // Cross-shop product search (Flipkart-style). Backed by the public endpoint
 // GET /api/public/products/search — active products in listed shops whose
@@ -16,9 +17,12 @@ import { useSpeech } from '../../lib/useSpeech';
 export default function ProductSearch() {
   const router = useRouter();
   const { t, lang } = useLang();
-  const { sttSupported, listening, listen } = useSpeech();
+  // Voice search with real feedback (Listening… + denied/empty/offline/iOS
+  // messages) and honest iOS handling — see useVoiceSearch. A real transcript
+  // fills the box and runs the search exactly as before (happy path unchanged).
+  const voice = useVoiceSearch((tx) => { setQ(tx); runSearch(tx); });
   // Hide the mic for languages the browser can't reliably recognize (Batch B).
-  const voiceOk = sttSupported && canUseVoice(lang, useLanguageCapability(lang));
+  const voiceOk = voice.sttSupported && canUseVoice(lang, useLanguageCapability(lang));
 
   const [q, setQ] = useState('');
   const [products, setProducts] = useState([]);
@@ -98,15 +102,16 @@ export default function ProductSearch() {
         {voiceOk && (
           <button
             type="button"
-            className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
-            onClick={() => listen((tx) => { setQ(tx); runSearch(tx); })}
+            className={`secondary cpwa-mic${voice.listening ? ' listening' : ''}`}
+            onClick={voice.start}
             aria-label={t('voice.listen')}
-            title={listening ? t('voice.listening') : t('voice.listen')}
+            title={voice.listening ? t('voice.listening') : t('voice.listen')}
           >
             🎤
           </button>
         )}
       </div>
+      {voiceOk && <VoiceSearchHint listening={voice.listening} hint={voice.hint} />}
 
       {error && <div className="card cpwa-error">{error}</div>}
       {!error && loading && <div className="card">{t('c.searching')}</div>}

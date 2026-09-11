@@ -5,7 +5,8 @@ import CustomerShell from '../../components/CustomerShell';
 import CpwaPromoSlider from '../../components/CpwaPromoSlider';
 import { publicFetch } from '../../lib/customerApi';
 import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
-import { useSpeech } from '../../lib/useSpeech';
+import { useVoiceSearch } from '../../lib/useVoiceSearch';
+import VoiceSearchHint from '../../components/VoiceSearchHint';
 
 // Flipkart-style quick-browse categories. The label is localized; the search
 // term is the English base word so the endpoint's name-ILIKE matches whatever
@@ -25,10 +26,15 @@ const CATEGORIES = [
 export default function DiscoverShops() {
   const router = useRouter();
   const { t, lang } = useLang();
-  const { sttSupported, listening, listen } = useSpeech();
+  // Two independent voice searches (product bar + shop directory), each with its
+  // own Listening…/error feedback and honest iOS handling via useVoiceSearch. A
+  // real transcript drives the same navigation/search as before (happy path
+  // unchanged).
+  const voiceProduct = useVoiceSearch((tx) => { setProductQ(tx); goProducts(tx); });
+  const voiceShop = useVoiceSearch((tx) => { setSearch(tx); load(tx, coords, fulfillment); });
   // Hide the mic for languages the browser can't reliably recognize (it would
   // otherwise mis-hear them as en-IN) — capability comes from Batch B's helper.
-  const voiceOk = sttSupported && canUseVoice(lang, useLanguageCapability(lang));
+  const voiceOk = voiceProduct.sttSupported && canUseVoice(lang, useLanguageCapability(lang));
   const [productQ, setProductQ] = useState(''); // top product-search bar
   const [search, setSearch] = useState('');
   const [shops, setShops] = useState([]);
@@ -131,15 +137,16 @@ export default function DiscoverShops() {
           {voiceOk && (
             <button
               type="button"
-              className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
-              onClick={() => listen((tx) => { setProductQ(tx); goProducts(tx); })}
+              className={`secondary cpwa-mic${voiceProduct.listening ? ' listening' : ''}`}
+              onClick={voiceProduct.start}
               aria-label={t('voice.listen')}
-              title={listening ? t('voice.listening') : t('voice.listen')}
+              title={voiceProduct.listening ? t('voice.listening') : t('voice.listen')}
             >
               🎤
             </button>
           )}
         </div>
+        {voiceOk && <VoiceSearchHint listening={voiceProduct.listening} hint={voiceProduct.hint} />}
         <div className="cpwa-chips cpwa-cats" role="group" aria-label={t('c.productsTitle')}>
           {CATEGORIES.map((c) => (
             <button
@@ -171,15 +178,16 @@ export default function DiscoverShops() {
           {voiceOk && (
             <button
               type="button"
-              className={`secondary cpwa-mic${listening ? ' listening' : ''}`}
-              onClick={() => listen((tx) => { setSearch(tx); load(tx, coords, fulfillment); })}
+              className={`secondary cpwa-mic${voiceShop.listening ? ' listening' : ''}`}
+              onClick={voiceShop.start}
               aria-label={t('voice.listen')}
-              title={listening ? t('voice.listening') : t('voice.listen')}
+              title={voiceShop.listening ? t('voice.listening') : t('voice.listen')}
             >
               🎤
             </button>
           )}
         </div>
+        {voiceOk && <VoiceSearchHint listening={voiceShop.listening} hint={voiceShop.hint} />}
         <div className="cpwa-row" style={{ marginTop: 10 }}>
           <button type="submit" style={{ flex: 1 }}>{t('common.search')}</button>
           <button type="button" className="secondary" onClick={useMyLocation} disabled={locating}>
