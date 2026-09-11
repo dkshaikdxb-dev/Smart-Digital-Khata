@@ -57,6 +57,22 @@ module.exports = ({ config }) => {
       backgroundColor: '#0f172a',
     },
     assetBundlePatterns: ['**/*'],
+    // Native config plugins. expo-speech-recognition wires the OS-native ASR
+    // engines (iOS SFSpeechRecognizer + Android SpeechRecognizer): it injects the
+    // iOS NSMicrophoneUsageDescription + NSSpeechRecognitionUsageDescription usage
+    // strings and, on Android, the RECORD_AUDIO permission plus <queries> package
+    // visibility for the Google speech service. Adding this module needs ONE EAS
+    // rebuild of both flavors (no Expo Go); voice-UX JS changes ship OTA after.
+    plugins: [
+      [
+        'expo-speech-recognition',
+        {
+          microphonePermission: 'Used for voice search and commands.',
+          speechRecognitionPermission: 'Used to search and run commands by voice.',
+          androidSpeechServicePackages: ['com.google.android.googlequicksearchbox'],
+        },
+      ],
+    ],
     // OTA JS-shell updates via EAS Update (expo-updates). `runtimeVersion` gates
     // which builds an update is compatible with; the sdkVersion policy means any
     // build on this Expo SDK accepts these updates (bump the SDK -> new native
@@ -81,7 +97,13 @@ module.exports = ({ config }) => {
       // for uploads and saving the share poster.
       infoPlist: {
         NSCameraUsageDescription: 'Used to add shop & product photos.',
-        NSMicrophoneUsageDescription: 'Used for voice commands.',
+        // Mic + speech-recognition strings for OS-native voice (consumer search +
+        // owner Ask). The expo-speech-recognition config plugin also injects these
+        // two keys from its microphonePermission / speechRecognitionPermission
+        // options; they are declared here as well so the built Info.plist always
+        // carries both, whatever the plugin ordering.
+        NSMicrophoneUsageDescription: 'Used for voice search and commands.',
+        NSSpeechRecognitionUsageDescription: 'Used to search and run commands by voice.',
         NSLocationWhenInUseUsageDescription: 'Used to show nearby shops.',
         NSPhotoLibraryUsageDescription: 'Used to upload shop & product photos.',
         NSPhotoLibraryAddUsageDescription: 'Used to save your shop poster & image exports.',

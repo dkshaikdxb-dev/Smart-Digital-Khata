@@ -175,6 +175,17 @@ const en = {
   'shops.kmAway': '{km} km away',
   'shops.noLocation': 'Location not set',
 
+  // OS-native voice search on the shops screen. The mic only shows when the
+  // device supports recognition AND the current language maps to a recognizer
+  // locale; bn/gu/mr fall to `voice.notInLanguage`. Hints auto-clear.
+  'voice.search': 'Search by voice',
+  'voice.listening': 'Listening…',
+  'voice.hint.permission': 'Microphone access is off. Turn it on in Settings to search by voice.',
+  'voice.hint.no-match': 'Did not catch that. Please try again.',
+  'voice.hint.network': 'Voice search needs the internet. Check your connection.',
+  'voice.hint.unavailable': 'Voice search is not available right now.',
+  'voice.notInLanguage': 'Voice search is not available in this language yet.',
+
   'shopdetail.loading': 'Loading catalog…',
   'shopdetail.noItems': 'This shop has not added items yet.',
   'shopdetail.perKg': '/ kg',
@@ -349,6 +360,14 @@ const hi = {
   'shops.itemsCount': '{n} सामान',
   'shops.kmAway': '{km} किमी दूर',
   'shops.noLocation': 'स्थान नहीं दिया',
+
+  'voice.search': 'बोलकर खोजें',
+  'voice.listening': 'सुन रहे हैं…',
+  'voice.hint.permission': 'माइक बंद है। बोलकर खोजने के लिए सेटिंग्स में चालू करें।',
+  'voice.hint.no-match': 'समझ नहीं आया। फिर से बोलें।',
+  'voice.hint.network': 'बोलकर खोजने के लिए इंटरनेट चाहिए। कनेक्शन जाँचें।',
+  'voice.hint.unavailable': 'बोलकर खोज अभी उपलब्ध नहीं है।',
+  'voice.notInLanguage': 'इस भाषा में बोलकर खोज अभी उपलब्ध नहीं है।',
 
   'shopdetail.loading': 'कैटलॉग लोड हो रहा है…',
   'shopdetail.noItems': 'इस दुकान ने अभी सामान नहीं जोड़ा।',

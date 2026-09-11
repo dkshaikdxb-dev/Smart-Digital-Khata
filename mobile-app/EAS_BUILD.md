@@ -88,6 +88,20 @@ directly on a device. Each `*-production` profile produces an AAB for Play and u
 > in a custom dev client, but **not** in plain Expo Go — build a dev client
 > (`eas build --profile development`) if you need to iterate locally.
 
+> **OS-native voice (`expo-speech-recognition` + `expo-speech`).** The consumer
+> voice search and the owner "Ask" use the device's built-in speech engines (iOS
+> `SFSpeechRecognizer`, Android `SpeechRecognizer`) for recognition and
+> `expo-speech` for read-aloud — free, no accounts, no credentials. These are
+> **native modules**, so adding them needs **ONE EAS rebuild of both flavors**
+> (owner + consumer); they do **not** run in plain Expo Go. The config plugin adds
+> the Android `RECORD_AUDIO` permission plus `<queries>` visibility for the Google
+> speech service, and the iOS `NSMicrophoneUsageDescription` +
+> `NSSpeechRecognitionUsageDescription` usage strings. After the rebuild, voice-UX
+> JS changes ship **OTA** like any other JS-shell change (no further rebuild). The
+> hook (`src/lib/useNativeVoice.js`) guards every native call, so a build that
+> somehow lacks the module simply hides the mic instead of crashing. Recognition
+> is wired for en/hi/ta/te/kn/ml/ur; bn/gu/mr are honestly "not yet".
+
 ## Overriding the URLs
 
 The API base URL and the consumer PWA URL default to production. Override per build by
@@ -196,6 +210,14 @@ The WebView permission/auth/download paths can't be unit-tested — verify on a 
   prompt once, then record; audio plays without a tap.
 - **Image Studio camera + gallery:** open a photo/camera feature — the camera opens and
   `<input type=file>` shows the gallery/file chooser; a picked image uploads.
+- **Voice search (consumer, Shops):** in en/hi, tap the 🎤 in the search bar — the OS mic
+  prompt shows once, "Listening…" appears, and a spoken shop/city name fills the query and
+  runs the search. Deny the permission → an honest hint (auto-clears); switch to bn/gu/mr →
+  the mic is replaced by "not available in this language yet"; airplane mode → network hint.
+- **Owner Ask (Home):** tap 🎤 **Ask**, say e.g. "aaj ki collection" / "kitna baaki hai" /
+  a customer name — a one-line answer shows AND is read aloud; an unmatched question gives
+  the friendly fallback; a silent/empty attempt speaks "please try again" (never crashes).
+  Confirm en + hi answers; ta/te/kn/ml/ur recognize but answer in English (expected).
 - **Location:** open the nearby-shops / location picker — the location prompt appears and
   the map/picker gets a fix.
 - **Share / download:** use the share poster / image export — the PNG saves or opens in
