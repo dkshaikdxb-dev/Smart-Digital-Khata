@@ -63,6 +63,7 @@ const DICT = {
     'ctab.orders': 'Orders',
     'ctab.khata': 'Khata',
     'ctab.logout': 'Logout',
+    // Distinct word so the last tab reads differently from ctab.khata.
     'ctab.account': 'Account',
     // Suffix appended to a picker option for an active language that has no
     // localized catalogue yet (has_catalogue=false) — a minimal, honest hint,
@@ -89,6 +90,7 @@ const DICT = {
     'ctab.orders': 'ऑर्डर',
     'ctab.khata': 'खाता',
     'ctab.logout': 'लॉग आउट',
+    // Distinct word so this tab reads differently from ctab.khata (खाता).
     'ctab.account': 'अकाउंट',
     'lang.betaSuffix': ' (बीटा)',
   },
@@ -187,7 +189,9 @@ const DICT = {
     'ctab.orders': 'ഓർഡറുകൾ',
     'ctab.khata': 'കണക്ക്',
     'ctab.logout': 'ലോഗ് ഔട്ട്',
-    'ctab.account': 'എന്റെ അക്കൗണ്ട്',
+    // Distinct word so this tab reads differently from ctab.khata (കണക്ക്);
+    // shortened from the longer "എന്റെ അക്കൗണ്ട്" so it fits the 6-up tab bar.
+    'ctab.account': 'അക്കൗണ്ട്',
     'lang.betaSuffix': ' (ബീറ്റ)',
   },
   ur: {
@@ -210,6 +214,7 @@ const DICT = {
     'ctab.orders': 'آرڈرز',
     'ctab.khata': 'کھاتہ',
     'ctab.logout': 'لاگ آؤٹ',
+    // Distinct word so this tab reads differently from ctab.khata (کھاتہ).
     'ctab.account': 'اکاؤنٹ',
     'lang.betaSuffix': ' (بیٹا)',
   },

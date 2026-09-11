@@ -81,34 +81,46 @@ th { color: var(--muted); font-weight: 600; }
    touched and stay dark. Four blocks: light default, dark-when-device-prefers-
    dark-and-not-forced-light, dark-forced, light-forced.
    ========================================================================== */
-/* LIGHT = default */
+/* LIGHT = default.
+   The accent is a deep, confident emerald (NOT the old neon #22c55e) reserved for
+   CTAs; white sits on it (~5:1). --c-accent-ink is the darker green used for accent
+   TEXT on light surfaces (~5.8:1 on --c-bg). --c-accent-soft / --c-accent-soft-border
+   are the tinted-green surface + hairline used for banners, pills and success badges
+   so large areas are never flooded with raw accent. */
 .cpwa {
   color-scheme: light;
-  --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
-  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#0f7233;
-  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
+  --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e6ebf1; --c-border-strong:#cbd5e1;
+  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#15803d; --c-on-accent:#ffffff; --c-accent-ink:#0f7233;
+  --c-accent-soft:#e6f4ec; --c-accent-soft-border:#bfe3ce;
+  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
 }
-/* DARK when the device prefers dark AND the user hasn't forced light */
+/* DARK when the device prefers dark AND the user hasn't forced light.
+   The accent brightens to a clean (not fluorescent) green with dark on-accent text
+   (~8:1); accent-ink is the vivid green used for accent text on the navy surfaces
+   (~9:1); accent-soft is a deep green-tinted panel for banners/badges. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .cpwa {
-    color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#33435c;
-    --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
-    --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
+    color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#2b3a52;
+    --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
+    --c-accent-ink:#4ade80; --c-accent-soft:#16351f; --c-accent-soft-border:#2c6b3f;
+    --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
     --c-overlay:rgba(0,0,0,.55);
   }
 }
 /* DARK forced by the toggle */
 :root[data-theme="dark"] .cpwa {
-  color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#33435c;
-  --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#94a3b8; --c-accent:#22c55e; --c-on-accent:#052e16;
-  --c-accent-ink:#4ade80; --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
+  color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#2b3a52;
+  --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
+  --c-accent-ink:#4ade80; --c-accent-soft:#16351f; --c-accent-soft-border:#2c6b3f;
+  --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
   --c-overlay:rgba(0,0,0,.55);
 }
 /* LIGHT forced by the toggle (redundant with base but wins over the media block) */
 :root[data-theme="light"] .cpwa {
-  color-scheme:light; --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e2e8f0; --c-border-strong:#cbd5e1;
-  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#22c55e; --c-on-accent:#052e16; --c-accent-ink:#0f7233;
-  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 3px rgba(16,24,40,.08); --c-overlay:rgba(15,23,42,.45);
+  color-scheme:light; --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e6ebf1; --c-border-strong:#cbd5e1;
+  --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#15803d; --c-on-accent:#ffffff; --c-accent-ink:#0f7233;
+  --c-accent-soft:#e6f4ec; --c-accent-soft-border:#bfe3ce;
+  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
 }
 
 /* WARM — a warm paper + kirana-green colour skin selected by data-theme="warm".
@@ -117,22 +129,32 @@ th { color: var(--muted); font-weight: 600; }
    the device is not in dark mode) and warm DARK (media block). Scoped to
    :root[data-theme="warm"] .cpwa ONLY — the owner dashboard's bare :root has no
    warm entry and is untouched. */
-/* WARM LIGHT — default for the warm theme (and when the device prefers light) */
+/* WARM LIGHT — default for the warm theme (and when the device prefers light).
+   A forest green that harmonizes with warm paper (deliberately NOT an amber);
+   accent-soft is a warm-tinted green wash for banners/pills. */
 :root[data-theme="warm"] .cpwa {
   color-scheme:light; --c-bg:#FBF6EB; --c-surface:#FFFFFF; --c-surface-2:#F3EBDC; --c-border:#EADFC9; --c-border-strong:#D8C9AB;
   --c-text:#241F17; --c-muted:#736A58; --c-accent:#157A3A; --c-on-accent:#FFFFFF; --c-accent-ink:#136A33;
+  --c-accent-soft:#E7F1DC; --c-accent-soft-border:#C6DCB0;
   --c-danger:#B23A2E; --c-danger-bg:rgba(178,58,46,.12); --c-shadow:0 1px 2px rgba(33,30,23,.06),0 8px 22px rgba(33,30,23,.06); --c-overlay:rgba(36,31,23,.45);
 }
-/* WARM DARK — used for the warm theme when the device prefers dark */
+/* WARM DARK — used for the warm theme when the device prefers dark.
+   Fix for the muddy look: the accent-ink is now a WARM GREEN (not the old amber
+   #EDB24A that fought the green accent), and the accent itself is a livelier green
+   with dark on-accent text (~7.5:1). Surfaces are cleaned up slightly and a
+   green-tinted accent-soft panel carries banners/badges. */
 @media (prefers-color-scheme: dark) {
   :root[data-theme="warm"] .cpwa {
-    color-scheme:dark; --c-bg:#171410; --c-surface:#221E16; --c-surface-2:#2C271C; --c-border:#38311F; --c-border-strong:#4A4030;
-    --c-text:#F4ECDC; --c-muted:#B3A891; --c-accent:#34A85B; --c-on-accent:#0C1A0F; --c-accent-ink:#EDB24A;
+    color-scheme:dark; --c-bg:#171410; --c-surface:#231F16; --c-surface-2:#2C271B; --c-border:#3A3222; --c-border-strong:#4C4231;
+    --c-text:#F4ECDC; --c-muted:#B9AE97; --c-accent:#3DBE69; --c-on-accent:#08160c; --c-accent-ink:#58CF82;
+    --c-accent-soft:#1F3524; --c-accent-soft-border:#3A5A41;
     --c-danger:#E67A66; --c-danger-bg:rgba(230,122,102,.16); --c-shadow:none; --c-overlay:rgba(0,0,0,.6);
   }
 }
 
-.cpwa { min-height: 100vh; background: var(--c-bg); color: var(--c-text); }
+/* Comfortable line-height across the consumer app — Indic (Telugu/Hindi/Tamil/…)
+   glyphs are tall, so 1.5 keeps stacked labels and buttons from clipping. */
+.cpwa { min-height: 100vh; background: var(--c-bg); color: var(--c-text); line-height: 1.5; }
 
 /* Base controls re-themed inside the consumer app (colors only, layout intact).
    The global button/input/.card rules above use the owner (dark) tokens; these
@@ -148,13 +170,24 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
 .cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-border-strong); color: var(--c-text); }
 .cpwa-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+/* Top bar: a title/back "lead" area and a controls "tools" cluster (location,
+   appearance, language). The bar can wrap so that on a page WITH a long title the
+   tools drop to a tidy second row instead of clipping; on the home/discover screen
+   the lead is empty and the three controls sit on one line comfortably down to
+   360px. Everything is flex + logical properties so it mirrors for RTL (Urdu). */
 .cpwa-topbar {
-  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
-  background: var(--c-bg); border-bottom: 1px solid var(--c-border-strong);
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px;
+  padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top));
+  background: var(--c-bg); border-bottom: 1px solid var(--c-border);
 }
-.cpwa-topbar h1 { margin: 0; font-size: 18px; }
-.cpwa-back { padding: 4px 12px; font-size: 20px; line-height: 1; }
+.cpwa-topbar-lead { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
+.cpwa-topbar-tools { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; margin-inline-start: auto; }
+.cpwa-topbar h1, .cpwa-topbar-title { margin: 0; font-size: 18px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cpwa-back { padding: 4px 10px; font-size: 20px; line-height: 1; flex: 0 0 auto; }
+/* Keep the language <select> to a sensible width in the bar so its native-script
+   value (English / తెలుగు / മലയാളം / اردو …) is fully visible — never a clipped
+   fragment — while still leaving room for the location + appearance controls. */
+.cpwa-topbar .cpwa-lang { max-width: 8rem; }
 .cpwa-main { flex: 1; padding: 16px; padding-bottom: 24px; }
 .cpwa-main.has-tabs { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 .cpwa .card { margin-bottom: 12px; background: var(--c-surface); box-shadow: var(--c-shadow); }
@@ -210,8 +243,8 @@ th { color: var(--muted); font-weight: 600; }
    RTL-safe for Urdu (logical properties + flex). */
 .cpwa-loc-picker { position: relative; flex: 0 1 auto; min-width: 0; }
 .cpwa-loc-chip {
-  display: inline-flex; align-items: center; gap: 6px; max-width: 132px;
-  height: 34px; padding: 0 10px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 6px; max-width: 116px;
+  height: 34px; padding: 0 10px; border-radius: 999px;
   background: var(--c-surface); color: var(--c-text);
   border: 1px solid var(--c-border-strong); font-size: 13px; font-weight: 600;
 }
@@ -269,46 +302,52 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-promo-track::-webkit-scrollbar { display: none; }
 .cpwa-promo-slide {
   scroll-snap-align: start; flex: 0 0 86%; max-width: 460px;
-  display: flex; align-items: center; gap: 12px; position: relative;
-  text-align: start; padding: 14px; border-radius: 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 14px; position: relative;
+  text-align: start; padding: 14px 16px; border-radius: 16px; cursor: pointer;
   background: var(--c-surface); color: var(--c-text);
-  border: 1px solid var(--c-border-strong); box-shadow: var(--c-shadow);
+  border: 1px solid var(--c-border); box-shadow: var(--c-shadow);
 }
 .cpwa-promo-slide:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
 .cpwa-promo-badge {
-  position: absolute; inset-block-start: 8px; inset-inline-end: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
-  padding: 2px 7px; border-radius: 999px;
+  position: absolute; inset-block-start: 10px; inset-inline-end: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px;
   background: var(--c-surface-2); color: var(--c-muted); border: 1px solid var(--c-border);
 }
 .cpwa-promo-media {
-  flex: 0 0 auto; width: 72px; height: 72px; border-radius: 12px; overflow: hidden;
+  flex: 0 0 auto; width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   background: var(--c-surface-2); border: 1px solid var(--c-border);
 }
 .cpwa-promo-glyph { font-size: 34px; line-height: 1; }
 .cpwa-promo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.cpwa-promo-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-inline-end: 56px; }
-.cpwa-promo-offer { font-size: 20px; font-weight: 800; line-height: 1.1; color: var(--c-accent-ink); }
+.cpwa-promo-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-inline-end: 58px; }
+.cpwa-promo-offer { font-size: 20px; font-weight: 800; line-height: 1.15; color: var(--c-accent-ink); }
+/* Titles may be long or in a tall Indic/RTL script — allow up to two lines and
+   clamp, rather than hard one-line ellipsis, so premium copy is not cut mid-word. */
 .cpwa-promo-title {
-  font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--c-text);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--c-text);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 }
 .cpwa-promo-sub {
-  font-size: 13px; color: var(--c-muted); line-height: 1.25;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 13px; color: var(--c-muted); line-height: 1.35;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
 }
 .cpwa-promo-adv { font-size: 11px; color: var(--c-muted); margin-top: 2px; }
-/* Style A (offer): a filled accent tile with a big offer line. */
+/* Large surfaces use the SOFT-accent tint (never a raw-accent flood): the offer
+   tile and the festival wash read as premium accent surfaces while text stays
+   high-contrast. */
 .cpwa-promo--offer .cpwa-promo-media {
-  background: color-mix(in srgb, var(--c-accent) 20%, var(--c-surface)); border-color: var(--c-accent);
+  background: var(--c-accent-soft); border-color: var(--c-accent-soft-border); color: var(--c-accent-ink);
 }
-/* Style D (festival): bolder, full-tile accent wash. */
+/* Style D (festival): a soft accent-tinted card with a subtle gradient sheen. */
 .cpwa-promo--festival {
-  background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface)); border-color: var(--c-accent);
+  background:
+    linear-gradient(135deg, var(--c-accent-soft) 0%, var(--c-surface) 78%);
+  border-color: var(--c-accent-soft-border);
 }
 .cpwa-promo--festival .cpwa-promo-media {
-  background: color-mix(in srgb, var(--c-accent) 26%, var(--c-surface)); border-color: var(--c-accent);
+  background: var(--c-accent-soft); border-color: var(--c-accent-soft-border); color: var(--c-accent-ink);
 }
 .cpwa-promo--festival .cpwa-promo-title { font-size: 17px; font-weight: 800; }
 .cpwa-promo-dots {
@@ -390,10 +429,11 @@ th { color: var(--muted); font-weight: 600; }
 }
 .cpwa-tabbar a, .cpwa-tabbar button {
   background: none; border: none; color: var(--c-muted); font-weight: 600;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 10px 4px 8px; font-size: 11px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
+  padding: 8px 3px 7px; font-size: 11px; line-height: 1.15; text-align: center; cursor: pointer;
 }
 .cpwa-tabbar a.active { color: var(--c-accent-ink); }
+.cpwa-tabbar a.active .cpwa-tab-ico { transform: translateY(-1px); }
 .cpwa-tab-ico { font-size: 20px; line-height: 1; }
 
 /* Forms & feedback */
@@ -464,7 +504,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-btn-danger { width: 100%; background: var(--c-danger); color: #fff; }
 
 /* Status badges & timeline */
-.cpwa-badge-ok { background: rgba(34,197,94,0.2); color: var(--c-accent-ink); }
+.cpwa-badge-ok { background: var(--c-accent-soft); color: var(--c-accent-ink); border: 1px solid var(--c-accent-soft-border); }
 /* Warn pill: darker amber text on the light theme (AA on the translucent tint),
    bright amber on dark. Scoped like the other cpwa theme blocks. */
 .cpwa-badge-warn { background: rgba(234,179,8,0.2); color: #a16207; }
@@ -513,11 +553,13 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-product img { align-self: flex-start; }
 .cpwa-tabbar-5 { grid-template-columns: repeat(5, 1fr); }
 .cpwa-tabbar-6 { grid-template-columns: repeat(6, 1fr); }
-/* Keep the 6-up consumer labels on one line at narrow widths (~65px/tab at
-   390px) without shrinking the tab font — clip with an ellipsis if a localized
-   label runs long. Scoped to the 6-tab bar so the owner/5-tab bars are untouched. */
+/* 6-up consumer labels: at ~60px/tab (360px) a long Telugu/Tamil label will not
+   fit on one line, so instead of truncating with an ellipsis we allow up to TWO
+   lines and clamp — nothing is cut off. Scoped to the 6-tab bar so the owner/5-tab
+   bars are untouched. */
 .cpwa-tabbar-6 a span:last-child, .cpwa-tabbar-6 button span:last-child {
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 100%; overflow: hidden; overflow-wrap: break-word;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 }
 .cpwa-tab-badgewrap { position: relative; display: inline-flex; }
 .cpwa-tab-badge {
