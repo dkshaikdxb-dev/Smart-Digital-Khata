@@ -13,6 +13,8 @@ const createOrderSchema = Joi.object({
 
 // Public — used by the post-payment redirect / "thank you" page
 router.get('/orders/:id/public', asyncHandler(ctrl.getOrderPublic));
+// Public — Razorpay's callback_url lands here after payment; 302 → /pay/:id
+router.get('/orders/:id/return', asyncHandler(ctrl.paymentReturn));
 
 router.use(auth(['owner', 'staff']));
 router.post('/orders', validate(createOrderSchema), asyncHandler(ctrl.createOrder));

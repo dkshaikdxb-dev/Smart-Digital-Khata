@@ -98,6 +98,19 @@ exports.sharePaymentLink = async (req, res) => {
 };
 
 /**
+ * Post-payment RETURN landing — the `callback_url` Razorpay redirects the
+ * customer's browser to after a hosted-checkout / payment-link payment (built as
+ * `${APP_URL}/api/payments/orders/:id/return`). It 302-redirects to the web
+ * "thank you" page (`/pay/:id`), which reads the status from `/orders/:id/public`.
+ * Public (no auth — the browser arrives here unauthenticated from Razorpay). The
+ * id is encoded and appended to a FIXED `/pay/` prefix, so there is no open
+ * redirect. Relative Location keeps it on whatever origin served the request.
+ */
+exports.paymentReturn = async (req, res) => {
+  res.redirect(302, `/pay/${encodeURIComponent(req.params.id)}`);
+};
+
+/**
  * Public read-only payment status — used by the post-payment redirect.
  */
 exports.getOrderPublic = async (req, res) => {
