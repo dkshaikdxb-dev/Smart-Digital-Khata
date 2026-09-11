@@ -1,0 +1,85 @@
+name: EAS Update — configure (one-time)
+
+# One-time `eas update:configure` for BOTH flavors (owner + consumer). Run this
+# once per project to wire EAS Update (expo-updates) on Expo's side. After it
+# succeeds you ship OTA JS-shell updates via the "EAS Update (OTA)" workflow
+# (eas-update.yml) with no rebuild.
+#
+# NOTE on this repo's dynamic config: app.config.js is a *dynamic* config, so
+# `eas update:configure` cannot write `updates.url` / `runtimeVersion` back into
+# a file — and it doesn't need to. The config already resolves
+#   updates.url        = https://u.expo.dev/<EAS_PROJECT_ID>
+#   runtimeVersion     = { policy: 'sdkVersion' }
+# from the project id at build/update time, and eas.json already sets the
+# per-profile channels (preview / production). This run therefore links each
+# project and confirms EAS Update is enabled server-side; if the CLI prints
+# manual config lines for the dynamic config, they are ALREADY satisfied here.
+#
+# Prerequisites (same as eas-build.yml — see mobile-app/EAS_BUILD.md):
+#   - Actions secret EXPO_TOKEN
+#   - Actions variables EAS_PROJECT_ID_OWNER / EAS_PROJECT_ID_CONSUMER (printed
+#     by the first build; created here if missing and surfaced as a notice).
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: [owner, consumer]
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      APP_FLAVOR: ${{ matrix.flavor }}
+      EAS_PROJECT_ID: ${{ matrix.flavor == 'owner' && vars.EAS_PROJECT_ID_OWNER || vars.EAS_PROJECT_ID_CONSUMER }}
+    steps:
+      - name: Guard — token must be configured
+        run: |
+          if [ -z "${EXPO_TOKEN}" ]; then
+            echo "::error::EXPO_TOKEN secret is not set. Create an Expo access token at https://expo.dev/settings/access-tokens and add it as an Actions secret named EXPO_TOKEN."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install eas-cli
+        run: npm i -g eas-cli
+
+      - name: Verify Expo auth
+        run: eas whoami
+
+      - name: Install app dependencies
+        working-directory: mobile-app
+        run: npm ci
+
+      - name: Resolve or create the EAS project id
+        working-directory: mobile-app
+        run: |
+          set -o pipefail
+          VARNAME="EAS_PROJECT_ID_$(echo "${APP_FLAVOR}" | tr '[:lower:]' '[:upper:]')"
+          if [ -n "${EAS_PROJECT_ID}" ]; then
+            echo "Using ${VARNAME}=${EAS_PROJECT_ID}"
+            exit 0
+          fi
+          echo "No ${VARNAME} variable set — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
+          out=$(eas init --non-interactive --force 2>&1 | tee /dev/stderr) || true
+          pid=$(printf '%s\n' "$out" | grep -oiE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
+          if [ -z "$pid" ]; then
+            echo "::error::Could not determine the EAS project id from 'eas init'. See the log above; then create it once and add its id as the Actions variable ${VARNAME}."
+            exit 1
+          fi
+          echo "EAS_PROJECT_ID=$pid" >> "$GITHUB_ENV"
+          echo "::notice title=Save this::Project id for '${APP_FLAVOR}' is $pid. Add it as an Actions *variable* named ${VARNAME} to skip this step on future runs."
+
+      - name: eas update:configure (${{ matrix.flavor }})
+        working-directory: mobile-app
+        run: |
+          echo "Configuring EAS Update for the ${APP_FLAVOR} project (dynamic config — see this workflow's header)."
+          eas update:configure --non-interactive
+          echo "Done. EAS Update is configured for ${APP_FLAVOR}. Ship OTA updates with the 'EAS Update (OTA)' workflow."
