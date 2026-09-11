@@ -4,10 +4,12 @@ import {
   RefreshControl, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { families } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function FamiliesScreen({ navigation }) {
+  const { t } = useT();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -22,18 +24,18 @@ export default function FamiliesScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   useEffect(() => navigation.addListener('focus', () => { load().catch(() => {}); }), [navigation, load]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   async function create() {
-    if (!name.trim()) return Alert.alert('Missing', 'Enter a family name');
+    if (!name.trim()) return Alert.alert(t('common.missing'), t('fam.missingName'));
     setSaving(true);
     try {
       await families.create({
@@ -43,7 +45,7 @@ export default function FamiliesScreen({ navigation }) {
       setName(''); setCreditLimit('');
       await load();
     } catch (e) {
-      Alert.alert('Failed', e.response?.data?.error || e.message);
+      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setSaving(false);
     }
@@ -52,15 +54,15 @@ export default function FamiliesScreen({ navigation }) {
   const header = (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={s.formCard}>
-        <Text style={s.formTitle}>New family</Text>
-        <TextInput style={s.input} placeholder="Family name" placeholderTextColor="#64748b" value={name} onChangeText={setName} />
-        <TextInput style={s.input} placeholder="Combined credit limit (₹, optional)" placeholderTextColor="#64748b" keyboardType="decimal-pad" value={creditLimit} onChangeText={setCreditLimit} />
+        <Text style={s.formTitle}>{t('fam.new')}</Text>
+        <TextInput style={s.input} placeholder={t('fam.namePlaceholder')} placeholderTextColor="#64748b" value={name} onChangeText={setName} />
+        <TextInput style={s.input} placeholder={t('fam.limitPlaceholder')} placeholderTextColor="#64748b" keyboardType="decimal-pad" value={creditLimit} onChangeText={setCreditLimit} />
         <Pressable style={[s.primary, saving && { opacity: 0.6 }]} onPress={create} disabled={saving}>
-          <Text style={s.primaryText}>{saving ? 'Creating…' : '+ Create family'}</Text>
+          <Text style={s.primaryText}>{saving ? t('fam.creating') : `+ ${t('fam.create')}`}</Text>
         </Pressable>
-        <Text style={s.hint}>Add members and set a payer from the family's detail screen.</Text>
+        <Text style={s.hint}>{t('fam.hint')}</Text>
       </View>
-      <Text style={s.sectionLabel}>Families</Text>
+      <Text style={s.sectionLabel}>{t('fam.families')}</Text>
     </KeyboardAvoidingView>
   );
 
@@ -74,12 +76,12 @@ export default function FamiliesScreen({ navigation }) {
       keyExtractor={(i) => i.id}
       ListHeaderComponent={header}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}
-      ListEmptyComponent={<Text style={s.empty}>No families yet.</Text>}
+      ListEmptyComponent={<Text style={s.empty}>{t('fam.empty')}</Text>}
       renderItem={({ item }) => (
         <Pressable style={s.row} onPress={() => navigation.navigate('FamilyDetail', { id: item.id, name: item.name })}>
           <View style={{ flex: 1 }}>
             <Text style={s.name}>{item.name}</Text>
-            <Text style={s.muted}>{Number(item.member_count)} member{Number(item.member_count) === 1 ? '' : 's'}</Text>
+            <Text style={s.muted}>{t('fam.membersN', { n: Number(item.member_count), s: Number(item.member_count) === 1 ? '' : 's' })}</Text>
           </View>
           <Text style={[s.balance, Number(item.combined_balance) > 0 ? { color: '#f87171' } : { color: '#94a3b8' }]}>{fmt(item.combined_balance)}</Text>
         </Pressable>

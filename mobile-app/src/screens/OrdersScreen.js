@@ -3,10 +3,15 @@ import {
   View, Text, FlatList, StyleSheet, Pressable, Alert, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { orders } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 const FILTERS = ['all', 'pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled'];
+const OSTATUS = new Set(['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled']);
+const FUL = new Set(['delivery', 'pickup']);
+const PMODE = new Set(['credit', 'prepaid', 'cash']);
+const PSTATUS = new Set(['paid', 'pending', 'failed', 'not_required']);
 
 const statusColor = (s) => {
   if (s === 'completed') return '#22c55e';
@@ -15,6 +20,11 @@ const statusColor = (s) => {
 };
 
 export default function OrdersScreen({ navigation }) {
+  const { t } = useT();
+  // Localize known order enums; fall back to the de-underscored raw value for any
+  // value not in the set, so a label is never blank.
+  const enumT = (prefix, set, v) => (set.has(v) ? t(`${prefix}.${v}`) : label(v));
+  const filterLabel = (f) => (f === 'all' ? t('ofilter.all') : enumT('ostatus', OSTATUS, f));
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -26,20 +36,20 @@ export default function OrdersScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    load('all').catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load('all').catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   // Reload when returning from detail (status may have changed).
   useEffect(() => navigation.addListener('focus', () => { load(status).catch(() => {}); }), [navigation, load, status]);
 
   function pick(st) {
     setStatus(st);
-    load(st).catch((e) => Alert.alert('Error', e.response?.data?.error || e.message));
+    load(st).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message));
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(status); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(status); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   return (
@@ -53,7 +63,7 @@ export default function OrdersScreen({ navigation }) {
           contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}
           renderItem={({ item: f }) => (
             <Pressable onPress={() => pick(f)} style={[s.chip, status === f && s.chipActive]}>
-              <Text style={[s.chipText, status === f && s.chipTextActive]}>{label(f)}</Text>
+              <Text style={[s.chipText, status === f && s.chipTextActive]}>{filterLabel(f)}</Text>
             </Pressable>
           )}
         />
@@ -67,21 +77,21 @@ export default function OrdersScreen({ navigation }) {
           keyExtractor={(i) => i.id}
           contentContainerStyle={{ padding: 16, paddingTop: 4 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}
-          ListEmptyComponent={<Text style={s.empty}>No orders in this view yet.</Text>}
+          ListEmptyComponent={<Text style={s.empty}>{t('ord.empty')}</Text>}
           renderItem={({ item }) => (
             <Pressable style={s.row} onPress={() => navigation.navigate('OrderDetail', { id: item.id })}>
               <View style={{ flex: 1 }}>
                 <Text style={s.name}>{item.customer_name || '—'}</Text>
                 <Text style={s.muted}>{new Date(item.created_at).toLocaleString()}</Text>
                 <View style={s.badgeRow}>
-                  <Text style={s.badge}>{label(item.fulfillment_type)}</Text>
-                  <Text style={s.badge}>{item.payment_mode}</Text>
-                  <Text style={s.badge}>{label(item.payment_status)}</Text>
+                  <Text style={s.badge}>{enumT('ful', FUL, item.fulfillment_type)}</Text>
+                  <Text style={s.badge}>{enumT('pmode', PMODE, item.payment_mode)}</Text>
+                  <Text style={s.badge}>{enumT('pstatus', PSTATUS, item.payment_status)}</Text>
                 </View>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={s.total}>{fmt(item.subtotal)}</Text>
-                <Text style={[s.statusText, { color: statusColor(item.status) }]}>{label(item.status)}</Text>
+                <Text style={[s.statusText, { color: statusColor(item.status) }]}>{enumT('ostatus', OSTATUS, item.status)}</Text>
               </View>
             </Pressable>
           )}

@@ -5,14 +5,16 @@ import {
 } from 'react-native';
 import { shop } from '../services/api';
 import { AuthContext } from '../AuthContext';
+import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
 const NOTIF_MODES = [
-  { value: 'silent', label: 'Silent' },
-  { value: 'smart', label: 'Smart' },
-  { value: 'active', label: 'Active' },
+  { value: 'silent', tkey: 'setn.silent' },
+  { value: 'smart', tkey: 'setn.smart' },
+  { value: 'active', tkey: 'setn.active' },
 ];
 
 export default function SettingsScreen() {
+  const { t, lang, setLang } = useT();
   const { signOut } = useContext(AuthContext);
   const [form, setForm] = useState(null);
   const [pay, setPay] = useState(null);
@@ -34,8 +36,8 @@ export default function SettingsScreen() {
   }, []);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -44,8 +46,8 @@ export default function SettingsScreen() {
     try {
       const r = await shop.update({ name: form.name, notification_mode: form.notification_mode });
       setForm(r.shop);
-      Alert.alert('Saved', 'Shop settings updated.');
-    } catch (e) { Alert.alert('Failed', e.response?.data?.error || e.message); }
+      Alert.alert(t('set.savedTitle'), t('set.shopSaved'));
+    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -57,8 +59,8 @@ export default function SettingsScreen() {
     try {
       await shop.updatePayment(body);
       await loadPayment();
-      Alert.alert('Saved', 'Payment settings saved.');
-    } catch (e) { Alert.alert('Failed', e.response?.data?.error || e.message); }
+      Alert.alert(t('set.savedTitle'), t('set.paymentSaved'));
+    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -66,8 +68,11 @@ export default function SettingsScreen() {
     setBusy(true);
     try {
       const r = await shop.testPayment();
-      Alert.alert(r.ok ? 'Connection OK' : 'Connection failed', r.message || (r.ok ? 'Your Razorpay keys work.' : 'Check your keys.'));
-    } catch (e) { Alert.alert('Connection failed', e.response?.data?.error || e.message); }
+      Alert.alert(
+        r.ok ? t('set.connOkTitle') : t('set.connFailedTitle'),
+        r.message || (r.ok ? t('set.connOkMsg') : t('set.connFailedMsg')),
+      );
+    } catch (e) { Alert.alert(t('set.connFailedTitle'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -82,15 +87,15 @@ export default function SettingsScreen() {
         is_listed: !!form.is_listed,
       });
       setForm(r.shop);
-      Alert.alert('Saved', 'Discovery settings updated.');
-    } catch (e) { Alert.alert('Failed', e.response?.data?.error || e.message); }
+      Alert.alert(t('set.savedTitle'), t('set.discoverySaved'));
+    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
   function confirmLogout() {
-    Alert.alert('Sign out', 'Sign out of this account?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign out', style: 'destructive', onPress: signOut },
+    Alert.alert(t('set.signOut'), t('set.signOutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('set.signOut'), style: 'destructive', onPress: signOut },
     ]);
   }
 
@@ -100,78 +105,95 @@ export default function SettingsScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView style={s.container} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
         <View style={s.card}>
-          <Text style={s.h}>Shop</Text>
-          <Text style={s.label}>Shop name</Text>
+          <Text style={s.h}>{t('set.shop')}</Text>
+          <Text style={s.label}>{t('set.shopName')}</Text>
           <TextInput style={s.input} value={form.name || ''} onChangeText={(v) => set('name', v)} placeholderTextColor="#64748b" />
-          <Text style={s.label}>Customer notifications</Text>
+          <Text style={s.label}>{t('set.customerNotifications')}</Text>
           <View style={s.pillRow}>
             {NOTIF_MODES.map((m) => (
               <Pressable key={m.value} onPress={() => set('notification_mode', m.value)} style={[s.pill, form.notification_mode === m.value && s.pillActive]}>
-                <Text style={[s.pillText, form.notification_mode === m.value && s.pillTextActive]}>{m.label}</Text>
+                <Text style={[s.pillText, form.notification_mode === m.value && s.pillTextActive]}>{t(m.tkey)}</Text>
               </Pressable>
             ))}
           </View>
           <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={saveBasics} disabled={busy}>
-            <Text style={s.primaryText}>Save</Text>
+            <Text style={s.primaryText}>{t('common.save')}</Text>
           </Pressable>
         </View>
 
         <View style={s.card}>
-          <Text style={s.h}>Payments (your Razorpay)</Text>
+          <Text style={s.h}>{t('set.payments')}</Text>
           <View style={s.badgeRow}>
-            <Text style={s.badge}>Mode: {pay?.mode || '—'}</Text>
-            <Text style={s.badge}>{pay?.key_secret_set ? 'Key secret set' : 'No key secret'}</Text>
-            <Text style={s.badge}>{pay?.webhook_secret_set ? 'Webhook secret set' : 'No webhook secret'}</Text>
+            <Text style={s.badge}>{t('set.modeLabel')} {pay?.mode || '—'}</Text>
+            <Text style={s.badge}>{pay?.key_secret_set ? t('set.keySecretSet') : t('set.noKeySecret')}</Text>
+            <Text style={s.badge}>{pay?.webhook_secret_set ? t('set.webhookSecretSet') : t('set.noWebhookSecret')}</Text>
           </View>
-          <Text style={s.label}>Razorpay Key ID</Text>
+          <Text style={s.label}>{t('set.razorpayKeyId')}</Text>
           <TextInput style={s.input} value={payForm.razorpay_key_id} onChangeText={(v) => setPayForm((f) => ({ ...f, razorpay_key_id: v }))} placeholder="rzp_live_… / rzp_test_…" placeholderTextColor="#64748b" autoCapitalize="none" />
-          <Text style={s.label}>Key Secret</Text>
-          <TextInput style={s.input} value={payForm.razorpay_key_secret} onChangeText={(v) => setPayForm((f) => ({ ...f, razorpay_key_secret: v }))} placeholder="Leave blank to keep current" placeholderTextColor="#64748b" secureTextEntry autoCapitalize="none" />
-          <Text style={s.label}>Webhook Secret</Text>
-          <TextInput style={s.input} value={payForm.razorpay_webhook_secret} onChangeText={(v) => setPayForm((f) => ({ ...f, razorpay_webhook_secret: v }))} placeholder="Leave blank to keep current" placeholderTextColor="#64748b" secureTextEntry autoCapitalize="none" />
+          <Text style={s.label}>{t('set.keySecret')}</Text>
+          <TextInput style={s.input} value={payForm.razorpay_key_secret} onChangeText={(v) => setPayForm((f) => ({ ...f, razorpay_key_secret: v }))} placeholder={t('set.leaveBlank')} placeholderTextColor="#64748b" secureTextEntry autoCapitalize="none" />
+          <Text style={s.label}>{t('set.webhookSecret')}</Text>
+          <TextInput style={s.input} value={payForm.razorpay_webhook_secret} onChangeText={(v) => setPayForm((f) => ({ ...f, razorpay_webhook_secret: v }))} placeholder={t('set.leaveBlank')} placeholderTextColor="#64748b" secureTextEntry autoCapitalize="none" />
           <View style={s.actions}>
             <Pressable style={[s.primary, { flex: 1 }, busy && { opacity: 0.6 }]} onPress={savePayment} disabled={busy}>
-              <Text style={s.primaryText}>Save</Text>
+              <Text style={s.primaryText}>{t('common.save')}</Text>
             </Pressable>
             <Pressable style={[s.secondary, { flex: 1 }, busy && { opacity: 0.6 }]} onPress={testPayment} disabled={busy}>
-              <Text style={s.secondaryText}>Test connection</Text>
+              <Text style={s.secondaryText}>{t('set.testConnection')}</Text>
             </Pressable>
           </View>
           {pay?.webhook_url ? (
             <View style={{ marginTop: 12 }}>
-              <Text style={s.label}>Add this webhook in YOUR Razorpay dashboard:</Text>
+              <Text style={s.label}>{t('set.webhookHint')}</Text>
               <Text selectable style={s.code}>{pay.webhook_url}</Text>
             </View>
           ) : null}
         </View>
 
         <View style={s.card}>
-          <Text style={s.h}>Discovery (list your shop)</Text>
-          <Text style={s.label}>City</Text>
-          <TextInput style={s.input} value={form.city || ''} onChangeText={(v) => set('city', v)} placeholder="City" placeholderTextColor="#64748b" />
-          <Text style={s.label}>Area / locality</Text>
-          <TextInput style={s.input} value={form.area || ''} onChangeText={(v) => set('area', v)} placeholder="Area" placeholderTextColor="#64748b" />
+          <Text style={s.h}>{t('set.discovery')}</Text>
+          <Text style={s.label}>{t('set.city')}</Text>
+          <TextInput style={s.input} value={form.city || ''} onChangeText={(v) => set('city', v)} placeholder={t('set.city')} placeholderTextColor="#64748b" />
+          <Text style={s.label}>{t('set.areaLocality')}</Text>
+          <TextInput style={s.input} value={form.area || ''} onChangeText={(v) => set('area', v)} placeholder={t('set.areaPlaceholder')} placeholderTextColor="#64748b" />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text style={s.label}>Latitude</Text>
+              <Text style={s.label}>{t('set.latitude')}</Text>
               <TextInput style={s.input} value={form.latitude == null ? '' : String(form.latitude)} onChangeText={(v) => set('latitude', v)} keyboardType="numbers-and-punctuation" placeholder="19.0760" placeholderTextColor="#64748b" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.label}>Longitude</Text>
+              <Text style={s.label}>{t('set.longitude')}</Text>
               <TextInput style={s.input} value={form.longitude == null ? '' : String(form.longitude)} onChangeText={(v) => set('longitude', v)} keyboardType="numbers-and-punctuation" placeholder="72.8777" placeholderTextColor="#64748b" />
             </View>
           </View>
           <View style={s.switchRow}>
-            <Text style={s.body}>List my shop for nearby customers</Text>
+            <Text style={s.body}>{t('set.listShop')}</Text>
             <Switch value={!!form.is_listed} onValueChange={(v) => set('is_listed', v)} trackColor={{ true: '#22c55e', false: '#334155' }} thumbColor="#e2e8f0" />
           </View>
           <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={saveDiscovery} disabled={busy}>
-            <Text style={s.primaryText}>Save</Text>
+            <Text style={s.primaryText}>{t('common.save')}</Text>
           </Pressable>
         </View>
 
+        <View style={s.card}>
+          <Text style={s.h}>{t('settings.language')}</Text>
+          <View style={s.langWrap}>
+            {LANGUAGES.map((l) => (
+              <Pressable
+                key={l.code}
+                onPress={() => setLang(l.code)}
+                style={[s.lang, lang === l.code && s.langActive]}
+              >
+                <Text style={[s.langText, lang === l.code && s.langTextActive]}>
+                  {l.label}{isBetaLang(l.code) ? t('settings.betaSuffix') : ''}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         <Pressable style={s.logout} onPress={confirmLogout}>
-          <Text style={s.logoutText}>Log out</Text>
+          <Text style={s.logoutText}>{t('set.logout')}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -200,6 +222,14 @@ const s = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8 },
   code: { color: '#e2e8f0', backgroundColor: '#0b1220', borderWidth: 1, borderColor: '#334155', borderRadius: 8, padding: 10, marginTop: 4, fontSize: 12 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 },
+  langWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
+  lang: {
+    borderWidth: 1, borderColor: '#334155', borderRadius: 10,
+    paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: 'center',
+  },
+  langActive: { backgroundColor: '#22c55e', borderColor: '#22c55e' },
+  langText: { color: '#e2e8f0', fontSize: 15, fontWeight: '600' },
+  langTextActive: { color: '#000' },
   logout: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4, marginBottom: 20, borderWidth: 1, borderColor: '#f87171' },
   logoutText: { color: '#f87171', fontWeight: '700' },
 });

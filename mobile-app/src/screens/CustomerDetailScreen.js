@@ -3,14 +3,19 @@ import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { customers } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 
-const typeColor = (t) => (t === 'purchase' ? '#f87171' : '#22c55e');
+const typeColor = (ty) => (ty === 'purchase' ? '#f87171' : '#22c55e');
 
 export default function CustomerDetailScreen({ route, navigation }) {
+  const { t } = useT();
   const { id } = route.params;
+  // Localize the known transaction type words; fall back to the raw enum for any
+  // other value so nothing shows blank.
+  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' ? t(`txn.${v}`) : label(v));
   const [customer, setCustomer] = useState(null);
   const [tx, setTx] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,18 +28,18 @@ export default function CustomerDetailScreen({ route, navigation }) {
   }, [id]);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
-  }, [load]);
+    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  }, [load, t]);
 
   useEffect(() => navigation.addListener('focus', () => { load().catch(() => {}); }), [navigation, load]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
-  if (!customer) return <View style={s.center}><Text style={s.muted}>Customer not found.</Text></View>;
+  if (!customer) return <View style={s.center}><Text style={s.muted}>{t('custd.notFound')}</Text></View>;
 
   return (
     <ScrollView
@@ -47,31 +52,31 @@ export default function CustomerDetailScreen({ route, navigation }) {
         <Text style={s.muted}>{customer.phone}</Text>
         <View style={s.kpiRow}>
           <View style={{ flex: 1 }}>
-            <Text style={s.kpiLabel}>Balance</Text>
+            <Text style={s.kpiLabel}>{t('custd.balance')}</Text>
             <Text style={[s.kpiValue, Number(customer.balance) > 0 ? { color: '#f87171' } : null]}>{fmt(customer.balance)}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={s.kpiLabel}>Credit limit</Text>
+            <Text style={s.kpiLabel}>{t('custd.creditLimit')}</Text>
             <Text style={s.kpiValue}>{Number(customer.credit_limit) > 0 ? fmt(customer.credit_limit) : '—'}</Text>
           </View>
         </View>
       </View>
 
       <Pressable style={s.primary} onPress={() => navigation.navigate('AddTransaction', { customerId: id, customerName: customer.name })}>
-        <Text style={s.primaryText}>+ Record payment / purchase</Text>
+        <Text style={s.primaryText}>+ {t('custd.recordAction')}</Text>
       </Pressable>
 
-      <Text style={s.sectionLabel}>Transactions</Text>
+      <Text style={s.sectionLabel}>{t('custd.transactions')}</Text>
       {tx.length === 0 ? (
-        <Text style={s.empty}>No transactions yet.</Text>
-      ) : tx.map((t) => (
-        <View key={t.id} style={s.txRow}>
+        <Text style={s.empty}>{t('custd.noTransactions')}</Text>
+      ) : tx.map((row) => (
+        <View key={row.id} style={s.txRow}>
           <View style={{ flex: 1 }}>
-            <Text style={s.txType}>{label(t.type)}{t.method ? ` · ${label(t.method)}` : ''}</Text>
-            <Text style={s.muted}>{new Date(t.created_at).toLocaleString()}{t.note ? ` · ${t.note}` : ''}</Text>
+            <Text style={s.txType}>{typeLabel(row.type)}{row.method ? ` · ${label(row.method)}` : ''}</Text>
+            <Text style={s.muted}>{new Date(row.created_at).toLocaleString()}{row.note ? ` · ${row.note}` : ''}</Text>
           </View>
-          <Text style={[s.txAmount, { color: typeColor(t.type) }]}>
-            {t.type === 'purchase' ? '+' : '−'}{fmt(t.amount)}
+          <Text style={[s.txAmount, { color: typeColor(row.type) }]}>
+            {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
           </Text>
         </View>
       ))}

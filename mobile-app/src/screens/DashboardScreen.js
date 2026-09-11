@@ -2,11 +2,13 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { summary } from '../services/api';
+import { useT } from '../i18n';
 import AskShop from './AskShop';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function DashboardScreen({ navigation }) {
+  const { t } = useT();
   const [today, setToday] = useState(null);
   const [out, setOut] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,19 +36,19 @@ export default function DashboardScreen({ navigation }) {
     <ScrollView style={s.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}>
       <AskShop />
       <View style={s.row}>
-        <Card label="Today purchases" value={today ? fmt(today.purchases) : '—'} />
-        <Card label="Today collections" value={today ? fmt(today.collections) : '—'} />
+        <Card label={t('dash.todayPurchases')} value={today ? fmt(today.purchases) : '—'} />
+        <Card label={t('dash.todayCollections')} value={today ? fmt(today.collections) : '—'} />
       </View>
       <View style={s.row}>
-        <Card label="Total outstanding" value={out ? fmt(out.total) : '—'} />
-        <Card label="Customers with dues" value={out ? String(out.customers.length) : '—'} />
+        <Card label={t('dash.totalOutstanding')} value={out ? fmt(out.total) : '—'} />
+        <Card label={t('dash.customersWithDues')} value={out ? String(out.customers.length) : '—'} />
       </View>
 
       <Pressable style={s.primary} onPress={() => navigation.navigate('AddTransaction')}>
-        <Text style={s.primaryText}>+ New transaction</Text>
+        <Text style={s.primaryText}>+ {t('dash.newTransaction')}</Text>
       </Pressable>
       <Pressable style={s.secondary} onPress={() => navigation.navigate('CustomersTab')}>
-        <Text style={s.secondaryText}>View customers</Text>
+        <Text style={s.secondaryText}>{t('dash.viewCustomers')}</Text>
       </Pressable>
     </ScrollView>
   );

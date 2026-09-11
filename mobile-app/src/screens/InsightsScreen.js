@@ -3,19 +3,21 @@ import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { analytics } from '../services/api';
+import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const pct = (f) => `${Math.round(Number(f || 0) * 100)}%`;
 const DAYS = [7, 30, 90];
 
 const AGING = [
-  { key: '0_30', label: '0–30 days' },
-  { key: '31_60', label: '31–60 days' },
-  { key: '61_90', label: '61–90 days' },
-  { key: '90_plus', label: '90+ days' },
+  { key: '0_30', tkey: 'ins.age_0_30' },
+  { key: '31_60', tkey: 'ins.age_31_60' },
+  { key: '61_90', tkey: 'ins.age_61_90' },
+  { key: '90_plus', tkey: 'ins.age_90_plus' },
 ];
 
 export default function InsightsScreen() {
+  const { t } = useT();
   const [days, setDays] = useState(30);
   const [overview, setOverview] = useState(null);
   const [aging, setAging] = useState(null);
@@ -29,18 +31,18 @@ export default function InsightsScreen() {
   }, []);
 
   useEffect(() => {
-    load(days).catch((e) => Alert.alert('Error', e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load(days).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function pick(d) {
     setDays(d);
-    load(d).catch((e) => Alert.alert('Error', e.response?.data?.error || e.message));
+    load(d).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message));
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(days); } catch (e) { Alert.alert('Error', e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(days); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
@@ -56,30 +58,30 @@ export default function InsightsScreen() {
       <View style={s.chips}>
         {DAYS.map((d) => (
           <Pressable key={d} onPress={() => pick(d)} style={[s.chip, days === d && s.chipActive]}>
-            <Text style={[s.chipText, days === d && s.chipTextActive]}>{d} days</Text>
+            <Text style={[s.chipText, days === d && s.chipTextActive]}>{t('ins.daysN', { d })}</Text>
           </Pressable>
         ))}
       </View>
 
       <View style={s.grid}>
-        <Card label="Purchases" value={fmt(overview?.purchases)} />
-        <Card label="Collections" value={fmt(overview?.collections)} />
-        <Card label="Collection rate" value={pct(overview?.collection_rate)} />
-        <Card label="Outstanding" value={fmt(overview?.total_outstanding)} />
-        <Card label="Active customers" value={String(overview?.active_customers ?? '—')} />
-        <Card label="With dues" value={String(overview?.customers_with_dues ?? '—')} />
-        <Card label="New customers" value={String(overview?.new_customers ?? '—')} />
+        <Card label={t('ins.purchases')} value={fmt(overview?.purchases)} />
+        <Card label={t('ins.collections')} value={fmt(overview?.collections)} />
+        <Card label={t('ins.collectionRate')} value={pct(overview?.collection_rate)} />
+        <Card label={t('ins.outstanding')} value={fmt(overview?.total_outstanding)} />
+        <Card label={t('ins.activeCustomers')} value={String(overview?.active_customers ?? '—')} />
+        <Card label={t('ins.withDues')} value={String(overview?.customers_with_dues ?? '—')} />
+        <Card label={t('ins.newCustomers')} value={String(overview?.new_customers ?? '—')} />
       </View>
 
-      <Text style={s.sectionLabel}>Outstanding by age</Text>
+      <Text style={s.sectionLabel}>{t('ins.outstandingByAge')}</Text>
       <View style={s.card}>
-        {AGING.map(({ key, label }) => {
+        {AGING.map(({ key, tkey }) => {
           const val = Number(aging?.[key] || 0);
           const w = agingTotal > 0 ? Math.max(2, Math.round((val / agingTotal) * 100)) : 0;
           return (
             <View key={key} style={s.ageRow}>
               <View style={s.ageHead}>
-                <Text style={s.ageLabel}>{label}</Text>
+                <Text style={s.ageLabel}>{t(tkey)}</Text>
                 <Text style={s.ageValue}>{fmt(val)}</Text>
               </View>
               <View style={s.barTrack}>
@@ -89,12 +91,12 @@ export default function InsightsScreen() {
           );
         })}
         <View style={s.totalRow}>
-          <Text style={s.ageLabel}>Total</Text>
+          <Text style={s.ageLabel}>{t('ins.total')}</Text>
           <Text style={s.ageValue}>{fmt(agingTotal)}</Text>
         </View>
       </View>
 
-      <Text style={s.footnote}>CSV report export is available on the web dashboard.</Text>
+      <Text style={s.footnote}>{t('ins.csvFootnote')}</Text>
     </ScrollView>
   );
 }
