@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { analytics } from '../services/api';
+import { analytics, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -31,18 +31,18 @@ export default function InsightsScreen() {
   }, []);
 
   useEffect(() => {
-    load(days).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load(days).catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function pick(d) {
     setDays(d);
-    load(d).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message));
+    load(d).catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); });
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(days); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(days); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;

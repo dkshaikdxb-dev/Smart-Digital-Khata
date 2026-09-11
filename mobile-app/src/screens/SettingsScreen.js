@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, StyleSheet, Pressable, Alert, ScrollView,
   ActivityIndicator, Switch, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { shop } from '../services/api';
+import { shop, isAuthError } from '../services/api';
 import { AuthContext } from '../AuthContext';
 import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
@@ -35,9 +35,20 @@ export default function SettingsScreen() {
     setPayForm({ razorpay_key_id: p.key_id || '', razorpay_key_secret: '', razorpay_webhook_secret: '' });
   }, []);
 
-  useEffect(() => {
-    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+  // Run the initial load, tracking a load-failed flag so a failure renders a
+  // retry view instead of trapping the screen on an endless spinner (form stays
+  // null on error). Skip the alert on a handled 401 — the app already routed to
+  // Login.
+  const runLoad = useCallback(() => {
+    setLoading(true);
+    load()
+      .catch((e) => {
+        if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message);
+      })
+      .finally(() => setLoading(false));
   }, [load, t]);
+
+  useEffect(() => { runLoad(); }, [runLoad]);
 
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -47,7 +58,7 @@ export default function SettingsScreen() {
       const r = await shop.update({ name: form.name, notification_mode: form.notification_mode });
       setForm(r.shop);
       Alert.alert(t('set.savedTitle'), t('set.shopSaved'));
-    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -60,7 +71,7 @@ export default function SettingsScreen() {
       await shop.updatePayment(body);
       await loadPayment();
       Alert.alert(t('set.savedTitle'), t('set.paymentSaved'));
-    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -72,7 +83,7 @@ export default function SettingsScreen() {
         r.ok ? t('set.connOkTitle') : t('set.connFailedTitle'),
         r.message || (r.ok ? t('set.connOkMsg') : t('set.connFailedMsg')),
       );
-    } catch (e) { Alert.alert(t('set.connFailedTitle'), e.response?.data?.error || e.message); }
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('set.connFailedTitle'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -88,7 +99,7 @@ export default function SettingsScreen() {
       });
       setForm(r.shop);
       Alert.alert(t('set.savedTitle'), t('set.discoverySaved'));
-    } catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -99,7 +110,19 @@ export default function SettingsScreen() {
     ]);
   }
 
-  if (loading || !form) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  // Load finished but the shop never arrived (initial load failed) — offer a
+  // retry instead of an endless spinner.
+  if (!form) {
+    return (
+      <View style={s.center}>
+        <Text style={s.loadFailed}>{t('common.loadFailed')}</Text>
+        <Pressable style={s.retry} onPress={runLoad}>
+          <Text style={s.retryText}>{t('common.retry')}</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -202,7 +225,10 @@ export default function SettingsScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
-  center: { flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center' },
+  center: { flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  loadFailed: { color: '#94a3b8', fontSize: 15, textAlign: 'center', marginBottom: 16 },
+  retry: { backgroundColor: '#22c55e', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+  retryText: { color: '#000', fontWeight: '700' },
   card: { backgroundColor: '#1e293b', padding: 16, borderRadius: 12, marginBottom: 12 },
   h: { color: '#e2e8f0', fontSize: 17, fontWeight: '700', marginBottom: 8 },
   label: { color: '#94a3b8', fontSize: 13, marginTop: 12, marginBottom: 6 },

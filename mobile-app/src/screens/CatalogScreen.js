@@ -3,7 +3,7 @@ import {
   View, Text, FlatList, TextInput, StyleSheet, Pressable, Alert,
   RefreshControl, KeyboardAvoidingView, Platform, ActivityIndicator, Switch,
 } from 'react-native';
-import { products, catalog } from '../services/api';
+import { products, catalog, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -43,12 +43,12 @@ export default function CatalogScreen() {
   }, []);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
   }, [load, t]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   async function add() {
@@ -64,7 +64,7 @@ export default function CatalogScreen() {
       setName(''); setPrice(''); setUnit('unit'); setDescription('');
       await load();
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setSaving(false);
     }
@@ -75,7 +75,7 @@ export default function CatalogScreen() {
       await products.update(item.id, { is_active: !item.is_active });
       await load();
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     }
   }
 
@@ -85,7 +85,7 @@ export default function CatalogScreen() {
       {
         text: t('common.delete'), style: 'destructive', onPress: async () => {
           try { await products.remove(item.id); await load(); }
-          catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+          catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
         },
       },
     ]);
@@ -104,7 +104,7 @@ export default function CatalogScreen() {
       async (val) => {
         if (val == null || val === '') return;
         try { await products.update(item.id, { price: Math.round(Number(val) * 100) }); await load(); }
-        catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+        catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
       },
       'plain-text',
       String((Number(item.price || 0) / 100).toFixed(2)),
@@ -118,7 +118,7 @@ export default function CatalogScreen() {
       setEditing(null); setEditPriceVal('');
       await load();
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     }
   }
 
@@ -131,7 +131,7 @@ export default function CatalogScreen() {
       setBrowseItems((prev) => (cursor ? [...prev, ...rows] : rows));
       setBrowseCursor(r.next_cursor || null);
     } catch (e) {
-      Alert.alert(t('common.error'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message);
     } finally {
       if (cursor) setBrowseLoadingMore(false); else setBrowseLoading(false);
     }
@@ -165,7 +165,7 @@ export default function CatalogScreen() {
       setBrowseItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, carried: true, shop_price: paise } : it)));
       await load();
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setAddingId(null);
     }

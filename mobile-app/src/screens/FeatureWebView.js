@@ -15,6 +15,14 @@ import { WebView } from 'react-native-webview';
 
 const BG = '#0f172a';
 
+// The ONLY WebView resources we grant on an Android onPermissionRequest: camera
+// (VIDEO_CAPTURE) and microphone (AUDIO_CAPTURE), for the voice / Image Studio
+// features. Any other requested resource is denied.
+const GRANTED_WEBVIEW_RESOURCES = new Set([
+  'android.webkit.resource.VIDEO_CAPTURE',
+  'android.webkit.resource.AUDIO_CAPTURE',
+]);
+
 const APP_URL =
   Constants.expoConfig?.extra?.apiUrl || 'https://khata.dadashaik.com';
 const CONSUMER_URL =
@@ -49,6 +57,45 @@ function hostOf(url) {
   } catch (e) {
     return null;
   }
+}
+
+// Bare hostname (no port) of a configured base URL, for the payment/redirect
+// allowlist below. Returns null when the URL cannot be parsed.
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Hosts that must keep loading INSIDE the WebView rather than being ejected to
+// the system browser: a payment/checkout or OAuth return that lands on one of
+// these mid-flow would otherwise dead-end (the gateway can't post back into a
+// browser tab the WebView never opened). Kept deliberately small and specific:
+//  - Razorpay checkout + API + short-link domains (the payment gateway in use).
+//  - The app's own API + consumer web hosts (derived from the configured base
+//    URLs), so a same-app redirect chain (e.g. /pay → API → /c return) stays in.
+// Everything NOT on this list and NOT the initial target host still goes out to
+// the system browser. Matched by hostname suffix, so `*.razorpay.com` is covered.
+const PAYMENT_HOSTS = [
+  'razorpay.com',
+  'rzp.io',
+  'checkout.razorpay.com',
+  'api.razorpay.com',
+  hostnameOf(APP_URL),
+  hostnameOf(CONSUMER_URL),
+].filter(Boolean);
+
+// True when `host` equals an allowlisted host or is a sub-domain of one
+// (host === h || host.endsWith('.' + h)). Case-insensitive; strips any port.
+function isAllowlistedHost(host) {
+  if (!host) return false;
+  const h = String(host).split(':')[0].toLowerCase();
+  return PAYMENT_HOSTS.some((allowed) => {
+    const a = String(allowed).toLowerCase();
+    return h === a || h.endsWith('.' + a);
+  });
 }
 
 // Heuristic: a URL that points straight at a downloadable asset (e.g. the share
@@ -135,13 +182,20 @@ export default function FeatureWebView(props) {
     setReloadKey((k) => k + 1);
   }, []);
 
-  // Grant camera/microphone (and any other) resources the page requests. Android
-  // only; guarded so a WebView build without this event never crashes.
+  // Grant ONLY camera + microphone — the resources the voice / Image Studio
+  // features legitimately need — and deny everything else the page might ask for
+  // (e.g. MIDI, protected media, clipboard). Android only; guarded so a WebView
+  // build without this event never crashes.
   const onPermissionRequest = useCallback((event) => {
     try {
       const e = event && event.nativeEvent ? event.nativeEvent : event;
-      if (e && typeof e.grant === 'function') {
-        e.grant(e.resources);
+      if (!e || typeof e.grant !== 'function') return;
+      const requested = Array.isArray(e.resources) ? e.resources : [];
+      const allowed = requested.filter((r) => GRANTED_WEBVIEW_RESOURCES.has(r));
+      if (allowed.length > 0) {
+        e.grant(allowed);
+      } else if (typeof e.deny === 'function') {
+        e.deny();
       }
     } catch (err) { /* ignore — fall back to the platform prompt */ }
   }, []);
@@ -163,7 +217,10 @@ export default function FeatureWebView(props) {
     const url = req && req.url;
     if (!url || !/^https?:\/\//i.test(url)) return true; // about:, data:, blob:, etc.
     const h = hostOf(url);
-    if (targetHost && h && h !== targetHost) {
+    // A different-host URL normally opens in the system browser — EXCEPT known
+    // payment/redirect hosts, which must stay in the WebView so an in-app
+    // checkout / OAuth return can complete instead of dead-ending.
+    if (targetHost && h && h !== targetHost && !isAllowlistedHost(h)) {
       Linking.openURL(url).catch(() => {});
       return false;
     }
@@ -200,10 +257,12 @@ export default function FeatureWebView(props) {
           allowsFullscreenVideo
           // Location picker.
           geolocationEnabled
-          // File uploads (<input type=file>) + local asset access.
+          // File uploads (<input type=file>). Local file:// pages are NOT loaded
+          // here (content is the remote web app), so the cross-origin file-URL
+          // access flags (allowFileAccessFromFileURLs /
+          // allowUniversalAccessFromFileURLs) are deliberately left OFF — they
+          // would let any loaded file read other local files with no upside.
           allowFileAccess
-          allowFileAccessFromFileURLs
-          allowUniversalAccessFromFileURLs
           domStorageEnabled
           javaScriptEnabled
           javaScriptCanOpenWindowsAutomatically

@@ -307,6 +307,10 @@ export default function AskShop() {
   }
 
   async function handleTranscript(transcript) {
+    // Ignore any further results once one has been handled this listen cycle —
+    // a recognizer that emits multiple final results must not process the
+    // transcript (or speak) twice. The guard is reset in startAsk().
+    if (gotResultRef.current) return;
     gotResultRef.current = true;
     try {
       const data = await loadData();

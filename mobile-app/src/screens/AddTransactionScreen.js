@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
-import { customers, transactions } from '../services/api';
+import { customers, transactions, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 export default function AddTransactionScreen({ navigation, route }) {
@@ -20,17 +20,21 @@ export default function AddTransactionScreen({ navigation, route }) {
 
   async function save() {
     if (!customerId || !amount) return Alert.alert(t('common.missing'), t('addtx.missingBody'));
+    // Reject "0", negatives, and non-numeric input up front so they never reach
+    // the backend as a 400 — require a finite amount strictly greater than zero.
+    const amt = Number(amount);
+    if (!Number.isFinite(amt) || amt <= 0) return Alert.alert(t('common.missing'), t('add.invalidAmount'));
     try {
       await transactions.create({
         customer_id: customerId,
         type,
-        amount: Math.round(Number(amount) * 100),
+        amount: Math.round(amt * 100),
         method: type === 'purchase' ? 'credit' : type,
         note: note || null,
       });
       navigation.goBack();
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     }
   }
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { families, customers } from '../services/api';
+import { families, customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -33,18 +33,18 @@ export default function FamilyDetailScreen({ route, navigation }) {
   }, [id]);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
   }, [load, t]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   async function addMember(customerId) {
     setBusy(true);
     try { await families.addMember(id, { customer_id: customerId }); setShowPicker(false); await load(); }
-    catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
     finally { setBusy(false); }
   }
 
@@ -54,7 +54,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
       {
         text: t('common.remove'), style: 'destructive', onPress: async () => {
           try { await families.removeMember(id, member.id); await load(); }
-          catch (e) { Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+          catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
         },
       },
     ]);
@@ -71,7 +71,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
           : t('famd.reminderNotSent', { amt: fmt(r.combined_outstanding) })
       );
     } catch (e) {
-      Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
     } finally {
       setBusy(false);
     }

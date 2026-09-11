@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, Pressable, Alert, RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { orders } from '../services/api';
+import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -36,7 +36,7 @@ export default function OrdersScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    load('all').catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load('all').catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
   }, [load, t]);
 
   // Reload when returning from detail (status may have changed).
@@ -44,12 +44,12 @@ export default function OrdersScreen({ navigation }) {
 
   function pick(st) {
     setStatus(st);
-    load(st).catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message));
+    load(st).catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); });
   }
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(status); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(status); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   return (

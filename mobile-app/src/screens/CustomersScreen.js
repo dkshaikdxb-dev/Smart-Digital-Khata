@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Pressable, Alert, RefreshControl } from 'react-native';
-import { customers } from '../services/api';
+import { customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -25,7 +25,7 @@ export default function CustomersScreen({ navigation }) {
       const r = await customers.list(searchRef.current);
       setItems(r.items);
     } catch (e) {
-      Alert.alert(t('common.error'), e.response?.data?.error || e.message);
+      if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message);
     }
   }, [t]);
 

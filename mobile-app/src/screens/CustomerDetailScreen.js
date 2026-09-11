@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { customers } from '../services/api';
+import { customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
@@ -28,14 +28,14 @@ export default function CustomerDetailScreen({ route, navigation }) {
   }, [id]);
 
   useEffect(() => {
-    load().catch((e) => Alert.alert(t('common.error'), e.response?.data?.error || e.message)).finally(() => setLoading(false));
+    load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
   }, [load, t]);
 
   useEffect(() => navigation.addListener('focus', () => { load().catch(() => {}); }), [navigation, load]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } catch (e) { Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
+    try { await load(); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;

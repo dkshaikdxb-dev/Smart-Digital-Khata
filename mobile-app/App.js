@@ -125,6 +125,14 @@ function OwnerTabs() {
   );
 }
 
+// Only shop-side roles get the owner tabs; every other role (admin, distributor,
+// or an unknown/missing role) has no shopId here and would hit 403s/empty
+// screens, so it is routed to the AdminNotice which points it at the right
+// console. Keep this mapping identical on the boot-restore path and signIn.
+function statusForRole(role) {
+  return role === 'owner' || role === 'staff' ? 'owner' : 'admin';
+}
+
 function OwnerApp() {
   // 'loading' = restoring a persisted session, 'out' = signed out,
   // 'owner' = owner tabs, 'admin' = web-console notice.
@@ -141,13 +149,13 @@ function OwnerApp() {
       if (!token) { setStatus('out'); return; }
       const role = await getRole();
       if (!alive) return;
-      setStatus(role === 'admin' ? 'admin' : 'owner');
+      setStatus(statusForRole(role));
     })();
     return () => { alive = false; };
   }, []);
 
   const authActions = useMemo(() => ({
-    signIn: (role) => setStatus(role === 'admin' ? 'admin' : 'owner'),
+    signIn: (role) => setStatus(statusForRole(role)),
     signOut: async () => { await auth.logout(); setStatus('out'); },
   }), []);
 

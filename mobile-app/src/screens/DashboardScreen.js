@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, RefreshControl, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { summary } from '../services/api';
+import { summary, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import AskShop from './AskShop';
 
@@ -29,7 +29,9 @@ export default function DashboardScreen({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    try { await load(); } finally { setRefreshing(false); }
+    try { await load(); }
+    catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }
+    finally { setRefreshing(false); }
   };
 
   return (

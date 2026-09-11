@@ -82,6 +82,11 @@ api.interceptors.response.use(
       // Expired or revoked session — drop it and bounce to login.
       clearSession();
       if (onUnauthorized) onUnauthorized();
+      // Mark the error as already handled by the auth layer so a screen's
+      // catch can skip its own "invalid/expired token" alert (which would
+      // otherwise pop over the Login screen we just routed to). The 401 side
+      // effects above are unchanged and the error is still re-rejected below.
+      if (error && typeof error === 'object') error.__authHandled = true;
     }
     return Promise.reject(error);
   }
@@ -108,6 +113,12 @@ api.interceptors.response.use(
     return api(config);
   }
 );
+
+// True when an error was already handled by the 401 interceptor (session cleared
+// + routed to Login). Screens use it to suppress a redundant error alert.
+export function isAuthError(e) {
+  return !!(e && e.__authHandled);
+}
 
 export const auth = {
   async login(email, password) {
