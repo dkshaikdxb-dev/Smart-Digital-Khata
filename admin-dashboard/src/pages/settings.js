@@ -75,6 +75,13 @@ export default function Settings() {
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoMsg, setPhotoMsg] = useState('');
   const [photosFull, setPhotosFull] = useState(false);
+  // Repeating new-order alert (batch ORDERALERT). The banner links here
+  // (/settings#order-alerts), so this card is the honest "turn it off" the
+  // banner promises. The interval + repeat count are CLAMPED server-side to the
+  // live platform bounds; we show the value that came back so the owner always
+  // sees what was actually stored.
+  const [alertMsg, setAlertMsg] = useState('');
+  const [alertBusy, setAlertBusy] = useState(false);
 
   function loadPhotos() {
     apiFetch('/api/shops/me/images')
@@ -224,6 +231,41 @@ export default function Settings() {
       setShop(r.shop);
       setMsg(t('common.saved'));
     } catch (e) { setMsg(e.message); }
+  }
+
+  // Repeating new-order alert (batch ORDERALERT): save the three shop-level
+  // knobs. The server clamps the interval/repeat count to the live platform
+  // bounds, so we echo back whatever it stored and say so when it differs from
+  // what was typed — never silently.
+  async function saveOrderAlerts() {
+    setAlertMsg('');
+    setAlertBusy(true);
+    const wanted = {
+      order_alert_enabled: shop.order_alert_enabled !== false,
+      order_alert_repeat_minutes: Number(shop.order_alert_repeat_minutes) || 5,
+      order_alert_max_repeats: Number(shop.order_alert_max_repeats) || 0,
+    };
+    try {
+      const r = await apiFetch('/api/shops/me', { method: 'PATCH', body: JSON.stringify(wanted) });
+      setShop(r.shop);
+      const clamped = Number(r.shop.order_alert_repeat_minutes) !== wanted.order_alert_repeat_minutes
+        || Number(r.shop.order_alert_max_repeats) !== wanted.order_alert_max_repeats;
+      setAlertMsg(clamped ? t('oalert.setClamped') : t('common.saved'));
+    } catch (e) { setAlertMsg(e.message); }
+    finally { setAlertBusy(false); }
+  }
+
+  // "Quiet for a while" — the same endpoint the banner's Mute button calls, so
+  // the two controls can never disagree. 0 clears the mute.
+  async function muteOrderAlerts(minutes) {
+    setAlertMsg('');
+    setAlertBusy(true);
+    try {
+      const r = await apiFetch('/api/orders/alerts/mute', { method: 'POST', body: JSON.stringify({ minutes }) });
+      setShop((s) => ({ ...s, order_alert_muted_until: r.muted_until }));
+      setAlertMsg(t('common.saved'));
+    } catch (e) { setAlertMsg(e.message); }
+    finally { setAlertBusy(false); }
   }
 
   // Upload the compressed photo Blob (multipart) to the gallery endpoint — raw
@@ -473,6 +515,56 @@ export default function Settings() {
           <div style={{ height: 16 }} />
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
+        </div>
+
+        {/* Repeating new-order alert (batch ORDERALERT). The banner's "Alert
+            settings" link targets this anchor, so an owner being nagged is one
+            tap from turning it down or off. */}
+        <div className="card" id="order-alerts" style={{ maxWidth: 520 }}>
+          <h3>{t('oalert.setTitle')}</h3>
+          <p className="muted" style={{ marginTop: 0 }}>{t('oalert.setHelp')}</p>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              style={{ width: 'auto' }}
+              checked={shop.order_alert_enabled !== false}
+              onChange={(e) => setShop({ ...shop, order_alert_enabled: e.target.checked })}
+            />
+            <span>{t('oalert.setEnabled')}</span>
+          </label>
+          <div style={{ height: 12 }} />
+          <label className="muted">{t('oalert.setRepeat')}</label>
+          <input
+            type="number" min="1" max="1440" step="1" inputMode="numeric"
+            value={shop.order_alert_repeat_minutes == null ? '' : shop.order_alert_repeat_minutes}
+            onChange={(e) => setShop({ ...shop, order_alert_repeat_minutes: e.target.value })}
+          />
+          <div style={{ height: 12 }} />
+          <label className="muted">{t('oalert.setMaxRepeats')}</label>
+          <input
+            type="number" min="0" max="100" step="1" inputMode="numeric"
+            value={shop.order_alert_max_repeats == null ? '' : shop.order_alert_max_repeats}
+            onChange={(e) => setShop({ ...shop, order_alert_max_repeats: e.target.value })}
+          />
+          <div style={{ height: 16 }} />
+          <div className="row-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={saveOrderAlerts} disabled={alertBusy}>{t('common.save')}</button>
+            {shop.order_alert_muted_until && new Date(shop.order_alert_muted_until) > new Date() ? (
+              <button className="secondary" onClick={() => muteOrderAlerts(0)} disabled={alertBusy}>
+                {t('oalert.unmute')}
+              </button>
+            ) : (
+              <button className="secondary" onClick={() => muteOrderAlerts(30)} disabled={alertBusy}>
+                {t('oalert.setMuteNow')}
+              </button>
+            )}
+          </div>
+          {shop.order_alert_muted_until && new Date(shop.order_alert_muted_until) > new Date() && (
+            <div className="muted" style={{ marginTop: 8 }}>
+              {t('oalert.setMutedUntil', { when: new Date(shop.order_alert_muted_until).toLocaleTimeString() })}
+            </div>
+          )}
+          {alertMsg && <div className="muted" style={{ marginTop: 8 }}>{alertMsg}</div>}
         </div>
 
         {/* Storefront photos (batch LITE): up to 3 photos shown at the top of the

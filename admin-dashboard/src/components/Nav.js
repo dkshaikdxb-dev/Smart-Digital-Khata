@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import LangSwitch from './LangSwitch';
 import OwnerTabBar from './OwnerTabBar';
+import OrderAlert from './OrderAlert';
 import { clearApiCache } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions, clearPermsCache } from '../lib/adminPerms';
@@ -101,6 +102,13 @@ export default function Nav() {
       <button className="secondary" onClick={logout}>{t('nav.logout')}</button>
       {/* Icon-first bottom tab bar — owner/staff only, mobile widths only (CSS). */}
       {role && role !== 'admin' && <OwnerTabBar showStaff={role === 'owner'} />}
+      {/* Repeating new-order alert (batch ORDERALERT) — owner/staff only. It
+          lives HERE because Nav is the one component every owner page mounts, so
+          the banner follows the owner around the console; and because Nav
+          already returns null when embedded in the native WebView (?embed=1),
+          the app never gets a doubled banner over its own. It is
+          position:fixed, so it does not disturb this flex row. */}
+      {(role === 'owner' || role === 'staff') && <OrderAlert />}
     </div>
   );
 }

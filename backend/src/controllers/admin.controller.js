@@ -404,6 +404,14 @@ const FEATURE_NUM_DEFAULTS = {
   referral_split_infra_pct: 50,
   referral_split_l1_pct: 30,
   referral_split_l2_pct: 15,
+  // Repeating new-order alert (batch ORDERALERT, 0065). The floor/ceiling a shop's
+  // own order_alert_repeat_minutes is clamped to, and the hard cap on its repeat
+  // count — so the nagging is always bounded no matter what a shop sets. These are
+  // plain policy numbers, NOT integration credentials, so they save without the
+  // typed I CONFIRM (they are not in settings.INTEGRATION_KEYS).
+  order_alert_min_minutes: 2,
+  order_alert_max_minutes: 60,
+  order_alert_max_repeats_cap: 20,
 };
 
 // The three referral-split percents feed the zero-burn accrual: their sum can

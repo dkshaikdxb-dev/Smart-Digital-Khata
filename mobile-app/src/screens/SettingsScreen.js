@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, StyleSheet, Pressable, Alert, ScrollView,
   ActivityIndicator, Switch, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { shop, isAuthError } from '../services/api';
+import { shop, orders, isAuthError } from '../services/api';
 import { AuthContext } from '../AuthContext';
 import { useT, LANGUAGES, isBetaLang } from '../i18n';
 
@@ -87,6 +87,39 @@ export default function SettingsScreen() {
     finally { setBusy(false); }
   }
 
+  // Repeating new-order alert (batch ORDERALERT). The interval and the repeat
+  // count are CLAMPED server-side to the live platform bounds, so we save what
+  // the owner typed, show what actually came back, and say plainly when the two
+  // differ instead of silently changing the number under them.
+  async function saveOrderAlerts() {
+    setBusy(true);
+    const wanted = {
+      order_alert_enabled: form.order_alert_enabled !== false,
+      order_alert_repeat_minutes: parseInt(form.order_alert_repeat_minutes, 10) || 5,
+      order_alert_max_repeats: parseInt(form.order_alert_max_repeats, 10) || 0,
+    };
+    try {
+      const r = await shop.update(wanted);
+      setForm(r.shop);
+      const clamped = Number(r.shop.order_alert_repeat_minutes) !== wanted.order_alert_repeat_minutes
+        || Number(r.shop.order_alert_max_repeats) !== wanted.order_alert_max_repeats;
+      Alert.alert(t('set.savedTitle'), clamped ? t('oalert.setClamped') : t('oalert.setSaved'));
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
+  // "Quiet for a while" — the SAME endpoint the banner's mute uses, so the two
+  // controls can never disagree. 0 clears the mute.
+  async function muteOrderAlerts(minutes) {
+    setBusy(true);
+    try {
+      const r = await orders.mute(minutes);
+      setForm((f) => ({ ...f, order_alert_muted_until: r.muted_until }));
+      Alert.alert(t('set.savedTitle'), t('oalert.setSaved'));
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
   async function saveDiscovery() {
     setBusy(true);
     try {
@@ -142,6 +175,62 @@ export default function SettingsScreen() {
           <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={saveBasics} disabled={busy}>
             <Text style={s.primaryText}>{t('common.save')}</Text>
           </Pressable>
+        </View>
+
+        {/* Repeating new-order alert (batch ORDERALERT). Sits right below the
+            shop card because it is the control an owner reaches for the moment
+            the alert feels wrong — too often, or not wanted right now. */}
+        <View style={s.card}>
+          <Text style={s.h}>{t('oalert.setTitle')}</Text>
+          <Text style={s.help}>{t('oalert.setHelp')}</Text>
+          <View style={s.switchRow}>
+            <Text style={s.body}>{t('oalert.setEnabled')}</Text>
+            <Switch
+              value={form.order_alert_enabled !== false}
+              onValueChange={(v) => set('order_alert_enabled', v)}
+              trackColor={{ true: '#22c55e', false: '#334155' }}
+              thumbColor="#e2e8f0"
+            />
+          </View>
+          <Text style={s.label}>{t('oalert.setRepeat')}</Text>
+          <TextInput
+            style={s.input}
+            value={form.order_alert_repeat_minutes == null ? '' : String(form.order_alert_repeat_minutes)}
+            onChangeText={(v) => set('order_alert_repeat_minutes', v.replace(/[^0-9]/g, ''))}
+            keyboardType="number-pad"
+            placeholder="5"
+            placeholderTextColor="#64748b"
+          />
+          <Text style={s.label}>{t('oalert.setMaxRepeats')}</Text>
+          <TextInput
+            style={s.input}
+            value={form.order_alert_max_repeats == null ? '' : String(form.order_alert_max_repeats)}
+            onChangeText={(v) => set('order_alert_max_repeats', v.replace(/[^0-9]/g, ''))}
+            keyboardType="number-pad"
+            placeholder="6"
+            placeholderTextColor="#64748b"
+          />
+          {form.order_alert_muted_until && new Date(form.order_alert_muted_until) > new Date() ? (
+            <Text style={s.help}>{t('oalert.setMuted')}</Text>
+          ) : null}
+          <View style={s.actions}>
+            <Pressable style={[s.primary, { flex: 1 }, busy && { opacity: 0.6 }]} onPress={saveOrderAlerts} disabled={busy}>
+              <Text style={s.primaryText}>{t('common.save')}</Text>
+            </Pressable>
+            <Pressable
+              style={[s.secondary, { flex: 1 }, busy && { opacity: 0.6 }]}
+              onPress={() => muteOrderAlerts(
+                form.order_alert_muted_until && new Date(form.order_alert_muted_until) > new Date() ? 0 : 30
+              )}
+              disabled={busy}
+            >
+              <Text style={s.secondaryText}>
+                {form.order_alert_muted_until && new Date(form.order_alert_muted_until) > new Date()
+                  ? t('oalert.unmute')
+                  : t('oalert.setMuteNow')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         <View style={s.card}>
@@ -233,6 +322,7 @@ const s = StyleSheet.create({
   h: { color: '#e2e8f0', fontSize: 17, fontWeight: '700', marginBottom: 8 },
   label: { color: '#94a3b8', fontSize: 13, marginTop: 12, marginBottom: 6 },
   body: { color: '#e2e8f0', fontSize: 14, flex: 1, paddingRight: 12 },
+  help: { color: '#94a3b8', fontSize: 13, lineHeight: 18, marginBottom: 4 },
   input: { backgroundColor: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 10 },
   pillRow: { flexDirection: 'row', gap: 8 },
   pill: { backgroundColor: '#0f172a', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 999 },

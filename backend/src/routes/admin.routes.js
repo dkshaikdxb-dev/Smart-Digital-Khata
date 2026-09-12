@@ -105,6 +105,12 @@ const settingsSchema = Joi.object({
   ai_moderation_enabled: Joi.boolean(),
   ai_moderation_auto_approve_min: Joi.number().min(0.5).max(1),
   ai_moderation_hold_min: Joi.number().min(0.5).max(1),
+  // Repeating new-order alert (batch ORDERALERT, 0065): the platform bounds a
+  // shop's own alert cadence is clamped to. Policy numbers, not credentials —
+  // no I CONFIRM.
+  order_alert_min_minutes: Joi.number().integer().min(1).max(720),
+  order_alert_max_minutes: Joi.number().integer().min(1).max(720),
+  order_alert_max_repeats_cap: Joi.number().integer().min(1).max(100),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward

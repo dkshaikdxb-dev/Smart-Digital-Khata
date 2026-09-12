@@ -58,6 +58,15 @@ const updateSchema = Joi.object({
   delivery_min_order: Joi.number().integer().min(0),
   delivery_radius_km: Joi.number().min(0).max(100).allow(null),
   delivery_hours: Joi.string().allow('', null).max(120),
+  // Repeating new-order alert (batch ORDERALERT). The interval and the repeat
+  // count are CLAMPED to the live platform bounds in the controller — Joi only
+  // keeps nonsense out, so an owner who types 1 gets the platform minimum
+  // rather than a 422 in the middle of a rush. `order_alert_muted_until` is
+  // deliberately NOT settable here: muting goes through
+  // POST /api/orders/alerts/mute, which owns the 1..720 window.
+  order_alert_enabled: Joi.boolean(),
+  order_alert_repeat_minutes: Joi.number().integer().min(1).max(1440),
+  order_alert_max_repeats: Joi.number().integer().min(0).max(1000),
 });
 
 // Premium "Branded Store" (batch STORE1). Owner-scoped: buying premium is an
