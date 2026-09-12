@@ -33,7 +33,13 @@ const RUPEE_KEYS = [
   'storefront_ad_free_credits_per_day_paise',
   'consumer_prepay_max_advance_paise', 'delivery_champion_fee_paise',
 ];
-const INT_KEYS = ['shop_promo_max_days', 'branded_store_max_days', 'storefront_ad_free_max_days'];
+const INT_KEYS = [
+  'shop_promo_max_days', 'branded_store_max_days', 'storefront_ad_free_max_days',
+  // Repeating new-order alert (batch ORDERALERT): the platform bounds a shop's
+  // own alert cadence is clamped to. Plain policy numbers, NOT credentials — so
+  // they save through the same numeric-defaults path and do NOT ask for I CONFIRM.
+  'order_alert_min_minutes', 'order_alert_max_minutes', 'order_alert_max_repeats_cap',
+];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
 
 // Build the editable form state from the API `features` object: amounts → ₹.
@@ -255,6 +261,22 @@ export default function AdminSettings() {
     const h = Number(feat.ai_moderation_hold_min);
     if (!(a >= 0.5 && a <= 1) || !(h >= 0.5 && h <= 1)) { setErr('Thresholds must be between 0.5 and 1.0.'); return; }
     saveFeat({ ai_moderation_auto_approve_min: a, ai_moderation_hold_min: h }, 'AI moderation thresholds saved.');
+  }
+
+  // Repeating new-order alert bounds (batch ORDERALERT). Not credentials, so no
+  // I CONFIRM — the same plain save every other feature number uses. The min must
+  // not exceed the max, or every shop's cadence would clamp to a single value.
+  function saveOrderAlertBounds() {
+    const min = parseInt(feat.order_alert_min_minutes, 10);
+    const max = parseInt(feat.order_alert_max_minutes, 10);
+    const cap = parseInt(feat.order_alert_max_repeats_cap, 10);
+    if (!(min >= 1) || !(max >= 1) || !(cap >= 1)) { setErr('Order-alert bounds must be whole numbers of 1 or more.'); return; }
+    if (min > max) { setErr('The minimum repeat interval cannot be larger than the maximum.'); return; }
+    saveFeat({
+      order_alert_min_minutes: min,
+      order_alert_max_minutes: max,
+      order_alert_max_repeats_cap: cap,
+    }, 'Order-alert bounds saved.');
   }
 
   async function testRazorpay() {
@@ -668,6 +690,45 @@ export default function AdminSettings() {
                 <p className="muted" style={{ fontSize: 12 }}>0.5 – 1.0. Raise the auto-approve threshold to publish less without a human; raise the hold threshold to flag less.</p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveAiModeration}>Save AI thresholds</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Repeating new-order alert (batch ORDERALERT): the platform bounds
+                every shop's own cadence is clamped to. Policy numbers, not
+                credentials — saved plainly, with no typed I CONFIRM. */}
+            <div className="card">
+              <h3>Order alerts</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                A new order keeps alerting the shop owner — in the console, in the app and on WhatsApp —
+                until they mark it seen or accept it. Each shop picks its own repeat interval and repeat count;
+                these are the limits those choices are clamped to, so no shop can hammer an owner every few
+                seconds or nag forever.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label className="muted">Min repeat (minutes)</label>
+                    <input type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_min_minutes}
+                      onChange={(e) => setFeat({ ...feat, order_alert_min_minutes: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Max repeat (minutes)</label>
+                    <input type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_max_minutes}
+                      onChange={(e) => setFeat({ ...feat, order_alert_max_minutes: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Max repeats (cap)</label>
+                    <input type="number" min="1" max="100" step="1" inputMode="numeric" value={feat.order_alert_max_repeats_cap}
+                      onChange={(e) => setFeat({ ...feat, order_alert_max_repeats_cap: e.target.value })} />
+                  </div>
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  A shop may repeat no faster than every {feat.order_alert_min_minutes} min and no slower than every {feat.order_alert_max_minutes} min,
+                  and always stops after at most {feat.order_alert_max_repeats_cap} reminders.
+                </p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={saveOrderAlertBounds}>Save order-alert bounds</button>
                 </div>
               </div>
             </div>

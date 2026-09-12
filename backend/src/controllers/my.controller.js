@@ -13,6 +13,9 @@ const {
   rupees: rupeesCsv,
   isoDate,
 } = require('../utils/statement');
+// Owner-facing order-alert copy (batch ORDERALERT). The FIRST alert and every
+// WhatsApp REMINDER are built by the same helper, so the two can never drift.
+const orderAlertCopy = require('../utils/order-alert-copy');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -463,7 +466,13 @@ async function resolveOwnerContact(shopId) {
     [shopId]
   );
   if (!r.rowCount || !r.rows[0].phone) return null;
-  return { phone: r.rows[0].phone, shopName: r.rows[0].shop_name };
+  // `lang`: the owner's language for the WhatsApp copy. There is NO per-shop or
+  // per-owner language column in this schema today (checked across every
+  // migration), so this reads a `language` field that does not exist yet and the
+  // copy helper resolves the undefined value to its English fallback. Written
+  // this way — rather than inventing a column — so a future migration that adds
+  // one needs no change here. Same convention as weekly-summary.service.
+  return { phone: r.rows[0].phone, shopName: r.rows[0].shop_name, lang: r.rows[0].language };
 }
 
 /** Human-readable ₹ from integer paise. */
@@ -477,23 +486,30 @@ function rupees(paise) {
  * fail or block the order — this is called AFTER the DB commit and every error is
  * swallowed. Message carries what the owner needs to act: customer, item count,
  * total, fulfillment, payment mode, and the address/note for a delivery.
+ *
+ * The copy itself lives in utils/order-alert-copy (batch ORDERALERT) so this
+ * FIRST alert and the repeating WhatsApp REMINDERS (order-alert.service) always
+ * say the same thing in the same language. en + hi are authored; every other
+ * language falls back to English rather than being machine-translated.
  */
 function alertOwnerNewOrder({ shopId, customerName, itemCount, total, fulfillmentType, paymentMode, address, note }) {
   // Resolve + send in the background; never await, never let it reject.
   (async () => {
     const owner = await resolveOwnerContact(shopId);
     if (!owner) return;
-    const modeLabel = { credit: 'Credit (khata)', prepaid: 'Prepaid (online)', cash: 'Cash on ' }[paymentMode] || paymentMode;
-    const lines = [
-      `New order at ${owner.shopName}`,
-      `Customer: ${customerName}`,
-      `Items: ${itemCount} · Total: ${rupees(total)}`,
-      `Fulfillment: ${fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}`,
-      `Payment: ${paymentMode === 'cash' ? `Cash on ${fulfillmentType}` : modeLabel}`,
-    ];
-    if (fulfillmentType === 'delivery' && address) lines.push(`Address: ${address}`);
-    if (note) lines.push(`Note: ${note}`);
-    await whatsapp.sendText(owner.phone, lines.join('\n'));
+    const message = orderAlertCopy.buildOwnerAlert({
+      lang: owner.lang,
+      shopName: owner.shopName,
+      customerName,
+      itemCount,
+      total,
+      fulfillmentType,
+      paymentMode,
+      address,
+      note,
+      repeat: null, // the first alert, not a reminder
+    });
+    await whatsapp.sendText(owner.phone, message);
   })().catch(() => {});
 }
 

@@ -252,6 +252,32 @@ const en = {
   'more.deliverySub': 'Assign deliveries & share status links',
   'more.poster': 'Share Poster',
   'more.posterSub': 'Shareable shop poster for WhatsApp/IG/FB',
+  // Repeating new-order alert (batch ORDERALERT). en is the source of truth for
+  // EVERY key; hi is authored below; ta/te/kn/ml/ur/bn/gu/mr fall back to these
+  // English values exactly the way this file already handles missing keys — no
+  // invented translations for an alarm nobody has read.
+  'oalert.title': 'New order waiting',
+  'oalert.more': '+{n} more',
+  'oalert.items': '{n} items',
+  'oalert.waiting': 'waiting {mins} min',
+  'oalert.seen': 'Seen',
+  'oalert.open': 'Open',
+  'oalert.mute30': 'Mute for 30 minutes',
+  'oalert.unmute': 'Turn alerts back on',
+  // The SPOKEN line. Short and plain on purpose — it is read aloud in a noisy
+  // shop, and the name/count/amount interpolate as data so any script is safe.
+  'oalert.spoken': 'New order. {name}. {n} items. {amount} rupees.',
+  // Settings section.
+  'oalert.setTitle': 'Order alerts',
+  'oalert.setHelp': 'A new order keeps alerting you — here and on WhatsApp — until you tap Seen or accept it.',
+  'oalert.setEnabled': 'Alert me about new orders',
+  'oalert.setRepeat': 'Repeat every (minutes)',
+  'oalert.setMaxRepeats': 'Stop after (repeats)',
+  'oalert.setMuteNow': 'Mute for 30 minutes',
+  'oalert.setMuted': 'Alerts are muted right now.',
+  'oalert.setSaved': 'Order alert settings saved.',
+  'oalert.setClamped': 'Your value was adjusted to the nearest allowed one.',
+  'oalert.noVoice': 'This device cannot speak your language yet — you will still see the banner.',
 };
 
 const hi = {
@@ -464,6 +490,26 @@ const hi = {
   'more.deliverySub': 'डिलीवरी सौंपें और स्टेटस लिंक साझा करें',
   'more.poster': 'पोस्टर साझा करें',
   'more.posterSub': 'WhatsApp/IG/FB के लिए साझा-योग्य दुकान पोस्टर',
+  // Repeating new-order alert (batch ORDERALERT) — authored Hindi.
+  'oalert.title': 'नया ऑर्डर इंतज़ार में',
+  'oalert.more': '+{n} और',
+  'oalert.items': '{n} सामान',
+  'oalert.waiting': '{mins} मिनट से इंतज़ार',
+  'oalert.seen': 'देख लिया',
+  'oalert.open': 'खोलें',
+  'oalert.mute30': '30 मिनट के लिए चुप करें',
+  'oalert.unmute': 'अलर्ट फिर चालू करें',
+  'oalert.spoken': 'नया ऑर्डर। {name}। {n} सामान। {amount} रुपये।',
+  'oalert.setTitle': 'ऑर्डर अलर्ट',
+  'oalert.setHelp': 'नया ऑर्डर आने पर यहाँ और WhatsApp पर तब तक अलर्ट आता रहेगा जब तक आप "देख लिया" न दबाएँ या ऑर्डर स्वीकार न करें।',
+  'oalert.setEnabled': 'नए ऑर्डर का अलर्ट दें',
+  'oalert.setRepeat': 'हर कितने मिनट में दोहराएँ',
+  'oalert.setMaxRepeats': 'कितनी बार के बाद रुकें',
+  'oalert.setMuteNow': '30 मिनट के लिए चुप करें',
+  'oalert.setMuted': 'अभी अलर्ट चुप हैं।',
+  'oalert.setSaved': 'ऑर्डर अलर्ट सेटिंग सेव हो गई।',
+  'oalert.setClamped': 'आपका मान निकटतम मान्य मान में बदल दिया गया।',
+  'oalert.noVoice': 'यह डिवाइस अभी आपकी भाषा नहीं बोल सकता — बैनर फिर भी दिखेगा।',
 };
 
 const bn = {

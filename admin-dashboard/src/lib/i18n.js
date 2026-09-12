@@ -5410,6 +5410,60 @@ const REF = {
 // are formatted with ₹ + Indian grouping in the components; numbers stay
 // interpolated data. Urdu inherits the English seed and renders RTL-safely
 // (codes render dir="ltr" where shown).
+// Repeating new-order alert (batch ORDERALERT). Own block, merged into DICT like
+// PAGE/ALANG/MOD/REF/CREDITS. en/hi are AUTHORED here; every other language is
+// deliberately not listed and falls back to English via translate() — the same
+// honesty convention the rest of this file follows. Do NOT machine-translate an
+// alarm: a shopkeeper mis-reading "an order is waiting" costs them a sale.
+//
+// `oalert.spoken` is the ONE line read aloud, so it is short, plain and made of
+// interpolated data (name / count / whole rupees) rather than fused sentences.
+const OALERT = {
+  en: {
+    'oalert.title': 'New order waiting',
+    'oalert.more': '+{n} more',
+    'oalert.items': '{n} items',
+    'oalert.waiting': 'waiting {mins} min',
+    'oalert.seen': 'Seen',
+    'oalert.open': 'Open',
+    'oalert.mute30': 'Mute 30 min',
+    'oalert.unmute': 'Unmute',
+    'oalert.settings': 'Alert settings',
+    'oalert.enableSound': 'Turn on sound',
+    'oalert.spoken': 'New order. {name}. {n} items. {amount} rupees.',
+    // Owner settings card (pages/settings.js).
+    'oalert.setTitle': 'Order alerts',
+    'oalert.setHelp': 'A new order keeps alerting you — here and on WhatsApp — until you tap Seen or accept it.',
+    'oalert.setEnabled': 'Alert me about new orders',
+    'oalert.setRepeat': 'Repeat every (minutes)',
+    'oalert.setMaxRepeats': 'Stop after (repeats)',
+    'oalert.setMuteNow': 'Mute for 30 minutes',
+    'oalert.setMutedUntil': 'Muted until {when}',
+    'oalert.setClamped': 'The platform limits how often alerts may repeat — your value was adjusted to the nearest allowed one.',
+  },
+  hi: {
+    'oalert.title': 'नया ऑर्डर इंतज़ार में',
+    'oalert.more': '+{n} और',
+    'oalert.items': '{n} सामान',
+    'oalert.waiting': '{mins} मिनट से इंतज़ार',
+    'oalert.seen': 'देख लिया',
+    'oalert.open': 'खोलें',
+    'oalert.mute30': '30 मिनट चुप',
+    'oalert.unmute': 'फिर से चालू करें',
+    'oalert.settings': 'अलर्ट सेटिंग',
+    'oalert.enableSound': 'आवाज़ चालू करें',
+    'oalert.spoken': 'नया ऑर्डर। {name}। {n} सामान। {amount} रुपये।',
+    'oalert.setTitle': 'ऑर्डर अलर्ट',
+    'oalert.setHelp': 'नया ऑर्डर आने पर यहाँ और WhatsApp पर तब तक अलर्ट आता रहेगा जब तक आप "देख लिया" न दबाएँ या ऑर्डर स्वीकार न करें।',
+    'oalert.setEnabled': 'नए ऑर्डर का अलर्ट दें',
+    'oalert.setRepeat': 'हर कितने मिनट में दोहराएँ',
+    'oalert.setMaxRepeats': 'कितनी बार के बाद रुकें',
+    'oalert.setMuteNow': '30 मिनट के लिए चुप करें',
+    'oalert.setMutedUntil': '{when} तक चुप',
+    'oalert.setClamped': 'अलर्ट कितनी जल्दी दोहराए जा सकते हैं इसकी एक सीमा है — आपका मान निकटतम मान्य मान में बदल दिया गया।',
+  },
+};
+
 const CREDITS = {
   en: {
     'credits.title': 'Khata Credits',
@@ -7400,6 +7454,13 @@ for (const code of Object.keys(REF)) {
 for (const code of Object.keys(CREDITS)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], CREDITS[code]);
+}
+
+// Merge the repeating new-order alert (batch ORDERALERT) strings the same way.
+// en/hi authored; every other language falls back to English via translate().
+for (const code of Object.keys(OALERT)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], OALERT[code]);
 }
 
 // Merge the role-based downloads UI strings the same way.

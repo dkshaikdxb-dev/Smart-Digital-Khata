@@ -26,6 +26,7 @@ import FamilyDetailScreen from './src/screens/FamilyDetailScreen';
 import InsightsScreen from './src/screens/InsightsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import FeatureWebView from './src/screens/FeatureWebView';
+import OrderAlertBanner from './src/components/OrderAlertBanner';
 
 const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -107,21 +108,33 @@ const tabIcon = (glyph) => ({ color }) => <Text style={{ fontSize: 18, color }}>
 
 function OwnerTabs() {
   const { t } = useT();
+  // The repeating new-order alert banner (batch ORDERALERT) is mounted HERE,
+  // beside the tab navigator inside one flex container, so it floats over every
+  // tab and every screen — an owner mid-way through adding a transaction still
+  // sees that an order is waiting. It is only ever rendered on this owner-tabs
+  // branch, i.e. only for a signed-in owner/staff session.
+  //
+  // Pure JS: the banner uses AppState + timers + the existing expo-speech voice
+  // hook. No notification module, no new dependency — this whole feature rides
+  // an OTA update.
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: { backgroundColor: '#0f172a', borderTopColor: '#1e293b' },
-        tabBarActiveTintColor: '#22c55e',
-        tabBarInactiveTintColor: '#94a3b8',
-      }}
-    >
-      <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: t('tab.home'), tabBarIcon: tabIcon('🏠') }} />
-      <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: t('tab.orders'), tabBarIcon: tabIcon('🧾') }} />
-      <Tab.Screen name="CatalogTab" component={CatalogStackScreen} options={{ title: t('tab.catalog'), tabBarIcon: tabIcon('📦') }} />
-      <Tab.Screen name="CustomersTab" component={CustomersStackScreen} options={{ title: t('tab.customers'), tabBarIcon: tabIcon('👥') }} />
-      <Tab.Screen name="MoreTab" component={MoreStackScreen} options={{ title: t('tab.more'), tabBarIcon: tabIcon('⋯') }} />
-    </Tab.Navigator>
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { backgroundColor: '#0f172a', borderTopColor: '#1e293b' },
+          tabBarActiveTintColor: '#22c55e',
+          tabBarInactiveTintColor: '#94a3b8',
+        }}
+      >
+        <Tab.Screen name="HomeTab" component={HomeStackScreen} options={{ title: t('tab.home'), tabBarIcon: tabIcon('🏠') }} />
+        <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: t('tab.orders'), tabBarIcon: tabIcon('🧾') }} />
+        <Tab.Screen name="CatalogTab" component={CatalogStackScreen} options={{ title: t('tab.catalog'), tabBarIcon: tabIcon('📦') }} />
+        <Tab.Screen name="CustomersTab" component={CustomersStackScreen} options={{ title: t('tab.customers'), tabBarIcon: tabIcon('👥') }} />
+        <Tab.Screen name="MoreTab" component={MoreStackScreen} options={{ title: t('tab.more'), tabBarIcon: tabIcon('⋯') }} />
+      </Tab.Navigator>
+      <OrderAlertBanner />
+    </View>
   );
 }
 

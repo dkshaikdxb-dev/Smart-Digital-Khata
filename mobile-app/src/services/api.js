@@ -216,6 +216,15 @@ export const orders = {
   },
   get: (id, lang = '') => api.get(`/api/orders/${id}${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
   setStatus: (id, status) => api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data),
+  // Repeating new-order alert (batch ORDERALERT). ONE request per poll: the
+  // response carries both the unacknowledged orders (oldest first) and the
+  // shop's alert settings, so the banner never needs a second round trip on 2G.
+  alerts: (lang = '') => api.get(`/api/orders/alerts${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
+  // "I have seen it" — idempotent, and deliberately NOT a status change.
+  ack: (id) => api.post(`/api/orders/${id}/ack`, {}).then((r) => r.data),
+  // "Quiet for a while" — 0 clears the mute. Silences the app banner AND the
+  // WhatsApp re-send, because it is the same shop-level flag.
+  mute: (minutes) => api.post('/api/orders/alerts/mute', { minutes }).then((r) => r.data),
 };
 
 // `lang` (optional) on get/statement asks the API to also return localized

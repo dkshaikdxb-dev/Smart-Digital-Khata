@@ -24,10 +24,26 @@ const statusSchema = Joi.object({
     .required(),
 });
 
+// Repeating new-order alert (batch ORDERALERT).
+const alertsQuerySchema = Joi.object({
+  lang: Joi.string().max(16).allow(''),
+});
+// Mute window in minutes. 0 CLEARS the mute; 1..720 (12h) sets it. The
+// controller clamps as well, so a value outside the band is corrected rather
+// than rejected mid-rush — this schema only keeps nonsense out.
+const muteSchema = Joi.object({
+  minutes: Joi.number().integer().min(0).max(100000).required(),
+});
+
 router.use(auth(['owner', 'staff']));
 
 router.get('/', validate(listQuerySchema, 'query'), asyncHandler(ctrl.list));
+// NOTE: the two literal /alerts routes MUST be declared before '/:id', or the
+// uuid param route would swallow them (and reject 'alerts' as a non-uuid).
+router.get('/alerts', validate(alertsQuerySchema, 'query'), asyncHandler(ctrl.alerts));
+router.post('/alerts/mute', validate(muteSchema), asyncHandler(ctrl.mute));
 router.get('/:id', validate(idParamSchema, 'params'), asyncHandler(ctrl.get));
+router.post('/:id/ack', validate(idParamSchema, 'params'), asyncHandler(ctrl.ack));
 router.patch(
   '/:id/status',
   validate(idParamSchema, 'params'),

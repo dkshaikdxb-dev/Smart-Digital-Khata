@@ -8,6 +8,7 @@ const publisher = require('../services/content-publisher.service');
 const strategist = require('../services/content-strategist.service');
 const drafter = require('../services/content-drafter.service');
 const moderation = require('../services/moderation.service');
+const orderAlerts = require('../services/order-alert.service');
 
 const QUEUES = {
   reminders: new Queue('reminders', { connection }),
@@ -15,6 +16,9 @@ const QUEUES = {
   weekly: new Queue('weekly', { connection }),
   content: new Queue('content', { connection }),
   moderation: new Queue('moderation', { connection }),
+  // Repeating new-order alert (batch ORDERALERT): a once-a-minute tick that
+  // re-sends the owner's WhatsApp alert until the order is acknowledged.
+  orderAlerts: new Queue('order-alerts', { connection }),
 };
 
 // AI moderation triage (batch AI-MOD). One job per uploaded photo / submitted
@@ -124,6 +128,20 @@ function startWorkers() {
     { connection, concurrency: 2 }
   );
 
+  new Worker(
+    'order-alerts',
+    async (job) => {
+      // The minute tick re-sends the owner's WhatsApp alert for every order that
+      // is still unacknowledged and due. The whole iteration lives in the service
+      // (Redis-free, unit-tested by calling runTick() straight); the queue is only
+      // the scheduler. runTick never throws: a WhatsApp failure is swallowed and
+      // logged, and the alert counter it already committed is NOT rolled back.
+      if (job.name === 'order-alert-tick') return orderAlerts.runTick();
+      return undefined;
+    },
+    { connection, concurrency: 1 }
+  );
+
   scheduleRecurring().catch((e) => logger.error({ err: e.message }, 'scheduleRecurring failed'));
 }
 
@@ -193,6 +211,23 @@ async function scheduleRecurring() {
     {
       repeat: { pattern: '0 8 * * 1', tz: process.env.TZ || 'Asia/Kolkata' }, // Mon 8am IST
       jobId: 'content-strategist',
+      removeOnComplete: 100,
+      removeOnFail: 100,
+    }
+  );
+
+  // Repeating new-order alert (batch ORDERALERT). EVERY MINUTE — the cadence
+  // that actually matters is per shop (order_alert_repeat_minutes), and the tick
+  // only picks up orders that are due, so a one-minute tick simply gives every
+  // shop's own interval minute-level accuracy. No tz: this is a plain interval,
+  // not a wall-clock time. The fixed jobId keeps it registered exactly once
+  // however many times startWorkers() runs.
+  await QUEUES.orderAlerts.add(
+    'order-alert-tick',
+    {},
+    {
+      repeat: { pattern: '* * * * *' }, // every minute
+      jobId: 'order-alert-tick',
       removeOnComplete: 100,
       removeOnFail: 100,
     }

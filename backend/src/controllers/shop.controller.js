@@ -6,6 +6,8 @@ const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
 const { getBrandedStoreConfig } = require('../utils/brandedStore');
 const { getStorefrontAdFreeConfig } = require('../utils/storefrontAdFree');
 const { spendCredits } = require('../utils/wallet');
+// Repeating new-order alert (batch ORDERALERT): live platform bounds + clamps.
+const { getOrderAlertBounds, clampRepeatMinutes, clampMaxRepeats } = require('../utils/orderAlerts');
 // AI triage of an uploaded storefront photo (batch AI-MOD) — enqueue only, after commit.
 const moderation = require('../services/moderation.service');
 
@@ -22,10 +24,26 @@ exports.getMine = async (req, res) => {
 };
 
 exports.updateMine = async (req, res) => {
+  // Repeating new-order alert (batch ORDERALERT): the two cadence knobs are
+  // CLAMPED to the live platform bounds before they are written, so a shop can
+  // never be set to hammer the owner every 10 seconds or to nag forever — and an
+  // owner who types something out of band gets the nearest legal value rather
+  // than an error mid-rush. Read live from platform_settings (never throws).
+  const body = { ...req.body };
+  if (body.order_alert_repeat_minutes !== undefined || body.order_alert_max_repeats !== undefined) {
+    const bounds = await getOrderAlertBounds();
+    if (body.order_alert_repeat_minutes !== undefined) {
+      body.order_alert_repeat_minutes = clampRepeatMinutes(body.order_alert_repeat_minutes, bounds);
+    }
+    if (body.order_alert_max_repeats !== undefined) {
+      body.order_alert_max_repeats = clampMaxRepeats(body.order_alert_max_repeats, bounds);
+    }
+  }
+
   const fields = [];
   const values = [];
   let i = 1;
-  for (const [k, v] of Object.entries(req.body)) {
+  for (const [k, v] of Object.entries(body)) {
     fields.push(`${k} = $${i++}`);
     values.push(v);
   }
