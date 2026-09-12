@@ -321,6 +321,33 @@ const en = {
   'open.addClosure': 'Add date',
   'open.noClosures': 'No closures in the next 90 days.',
   'open.removeClosure': 'Remove',
+
+  // Ready-time promise (batch B) — one-tap accept with three coarse chips, and
+  // the "need more time" re-promise. The SAME key names exist in
+  // admin-dashboard/src/lib/i18n.js (owner web + consumer PWA) and in
+  // mobile-app/src/consumer/i18n.js, so every surface words the same promise
+  // identically. en is the source of truth; hi is authored below; every other
+  // language falls back to these English values exactly the way this file
+  // already handles missing keys — nothing here is machine-translated.
+  'eta.accept': 'Accept',
+  'eta.acceptTitle': 'Accept this order',
+  'eta.pickTime': 'Ready in about…',
+  'eta.noTime': 'Accept without a time',
+  'eta.notNow': 'Not now',
+  'eta.accepting': 'Accepting…',
+  // Chip labels, built from whatever minutes the platform is configured with.
+  'eta.chipMin': '~{n} min',
+  'eta.chipHour': '~{n} hour',
+  'eta.chipHourMin': '~{h} hr {m} min',
+  'eta.promisedBy': 'You promised ready by {time}',
+  'eta.noPromise': 'No ready time promised',
+  'eta.needMore': 'Need more time',
+  'eta.needMoreHelp': 'Pick a new time — the customer is told straight away.',
+  'eta.sent': 'The customer has been told the new time.',
+  'eta.late': 'Past the time you promised',
+  'eta.readyBy': 'Ready by {time}',
+  'eta.takingLonger': 'Taking a little longer',
+  'eta.takingLongerHelp': 'It was expected by {time}. It should not be much longer.',
 };
 
 const hi = {
@@ -591,6 +618,27 @@ const hi = {
   'open.addClosure': 'तारीख़ जोड़ें',
   'open.noClosures': 'अगले 90 दिनों में कोई छुट्टी नहीं।',
   'open.removeClosure': 'हटाएँ',
+
+  // Ready-time promise (batch B) — authored Hindi, matching the owner web
+  // console word for word so the two owner surfaces never read differently.
+  'eta.accept': 'स्वीकार करें',
+  'eta.acceptTitle': 'यह ऑर्डर स्वीकार करें',
+  'eta.pickTime': 'लगभग कितनी देर में तैयार?',
+  'eta.noTime': 'बिना समय बताए स्वीकार करें',
+  'eta.notNow': 'अभी नहीं',
+  'eta.accepting': 'स्वीकार किया जा रहा है…',
+  'eta.chipMin': '~{n} मिनट',
+  'eta.chipHour': '~{n} घंटा',
+  'eta.chipHourMin': '~{h} घंटा {m} मिनट',
+  'eta.promisedBy': 'आपने {time} बजे तक तैयार होने को कहा है',
+  'eta.noPromise': 'कोई समय नहीं बताया गया',
+  'eta.needMore': 'और समय चाहिए',
+  'eta.needMoreHelp': 'नया समय चुनें — ग्राहक को तुरंत बता दिया जाएगा।',
+  'eta.sent': 'ग्राहक को नया समय बता दिया गया।',
+  'eta.late': 'आपके बताए समय से देर हो चुकी है',
+  'eta.readyBy': '{time} बजे तक तैयार',
+  'eta.takingLonger': 'थोड़ा और समय लग रहा है',
+  'eta.takingLongerHelp': '{time} बजे तक तैयार होना था। बस थोड़ी ही देर और।',
 };
 
 const bn = {

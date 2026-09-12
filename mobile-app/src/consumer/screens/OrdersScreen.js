@@ -8,6 +8,7 @@ import { ErrorBanner, Loading, Empty, Badge } from '../components';
 import { money } from '../money';
 import { my } from '../consumerApi';
 import { useT } from '../i18n';
+import { etaState, formatClock } from '../../lib/orderEta';
 
 // Priority 5 — the customer's orders from GET /my/orders -> { items:[...] }.
 function statusTone(status) {
@@ -17,7 +18,7 @@ function statusTone(status) {
 }
 
 export default function OrdersScreen({ navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,6 +68,17 @@ export default function OrdersScreen({ navigation }) {
               {new Date(o.created_at).toLocaleString()}
               {o.item_count != null ? ` · ${t('orders.itemsCount', { n: o.item_count })}` : ''}
             </Text>
+            {/* The shop's ready-time promise (batch B). Shown prominently while
+                the order is still being worked on; once the promised time has
+                passed we say "taking a little longer" and NOT "late" — the
+                shopkeeper is a neighbour who is busy, not a courier breaching an
+                SLA. Nothing is shown when no promise was made. */}
+            {etaState(o) === 'promised' ? (
+              <Text style={styles.eta}>{t('eta.readyBy', { time: formatClock(o.promised_at, lang) })}</Text>
+            ) : null}
+            {etaState(o) === 'late' ? (
+              <Text style={styles.etaSoft}>{t('eta.takingLonger')}</Text>
+            ) : null}
             <View style={styles.meta}>
               <Text style={styles.total}>{money(o.total != null ? o.total : o.subtotal)}</Text>
               <Badge>{t(`pmode.${o.payment_mode}`)}</Badge>
@@ -91,4 +103,6 @@ const styles = StyleSheet.create({
   date: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   total: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  eta: { color: colors.accent, fontSize: 15, fontWeight: '700', marginTop: 6 },
+  etaSoft: { color: colors.textMuted, fontSize: 15, fontWeight: '600', marginTop: 6 },
 });

@@ -4,6 +4,7 @@ import CustomerShell, { money, useCustomerGuard } from '../../../components/Cust
 import { customerFetch } from '../../../lib/customerApi';
 import { useLang } from '../../../lib/i18n';
 import { stepsForOrder, currentStepIndex } from '../../../lib/orderStatus';
+import { etaState, formatClock } from '../../../lib/orderEta';
 
 const LABELS = {
   pending: 'Pending',
@@ -17,7 +18,7 @@ const LABELS = {
 
 export default function OrderDetail() {
   const guardReady = useCustomerGuard();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const ostatusLabel = (s) => { const v = t(`ostatus.${s}`); return v === `ostatus.${s}` ? (LABELS[s] || s) : v; };
   const fulLabel = (s) => { const v = t(`ful.${s}`); return v === `ful.${s}` ? s : v; };
   const pstatusLabel = (s) => { const v = t(`pstatus.${s}`); return v === `pstatus.${s}` ? s : v; };
@@ -76,6 +77,10 @@ export default function OrderDetail() {
   // stages are derived by rank from the current status (no per-status timestamps).
   const steps = order ? stepsForOrder(order.fulfillment_type) : [];
   const currentIdx = order ? currentStepIndex(order.status, steps) : -1;
+  // The shop's ready-time promise (batch B), derived from promised_at against
+  // this device's own clock — the API never computes "late" for us.
+  const promiseState = order ? etaState(order) : 'none';
+  const promisedTime = order ? formatClock(order.promised_at, lang) : '';
 
   return (
     <CustomerShell title={t('ord.order')} back="/c/orders">
@@ -97,6 +102,18 @@ export default function OrderDetail() {
               <span className="badge">{order.payment_mode === 'prepaid' ? t('c.prepaid') : t('c.credit')}</span>
               <span className={`badge ${order.payment_status === 'paid' ? 'cpwa-badge-ok' : ''}`}>{t('c.paymentColon')} {payLabel(order)}</span>
             </div>
+            {/* The promise, first thing a shopper looks for. A passed promise is
+                deliberately gentle — "taking a little longer", with the time it
+                was expected by, rather than an alarming "late". */}
+            {promiseState === 'promised' && (
+              <div className="cpwa-eta cpwa-eta-big">{t('eta.readyBy', { time: promisedTime })}</div>
+            )}
+            {promiseState === 'late' && (
+              <div className="cpwa-eta cpwa-eta-big cpwa-eta-soft">
+                {t('eta.takingLonger')}
+                <div className="muted" style={{ fontWeight: 400, marginTop: 2 }}>{t('eta.takingLongerHelp', { time: promisedTime })}</div>
+              </div>
+            )}
             {order.address && <div className="muted" style={{ marginTop: 8 }}>{t('c.deliverTo')} {order.address}</div>}
             {order.note && <div className="muted" style={{ marginTop: 4 }}>{t('c.noteColon')} {order.note}</div>}
           </div>

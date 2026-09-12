@@ -115,6 +115,13 @@ const settingsSchema = Joi.object({
   // on a single shop pause. Policy, not credentials — no I CONFIRM.
   shop_hours_enabled: Joi.boolean(),
   shop_pause_max_minutes: Joi.number().integer().min(1).max(43200),
+  // One-tap accept (batch B, 0067): the three coarse ready-time chips the owner
+  // is offered, and the ceiling a promise is clamped to. Policy, not credentials
+  // — no I CONFIRM. The chip list's real validation (1-4 whole minutes, each
+  // within the ceiling, no duplicates) lives in the controller so it can compare
+  // against the RESULTING max and answer a clear 400 `invalid_eta_chips`.
+  order_eta_chips: Joi.string().max(64),
+  order_eta_max_minutes: Joi.number().integer().min(1).max(1440),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward

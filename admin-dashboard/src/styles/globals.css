@@ -616,6 +616,14 @@ th { color: var(--muted); font-weight: 600; }
 /* The one thing the customer is waiting for, on the orders list. */
 .cpwa-order-next { margin-top: 4px; font-weight: 600; color: var(--c-accent-ink); }
 
+/* The shop's ready-time promise on a consumer order (batch B). Prominent while
+   the promise stands; the "soft" variant is the gentle line shown once the
+   promised time has passed — deliberately not a danger colour, because the
+   shopkeeper is a neighbour who is busy, not a courier breaching an SLA. */
+.cpwa-eta { margin-top: 6px; font-weight: 700; color: var(--c-accent-ink); }
+.cpwa-eta-big { font-size: 17px; margin-top: 10px; }
+.cpwa-eta-soft { color: var(--c-muted, var(--muted)); font-weight: 600; }
+
 /* Owner order-detail stepper — a compact horizontal progress row. Reached
    stages are filled by rank; the current one is highlighted. */
 .ord-stepper { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }

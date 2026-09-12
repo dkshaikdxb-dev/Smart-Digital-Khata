@@ -4,6 +4,7 @@ import CustomerShell, { money, useCustomerGuard } from '../../components/Custome
 import { customerFetch } from '../../lib/customerApi';
 import { useLang } from '../../lib/i18n';
 import { waitingHintKey } from '../../lib/orderStatus';
+import { etaState, formatClock } from '../../lib/orderEta';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -23,7 +24,7 @@ export function statusBadgeClass(status) {
 
 export default function Orders() {
   const ready = useCustomerGuard();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const ostatusLabel = (s) => { const v = t(`ostatus.${s}`); return v === `ostatus.${s}` ? (STATUS_LABELS[s] || s) : v; };
   const fulLabel = (s) => { const v = t(`ful.${s}`); return v === `ful.${s}` ? s : v; };
   const [items, setItems] = useState([]);
@@ -66,6 +67,17 @@ export default function Orders() {
               <span className={`badge ${statusBadgeClass(o.status)}`}>{ostatusLabel(o.status)}</span>
             </div>
             <div className="cpwa-order-next">{t(waitingHintKey(o))}</div>
+            {/* The shop's ready-time promise (batch B), shown prominently while
+                the order is still being worked on. Once the promised time has
+                passed we say "taking a little longer" and NOT "late": the
+                shopkeeper is a neighbour who is busy, not a courier breaching
+                an SLA. Nothing is shown when no promise was made. */}
+            {etaState(o) === 'promised' && (
+              <div className="cpwa-eta">{t('eta.readyBy', { time: formatClock(o.promised_at, lang) })}</div>
+            )}
+            {etaState(o) === 'late' && (
+              <div className="cpwa-eta cpwa-eta-soft">{t('eta.takingLonger')}</div>
+            )}
             <div className="muted">
               {new Date(o.created_at).toLocaleString()} · {o.item_count != null ? t('common.itemCount', { n: o.item_count, s: o.item_count > 1 ? 's' : '' }) : ''}
             </div>
