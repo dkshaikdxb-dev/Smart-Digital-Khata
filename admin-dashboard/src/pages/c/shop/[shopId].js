@@ -6,6 +6,7 @@ import ProductThumb from '../../../components/ProductThumb';
 import { publicFetch } from '../../../lib/customerApi';
 import { loadCart, saveCart, cartTotals, otherActiveCartShopId, clearCart, lineTotalPaise } from '../../../lib/customerCart';
 import { useLang, canUseVoice, useLanguageCapability } from '../../../lib/i18n';
+import { availabilityLine, isOpen } from '../../../lib/shopOpen';
 import { useVoiceSearch } from '../../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../../components/VoiceSearchHint';
 import ShopCarousel from '../../../components/ShopCarousel';
@@ -142,6 +143,11 @@ export default function ShopCatalog() {
 
   const { count, subtotal } = cartTotals(cart);
 
+  // Shop availability (batch A). `shop.availability` is the SAME object the
+  // directory and both native apps render; nothing is recomputed here.
+  const shopOpen = isOpen(shop && shop.availability);
+  const closedLine = shopOpen ? '' : availabilityLine(t, shop.availability, lang);
+
   // Distinct catalog categories present in THIS shop's products (ignore null).
   // A group inherits every category any of its variants carries, so iterating
   // the raw product rows already covers grouped variants.
@@ -226,6 +232,11 @@ export default function ShopCatalog() {
 
   // Add/stepper block for a resolved product `p` (shared by single + variant
   // cards). `inCart` is the current cart line for p, if any.
+  //
+  // Shop availability (batch A): when the shop is closed the Add button is
+  // DISABLED and labelled with the reason — never hidden. Hiding it makes the
+  // app look broken; a disabled button that says "Closed — cannot order" tells
+  // the shopper exactly what happened. The server refuses the order anyway.
   function ProductAction({ p, inCart }) {
     return (
       <div className="cpwa-product-action">
@@ -233,10 +244,12 @@ export default function ShopCatalog() {
           <div className="cpwa-stepper">
             <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity - 1)} aria-label="Decrease">−</button>
             <span className="cpwa-qty">{inCart.quantity}</span>
-            <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity + 1)} aria-label="Increase">+</button>
+            <button type="button" className="secondary" onClick={() => setQty(p, inCart.quantity + 1)} aria-label="Increase" disabled={!shopOpen}>+</button>
           </div>
         ) : (
-          <button type="button" onClick={() => addItem(p)}>{t('common.add')}</button>
+          <button type="button" onClick={() => addItem(p)} disabled={!shopOpen} title={shopOpen ? undefined : closedLine}>
+            {shopOpen ? t('common.add') : t('open.cannotOrder')}
+          </button>
         )}
       </div>
     );
@@ -246,6 +259,17 @@ export default function ShopCatalog() {
     <CustomerShell title={shop ? shop.name : t('c.shop')} back="/c/shops">
       {error && <div className="card cpwa-error">{error}</div>}
       {loading && <div className="card">{t('c.loadingCatalog')}</div>}
+
+      {/* Shop availability (batch A): a banner at the very top of the storefront
+          when the shop is shut, saying WHY and WHEN it reopens. The catalogue
+          below stays fully browsable. */}
+      {shop && !shopOpen && (
+        <div className="card cpwa-closed-banner">
+          <strong>{t('open.bannerTitle')}</strong>
+          <div>{closedLine}</div>
+          <div className="muted" style={{ marginTop: 4 }}>{t('open.browseOnly')}</div>
+        </div>
+      )}
 
       {shop && (
         // Branded Store (batch STORE1): while premium is active the storefront
@@ -359,7 +383,7 @@ export default function ShopCatalog() {
                     </div>
                   </div>
                 </div>
-                <WeightPicker p={p} inCart={inCart} t={t} onSet={(g) => setWeight(p, g)} />
+                <WeightPicker p={p} inCart={inCart} t={t} onSet={(g) => setWeight(p, g)} disabled={!shopOpen} />
               </div>
             );
           }
@@ -405,7 +429,7 @@ export default function ShopCatalog() {
 // custom grams input. Choosing a weight adds/updates the cart line; the computed
 // line price is shown for the current selection. The server always recomputes the
 // price at order time — this is a preview.
-function WeightPicker({ p, inCart, t, onSet }) {
+function WeightPicker({ p, inCart, t, onSet, disabled }) {
   const [custom, setCustom] = useState('');
   const active = (inCart && Number(inCart.weight_grams)) || 0;
   return (
@@ -416,6 +440,7 @@ function WeightPicker({ p, inCart, t, onSet }) {
             key={g}
             type="button"
             className={`cpwa-chip${active === g ? ' active' : ''}`}
+            disabled={disabled}
             onClick={() => onSet(g)}
           >
             {gramsLabel(g)}
@@ -436,7 +461,7 @@ function WeightPicker({ p, inCart, t, onSet }) {
         <button
           type="button"
           className="secondary"
-          disabled={!(Number(custom) > 0)}
+          disabled={disabled || !(Number(custom) > 0)}
           onClick={() => { onSet(Number(custom)); setCustom(''); }}
         >
           {t('common.add')}

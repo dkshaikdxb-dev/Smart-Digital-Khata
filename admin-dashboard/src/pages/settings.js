@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import ShopHoursCard from '../components/ShopHoursCard';
 import DataSaverToggle from '../components/DataSaverToggle';
 import ImageStudio from '../components/ImageStudio';
 import { apiFetch, apiPost } from '../lib/api';
@@ -516,6 +517,12 @@ export default function Settings() {
           <button onClick={save}>{t('common.save')}</button>
           {msg && <div className="muted" style={{ marginTop: 8 }}>{msg}</div>}
         </div>
+
+        {/* Shop availability (batch A) — the daily hours + the festival
+            closures. The right-now Open/Closed switch and the pause chips are
+            on HOME, where a shopkeeper in a rush can reach them; this card is
+            the set-once half. */}
+        <ShopHoursCard />
 
         {/* Repeating new-order alert (batch ORDERALERT). The banner's "Alert
             settings" link targets this anchor, so an owner being nagged is one

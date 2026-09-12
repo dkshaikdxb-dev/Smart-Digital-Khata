@@ -251,6 +251,17 @@ export const shop = {
   payment: () => api.get('/api/shops/me/payment').then((r) => r.data),
   updatePayment: (body) => api.patch('/api/shops/me/payment', body).then((r) => r.data),
   testPayment: () => api.post('/api/shops/me/payment/test').then((r) => r.data),
+  // Shop availability (batch A). `me()` already returns the shop's is_open /
+  // paused_until / open_time / close_time, plus the derived `availability` and
+  // the next 90 days of `closures`; these three write the rest.
+  //
+  // pause(minutes): 0 clears ("Resume now"), a number is clamped server-side to
+  // the platform ceiling, and the string 'today' means "rest of today" in the
+  // SHOP's timezone. The daily hours go through the ordinary shop.update().
+  pause: (minutes) => api.post('/api/shops/me/pause', { minutes }).then((r) => r.data),
+  addClosure: (onDate, reason) =>
+    api.post('/api/shops/me/closures', { on_date: onDate, reason: reason || null }).then((r) => r.data),
+  deleteClosure: (id) => api.delete(`/api/shops/me/closures/${id}`).then((r) => r.data),
 };
 
 export default api;

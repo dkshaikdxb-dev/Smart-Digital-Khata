@@ -16,6 +16,10 @@ const {
 // Owner-facing order-alert copy (batch ORDERALERT). The FIRST alert and every
 // WhatsApp REMINDER are built by the same helper, so the two can never drift.
 const orderAlertCopy = require('../utils/order-alert-copy');
+// Shop availability (batch A). The order-time refusal is the HARD guarantee —
+// every UI hint elsewhere is courtesy. assertShopOpenTx runs on the
+// transaction's own client, before any insert, in all three payment modes.
+const { assertShopOpenTx } = require('../utils/shopOpen');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -572,6 +576,12 @@ exports.createOrder = async (req, res) => {
 
   if (payment_mode === 'credit') {
     const result = await withTx(async (client) => {
+      // AVAILABILITY GATE (batch A) — first thing in the transaction, before
+      // resolveOrCreateCustomer (which can INSERT) and before any order, item
+      // or khata row. A 409 here rolls the whole tx back, so a closed shop
+      // leaves nothing behind.
+      await assertShopOpenTx(client, shop_id);
+
       const customer = await resolveOrCreateCustomer(client, shop_id, phone);
 
       // Enforce credit limits exactly like transaction.controller: a credit
@@ -654,6 +664,9 @@ exports.createOrder = async (req, res) => {
     // records what is owed (payment_status='pending'); the owner collects cash
     // on hand-over and completing the order flips it to 'paid'.
     const result = await withTx(async (client) => {
+      // AVAILABILITY GATE (batch A) — same refusal, same place, cash path.
+      await assertShopOpenTx(client, shop_id);
+
       const customer = await resolveOrCreateCustomer(client, shop_id, phone);
       const ord = await client.query(
         `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
@@ -685,6 +698,11 @@ exports.createOrder = async (req, res) => {
   }
 
   const result = await withTx(async (client) => {
+    // AVAILABILITY GATE (batch A) — before the customer row, before the order,
+    // and crucially before the Razorpay call, so a closed shop never creates an
+    // order, a payment_orders row, or a provider-side order/pay link either.
+    await assertShopOpenTx(client, shop_id);
+
     const customer = await resolveOrCreateCustomer(client, shop_id, phone);
 
     const ord = await client.query(

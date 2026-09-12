@@ -111,6 +111,10 @@ const settingsSchema = Joi.object({
   order_alert_min_minutes: Joi.number().integer().min(1).max(720),
   order_alert_max_minutes: Joi.number().integer().min(1).max(720),
   order_alert_max_repeats_cap: Joi.number().integer().min(1).max(100),
+  // Shop availability (batch A, 0066): the master kill-switch and the ceiling
+  // on a single shop pause. Policy, not credentials — no I CONFIRM.
+  shop_hours_enabled: Joi.boolean(),
+  shop_pause_max_minutes: Joi.number().integer().min(1).max(43200),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward

@@ -8,10 +8,69 @@ const { getStorefrontAdFreeConfig } = require('../utils/storefrontAdFree');
 const { spendCredits } = require('../utils/wallet');
 // Repeating new-order alert (batch ORDERALERT): live platform bounds + clamps.
 const { getOrderAlertBounds, clampRepeatMinutes, clampMaxRepeats } = require('../utils/orderAlerts');
+// Shop availability (batch A): the ONE definition of open/closed, the live
+// platform config, and the timezone resolution. Nothing here re-implements it.
+const {
+  availabilityWith,
+  getShopHoursConfig,
+  closuresJoinSql,
+  availabilityColumnsSql,
+  takeAvailabilityColumns,
+  todayKey,
+  normalizeHm,
+  resolvePauseUntil,
+} = require('../utils/shopOpen');
 // AI triage of an uploaded storefront photo (batch AI-MOD) — enqueue only, after commit.
 const moderation = require('../services/moderation.service');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
+
+// ---------------------------------------------------------------------------
+// Shop availability (batch A). The owner's Home screen shows the CURRENT state
+// in words and offers one-tap pause chips; Settings owns the daily hours and
+// the festival closures. Everything below derives from utils/shopOpen.js, so
+// the owner console, the owner app, both consumer surfaces and the order gate
+// can never disagree about whether a shop is open.
+// ---------------------------------------------------------------------------
+
+// How far ahead the owner's closure list reaches. 90 days covers a festival
+// calendar without turning the settings card into an archive.
+const CLOSURES_WINDOW_DAYS = 90;
+// How far ahead a closure may be booked. A year is generous; beyond that it is
+// almost certainly a typo'd date.
+const CLOSURE_MAX_DAYS_AHEAD = 365;
+
+// The live { open, reason, reopens_at } for one shop, computed from the SAME
+// helper every other surface uses (one JOIN, no N+1).
+async function shopAvailability(shopId, now) {
+  const at = now || new Date();
+  const cfg = await getShopHoursConfig();
+  const r = await query(
+    `SELECT ${availabilityColumnsSql('s', 'sc')}
+       FROM shops s
+       ${closuresJoinSql('s', 'sc', '$2')}
+      WHERE s.id = $1`,
+    [shopId, todayKey(at)]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  return availabilityWith(takeAvailabilityColumns(r.rows[0]), at, cfg);
+}
+
+// The shop's upcoming closures (today .. +90 days), oldest first. `on_date` is
+// returned as a plain 'YYYY-MM-DD' string so no client has to guess a timezone.
+async function upcomingClosures(shopId, now) {
+  const today = todayKey(now || new Date());
+  const r = await query(
+    `SELECT id, to_char(on_date, 'YYYY-MM-DD') AS on_date, reason
+       FROM shop_closures
+      WHERE shop_id = $1
+        AND on_date >= $2::date
+        AND on_date <= $2::date + ${CLOSURES_WINDOW_DAYS}
+      ORDER BY on_date`,
+    [shopId, today]
+  );
+  return r.rows;
+}
 
 exports.getMine = async (req, res) => {
   const r = await query('SELECT * FROM shops WHERE id = $1', [req.user.shopId]);
@@ -20,7 +79,13 @@ exports.getMine = async (req, res) => {
   // GET /api/shops/:id/image); image_url/mime/updated_at stay in the payload.
   const shop = { ...r.rows[0] };
   delete shop.image_data;
-  res.json({ shop });
+  // Availability (batch A): the raw columns are already in `shop` (SELECT *);
+  // the derived state and the next 90 days of closures ride along so the owner
+  // Home card and the Settings hours card render from ONE request.
+  const now = new Date();
+  shop.availability = await shopAvailability(req.user.shopId, now);
+  const closures = await upcomingClosures(req.user.shopId, now);
+  res.json({ shop, closures });
 };
 
 exports.updateMine = async (req, res) => {
@@ -38,6 +103,30 @@ exports.updateMine = async (req, res) => {
     if (body.order_alert_max_repeats !== undefined) {
       body.order_alert_max_repeats = clampMaxRepeats(body.order_alert_max_repeats, bounds);
     }
+  }
+
+  // Shop availability (batch A): the daily window is a PAIR. Either both ends
+  // are set or both are cleared — a one-sided window has no meaning and would
+  // silently behave as "always open", so it is refused with 422
+  // `hours_incomplete` rather than half-written. Values are normalized to
+  // 'HH:MM' here so the stored TIME is always well-formed.
+  const touchesOpen = Object.prototype.hasOwnProperty.call(body, 'open_time');
+  const touchesClose = Object.prototype.hasOwnProperty.call(body, 'close_time');
+  if (touchesOpen || touchesClose) {
+    if (!(touchesOpen && touchesClose)) {
+      throw ApiError.unprocessable('hours_incomplete', {
+        hint: 'Send open_time and close_time together (or both null to clear).',
+      });
+    }
+    const openHm = body.open_time == null || body.open_time === '' ? null : normalizeHm(body.open_time);
+    const closeHm = body.close_time == null || body.close_time === '' ? null : normalizeHm(body.close_time);
+    if ((openHm == null) !== (closeHm == null)) {
+      throw ApiError.unprocessable('hours_incomplete', {
+        hint: 'Send open_time and close_time together (or both null to clear).',
+      });
+    }
+    body.open_time = openHm;
+    body.close_time = closeHm;
   }
 
   const fields = [];
@@ -70,7 +159,86 @@ exports.updateMine = async (req, res) => {
   // Never leak the raw cover-image BYTEA blob in JSON (RETURNING * includes it).
   const shop = { ...r.rows[0] };
   delete shop.image_data;
+  // Availability (batch A): echo the FRESH derived state so the owner's toggle
+  // and hour inputs re-render from the server's answer, never from a local guess.
+  shop.availability = await shopAvailability(req.user.shopId);
   res.json({ shop });
+};
+
+/**
+ * POST /api/shops/me/pause — the one-tap "back in a bit" chips.
+ * `{ minutes }`:
+ *   0        clear the pause ("Resume now")
+ *   'today'  until midnight tonight in the shop timezone ("Rest of today")
+ *   n        clamped to 1..shop_pause_max_minutes (live platform setting)
+ * Returns the fresh availability so the card updates from the server's truth.
+ * NOT an integration credential — no typed I CONFIRM.
+ */
+exports.pauseShop = async (req, res) => {
+  const cfg = await getShopHoursConfig();
+  const until = resolvePauseUntil(req.body.minutes, cfg);
+  const r = await query(
+    'UPDATE shops SET paused_until = $1, updated_at = NOW() WHERE id = $2 RETURNING paused_until',
+    [until, req.user.shopId]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  res.json({
+    paused_until: r.rows[0].paused_until,
+    pause_max_minutes: cfg.pause_max_minutes,
+    availability: await shopAvailability(req.user.shopId),
+  });
+};
+
+/**
+ * POST /api/shops/me/closures — add (or update) a festival/holiday closure.
+ * `{ on_date: 'YYYY-MM-DD', reason }`. The date must be today or later in the
+ * SHOP timezone and at most a year out; re-adding the same date UPSERTs the
+ * reason instead of erroring, which is what "add this date" means to an owner.
+ */
+exports.addClosure = async (req, res) => {
+  const raw = String(req.body.on_date || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw ApiError.badRequest('Invalid date');
+
+  const today = todayKey(new Date());
+  if (raw < today) throw ApiError.unprocessable('closure_past', { on_date: raw, today });
+
+  const maxDate = await query(`SELECT to_char($1::date + ${CLOSURE_MAX_DAYS_AHEAD}, 'YYYY-MM-DD') AS d`, [today]);
+  if (raw > maxDate.rows[0].d) {
+    throw ApiError.unprocessable('closure_too_far', { on_date: raw, max_date: maxDate.rows[0].d });
+  }
+
+  const reason = typeof req.body.reason === 'string' ? req.body.reason.trim().slice(0, 120) : null;
+  const r = await query(
+    `INSERT INTO shop_closures (shop_id, on_date, reason)
+     VALUES ($1, $2::date, $3)
+     ON CONFLICT (shop_id, on_date) DO UPDATE SET reason = EXCLUDED.reason
+     RETURNING id, to_char(on_date, 'YYYY-MM-DD') AS on_date, reason`,
+    [req.user.shopId, raw, reason || null]
+  );
+  res.status(201).json({
+    closure: r.rows[0],
+    closures: await upcomingClosures(req.user.shopId),
+    availability: await shopAvailability(req.user.shopId),
+  });
+};
+
+/**
+ * DELETE /api/shops/me/closures/:id — remove a closure. SHOP-SCOPED: another
+ * shop's closure id is a 404, never a silent no-op and never a cross-shop write.
+ */
+exports.deleteClosure = async (req, res) => {
+  const id = String(req.params.id || '');
+  if (!UUID_RE.test(id)) throw ApiError.notFound('Closure not found');
+  const r = await query('DELETE FROM shop_closures WHERE id = $1 AND shop_id = $2 RETURNING id', [
+    id,
+    req.user.shopId,
+  ]);
+  if (!r.rowCount) throw ApiError.notFound('Closure not found');
+  res.json({
+    ok: true,
+    closures: await upcomingClosures(req.user.shopId),
+    availability: await shopAvailability(req.user.shopId),
+  });
 };
 
 // Owner override for the native shop name (batch SHOPNAME). The auto-seeded

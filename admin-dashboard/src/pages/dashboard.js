@@ -6,6 +6,7 @@ import OwnerNudges from '../components/OwnerNudges';
 import AskShop from '../components/AskShop';
 import SharePoster from '../components/SharePoster';
 import Balance from '../components/Balance';
+import ShopAvailabilityCard from '../components/ShopAvailabilityCard';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 
@@ -42,6 +43,11 @@ export default function Dashboard() {
       <div className="container">
         <h1>{t('dash.today')}</h1>
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
+
+        {/* Shop availability (batch A) — deliberately the FIRST thing on Home.
+            "Are we open?" is the most time-critical switch a shopkeeper touches,
+            so it is one tap from the front door, not buried in Settings. */}
+        <ShopAvailabilityCard />
 
         <div className="grid">
           <div className="card">

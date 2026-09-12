@@ -552,6 +552,17 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-shopcard-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-weight: 600; }
 .cpwa-chev { color: var(--c-muted); font-size: 22px; }
 
+/* Shop availability (batch A). A closed shop STAYS in the directory and stays
+   openable — it just wears a pill and a one-line reopen hint, so a shopper sees
+   "Closed · opens at 9:00 AM" instead of a shop that appears to have vanished. */
+.cpwa-closed-pill { background: #b91c1c; color: #fff; }
+.cpwa-closed-hint { margin-top: 6px; font-size: 13px; }
+.cpwa-closed-banner {
+  border-left: 5px solid #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+}
+.cpwa-closed-banner strong { display: block; margin-bottom: 4px; }
+
 /* Product rows + steppers */
 .cpwa-product { display: flex; align-items: center; gap: 12px; }
 .cpwa-product-info { flex: 1; min-width: 0; }

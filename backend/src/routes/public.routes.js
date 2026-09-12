@@ -30,6 +30,10 @@ const listSchema = Joi.object({
   // maps anything unknown/absent to 'en' (raw English name).
   lang: Joi.string(),
   limit: Joi.number().integer(),
+  // Shop availability (batch A) — OPTIONAL "only shops taking orders right
+  // now". Absent (the default) lists closed shops too, annotated with their
+  // reason and reopen time, so a shop never looks like it vanished.
+  open_now: Joi.alternatives().try(Joi.boolean(), Joi.string().valid('1', '0', 'true', 'false', 'yes', 'no')),
 });
 
 router.get('/shops', validate(listSchema, 'query'), asyncHandler(discoveryCtrl.listShops));

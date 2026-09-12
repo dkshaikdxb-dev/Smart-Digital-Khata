@@ -5,6 +5,7 @@ import CustomerShell from '../../components/CustomerShell';
 import CpwaPromoSlider from '../../components/CpwaPromoSlider';
 import { publicFetch } from '../../lib/customerApi';
 import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
+import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { useVoiceSearch } from '../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../components/VoiceSearchHint';
 
@@ -230,9 +231,19 @@ export default function DiscoverShops() {
               {[s.area, s.city].filter(Boolean).join(', ') || t('c.locationNotSet')}
             </div>
             <div className="cpwa-shopcard-meta">
+              {/* Shop availability (batch A): a closed shop is still LISTED and
+                  still openable — the API sorts it after the open ones — but the
+                  card says so up front, with the reopen hint so the pill is
+                  never a bare "Closed". */}
+              {!isOpen(s.availability) && (
+                <span className="badge cpwa-closed-pill">{t('open.closedPill')}</span>
+              )}
               <span className="badge">{Number(s.product_count || 0)} {t('c.items')}</span>
               {s.distance_km != null && <span className="badge">{s.distance_km} {t('c.kmAway')}</span>}
             </div>
+            {!isOpen(s.availability) && (
+              <div className="muted cpwa-closed-hint">{availabilityLine(t, s.availability, lang)}</div>
+            )}
           </div>
           <span className="cpwa-chev">›</span>
         </Link>

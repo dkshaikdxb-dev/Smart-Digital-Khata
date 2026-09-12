@@ -9,6 +9,7 @@ import { money } from '../money';
 import { publicApi, resolveImageUrl } from '../consumerApi';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
+import { availabilityLine, isOpen } from '../../lib/shopOpen';
 
 // Quick-pick weight chips for loose/weighed items (grams).
 const WEIGHT_CHIPS = [250, 500, 1000];
@@ -70,6 +71,13 @@ export default function ShopDetailScreen({ route, navigation }) {
   const inCart = (id) => cart.cart && cart.cart.shop_id === shopId ? cart.cart.items[id] : null;
   const name = shop ? shop.name : shopName;
 
+  // Shop availability (batch A). `shop.availability` is the SAME object the
+  // directory and both web surfaces render; nothing is recomputed here. While
+  // the shop is shut the catalogue stays fully browsable and the Add controls
+  // are DISABLED with the reason — never hidden, which would look broken.
+  const shopOpen = isOpen(shop && shop.availability);
+  const closedLine = shopOpen ? '' : availabilityLine(t, shop.availability, lang);
+
   function fulfillmentLine() {
     if (!shop) return null;
     if (shop.offers_delivery) {
@@ -89,6 +97,16 @@ export default function ShopDetailScreen({ route, navigation }) {
               {[shop.area, shop.city].filter(Boolean).join(', ') || t('shops.noLocation')}
             </Text>
             {fulfillmentLine() ? <Text style={styles.ful}>{fulfillmentLine()}</Text> : null}
+          </View>
+        ) : null}
+
+        {/* Shop availability (batch A): a banner at the very top of the
+            storefront when the shop is shut, saying WHY and WHEN it reopens. */}
+        {shop && !shopOpen ? (
+          <View style={styles.closedBanner}>
+            <Text style={styles.closedTitle}>{t('open.bannerTitle')}</Text>
+            <Text style={styles.closedLine}>{closedLine}</Text>
+            <Text style={styles.closedHint}>{t('open.browseOnly')}</Text>
           </View>
         ) : null}
 
@@ -123,7 +141,8 @@ export default function ShopDetailScreen({ route, navigation }) {
                       <Pressable
                         key={g}
                         onPress={() => cart.setWeight(shopId, name, p, activeG === g ? 0 : g)}
-                        style={[styles.chip, activeG === g && styles.chipActive]}
+                        disabled={!shopOpen}
+                        style={[styles.chip, activeG === g && styles.chipActive, !shopOpen && styles.disabled]}
                       >
                         <Text style={[styles.chipText, activeG === g && styles.chipTextActive]}>{gramsLabel(g)}</Text>
                       </Pressable>
@@ -150,13 +169,21 @@ export default function ShopDetailScreen({ route, navigation }) {
                         <Text style={styles.stepText}>−</Text>
                       </Pressable>
                       <Text style={styles.qty}>{line.quantity}</Text>
-                      <Pressable onPress={() => cart.setQty(p.id, line.quantity + 1)} style={styles.stepBtn}>
+                      <Pressable
+                        onPress={() => cart.setQty(p.id, line.quantity + 1)}
+                        disabled={!shopOpen}
+                        style={[styles.stepBtn, !shopOpen && styles.disabled]}
+                      >
                         <Text style={styles.stepText}>+</Text>
                       </Pressable>
                     </View>
                   ) : (
-                    <Pressable onPress={() => cart.addUnit(shopId, name, p)} style={styles.addBtn}>
-                      <Text style={styles.addText}>{t('shopdetail.add')}</Text>
+                    <Pressable
+                      onPress={() => cart.addUnit(shopId, name, p)}
+                      disabled={!shopOpen}
+                      style={[styles.addBtn, !shopOpen && styles.disabled]}
+                    >
+                      <Text style={styles.addText}>{shopOpen ? t('shopdetail.add') : t('open.cannotOrder')}</Text>
                     </Pressable>
                   )}
                 </View>
@@ -191,6 +218,18 @@ const styles = StyleSheet.create({
   shopName: { color: colors.text, fontSize: 20, fontWeight: '800' },
   loc: { color: colors.textMuted, fontSize: 14, marginTop: 4 },
   ful: { color: colors.text, fontSize: 14, marginTop: 8 },
+  closedBanner: {
+    backgroundColor: colors.card,
+    borderRadius: sizes.radius,
+    borderLeftWidth: 5,
+    borderLeftColor: colors.warn || '#f59e0b',
+    padding: sizes.pad,
+    marginBottom: sizes.gap,
+  },
+  closedTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  closedLine: { color: colors.text, fontSize: 14, marginTop: 6 },
+  closedHint: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
+  disabled: { opacity: 0.45 },
   prodRow: { flexDirection: 'row', alignItems: 'center' },
   thumb: {
     width: 56, height: 56, borderRadius: 12,

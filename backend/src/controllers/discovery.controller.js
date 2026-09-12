@@ -2,6 +2,19 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { normalizeQuery } = require('../utils/search-normalize');
 const { pickStorefrontCampaign } = require('./promos.controller');
+// Shop availability (batch A) — the ONE definition every surface derives from.
+// Nothing in this file re-implements "is the shop open"; it only joins, reads
+// the live config once per request, and annotates.
+const {
+  getShopHoursConfig,
+  availabilityWith,
+  closuresJoinSql,
+  availabilityColumnsSql,
+  takeAvailabilityColumns,
+  openPredicateSql,
+  shopTimezone,
+  todayKey,
+} = require('../utils/shopOpen');
 
 // pg_trgm word-similarity threshold for single-word fuzzy recall (typos / noisy
 // ASR). `qn <% blob` is true when word_similarity(qn, blob) >= this. 0.6 (the
@@ -54,6 +67,16 @@ exports.listShops = async (req, res) => {
   const lang = resolveLang(req.query.lang);
   const localized = lang !== 'en';
 
+  // Availability (batch A). The live platform config is read ONCE here and
+  // applied to every row below — never once per row. `now` is captured once so
+  // the whole page is annotated against a single instant.
+  const hoursCfg = await getShopHoursConfig();
+  const now = new Date();
+  // `?open_now=1` — OPTIONAL. The default deliberately lists closed shops too:
+  // a shopper must be able to find the shop and read "opens at 9 AM" rather
+  // than think it vanished.
+  const openNow = ['1', 'true', 'yes'].includes(String(req.query.open_now || '').toLowerCase());
+
   const params = [];
 
   // Localized SHOP name (batch SHOPNAME): for a non-'en' lang, LEFT JOIN
@@ -67,7 +90,22 @@ exports.listShops = async (req, res) => {
     nameJoin = `LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $${params.length}`;
   }
 
+  // Today's closure, attached with ONE LEFT JOIN (no N+1). The date is the
+  // shop-timezone "today" from the availability helper, never the server locale.
+  params.push(todayKey(now));
+  const closureJoin = closuresJoinSql('s', 'sc', `$${params.length}`);
+
   const where = ['s.is_listed = true'];
+
+  // The optional open-only filter has to be decided BEFORE the LIMIT, so it is
+  // the one place the rule is expressed in SQL — see openPredicateSql(), which
+  // lives beside the JS rule and is asserted to agree with it in the tests.
+  // When the platform kill-switch is off every shop counts as open, so the
+  // filter is simply not applied.
+  if (openNow && hoursCfg.enabled) {
+    params.push(shopTimezone());
+    where.push(openPredicateSql('s', 'sc', `$${params.length}`));
+  }
 
   if (search) {
     params.push(`%${search}%`);
@@ -106,9 +144,11 @@ exports.listShops = async (req, res) => {
             s.offers_pickup, s.offers_delivery, s.delivery_fee,
             (SELECT COUNT(*) FROM products p
               WHERE p.shop_id = s.id AND p.is_active = true)::int AS product_count,
+            ${availabilityColumnsSql('s', 'sc')},
             ${distanceSelect}
        FROM shops s
        ${nameJoin}
+       ${closureJoin}
       WHERE ${where.join(' AND ')}
       ORDER BY ${orderBy}
       LIMIT ${limitIdx}`,
@@ -131,12 +171,24 @@ exports.listShops = async (req, res) => {
       offers_pickup: row.offers_pickup,
       offers_delivery: row.offers_delivery,
       delivery_fee: Number(row.delivery_fee),
+      // Availability (batch A): the SAME { open, reason, reopens_at } object
+      // every other surface receives. Closed shops are NOT hidden — the card
+      // shows a "Closed" pill and the reopen hint instead.
+      availability: availabilityWith(takeAvailabilityColumns(row), now, hoursCfg),
     };
     if (useDistance && row.distance_km !== null) shop.distance_km = row.distance_km;
     return shop;
   });
 
-  res.json({ shops });
+  // Closed shops sort AFTER open ones while staying in the list (and still
+  // openable). A STABLE partition, so the existing distance/name ordering is
+  // preserved inside each group.
+  const ordered = [
+    ...shops.filter((s) => s.availability.open),
+    ...shops.filter((s) => !s.availability.open),
+  ];
+
+  res.json({ shops: ordered });
 };
 
 /**
@@ -155,6 +207,13 @@ exports.searchProducts = async (req, res) => {
   const limit = Math.min(50, Math.max(1, req.query.limit || 30));
   const lang = resolveLang(req.query.lang);
   const localized = lang !== 'en';
+
+  // Availability (batch A): a product row carries its shop, and that nested
+  // shop is a payload a consumer SEES — so it gets the same
+  // { open, reason, reopens_at } object as every other surface. Config read
+  // once; the closure lookup is the same single LEFT JOIN (no N+1).
+  const hoursCfg = await getShopHoursConfig();
+  const now = new Date();
 
   // Normalize the query the SAME way products.search_text was built: lowercase,
   // punctuation-stripped, colloquial units/number-words mapped ("1 kilo" ->
@@ -230,6 +289,9 @@ exports.searchProducts = async (req, res) => {
     rankSimilarity = `GREATEST(similarity(${blob}, ${qnIdx}), word_similarity(${qnIdx}, ${blob}))`;
   }
 
+  params.push(todayKey(now));
+  const closureJoin = closuresJoinSql('s', 'sc', `$${params.length}`);
+
   const where = ['p.is_active = true', 's.is_listed = true', matchClause];
 
   if (city) {
@@ -258,10 +320,12 @@ exports.searchProducts = async (req, res) => {
   const sql = `SELECT p.id, ${nameSelect} AS name, p.price, p.unit, p.image_url, p.sold_by_weight,
             s.id AS shop_id, ${shopNameSelect} AS shop_name, s.city AS shop_city, s.area AS shop_area,
             s.offers_delivery, s.delivery_fee,
+            ${availabilityColumnsSql('s', 'sc')},
             ${distanceSelect}
        FROM products p
        JOIN shops s ON s.id = p.shop_id
        ${i18nJoin}
+       ${closureJoin}
       WHERE ${where.join(' AND ')}
       ORDER BY ${orderBy}
       LIMIT ${limitIdx}`;
@@ -283,6 +347,7 @@ exports.searchProducts = async (req, res) => {
       area: row.shop_area,
       offers_delivery: row.offers_delivery,
       delivery_fee: Number(row.delivery_fee),
+      availability: availabilityWith(takeAvailabilityColumns(row), now, hoursCfg),
     };
     // Drop distance_km entirely when it was not requested / not computable.
     if (useDistance && row.distance_km !== null) shop.distance_km = row.distance_km;
@@ -327,6 +392,13 @@ exports.getShop = async (req, res) => {
     shopNameSelect = 'COALESCE(sn.name, s.name)';
     shopNameJoin = 'LEFT JOIN shop_name_i18n sn ON sn.shop_id = s.id AND sn.lang = $2';
   }
+  // Availability (batch A): today's closure comes along on the SAME query via
+  // the shared LEFT JOIN, and the { open, reason, reopens_at } object is derived
+  // below from the one helper — identical to the object the directory returns.
+  const hoursCfg = await getShopHoursConfig();
+  const now = new Date();
+  shopParams.push(todayKey(now));
+  const closureJoin = closuresJoinSql('s', 'sc', `$${shopParams.length}`);
   // Premium "Branded Store" (batch STORE1): is_branded is derived from
   // branded_until > NOW() (computed in SQL so it uses the DB clock, never the app
   // clock). The raw branded_until is NEVER returned; the accent/tagline are only
@@ -347,10 +419,12 @@ exports.getShop = async (req, res) => {
             (s.branded_until IS NOT NULL AND s.branded_until > NOW()) AS is_branded,
             s.brand_accent, s.brand_tagline,
             s.village AS _village, s.pincode AS _pincode,
+            ${availabilityColumnsSql('s', 'sc')},
             ((s.branded_until IS NULL OR s.branded_until <= NOW())
              AND (s.storefront_ad_free_until IS NULL OR s.storefront_ad_free_until <= NOW())) AS _sponsored_ok
        FROM shops s
        ${shopNameJoin}
+       ${closureJoin}
       WHERE s.id = $1 AND s.is_listed = true`,
     shopParams
   );
@@ -444,6 +518,11 @@ exports.getShop = async (req, res) => {
   // {type:'photo'}) plus AT MOST ONE sponsored slide, composed here so the
   // consumer renders it from the same getShop request. `images` is kept as-is
   // (photos only) for back-compat with older clients.
+  // Availability (batch A). Strip the `_`-prefixed helper columns and turn them
+  // into the one public { open, reason, reopens_at } object before anything else
+  // touches the row, so no internal column can leak into the storefront payload.
+  const availability = availabilityWith(takeAvailabilityColumns(shop.rows[0]), now, hoursCfg);
+
   const { _village: village, _pincode: pincode, _sponsored_ok: sponsoredOk } = shop.rows[0];
   delete shop.rows[0]._village;
   delete shop.rows[0]._pincode;
@@ -461,7 +540,7 @@ exports.getShop = async (req, res) => {
     }
   }
 
-  const body = { ...shop.rows[0], products: products.rows, images, slides };
+  const body = { ...shop.rows[0], availability, products: products.rows, images, slides };
 
   // Only expose the accent/tagline while premium is active. When not branded,
   // return is_branded:false and null out the theming fields so a lapsed shop's

@@ -7,6 +7,7 @@ import { ErrorBanner, Loading, Empty, Badge } from '../components';
 import { publicApi } from '../consumerApi';
 import { useT } from '../i18n';
 import { useNativeVoice } from '../../lib/useNativeVoice';
+import { availabilityLine, isOpen } from '../../lib/shopOpen';
 
 // Priority 3 — public shop directory from GET /public/shops. Search by name/city
 // (server matches either). GPS is intentionally NOT used here: no location
@@ -142,10 +143,20 @@ export default function ShopsScreen({ navigation }) {
                 {[s.area, s.city].filter(Boolean).join(', ') || t('shops.noLocation')}
               </Text>
               <View style={styles.meta}>
+                {/* Shop availability (batch A): a closed shop is still LISTED
+                    and still openable — the API sorts it after the open ones —
+                    but the card says so up front, with the reopen hint, so the
+                    pill is never a bare "Closed". */}
+                {!isOpen(s.availability) ? <Badge tone="warn">{t('open.closedPill')}</Badge> : null}
                 <Badge>{t('shops.itemsCount', { n: Number(s.product_count || 0) })}</Badge>
                 {s.distance_km != null ? <Badge>{t('shops.kmAway', { km: s.distance_km })}</Badge> : null}
                 {s.offers_delivery ? <Badge tone="ok">🛵 {t('shopdetail.delivery')}</Badge> : null}
               </View>
+              {!isOpen(s.availability) ? (
+                <Text style={styles.closedHint} numberOfLines={2}>
+                  {availabilityLine(t, s.availability, lang)}
+                </Text>
+              ) : null}
             </View>
             <Text style={styles.chev}>›</Text>
           </Pressable>
@@ -199,5 +210,6 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontSize: 18, fontWeight: '700' },
   loc: { color: colors.textMuted, fontSize: 14, marginTop: 4 },
   meta: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
+  closedHint: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
   chev: { color: colors.textMuted, fontSize: 28, marginLeft: 8 },
 });

@@ -21,6 +21,14 @@ export default function SettingsScreen() {
   const [payForm, setPayForm] = useState({ razorpay_key_id: '', razorpay_key_secret: '', razorpay_webhook_secret: '' });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  // Shop availability (batch A): the daily hours + the festival closures. The
+  // right-now switch and the pause chips live on HOME (ShopAvailabilityCard),
+  // where a shopkeeper in a rush can reach them; this is the set-once half.
+  // Hours are edited as plain 'HH:MM' text — no date-picker dependency, which
+  // keeps the app over-the-air updatable.
+  const [closures, setClosures] = useState([]);
+  const [hours, setHours] = useState({ open: '', close: '' });
+  const [closureDraft, setClosureDraft] = useState({ date: '', reason: '' });
 
   const loadPayment = useCallback(async () => {
     const p = await shop.payment();
@@ -31,6 +39,13 @@ export default function SettingsScreen() {
   const load = useCallback(async () => {
     const [s, p] = await Promise.all([shop.me(), shop.payment()]);
     setForm(s.shop);
+    // Availability (batch A): the stored TIME arrives as 'HH:MM:SS'; the inputs
+    // hold 'HH:MM'. The closures list is already scoped to the next 90 days.
+    setHours({
+      open: s.shop.open_time ? String(s.shop.open_time).slice(0, 5) : '',
+      close: s.shop.close_time ? String(s.shop.close_time).slice(0, 5) : '',
+    });
+    setClosures(s.closures || []);
     setPay(p);
     setPayForm({ razorpay_key_id: p.key_id || '', razorpay_key_secret: '', razorpay_webhook_secret: '' });
   }, []);
@@ -120,6 +135,59 @@ export default function SettingsScreen() {
     finally { setBusy(false); }
   }
 
+  // Shop availability (batch A) — the daily window. Both ends or neither: the
+  // server answers a one-sided window with 422 `hours_incomplete`, and we say so
+  // here first so the owner reads an explanation rather than an error code.
+  async function saveHours() {
+    const hasOpen = Boolean(hours.open);
+    const hasClose = Boolean(hours.close);
+    if (hasOpen !== hasClose) {
+      Alert.alert(t('open.hoursTitle'), t('open.hoursIncomplete'));
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await shop.update({ open_time: hours.open || null, close_time: hours.close || null });
+      setForm(r.shop);
+      setHours({
+        open: r.shop.open_time ? String(r.shop.open_time).slice(0, 5) : '',
+        close: r.shop.close_time ? String(r.shop.close_time).slice(0, 5) : '',
+      });
+      Alert.alert(t('set.savedTitle'), t('open.hoursTitle'));
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
+  async function clearHours() {
+    setBusy(true);
+    try {
+      const r = await shop.update({ open_time: null, close_time: null });
+      setForm(r.shop);
+      setHours({ open: '', close: '' });
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
+  async function addClosure() {
+    if (!closureDraft.date) return;
+    setBusy(true);
+    try {
+      const r = await shop.addClosure(closureDraft.date.trim(), closureDraft.reason.trim());
+      setClosures(r.closures || []);
+      setClosureDraft({ date: '', reason: '' });
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
+  async function removeClosure(id) {
+    setBusy(true);
+    try {
+      const r = await shop.deleteClosure(id);
+      setClosures(r.closures || []);
+    } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message); }
+    finally { setBusy(false); }
+  }
+
   async function saveDiscovery() {
     setBusy(true);
     try {
@@ -175,6 +243,101 @@ export default function SettingsScreen() {
           <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={saveBasics} disabled={busy}>
             <Text style={s.primaryText}>{t('common.save')}</Text>
           </Pressable>
+        </View>
+
+        {/* Shop availability (batch A) — the daily hours and the festival
+            closures, mirroring the owner web console's "Shop hours" card. The
+            Open/Closed switch and the pause chips are on HOME. */}
+        <View style={s.card}>
+          <Text style={s.h}>{t('open.hoursTitle')}</Text>
+          <Text style={s.help}>{t('open.hoursHelp')}</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.label}>{t('open.openTime')}</Text>
+              <TextInput
+                style={s.input}
+                value={hours.open}
+                onChangeText={(v) => setHours((h) => ({ ...h, open: v }))}
+                placeholder={t('open.timePlaceholder')}
+                placeholderTextColor="#64748b"
+                keyboardType="numbers-and-punctuation"
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.label}>{t('open.closeTime')}</Text>
+              <TextInput
+                style={s.input}
+                value={hours.close}
+                onChangeText={(v) => setHours((h) => ({ ...h, close: v }))}
+                placeholder={t('open.timePlaceholder')}
+                placeholderTextColor="#64748b"
+                keyboardType="numbers-and-punctuation"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+          {!hours.open && !hours.close ? <Text style={s.help}>{t('open.alwaysOpen')}</Text> : null}
+          <View style={s.actions}>
+            <Pressable style={[s.primary, { flex: 1 }, busy && { opacity: 0.6 }]} onPress={saveHours} disabled={busy}>
+              <Text style={s.primaryText}>{t('open.saveHours')}</Text>
+            </Pressable>
+            <Pressable
+              style={[s.secondary, { flex: 1 }, (busy || (!hours.open && !hours.close)) && { opacity: 0.6 }]}
+              onPress={clearHours}
+              disabled={busy || (!hours.open && !hours.close)}
+            >
+              <Text style={s.secondaryText}>{t('open.clearHours')}</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={s.card}>
+          <Text style={s.h}>{t('open.closuresTitle')}</Text>
+          <Text style={s.help}>{t('open.closuresHelp')}</Text>
+          <Text style={s.label}>{t('open.closureDate')}</Text>
+          <TextInput
+            style={s.input}
+            value={closureDraft.date}
+            onChangeText={(v) => setClosureDraft((d) => ({ ...d, date: v }))}
+            placeholder="2026-11-08"
+            placeholderTextColor="#64748b"
+            keyboardType="numbers-and-punctuation"
+            autoCapitalize="none"
+          />
+          <Text style={s.label}>{t('open.closureReason')}</Text>
+          <TextInput
+            style={s.input}
+            value={closureDraft.reason}
+            onChangeText={(v) => setClosureDraft((d) => ({ ...d, reason: v }))}
+            placeholder={t('open.closureReasonPlaceholder')}
+            placeholderTextColor="#64748b"
+            maxLength={120}
+          />
+          <Pressable
+            style={[s.primary, (busy || !closureDraft.date) && { opacity: 0.6 }]}
+            onPress={addClosure}
+            disabled={busy || !closureDraft.date}
+          >
+            <Text style={s.primaryText}>{t('open.addClosure')}</Text>
+          </Pressable>
+          {closures.length === 0 ? (
+            <Text style={[s.help, { marginTop: 12 }]}>{t('open.noClosures')}</Text>
+          ) : (
+            closures.map((c) => (
+              <View key={c.id} style={s.closureRow}>
+                <Text style={s.closureDate}>{c.on_date}</Text>
+                <Text style={s.closureReason} numberOfLines={1}>{c.reason || ''}</Text>
+                <Pressable
+                  style={[s.closureRemove, busy && { opacity: 0.6 }]}
+                  onPress={() => removeClosure(c.id)}
+                  disabled={busy}
+                >
+                  <Text style={s.closureRemoveText}>{t('open.removeClosure')}</Text>
+                </Pressable>
+              </View>
+            ))
+          )}
         </View>
 
         {/* Repeating new-order alert (batch ORDERALERT). Sits right below the
@@ -338,6 +501,17 @@ const s = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8 },
   code: { color: '#e2e8f0', backgroundColor: '#0b1220', borderWidth: 1, borderColor: '#334155', borderRadius: 8, padding: 10, marginTop: 4, fontSize: 12 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 },
+  closureRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12,
+    borderTopWidth: 1, borderTopColor: '#334155', paddingTop: 12,
+  },
+  closureDate: { color: '#e2e8f0', fontSize: 15, fontWeight: '700' },
+  closureReason: { color: '#94a3b8', fontSize: 14, flex: 1 },
+  closureRemove: {
+    minHeight: 44, paddingHorizontal: 14, borderRadius: 10,
+    backgroundColor: '#334155', alignItems: 'center', justifyContent: 'center',
+  },
+  closureRemoveText: { color: '#f87171', fontWeight: '700' },
   langWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
   lang: {
     borderWidth: 1, borderColor: '#334155', borderRadius: 10,

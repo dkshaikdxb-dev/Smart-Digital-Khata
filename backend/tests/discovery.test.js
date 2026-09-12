@@ -268,10 +268,15 @@ describe('GET /public/shops', () => {
     const a = res.body.shops.find((s) => s.id === listedA.id);
     expect(a.product_count).toBe(2);
     // Minimal, non-sensitive fields only; no distance without lat/lng.
-    // Fulfillment badge fields added: offers_pickup + offers_delivery + delivery_fee.
+    // Fulfillment badge fields added: offers_pickup + offers_delivery + delivery_fee,
+    // plus `availability` (batch A) — the { open, reason, reopens_at } object every
+    // consumer-visible shop payload now carries.
     expect(Object.keys(a).sort()).toEqual(
-      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'offers_pickup', 'pincode', 'product_count', 'village']
+      ['area', 'availability', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery', 'offers_pickup', 'pincode', 'product_count', 'village']
     );
+    // A shop with no hours, no pause and no closure is simply OPEN — nothing in
+    // the migration changes an existing shop's behaviour.
+    expect(a.availability).toEqual({ open: true, reason: null, reopens_at: null });
     expect(a.offers_pickup).toBe(true);
     expect(a.offers_delivery).toBe(false);
     expect(a.delivery_fee).toBe(0);
@@ -386,11 +391,14 @@ describe('GET /public/shops/:shopId', () => {
     // STORE1 — is_branded, and accent/tagline which are null here since this shop
     // is not branded). The raw branded_until / storefront_ad_free_until and the
     // shop's village/pincode never leak from this endpoint.
+    // `availability` (batch A) rides along here too, so the storefront and the
+    // directory can never disagree about whether the shop is taking orders.
     expect(Object.keys(res.body.shop).sort()).toEqual([
-      'area', 'brand_accent', 'brand_tagline', 'city', 'delivery_fee', 'delivery_hours',
+      'area', 'availability', 'brand_accent', 'brand_tagline', 'city', 'delivery_fee', 'delivery_hours',
       'delivery_min_order', 'delivery_radius_km', 'free_delivery_min', 'id', 'image_url',
       'images', 'is_branded', 'name', 'offers_delivery', 'offers_pickup', 'products', 'slides',
     ]);
+    expect(res.body.shop.availability).toEqual({ open: true, reason: null, reopens_at: null });
     // No photos and no legacy cover on this shop → images is an empty array.
     expect(res.body.shop.images).toEqual([]);
     // Not branded → the theming fields are present but nulled, and is_branded false.
