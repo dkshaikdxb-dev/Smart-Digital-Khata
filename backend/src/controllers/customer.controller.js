@@ -4,7 +4,7 @@ const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
 const { relinkCustomerPhone } = require('../utils/customer-merge');
-const { RENDER_LANGS, localizeShopName } = require('../utils/shop-name-i18n');
+const { renderLang, withNameLocal } = require('../utils/name-local');
 const {
   buildStatement,
   defaultRange,
@@ -12,23 +12,13 @@ const {
   sendCsv,
 } = require('../utils/statement');
 
-// Resolve ?lang= to a render language, or null for en / absent / unknown (in
-// which case name_local is omitted and the raw name is the only name shown).
-function renderLang(raw) {
-  const lang = String(raw == null ? '' : raw).trim().toLowerCase();
-  return RENDER_LANGS.includes(lang) ? lang : null;
-}
-
-// Attach name_local to one customer row = the customer's name rendered into
-// `lang` by the SAME deterministic proper-noun engine used for shop names
-// (curated surnames + best-effort transliteration + raw English fallback). Pure
-// and in-process (no I/O), O(1) per row. When lang is null (en / absent /
-// unknown) the row is returned unchanged — the stored raw `name` stays the only
-// name, which is also what edit/search/ordering keep using.
-function withNameLocal(row, lang) {
-  if (!row || !lang) return row;
-  return { ...row, name_local: localizeShopName(row.name, lang).name };
-}
+// ?lang= handling (renderLang) and the optional `name_local` sibling
+// (withNameLocal) live in utils/name-local so families and orders attach the
+// SAME rendering under the same rules. Rendering itself is the deterministic
+// shop-name engine (curated surnames + best-effort transliteration + raw
+// English fallback). When lang is null (en / absent / unknown) rows are
+// returned unchanged — the stored raw `name` stays the only name, which is
+// also what edit/search/ordering keep using.
 
 exports.list = async (req, res) => {
   const search = (req.query.search || '').trim();

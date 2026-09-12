@@ -302,6 +302,45 @@ describe('owner /orders', () => {
     expect(res.body.items[0]).toHaveProperty('customer_phone');
   });
 
+  it('GET /orders?lang=te adds customer_name_local beside customer_name; absent without lang', async () => {
+    const TELUGU = /[\u0C00-\u0C7F]/;
+    const withLang = await request(app).get('/api/orders?lang=te').set('Authorization', `Bearer ${ownerToken(shop1Id)}`);
+    expect(withLang.status).toBe(200);
+    const row = withLang.body.items.find((o) => o.id === orderId);
+    expect(row.customer_name).toBe('Aarti');
+    expect(typeof row.customer_name_local).toBe('string');
+    expect(row.customer_name_local.length).toBeGreaterThan(0);
+    expect(row.customer_name_local).toMatch(TELUGU);
+
+    const noLang = await request(app).get('/api/orders').set('Authorization', `Bearer ${ownerToken(shop1Id)}`);
+    const plain = noLang.body.items.find((o) => o.id === orderId);
+    expect(plain.customer_name).toBe('Aarti');
+    expect(plain.customer_name_local).toBeUndefined();
+    // Otherwise the same payload: the only added key is customer_name_local.
+    expect(Object.keys(row).sort()).toEqual([...Object.keys(plain), 'customer_name_local'].sort());
+
+    for (const q of ['?lang=en', '?lang=xx']) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await request(app).get(`/api/orders${q}`).set('Authorization', `Bearer ${ownerToken(shop1Id)}`);
+      expect(res.status).toBe(200);
+      expect(res.body.items.find((o) => o.id === orderId).customer_name_local).toBeUndefined();
+    }
+  });
+
+  it('GET /orders/:id?lang=te adds customer_name_local; absent without lang', async () => {
+    const withLang = await request(app).get(`/api/orders/${orderId}?lang=te`).set('Authorization', `Bearer ${ownerToken(shop1Id)}`);
+    expect(withLang.status).toBe(200);
+    expect(withLang.body.order.customer_name).toBe('Aarti');
+    expect(withLang.body.order.customer_name_local).toMatch(/[\u0C00-\u0C7F]/);
+    expect(withLang.body.order.items).toHaveLength(1);
+
+    const noLang = await request(app).get(`/api/orders/${orderId}`).set('Authorization', `Bearer ${ownerToken(shop1Id)}`);
+    expect(noLang.status).toBe(200);
+    expect(noLang.body.order.customer_name).toBe('Aarti');
+    expect(noLang.body.order.customer_name_local).toBeUndefined();
+    expect(Object.keys(withLang.body.order).sort()).toEqual([...Object.keys(noLang.body.order), 'customer_name_local'].sort());
+  });
+
   it('PATCH /orders/:id/status advances the status', async () => {
     const res = await request(app)
       .patch(`/api/orders/${orderId}/status`)

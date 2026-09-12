@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
+const { renderLang, withCustomerNameLocal } = require('../utils/name-local');
 
 // Owner/staff order management, scoped to req.user.shopId. A shop only ever
 // sees and mutates its OWN orders.
@@ -19,10 +20,13 @@ const STATUS_RANK = {
 const TERMINAL = new Set(['completed', 'cancelled']);
 
 /**
- * GET /orders?status= — this shop's orders (optional status filter), newest
- * first, with the customer's name/phone and an item count.
+ * GET /orders?status=&lang= — this shop's orders (optional status filter),
+ * newest first, with the customer's name/phone and an item count. When ?lang=
+ * is a render language each row also carries `customer_name_local` (the same
+ * rendering /customers exposes as name_local); otherwise the key is absent.
  */
 exports.list = async (req, res) => {
+  const lang = renderLang(req.query.lang);
   const params = [req.user.shopId];
   let where = 'o.shop_id = $1';
   if (req.query.status) {
@@ -41,13 +45,16 @@ exports.list = async (req, res) => {
      ORDER BY o.created_at DESC`,
     params
   );
-  res.json({ items: r.rows });
+  const items = lang ? r.rows.map((row) => withCustomerNameLocal(row, lang)) : r.rows;
+  res.json({ items });
 };
 
 /**
- * GET /orders/:id — full detail (items + customer). 404 if not this shop's.
+ * GET /orders/:id?lang= — full detail (items + customer). 404 if not this
+ * shop's. `customer_name_local` is attached under the same ?lang= rule as list.
  */
 exports.get = async (req, res) => {
+  const lang = renderLang(req.query.lang);
   const r = await query(
     `SELECT o.*, (o.subtotal + o.delivery_fee) AS total,
             c.name AS customer_name, c.phone AS customer_phone
@@ -63,7 +70,7 @@ exports.get = async (req, res) => {
      FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
     [req.params.id]
   );
-  res.json({ order: { ...r.rows[0], items: items.rows } });
+  res.json({ order: { ...withCustomerNameLocal(r.rows[0], lang), items: items.rows } });
 };
 
 /**
