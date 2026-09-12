@@ -1,9 +1,57 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
+const { renderLang, withNameLocal, withCustomerNameLocal } = require('../utils/name-local');
 
 function fmtRs(paise) {
   return (Number(paise) / 100).toFixed(2);
+}
+
+// Membership-time credit checks. A member who already OWES joins with that
+// balance, so the family's combined balance must be re-validated whenever the
+// membership changes — otherwise a family can start (or continue) above its
+// shared credit_limit and transaction.create's per-purchase guard never gets a
+// chance to stop it. Limit semantics are EXACTLY transaction.controller.create's:
+//   - families.credit_limit > 0  -> enforced; 0 = unlimited; reject when the
+//     combined SUM(balance) would be STRICTLY greater than the limit;
+//   - family_sub_limit != null   -> enforced per member; reject when the member's
+//     balance is STRICTLY greater than it.
+// Both reject with 409 (details.code names the rule) and leave the tx untouched.
+
+function assertFamilyLimit({ creditLimit, currentTotal, joiningTotal }) {
+  const limit = Number(creditLimit);
+  if (!(limit > 0)) return;
+  const combined = Number(currentTotal) + Number(joiningTotal);
+  if (combined > limit) {
+    throw ApiError.conflict(
+      `Family credit limit exceeded: combined balance would be Rs ${fmtRs(combined)} ` +
+        `against a family limit of Rs ${fmtRs(limit)}`,
+      {
+        code: 'family_limit_exceeded',
+        family_credit_limit: limit,
+        combined_balance: combined,
+        current_members_balance: Number(currentTotal),
+        joining_balance: Number(joiningTotal),
+      }
+    );
+  }
+}
+
+function assertSubLimit(customer, subLimit) {
+  if (subLimit == null) return;
+  const balance = Number(customer.balance);
+  if (balance > Number(subLimit)) {
+    throw ApiError.conflict(
+      `Family sub-limit exceeded: this member already owes Rs ${fmtRs(balance)}, ` +
+        `above the sub-limit of Rs ${fmtRs(subLimit)}`,
+      {
+        code: 'family_sub_limit_exceeded',
+        family_sub_limit: Number(subLimit),
+        current_balance: balance,
+        customer_id: customer.id,
+      }
+    );
+  }
 }
 
 /** Ensure a family exists and belongs to this shop; returns the row or throws 404. */
@@ -30,7 +78,7 @@ exports.create = async (req, res) => {
     let owned = [];
     if (ids.length) {
       const c = await client.query(
-        `SELECT id, family_id FROM customers WHERE id = ANY($1::uuid[]) AND shop_id = $2 FOR UPDATE`,
+        `SELECT id, family_id, balance FROM customers WHERE id = ANY($1::uuid[]) AND shop_id = $2 FOR UPDATE`,
         [ids, req.user.shopId]
       );
       owned = c.rows;
@@ -47,6 +95,13 @@ exports.create = async (req, res) => {
     if (conflicted.length) {
       throw ApiError.conflict('One or more customers already belong to a family');
     }
+    // The founding members' existing balances must fit the new shared limit
+    // (the family has no members yet, so current total is 0). Rows are locked
+    // above, so no purchase can slip in between this check and the link.
+    const joiningTotal = owned
+      .filter((c) => member_ids.includes(c.id))
+      .reduce((sum, c) => sum + Number(c.balance), 0);
+    assertFamilyLimit({ creditLimit: credit_limit, currentTotal: 0, joiningTotal });
 
     const fam = await client.query(
       `INSERT INTO families (shop_id, name, credit_limit, payer_customer_id)
@@ -86,6 +141,7 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
+  const lang = renderLang(req.query.lang);
   const family = await requireFamily(null, req.params.id, req.user.shopId);
 
   const members = await query(
@@ -96,17 +152,22 @@ exports.get = async (req, res) => {
     [family.id, req.user.shopId]
   );
 
+  // Each member gets `name_local` only when ?lang= is a render language; the
+  // payer is one of these rows so it carries the same field. The family's own
+  // label is owner-typed and is never localized.
+  const memberRows = lang ? members.rows.map((m) => withNameLocal(m, lang)) : members.rows;
+
   let payer = null;
   if (family.payer_customer_id) {
-    const p = members.rows.find((m) => m.id === family.payer_customer_id);
+    const p = memberRows.find((m) => m.id === family.payer_customer_id);
     payer = p || null;
   }
 
-  const combined_balance = members.rows.reduce((sum, m) => sum + Number(m.balance), 0);
+  const combined_balance = memberRows.reduce((sum, m) => sum + Number(m.balance), 0);
 
   res.json({
     family,
-    members: members.rows,
+    members: memberRows,
     payer,
     combined_balance,
     combined_limit: Number(family.credit_limit),
@@ -150,20 +211,44 @@ exports.addMember = async (req, res) => {
   const { customer_id, sub_limit = null } = req.body;
 
   const result = await withTx(async (client) => {
+    // Lock the family row: serializes this join against concurrent purchases
+    // by existing members (transaction.create takes the same lock) and against
+    // another concurrent join, so the combined-balance check below is exact.
     const family = await client.query(
-      'SELECT id FROM families WHERE id = $1 AND shop_id = $2 FOR UPDATE',
+      'SELECT id, credit_limit FROM families WHERE id = $1 AND shop_id = $2 FOR UPDATE',
       [req.params.id, req.user.shopId]
     );
     if (!family.rowCount) throw ApiError.notFound('Family not found');
+    const fam = family.rows[0];
 
     const c = await client.query(
-      'SELECT id, family_id FROM customers WHERE id = $1 AND shop_id = $2 FOR UPDATE',
+      'SELECT id, family_id, balance FROM customers WHERE id = $1 AND shop_id = $2 FOR UPDATE',
       [customer_id, req.user.shopId]
     );
     if (!c.rowCount) throw ApiError.notFound('Customer not found');
     const customer = c.rows[0];
     if (customer.family_id && customer.family_id !== req.params.id) {
       throw ApiError.conflict('Customer already belongs to another family');
+    }
+
+    // A supplied sub-limit must not already be exceeded by what the member owes.
+    assertSubLimit(customer, sub_limit);
+
+    // A NEW member brings their balance into the shared line: current members'
+    // SUM(balance) (this customer excluded, in case they are being re-added
+    // just to change the sub-limit) + the joining balance must fit the limit.
+    const joining = customer.family_id !== fam.id;
+    if (joining) {
+      const agg = await client.query(
+        `SELECT COALESCE(SUM(balance), 0) AS total
+         FROM customers WHERE family_id = $1 AND shop_id = $2 AND id <> $3`,
+        [fam.id, req.user.shopId, customer.id]
+      );
+      assertFamilyLimit({
+        creditLimit: fam.credit_limit,
+        currentTotal: agg.rows[0].total,
+        joiningTotal: customer.balance,
+      });
     }
 
     const upd = await client.query(
@@ -208,6 +293,7 @@ exports.removeMember = async (req, res) => {
 };
 
 exports.statement = async (req, res) => {
+  const lang = renderLang(req.query.lang);
   await requireFamily(null, req.params.id, req.user.shopId);
 
   const tx = await query(
@@ -220,7 +306,9 @@ exports.statement = async (req, res) => {
      LIMIT 200`,
     [req.params.id, req.user.shopId]
   );
-  res.json({ transactions: tx.rows });
+  // `customer_name_local` beside the raw customer_name, only when ?lang= renders.
+  const transactions = lang ? tx.rows.map((row) => withCustomerNameLocal(row, lang)) : tx.rows;
+  res.json({ transactions });
 };
 
 exports.remind = async (req, res) => {

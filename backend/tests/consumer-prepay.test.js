@@ -74,6 +74,31 @@ async function getBalance() {
   return Number(r.rows[0].balance);
 }
 
+// Open (status 'created') links now count against the advance cap, so each
+// scenario starts from a clean slate: close out whatever earlier tests left open.
+async function closeOpenLinks() {
+  await pool.query(
+    `UPDATE payment_orders SET status = 'cancelled' WHERE customer_id = $1 AND status = 'created'`,
+    [custId]
+  );
+}
+
+async function openLinks() {
+  const r = await pool.query(
+    `SELECT id, amount, status FROM payment_orders
+     WHERE customer_id = $1 AND status = 'created' ORDER BY created_at ASC`,
+    [custId]
+  );
+  return r.rows;
+}
+
+async function pay(amount) {
+  return request(app)
+    .post('/api/my/pay')
+    .set('Authorization', `Bearer ${customerToken(PHONE)}`)
+    .send({ shop_id: shopId, amount });
+}
+
 beforeAll(async () => {
   const owner = await pool.query(
     `INSERT INTO users (name, email, phone, password_hash, role)
@@ -106,6 +131,7 @@ beforeEach(() => {
 
 describe('POST /my/pay with pre-pay ENABLED', () => {
   const token = () => customerToken(PHONE);
+  beforeEach(closeOpenLinks);
 
   it('accepts an amount ABOVE the due, creates the order, and hints prepay:true', async () => {
     await setPrepay(true);
@@ -178,6 +204,7 @@ describe('POST /my/pay with pre-pay ENABLED', () => {
 
 describe('POST /my/pay with pre-pay DISABLED keeps the old rejection', () => {
   const token = () => customerToken(PHONE);
+  beforeEach(closeOpenLinks);
 
   it('rejects any amount over the outstanding balance (422)', async () => {
     await setPrepay(false);
@@ -199,6 +226,102 @@ describe('POST /my/pay with pre-pay DISABLED keeps the old rejection', () => {
       .send({ shop_id: shopId, amount: 15000 });
     expect(res.status).toBe(201);
     expect(res.body.prepay).toBe(false);
+  });
+});
+
+describe('advance cap counts IN-FLIGHT (unpaid) links, not just the current balance', () => {
+  beforeEach(async () => {
+    await setPrepay(true);
+    await setBalance(0);
+    await closeOpenLinks();
+  });
+
+  it('two rapid link creations: the second, which would breach the cap once both settle, is rejected; the first stays created', async () => {
+    const first = MAX_ADVANCE - 5000; // leaves ₹50 of headroom
+    const r1 = await pay(first);
+    expect(r1.status).toBe(201);
+    expect(r1.body.prepay).toBe(true);
+
+    // The balance has NOT moved (no webhook yet) — against the current balance
+    // alone this second link would look fine, but together they exceed the cap.
+    expect(await getBalance()).toBe(0);
+    const r2 = await pay(10000);
+    expect(r2.status).toBe(422);
+    expect(r2.body.error).toBe('Amount exceeds the most you can pre-pay this shop right now');
+    expect(r2.body.details.pending_links).toBe(first);
+    expect(r2.body.details.max_allowed).toBe(5000);
+    expect(r2.body.details.max_advance).toBe(MAX_ADVANCE);
+
+    // The first link is untouched and the rejected one left no row behind.
+    const open = await openLinks();
+    expect(open).toHaveLength(1);
+    expect(open[0].id).toBe(r1.body.order_id);
+    expect(Number(open[0].amount)).toBe(first);
+
+    // What is left of the headroom is still payable, to the paise.
+    const r3 = await pay(5000);
+    expect(r3.status).toBe(201);
+    const r4 = await pay(1);
+    expect(r4.status).toBe(422);
+    expect(r4.body.details.max_allowed).toBe(0);
+  });
+
+  it('a paid / cancelled / failed prior link does NOT count against the cap', async () => {
+    const r1 = await pay(MAX_ADVANCE);
+    expect(r1.status).toBe(201);
+    // Fully used up while the link is open...
+    expect((await pay(1)).status).toBe(422);
+
+    // ...settled by the webhook (status flips to paid; the balance move is the
+    // webhook's business and is deliberately NOT simulated here so that the
+    // only thing changing is the row's status).
+    await pool.query(`UPDATE payment_orders SET status = 'paid', paid_at = NOW() WHERE id = $1`, [r1.body.order_id]);
+    const r2 = await pay(MAX_ADVANCE);
+    expect(r2.status).toBe(201);
+
+    for (const closed of ['cancelled', 'failed']) {
+      await pool.query(`UPDATE payment_orders SET status = $2 WHERE id = $1`, [r2.body.order_id, closed]);
+      // eslint-disable-next-line no-await-in-loop
+      const again = await pay(MAX_ADVANCE);
+      expect(again.status).toBe(201);
+      // eslint-disable-next-line no-await-in-loop
+      await pool.query(`UPDATE payment_orders SET status = 'paid' WHERE id = $1`, [again.body.order_id]);
+    }
+  });
+
+  it('an open PREPAID-ORDER link (order_id set) never moves the khata, so it is not counted', async () => {
+    const orderRow = await pool.query(
+      `INSERT INTO orders (shop_id, customer_id, status, payment_mode, payment_status, fulfillment_type, subtotal, delivery_fee)
+       VALUES ($1,$2,'pending','prepaid','pending','pickup',5000,0) RETURNING id`,
+      [shopId, custId]
+    );
+    await pool.query(
+      `INSERT INTO payment_orders (id, shop_id, customer_id, amount, status, order_id)
+       VALUES ($1,$2,$3,$4,'created',$5)`,
+      [`ordlink_${uniq}`, shopId, custId, MAX_ADVANCE, orderRow.rows[0].id]
+    );
+    const r = await pay(MAX_ADVANCE);
+    expect(r.status).toBe(201);
+  });
+
+  it('CONCURRENT link creations for the same khata are serialized: exactly one wins when both cannot fit', async () => {
+    const each = Math.floor(MAX_ADVANCE * 0.6); // two of these = 120% of the cap
+    const [a, b] = await Promise.all([pay(each), pay(each)]);
+    const statuses = [a.status, b.status].sort();
+    expect(statuses).toEqual([201, 422]);
+    const open = await openLinks();
+    expect(open).toHaveLength(1);
+    expect(Number(open[0].amount)).toBe(each);
+  });
+
+  it('pre-pay DISABLED ignores open links (unchanged behaviour: only the due can be paid)', async () => {
+    await setPrepay(true);
+    await setBalance(15000);
+    expect((await pay(15000)).status).toBe(201); // one open link for the full due
+    await setPrepay(false);
+    // Still allowed up to the due, exactly as before this change.
+    expect((await pay(15000)).status).toBe(201);
+    expect((await pay(15001)).status).toBe(422);
   });
 });
 

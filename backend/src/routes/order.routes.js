@@ -9,6 +9,9 @@ const listQuerySchema = Joi.object({
   status: Joi.string().valid(
     'pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled'
   ),
+  // Optional render language for customer_name_local (see utils/name-local);
+  // unknown values are simply ignored by the controller.
+  lang: Joi.string().max(16).allow(''),
 });
 
 const idParamSchema = Joi.object({

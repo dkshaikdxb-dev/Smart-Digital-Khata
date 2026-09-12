@@ -199,91 +199,131 @@ exports.statement = async (req, res) => {
  * Creates a payment_orders row + a Razorpay hosted Payment Link, exactly like
  * the owner-initiated flow. The webhook reconciles by provider ids regardless
  * of who initiated, so a customer-initiated order settles the same way.
+ *
+ * Pre-pay cap (single-merchant advance) is enforced at REQUEST time, inside one
+ * transaction that holds the customer's row lock from the check through the
+ * INSERT of the payment_orders row:
+ *   projected = balance - amount - SUM(amount of this customer's OPEN khata
+ *               payment links at this shop)   (open = status 'created', i.e.
+ *               NOT IN ('paid','failed','cancelled'); order_id IS NULL because a
+ *               prepaid ORDER link never moves the khata balance on settlement)
+ *   reject when projected < -maxAdvance.
+ * Counting the still-unpaid links closes the window where several links, each
+ * individually under the cap against the CURRENT balance, would together exceed
+ * max_advance_paise once the webhook settles them. The webhook/settlement path
+ * is untouched; a paid/failed/cancelled link no longer counts.
  */
 exports.pay = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
   const { shop_id, amount } = req.body;
 
-  const own = await query(
-    `SELECT c.id, c.name, c.phone, c.balance, s.name AS shop_name
-     FROM customers c
-     JOIN shops s ON s.id = c.shop_id
-     WHERE c.phone = $1 AND c.shop_id = $2`,
-    [phone, shop_id]
-  );
-  if (!own.rowCount) throw ApiError.notFound('No khata found at this shop');
-  const customer = own.rows[0];
-  const balance = Number(customer.balance);
-
-  // Pay-guard. When single-merchant pre-pay is ON, a customer may clear the due AND
-  // pre-load an ADVANCE up to `maxAdvance` beyond it — the money still settles to
-  // THIS shop's own Razorpay and the webhook's `balance = balance - amount` naturally
-  // drives the balance negative (= advance in this shop's ledger). The only reject is
-  // when the amount would push the advance past the cap. When pre-pay is OFF we keep
-  // today's behaviour exactly: reject any amount over the outstanding balance.
   const prepay = await getConsumerPrepayConfig();
-  if (prepay.enabled) {
-    const maxAdvance = prepay.max_advance_paise;
-    // Allowed: clear the due (balance, floored at 0) PLUS up to maxAdvance advance.
-    // Reject only when it would push the advance past the cap: balance - amount < -maxAdvance.
-    if (balance - amount < -maxAdvance) {
-      const maxAllowed = Math.max(balance, 0) + maxAdvance;
-      throw ApiError.unprocessable(
-        'Amount exceeds the most you can pre-pay this shop right now',
-        { max_allowed: maxAllowed, max_advance: maxAdvance, balance }
-      );
-    }
-  } else if (amount > balance) {
-    // Pre-pay disabled — never let a customer overpay what they owe at this shop.
-    throw ApiError.unprocessable('Amount exceeds your outstanding balance at this shop');
-  }
 
-  if (!(await razorpay.isConfiguredForShop(shop_id))) {
-    throw ApiError.badRequest('This shop has not connected Razorpay yet.');
-  }
-
-  const receipt = `c_${customer.id.slice(0, 8)}_${Date.now()}`;
-  const order = await razorpay.createOrderForShop(shop_id, {
-    amount,
-    receipt,
-    notes: { shop_id, customer_id: customer.id, note: 'Customer self-pay' },
-  });
-
-  const inserted = await query(
-    `INSERT INTO payment_orders
-       (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes)
-     VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6)
-     RETURNING *`,
-    [order.receipt, shop_id, customer.id, amount, order.id, null]
-  );
-  const orderRow = inserted.rows[0];
-
-  let link;
-  try {
-    const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
-      amount: orderRow.amount,
-      description: `Payment to ${customer.shop_name}`,
-      customer: {
-        name: customer.name,
-        contact: toE164(customer.phone),
-      },
-      reference_id: orderRow.id,
-      notes: { shop_id, customer_id: customer.id, order_id: orderRow.id },
-      callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
-    });
-    link = paymentLink.short_url;
-    await query(
-      `UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3`,
-      [paymentLink.id, link, orderRow.id]
+  const result = await withTx(async (client) => {
+    // Lock the customer row: a second concurrent /my/pay for the same khata waits
+    // here until this one has COMMITTED its payment_orders row, so its own
+    // in-flight sum includes ours.
+    const own = await client.query(
+      `SELECT c.id, c.name, c.phone, c.balance, s.name AS shop_name
+       FROM customers c
+       JOIN shops s ON s.id = c.shop_id
+       WHERE c.phone = $1 AND c.shop_id = $2
+       FOR UPDATE OF c`,
+      [phone, shop_id]
     );
-  } catch (err) {
-    throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
-  }
+    if (!own.rowCount) throw ApiError.notFound('No khata found at this shop');
+    const customer = own.rows[0];
+    const balance = Number(customer.balance);
+
+    // Pay-guard. When single-merchant pre-pay is ON, a customer may clear the due
+    // AND pre-load an ADVANCE up to `maxAdvance` beyond it — the money still
+    // settles to THIS shop's own Razorpay and the webhook's `balance = balance -
+    // amount` naturally drives the balance negative (= advance in this shop's
+    // ledger). The only reject is when the amount, together with every link that
+    // is still open (created, not yet settled), would push the advance past the
+    // cap. When pre-pay is OFF we keep today's behaviour exactly: reject any
+    // amount over the outstanding balance.
+    if (prepay.enabled) {
+      const maxAdvance = prepay.max_advance_paise;
+      const open = await client.query(
+        `SELECT COALESCE(SUM(amount), 0) AS total
+         FROM payment_orders
+         WHERE customer_id = $1 AND shop_id = $2
+           AND order_id IS NULL
+           AND status NOT IN ('paid', 'failed', 'cancelled')`,
+        [customer.id, shop_id]
+      );
+      const inFlight = Number(open.rows[0].total);
+      const projected = balance - inFlight - amount;
+      if (projected < -maxAdvance) {
+        // The most that can still be paid right now: what remains of due +
+        // advance headroom once the open links are counted (never negative).
+        const maxAllowed = Math.max(balance - inFlight + maxAdvance, 0);
+        throw ApiError.unprocessable(
+          'Amount exceeds the most you can pre-pay this shop right now',
+          { max_allowed: maxAllowed, max_advance: maxAdvance, balance, pending_links: inFlight }
+        );
+      }
+    } else if (amount > balance) {
+      // Pre-pay disabled — never let a customer overpay what they owe at this shop.
+      throw ApiError.unprocessable('Amount exceeds your outstanding balance at this shop');
+    }
+
+    if (!(await razorpay.isConfiguredForShop(shop_id))) {
+      throw ApiError.badRequest('This shop has not connected Razorpay yet.');
+    }
+
+    const receipt = `c_${customer.id.slice(0, 8)}_${Date.now()}`;
+    const order = await razorpay.createOrderForShop(shop_id, {
+      amount,
+      receipt,
+      notes: { shop_id, customer_id: customer.id, note: 'Customer self-pay' },
+    });
+
+    const inserted = await client.query(
+      `INSERT INTO payment_orders
+         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6)
+       RETURNING *`,
+      [order.receipt, shop_id, customer.id, amount, order.id, null]
+    );
+    const orderRow = inserted.rows[0];
+
+    let link;
+    try {
+      const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
+        amount: orderRow.amount,
+        description: `Payment to ${customer.shop_name}`,
+        customer: {
+          name: customer.name,
+          contact: toE164(customer.phone),
+        },
+        reference_id: orderRow.id,
+        notes: { shop_id, customer_id: customer.id, order_id: orderRow.id },
+        callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
+      });
+      link = paymentLink.short_url;
+      await client.query(
+        `UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3`,
+        [paymentLink.id, link, orderRow.id]
+      );
+    } catch (err) {
+      // Rolls the tx back: no link => no open payment_orders row is left behind
+      // to count against this customer's advance headroom.
+      throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
+    }
+
+    return { link, orderId: orderRow.id, balance };
+  });
 
   // Hint so the client can confirm "you're adding an advance" — true when the paid
   // amount exceeds the current due (the extra pre-loads an advance). Response shape
   // is otherwise unchanged.
-  res.status(201).json({ link, order_id: orderRow.id, prepay: amount > Math.max(balance, 0) });
+  res.status(201).json({
+    link: result.link,
+    order_id: result.orderId,
+    prepay: amount > Math.max(result.balance, 0),
+  });
 };
 
 // ---------------------------------------------------------------------------
