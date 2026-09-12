@@ -1,8 +1,9 @@
 // Neural machine-translation SEAM for dynamic-content translation (v2 item 9).
 //
 // This is deliberately a SEAM, not a live integration. It ships OFF by default:
-// `enabled()` reads process.env.BHASHINI_NMT and is false unless it is exactly
-// '1', and `translate()` returns null whenever disabled. There is NO HTTP client,
+// `enabled()` reads the BHASHINI_NMT setting (Admin -> Settings, else the env
+// var — via config/settings) and is false unless it is exactly '1', and
+// `translate()` returns null whenever disabled. There is NO HTTP client,
 // NO endpoint and NO credentials here — the local-first contract is that the cache
 // plus an English/source fallback always answer, and the network is touched only
 // when an operator explicitly turns the seam on AND a real provider is wired in.
@@ -14,10 +15,12 @@
 // into a call to that proxy. Until that proxy exists, this stays a no-op seam so no
 // live call and no credential can leak in.
 
+const settings = require('../config/settings');
+
 // enabled() — the single source of truth for whether the seam is live. Default
 // false; only the exact string '1' turns it on.
 function enabled() {
-  return process.env.BHASHINI_NMT === '1';
+  return settings.get('BHASHINI_NMT') === '1';
 }
 
 // translate({ text, sourceLang, targetLang }) → Promise<string|null>.

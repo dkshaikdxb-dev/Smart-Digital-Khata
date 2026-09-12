@@ -1,4 +1,5 @@
 const { randomUUID } = require('crypto');
+const settings = require('../config/settings');
 
 // Facebook (Page) + Instagram (Business) publishers via the Meta Graph API
 // (Batch FBIG1). This module MIRRORS the LinkedIn/X social publisher shape
@@ -31,7 +32,9 @@ const { randomUUID } = require('crypto');
 // Per-provider configuration. Endpoints are documented so the platform-version
 // bump is a localized edit when the live path attaches; NONE of these URLs is
 // contacted while the channel is unconfigured. `tokenEnv` is the per-channel
-// long-lived token the operator supplies once the Meta app exists.
+// long-lived token the operator supplies once the Meta app exists — the name
+// is both the setting key (Admin -> Settings) and the .env fallback, read via
+// config/settings.
 const PROVIDERS = Object.freeze({
   facebook: {
     channel: 'facebook',
@@ -61,20 +64,20 @@ function isMetaChannel(channel) {
 }
 
 function appId() {
-  return process.env.META_APP_ID || '';
+  return settings.get('META_APP_ID');
 }
 function appSecret() {
-  return process.env.META_APP_SECRET || '';
+  return settings.get('META_APP_SECRET');
 }
 function channelToken(channel) {
   const p = providerFor(channel);
-  return p ? process.env[p.tokenEnv] || '' : '';
+  return p ? settings.get(p.tokenEnv) : '';
 }
 
 // metaConfigured(channel) — the Meta app credentials (App ID + App Secret) AND
 // this channel's long-lived Page/IG token are all present, so a real Graph
-// publish is possible. Mirrors social.oauthConfigured's env gating. Until an
-// operator supplies these, this is false and the publisher stays inert.
+// publish is possible (panel or env, via config/settings). Until an operator
+// supplies these, this is false and the publisher stays inert.
 function metaConfigured(channel) {
   if (!isMetaChannel(channel)) return false;
   return Boolean(appId() && appSecret() && channelToken(channel));

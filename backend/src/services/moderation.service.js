@@ -1,5 +1,6 @@
 const { query, withTx } = require('../config/db');
 const logger = require('../utils/logger');
+const settings = require('../config/settings');
 const { writeAudit } = require('../controllers/admin.controller');
 
 // AI-assisted content moderation, PHASE 1 (batch AI-MOD). An LLM triages the two
@@ -7,8 +8,9 @@ const { writeAudit } = require('../controllers/admin.controller');
 // (self-serve ad_campaigns) — that today wait for a human in 'pending_review'.
 // It:
 //   - is CONFIG-GATED — ships INERT and activates only when the operator sets an
-//     API key AND a model id in the environment AND the ai_moderation_enabled
-//     platform setting is on (mirrors content-drafter's isConfigured()).
+//     API key AND a model id (Admin -> Settings, or the .env fallback via
+//     config/settings) AND the ai_moderation_enabled platform setting is on
+//     (mirrors content-drafter's isConfigured()).
 //   - is MOCKABLE — every call takes an injectable client (tests pass a fake
 //     exposing messages.create), so CI never touches the network.
 //   - is FAIL-OPEN — any error, timeout, refusal or unparseable output returns
@@ -16,8 +18,9 @@ const { writeAudit } = require('../controllers/admin.controller');
 //     NEVER throws to the caller and NEVER rejects content. The only status it
 //     ever writes is 'active' (auto-approve), the same flip an admin approve does.
 //
-// The MODEL id is NEVER hardcoded — it comes from MODERATION_LLM_MODEL. Only the
-// token budget and the timeout (plain numbers) have code defaults.
+// The MODEL id is NEVER hardcoded — it comes from the MODERATION_LLM_MODEL
+// setting (platform_settings, else env). Only the token budget and the timeout
+// (plain numbers) have code defaults.
 
 // Output budget: the verdict is a ~5-field JSON object, so keep it tight.
 const DEFAULT_MAX_TOKENS = 300;
@@ -81,25 +84,39 @@ function reasonLang(lang) {
   return /^[a-z]{2,3}(-[a-z0-9]{2,8})?$/.test(l) ? l : 'en';
 }
 
-// isConfigured() — true ONLY when BOTH the API key and the model id are set in
-// the environment. Unconfigured => nothing is ever enqueued or classified and the
+// The credential + model id, read THROUGH config/settings at call time so an
+// admin change in the panel applies to the very next job (no restart), while
+// the .env values keep working as the fallback.
+function apiKey() {
+  return settings.get('ANTHROPIC_API_KEY');
+}
+function modelId() {
+  return settings.get('MODERATION_LLM_MODEL');
+}
+
+// isConfigured() — true ONLY when BOTH the API key and the model id are set
+// (panel or env). Unconfigured => nothing is ever enqueued or classified and the
 // rows simply wait for a human, exactly as before this batch.
 function isConfigured() {
-  return Boolean(process.env.ANTHROPIC_API_KEY && process.env.MODERATION_LLM_MODEL);
+  return Boolean(apiKey() && modelId());
 }
 
 // Lazily construct the vendor SDK client. Returns null when unconfigured (so a
-// caller can fall back to an injected client or skip cleanly). The zero-arg
-// constructor reads ANTHROPIC_API_KEY from the environment itself.
+// caller can fall back to an injected client or skip cleanly). The client is
+// cached KEYED BY THE API KEY STRING: when the admin rotates the key the next
+// call builds a fresh client, so a stale credential is never reused.
 let cachedClient = null;
+let cachedClientKey = null;
 function getClient() {
   if (!isConfigured()) return null;
-  if (!cachedClient) {
+  const key = apiKey();
+  if (!cachedClient || cachedClientKey !== key) {
     // Documented CommonJS import. Depending on the installed build, require()
     // returns the class directly or under `.default`; handle both.
     const imported = require('@anthropic-ai/sdk');
     const Anthropic = imported && imported.default ? imported.default : imported;
-    cachedClient = new Anthropic();
+    cachedClient = new Anthropic({ apiKey: key });
+    cachedClientKey = key;
   }
   return cachedClient;
 }
@@ -135,7 +152,7 @@ async function getPolicy() {
   }
 }
 
-// configured() — the full gate: key + model in the environment AND the live
+// configured() — the full gate: key + model (panel or env) AND the live
 // ai_moderation_enabled setting. The processors check exactly this before doing
 // anything, and an injected client never bypasses it.
 async function configured() {
@@ -230,9 +247,10 @@ async function runClassification({ system, messages }, { client, timeoutMs } = {
     if (!anthropic) return null;
     const maxTokens = Number(process.env.MODERATION_LLM_MAX_TOKENS) || DEFAULT_MAX_TOKENS;
     const timeout = Number(timeoutMs) || Number(process.env.MODERATION_LLM_TIMEOUT_MS) || DEFAULT_TIMEOUT_MS;
+    const model = modelId();
     const call = anthropic.messages.create(
       {
-        model: process.env.MODERATION_LLM_MODEL,
+        model,
         max_tokens: maxTokens,
         system,
         messages,
@@ -248,7 +266,7 @@ async function runClassification({ system, messages }, { client, timeoutMs } = {
       logger.warn('moderation: unparseable verdict — leaving the row for a human');
       return null;
     }
-    return { ...verdict, model: process.env.MODERATION_LLM_MODEL || null, at: new Date().toISOString() };
+    return { ...verdict, model: model || null, at: new Date().toISOString() };
   } catch (err) {
     logger.warn({ err: err && err.message }, 'moderation: classify failed — leaving the row for a human');
     return null;
@@ -432,7 +450,7 @@ async function moderateCampaign(campaignId, { client } = {}) {
 // Called by the upload / promo-submit controllers AFTER their transaction has
 // committed. Fire-and-forget: the HTTP response never waits on Redis, and an
 // enqueue failure is logged, never surfaced (the row simply waits for a human).
-// Skipped entirely when the environment is not configured, so nothing touches
+// Skipped entirely when the key + model are not configured, so nothing touches
 // the queue (or Redis) on a deployment that has not switched the feature on.
 function enqueue(kind, id) {
   if (!isConfigured()) return;

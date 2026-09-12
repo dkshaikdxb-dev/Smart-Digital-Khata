@@ -1,21 +1,24 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const settings = require('../config/settings');
 const { canTransition } = require('../utils/content-workflow');
 
 // LLM drafting agent for the content engine (Batch R). Given an editorial brief
 // (an 'idea' or 'draft' item), it produces the post `body`, advancing the item
 // idea -> drafting -> draft with source='agent'. It:
 //   - is CONFIG-GATED — ships INERT and activates only when the operator sets an
-//     API key AND a model in the environment (mirrors whatsapp.service's
-//     isConfigured()/graceful-skip convention);
+//     API key AND a model id — from Admin -> Settings or the .env fallback, via
+//     config/settings (mirrors whatsapp.service's isConfigured()/graceful-skip
+//     convention);
 //   - is MOCKABLE — every call takes an injectable client, so tests never touch
 //     the network (CI stays offline);
 //   - stays BEHIND THE HUMAN GATE — runDraft only ever reaches 'draft'. It NEVER
 //     sets approved_*/scheduled/published, so the tier gate (content-workflow) is
 //     untouched. A human still reviews and approves everything before it ships.
 //
-// The MODEL id is NEVER hardcoded — it comes from CONTENT_LLM_MODEL. Only the
-// token budget (a plain number, not a model id) has a code default.
+// The MODEL id is NEVER hardcoded — it comes from the CONTENT_LLM_MODEL setting
+// (platform_settings, else env). Only the token budget (a plain number, not a
+// model id) has a code default.
 
 // Default output token budget when CONTENT_LLM_MAX_TOKENS is unset. A number, not
 // a model identifier — safe to default in code.
@@ -50,26 +53,40 @@ const GUARDRAILS = Object.freeze(
   ].join('\n')
 );
 
-// isConfigured() — true ONLY when BOTH the API key and the model are set in the
-// environment. Mirrors whatsapp.service.isConfigured(): unconfigured => the
-// feature is inert and the caller skips gracefully (the route answers 400, the
-// desk shows "not configured"). The secret key never leaves the environment.
+// The credential + model id, read THROUGH config/settings at call time so an
+// admin change in the panel applies to the next draft (no restart), while the
+// .env values keep working as the fallback.
+function apiKey() {
+  return settings.get('ANTHROPIC_API_KEY');
+}
+function modelId() {
+  return settings.get('CONTENT_LLM_MODEL');
+}
+
+// isConfigured() — true ONLY when BOTH the API key and the model are set (panel
+// or env). Mirrors whatsapp.service.isConfigured(): unconfigured => the feature
+// is inert and the caller skips gracefully (the route answers 400, the desk
+// shows "not configured"). The secret key is never returned or logged.
 function isConfigured() {
-  return Boolean(process.env.ANTHROPIC_API_KEY && process.env.CONTENT_LLM_MODEL);
+  return Boolean(apiKey() && modelId());
 }
 
 // Lazily construct the vendor SDK client. Returns null when unconfigured (so a
-// caller can fall back to an injected client or fail cleanly). The zero-arg
-// constructor reads ANTHROPIC_API_KEY from the environment itself.
+// caller can fall back to an injected client or fail cleanly). The client is
+// cached KEYED BY THE API KEY STRING: when the admin rotates the key the next
+// call builds a fresh client, so a stale credential is never reused.
 let cachedClient = null;
+let cachedClientKey = null;
 function getClient() {
   if (!isConfigured()) return null;
-  if (!cachedClient) {
+  const key = apiKey();
+  if (!cachedClient || cachedClientKey !== key) {
     // Documented CommonJS import. Depending on the installed build, require()
     // returns the class directly or under `.default`; handle both.
     const imported = require('@anthropic-ai/sdk');
     const Anthropic = imported && imported.default ? imported.default : imported;
-    cachedClient = new Anthropic();
+    cachedClient = new Anthropic({ apiKey: key });
+    cachedClientKey = key;
   }
   return cachedClient;
 }
@@ -114,8 +131,8 @@ function buildRequest(item) {
 // draftItem(item, { client }) — run one generation and return the trimmed body.
 // Uses the injected client (tests pass a fake exposing messages.create) or the
 // lazily-built real client. Throws when neither is available (unconfigured and no
-// injection) so nothing silently no-ops. The model + token budget come from the
-// environment; buildRequest supplies the guardrails.
+// injection) so nothing silently no-ops. The model comes from settings, the
+// token budget from the environment; buildRequest supplies the guardrails.
 async function draftItem(item, { client } = {}) {
   const anthropic = client || getClient();
   if (!anthropic) {
@@ -124,7 +141,7 @@ async function draftItem(item, { client } = {}) {
   const { system, messages } = buildRequest(item);
   const maxTokens = Number(process.env.CONTENT_LLM_MAX_TOKENS) || DEFAULT_MAX_TOKENS;
   const response = await anthropic.messages.create({
-    model: process.env.CONTENT_LLM_MODEL,
+    model: modelId(),
     max_tokens: maxTokens,
     thinking: { type: 'adaptive' },
     system,
@@ -157,7 +174,7 @@ async function runDraft(itemId, { client } = {}) {
 
   // Generate outside the transaction so a slow model never holds a DB lock open.
   const body = await draftItem(pre.rows[0], { client });
-  const draftModel = process.env.CONTENT_LLM_MODEL || null;
+  const draftModel = modelId() || null;
 
   return withTx(async (c) => {
     const locked = await c.query('SELECT * FROM content_items WHERE id = $1 FOR UPDATE', [itemId]);
