@@ -9,6 +9,9 @@ import { money } from '../money';
 import { my } from '../consumerApi';
 import { useT } from '../i18n';
 import { etaState, formatClock } from '../../lib/orderEta';
+// The shop's reduction, rendered from the SAME audit rows the owner sees
+// (batch C) — the customer must never just find a smaller number.
+import { editLineText } from '../../lib/orderEdit';
 
 // The per-fulfillment status pipeline (pickup omits out_for_delivery), used to
 // draw a simple stepper. Reached stages are derived by rank from the status.
@@ -67,6 +70,27 @@ export default function OrderDetailScreen({ route }) {
   // this device's own clock — the API never computes "late" for us.
   const promiseState = order ? etaState(order) : 'none';
   const promisedTime = order ? formatClock(order.promised_at, lang) : '';
+  // THE SHOP REDUCED THIS ORDER (batch C). `edits` is the line-by-line audit,
+  // `adjusted_total` the EXACT paise the khata moved by (0 for a cash order),
+  // and `original_subtotal` what the items came to before any reduction. Every
+  // figure shown below is one the API actually stored — nothing is derived by
+  // adding today's delivery fee onto yesterday's subtotal snapshot.
+  const edits = (order && order.edits) || [];
+  const nowTotal = order ? Number(order.total != null ? order.total : order.subtotal) : 0;
+  const goodsRemoved = edits.reduce((acc, e) => acc + Math.abs(Number(e.amount_delta)), 0);
+  const adjusted = order ? Number(order.adjusted_total || 0) : 0;
+
+  // What happened to the money, in the customer's own terms. Prepaid says
+  // plainly that the difference is CREDIT AT THE SHOP — there is no refund
+  // pipeline, and pretending otherwise would leave someone waiting for money
+  // that is never coming.
+  function editMoneyText(o) {
+    if (!o) return '';
+    if (o.payment_mode === 'credit' && adjusted > 0) return t('coedit.credit', { amount: money(adjusted) });
+    if (o.payment_mode === 'prepaid' && adjusted > 0) return t('coedit.prepaid', { amount: money(adjusted) });
+    if (o.payment_mode === 'cash' && goodsRemoved > 0) return t('coedit.cash', { now: money(nowTotal), amount: money(goodsRemoved) });
+    return '';
+  }
 
   function payLabel(o) {
     if (!o) return '';
@@ -105,6 +129,25 @@ export default function OrderDetailScreen({ route }) {
               <View>
                 <Text style={styles.etaSoft}>{t('eta.takingLonger')}</Text>
                 <Text style={styles.meta}>{t('eta.takingLongerHelp', { time: promisedTime })}</Text>
+              </View>
+            ) : null}
+            {/* THE SHOP REDUCED THIS ORDER (batch C). Put high, right under the
+                status — a shopper scanning the screen must meet the explanation
+                before they meet the smaller number further down. */}
+            {edits.length > 0 ? (
+              <View style={styles.editBox}>
+                <Text style={styles.editTitle}>{t('coedit.title')}</Text>
+                <Text style={styles.meta}>{t('coedit.intro', { shop: order.shop_name })}</Text>
+                {edits.map((e) => (
+                  <Text key={e.id} style={styles.editLine}>
+                    {editLineText(t, e, { removed: 'coedit.removed', reduced: 'coedit.reduced' })}
+                  </Text>
+                ))}
+                {order.original_subtotal != null ? (
+                  <Text style={styles.meta}>{t('coedit.wasSubtotal', { was: money(order.original_subtotal) })}</Text>
+                ) : null}
+                <Text style={styles.meta}>{t('coedit.nowTotal', { now: money(nowTotal) })}</Text>
+                {editMoneyText(order) ? <Text style={styles.editMoney}>{editMoneyText(order)}</Text> : null}
               </View>
             ) : null}
             {order.address ? <Text style={styles.meta}>{t('orderdetail.deliverTo')} {order.address}</Text> : null}
@@ -181,6 +224,12 @@ const styles = StyleSheet.create({
   meta: { color: colors.textMuted, fontSize: 14, marginTop: 8 },
   eta: { color: colors.accent, fontSize: 18, fontWeight: '800', marginTop: 12 },
   etaSoft: { color: colors.textMuted, fontSize: 18, fontWeight: '700', marginTop: 12 },
+  // The shop's reduction (batch C). A calm, bordered block rather than an alarm:
+  // the shopkeeper is a neighbour who ran out of dal, not a service in breach.
+  editBox: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
+  editTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  editLine: { color: colors.text, fontSize: 14, marginTop: 6 },
+  editMoney: { color: colors.accent, fontSize: 15, fontWeight: '700', marginTop: 10 },
   sectTitle: { color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 },
   step: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   dot: { width: 14, height: 14, borderRadius: 7, backgroundColor: colors.border, marginRight: 12 },

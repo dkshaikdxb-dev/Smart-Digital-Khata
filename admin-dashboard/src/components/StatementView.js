@@ -7,7 +7,13 @@ import { useLang } from '../lib/i18n';
 export default function StatementView({ stmt, fmt, title, print = false }) {
   const { t } = useLang();
   if (!stmt) return null;
+  // A purchase raises what is owed; a payment AND a shop adjustment (batch C)
+  // both lower it, so both render as a minus. The colour follows the same rule.
   const signed = (l) => `${l.type === 'purchase' ? '+' : '−'}${fmt(l.amount)}`;
+  // The transaction type as a word. `txn.adjustment` is authored in en + hi and
+  // falls back to English elsewhere; an unknown future type still renders its
+  // raw enum rather than a blank cell.
+  const typeLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
   return (
     <div className={print ? 'stmt-print-block' : ''}>
       {title && <h3 style={{ margin: '0 0 8px' }}>{title}</h3>}
@@ -16,6 +22,12 @@ export default function StatementView({ stmt, fmt, title, print = false }) {
         <div><span className="muted">{t('stmt.closing')}:</span> <strong>{fmt(stmt.closing)}</strong></div>
         <div><span className="muted">{t('stmt.totalPurchases')}:</span> {fmt(stmt.total_purchases)}</div>
         <div><span className="muted">{t('stmt.totalPaid')}:</span> {fmt(stmt.total_paid)}</div>
+        {/* Shown only when the shop actually adjusted something, so an
+            untouched statement reads exactly as it always has. An adjustment is
+            NOT money the customer paid and never joins that figure. */}
+        {Number(stmt.total_adjusted) > 0 && (
+          <div><span className="muted">{t('stmt.totalAdjusted')}:</span> {fmt(stmt.total_adjusted)}</div>
+        )}
       </div>
       {stmt.lines && stmt.lines.length ? (
         <div style={{ overflowX: 'auto' }}>
@@ -33,7 +45,7 @@ export default function StatementView({ stmt, fmt, title, print = false }) {
               {stmt.lines.map((l) => (
                 <tr key={l.id}>
                   <td>{new Date(l.created_at).toLocaleDateString()}</td>
-                  <td>{l.type}</td>
+                  <td>{typeLabel(l.type)}</td>
                   <td style={{ textAlign: 'right', color: print ? '#000' : (l.type === 'purchase' ? 'var(--danger)' : 'var(--accent)') }}>{signed(l)}</td>
                   <td style={{ textAlign: 'right' }}>{fmt(l.balance)}</td>
                   <td>{l.note || ''}</td>

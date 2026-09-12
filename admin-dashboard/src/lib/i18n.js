@@ -8311,6 +8311,121 @@ for (const code of Object.keys(ORDERETA)) {
   Object.assign(DICT[code], ORDERETA[code]);
 }
 
+// EDIT THE ORDER WHILE ACCEPTING (batch C) — the owner reduces an order the
+// shop cannot fully supply, and the customer is told what changed and what
+// happened to the money. Own block, merged into DICT like PAGE/OALERT/ORDERETA.
+// The SAME key set exists in mobile-app/src/i18n.js (owner app) and
+// mobile-app/src/consumer/i18n.js (consumer app), so the four surfaces word the
+// same reduction identically.
+//
+// en and hi are AUTHORED here; every other language is deliberately NOT listed
+// and falls back to English through translate(). This batch touches MONEY: a
+// machine-translated sentence about someone's khata, in a language the author
+// cannot read back, is exactly the wrong place to guess.
+//
+// `txn.adjustment` / `type.adjustment` are here too — they are the label the new
+// fourth transaction type renders with on every ledger surface, and without them
+// an adjustment row would fall through to the raw enum word.
+const ORDEREDIT = {
+  en: {
+    // The new ledger type, wherever a transaction type is rendered.
+    'type.adjustment': 'Adjustment',
+    'txn.adjustment': 'adjustment',
+    'stmt.totalAdjusted': 'Adjusted by shop',
+
+    // --- OWNER: the edit mode -------------------------------------------
+    'oedit.start': 'Not everything in stock?',
+    'oedit.startBtn': 'Reduce this order',
+    'oedit.title': 'Reduce this order',
+    'oedit.help': 'Take off what you do not have. You can only REMOVE items or LOWER quantities — nothing here can add an item, raise a quantity or change a price.',
+    'oedit.remove': 'Remove',
+    'oedit.restore': 'Put back',
+    'oedit.removedTag': 'Removed',
+    'oedit.was': 'Was {was}',
+    'oedit.wasNow': 'Was {was} — now {now}',
+    'oedit.reducedBy': 'You are taking off {amount}.',
+    'oedit.confirm': 'Confirm the new order',
+    'oedit.saving': 'Saving…',
+    'oedit.keep': 'Leave it as it was',
+    'oedit.saved': 'The order has been reduced. The customer has been told what changed.',
+    'oedit.noChange': 'Nothing has been changed yet.',
+    'oedit.cancelInstead': 'You have taken off everything. Cancel the order instead.',
+    'oedit.thenAccept': 'Now accept it and tell the customer when it will be ready.',
+    // What the owner is told the money will do, before they confirm.
+    'oedit.moneyCredit': '{amount} will come off this customer\'s khata.',
+    'oedit.moneyPrepaid': 'Already paid online — {amount} will be kept as credit at your shop for this customer.',
+    'oedit.moneyCash': 'Collect {amount} less when you hand the order over.',
+    'oedit.feeMayChange': 'If this takes the order under your free-delivery amount, the delivery fee is recalculated when you confirm.',
+
+    // --- OWNER: the history, so a reduction is never silent ---------------
+    'oedit.historyTitle': 'What was taken off',
+    'oedit.historyRemoved': '{item} — removed',
+    'oedit.historyReduced': '{item} — {before} → {after}',
+    'oedit.historyBy': '{who}, {when}',
+    'oedit.historyUnknownWho': 'the shop',
+    'oedit.originalSubtotal': 'Original subtotal',
+
+    // --- CONSUMER: what the shopper reads --------------------------------
+    'coedit.title': 'The shop adjusted your order',
+    'coedit.intro': '{shop} could not supply everything you ordered.',
+    'coedit.removed': '{item} — removed',
+    'coedit.reduced': '{item} — {before} → {after}',
+    'coedit.nowTotal': 'Your order now comes to {now}.',
+    'coedit.wasSubtotal': 'Original items total {was}',
+    'coedit.credit': '{amount} has been taken off your khata at this shop.',
+    'coedit.prepaid': 'You had already paid. {amount} is kept as credit at this shop — it comes off your next order here.',
+    'coedit.cash': 'Pay {now} when you collect — {amount} of items were taken off.',
+  },
+  hi: {
+    'type.adjustment': 'समायोजन',
+    'txn.adjustment': 'समायोजन',
+    'stmt.totalAdjusted': 'दुकान द्वारा समायोजित',
+
+    'oedit.start': 'सब सामान उपलब्ध नहीं है?',
+    'oedit.startBtn': 'ऑर्डर कम करें',
+    'oedit.title': 'ऑर्डर कम करें',
+    'oedit.help': 'जो नहीं है उसे हटा दें। यहाँ से सिर्फ सामान हटाया या मात्रा घटाई जा सकती है — कोई नया सामान जोड़ना, मात्रा बढ़ाना या दाम बदलना यहाँ से संभव नहीं है।',
+    'oedit.remove': 'हटाएँ',
+    'oedit.restore': 'वापस जोड़ें',
+    'oedit.removedTag': 'हटाया गया',
+    'oedit.was': 'पहले {was}',
+    'oedit.wasNow': 'पहले {was} — अब {now}',
+    'oedit.reducedBy': 'आप {amount} कम कर रहे हैं।',
+    'oedit.confirm': 'नया ऑर्डर पक्का करें',
+    'oedit.saving': 'सहेजा जा रहा है…',
+    'oedit.keep': 'जैसा था वैसा ही रहने दें',
+    'oedit.saved': 'ऑर्डर कम कर दिया गया है। ग्राहक को बता दिया गया है कि क्या बदला।',
+    'oedit.noChange': 'अभी कुछ नहीं बदला गया है।',
+    'oedit.cancelInstead': 'आपने सब कुछ हटा दिया है। इसकी जगह ऑर्डर रद्द कीजिए।',
+    'oedit.thenAccept': 'अब इसे स्वीकार करें और ग्राहक को बताएं कि कब तक तैयार होगा।',
+    'oedit.moneyCredit': 'इस ग्राहक के खाते में से {amount} कम हो जाएंगे।',
+    'oedit.moneyPrepaid': 'ऑनलाइन भुगतान हो चुका है — {amount} इस ग्राहक के लिए आपकी दुकान पर जमा (क्रेडिट) रहेंगे।',
+    'oedit.moneyCash': 'सामान देते समय {amount} कम लीजिए।',
+    'oedit.feeMayChange': 'अगर इससे ऑर्डर आपकी मुफ़्त-डिलीवरी राशि से कम हो जाता है, तो पक्का करने पर डिलीवरी शुल्क फिर से जोड़ा जाएगा।',
+
+    'oedit.historyTitle': 'क्या हटाया गया',
+    'oedit.historyRemoved': '{item} — हटाया गया',
+    'oedit.historyReduced': '{item} — {before} → {after}',
+    'oedit.historyBy': '{who}, {when}',
+    'oedit.historyUnknownWho': 'दुकान',
+    'oedit.originalSubtotal': 'मूल उप-योग',
+
+    'coedit.title': 'दुकान ने आपका ऑर्डर कम किया है',
+    'coedit.intro': '{shop} पर आपके ऑर्डर का पूरा सामान उपलब्ध नहीं था।',
+    'coedit.removed': '{item} — हटाया गया',
+    'coedit.reduced': '{item} — {before} → {after}',
+    'coedit.nowTotal': 'आपके ऑर्डर का कुल अब {now} है।',
+    'coedit.wasSubtotal': 'मूल सामान का कुल {was}',
+    'coedit.credit': 'इस दुकान पर आपके खाते में से {amount} कम कर दिए गए हैं।',
+    'coedit.prepaid': 'आपने पहले ही भुगतान कर दिया था। {amount} इस दुकान पर आपके जमा (क्रेडिट) के रूप में रखे गए हैं — अगले ऑर्डर में कम हो जाएंगे।',
+    'coedit.cash': 'सामान लेते समय {now} दीजिए — {amount} का सामान हटा दिया गया है।',
+  },
+};
+for (const code of Object.keys(ORDEREDIT)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], ORDEREDIT[code]);
+}
+
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
 // the other languages' wording here, so strip it from their strings — English
 // keeps it and receives 's'/'' at call time; every other language ignores the

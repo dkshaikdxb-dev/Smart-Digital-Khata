@@ -11,7 +11,9 @@ const label = (s) => (s || '').replace(/_/g, ' ');
 export default function FamilyDetailScreen({ route, navigation }) {
   const { t, lang } = useT();
   // Localize the known transaction type words; fall back to the raw enum otherwise.
-  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' ? t(`txn.${v}`) : label(v));
+  // 'adjustment' (batch C) is the fourth type: the shop reducing an order it
+  // could not fully supply. Without it here the row would render the raw enum.
+  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' || v === 'adjustment' ? t(`txn.${v}`) : label(v));
   const { id } = route.params;
   const [detail, setDetail] = useState(null);
   const [statement, setStatement] = useState([]);

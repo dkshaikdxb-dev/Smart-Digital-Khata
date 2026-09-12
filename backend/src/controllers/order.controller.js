@@ -9,6 +9,11 @@ const { getEtaConfig, clampEta } = require('../utils/orderEta');
 // Every customer-facing order line, en + hi authored (batch B). Replaces the
 // hardcoded English sentence this controller used to build inline.
 const customerCopy = require('../utils/order-customer-copy');
+// The ONE shared reduction rule: what may be edited, what it does to the
+// delivery fee, and what the money does per payment mode (batch C).
+const {
+  isEditableStatus, deliveryFeeFor, planReduction, needsLedgerAdjustment,
+} = require('../utils/orderEdit');
 
 // Owner/staff order management, scoped to req.user.shopId. A shop only ever
 // sees and mutates its OWN orders.
@@ -93,8 +98,32 @@ exports.get = async (req, res) => {
      FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
     [req.params.id]
   );
-  res.json({ order: { ...withCustomerNameLocal(r.rows[0], lang), items: items.rows } });
+  // The line-by-line edit history (batch C). ALWAYS sent — an empty array for an
+  // order nobody has touched — so an owner can never see a reduced order without
+  // also seeing who reduced it and when. A silent change to a bill is the thing
+  // this batch exists to prevent.
+  const edits = await listEdits(query, req.params.id);
+  res.json({ order: { ...withCustomerNameLocal(r.rows[0], lang), items: items.rows, edits } });
 };
+
+/**
+ * The audit trail of one order's reductions, oldest first, with the editor's
+ * name where the `users` row still exists. `runner` is the query function (the
+ * pool, or a transaction client) so the same shape is returned inside and
+ * outside a transaction.
+ */
+async function listEdits(runner, orderId) {
+  const r = await runner(
+    `SELECT e.id, e.order_item_id, e.name, e.qty_before, e.qty_after,
+            e.amount_delta, e.created_at, e.edited_by, u.name AS edited_by_name
+       FROM order_edits e
+       LEFT JOIN users u ON u.id = e.edited_by
+      WHERE e.order_id = $1
+      ORDER BY e.created_at ASC, e.id ASC`,
+    [orderId]
+  );
+  return r.rows;
+}
 
 // The customer's language for the WhatsApp copy. There is NO `customers.language`
 // column in this schema today (checked across every migration), so this reads a
@@ -319,6 +348,258 @@ exports.setEta = async (req, res) => {
  */
 exports.etaConfig = async (_req, res) => {
   res.json(await getEtaConfig());
+};
+
+// ===========================================================================
+// EDIT THE ORDER WHILE ACCEPTING (batch C). The customer orders six things and
+// the shop has four: the owner reduces the order, and the money follows.
+// ===========================================================================
+
+/** The order row + its surviving lines + its full edit history, in one shape. */
+async function freshOrder(runner, orderId) {
+  const o = await runner(
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total,
+            c.name AS customer_name, c.phone AS customer_phone
+       FROM orders o
+       JOIN customers c ON c.id = o.customer_id
+      WHERE o.id = $1`,
+    [orderId]
+  );
+  const items = await runner(
+    `SELECT id, product_id, name, unit_price, quantity, line_total, weight_grams
+       FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
+    [orderId]
+  );
+  const edits = await listEdits(runner, orderId);
+  return { ...o.rows[0], items: items.rows, edits };
+}
+
+/**
+ * Tell the customer what the shop changed, fire-and-forget. Same rules as
+ * notifyCustomer(): respects notifications_enabled, and a WhatsApp failure never
+ * reaches the owner — the money is already committed and must not be reported as
+ * failed because Meta was unreachable.
+ */
+function notifyCustomerEdit({ customer, shopName, paymentMode, changes, oldTotal, newTotal, reduction, oldFee, newFee }) {
+  if (customer.notifications_enabled === false) return;
+  const message = customerCopy.buildOrderEditMessage({
+    lang: customerLang(customer),
+    customerName: customer.name,
+    shopName,
+    paymentMode,
+    changes,
+    oldTotal,
+    newTotal,
+    reduction,
+    oldFee,
+    newFee,
+  });
+  whatsapp.sendText(customer.phone, message).catch(() => {});
+}
+
+/**
+ * PATCH /orders/:id/items { lines: [{ order_item_id, qty }], client_request_id? }
+ *
+ * REDUCE an order the shop cannot fully supply. `qty: 0` removes the line; any
+ * qty must be at or below what the line currently has. THIS TOUCHES MONEY, so
+ * the three rules are load-bearing and each is enforced here:
+ *
+ *  1. REDUCTIONS ONLY — planReduction() throws 422 `increase_not_allowed` for a
+ *     qty above the current one, and there is no path at all that touches
+ *     `unit_price`. The customer agreed to a price; the shop does not get to
+ *     revise it afterwards.
+ *  2. THE LEDGER IS APPEND-ONLY — the original `purchase` row is never read for
+ *     update, never amended and never deleted. A reduction posts ONE NEW
+ *     compensating 'adjustment' entry linked to the order by `order_id`.
+ *  3. EVERY EDIT IS AUDITED — one `order_edits` row per changed line, with the
+ *     acting user and the timestamp, plus `edited_at/by` on the order and a
+ *     one-time `original_subtotal` snapshot so "was X, now Y" survives a second
+ *     and a third edit.
+ *
+ * GUARDS
+ *   status not pending/accepted  → 409 `order_not_editable` (past that, the
+ *                                  goods are being assembled and a silent
+ *                                  reduction would contradict the bag)
+ *   another shop's order         → 404 (never 403; probing reveals nothing)
+ *   unknown / foreign line id    → 404 `line_not_found`
+ *   every line reduced to zero   → 422 `cancel_instead`
+ *   replayed client_request_id   → the CURRENT state, money applied exactly once
+ *
+ * LOCKING. The order and the customer row are taken in ONE statement with
+ * `FOR UPDATE OF o, c`, the same pair and the same order my.controller's
+ * cancelOrder uses. transaction.controller takes only the customer lock, so
+ * there is no cycle between the two paths and two concurrent edits of the same
+ * order serialise on the order row instead of double-applying.
+ *
+ * NO CREDIT-LIMIT OR FAMILY-LIMIT CHECK, deliberately: those exist to stop what
+ * a customer OWES from growing past an agreed ceiling, and a reduction only ever
+ * lowers it. Running them here would be theatre — and worse, a customer already
+ * over their limit could not be given money back.
+ */
+exports.editItems = async (req, res) => {
+  const clientRequestId = req.body.client_request_id || null;
+
+  const result = await withTx(async (client) => {
+    const r = await client.query(
+      `SELECT o.*, c.id AS cust_id, c.name AS customer_name, c.phone AS customer_phone,
+              c.notifications_enabled,
+              s.name AS shop_name, s.delivery_fee AS shop_delivery_fee,
+              s.free_delivery_min AS shop_free_delivery_min
+         FROM orders o
+         JOIN customers c ON c.id = o.customer_id
+         JOIN shops s ON s.id = o.shop_id
+        WHERE o.id = $1 AND o.shop_id = $2
+        FOR UPDATE OF o, c`,
+      [req.params.id, req.user.shopId]
+    );
+    if (!r.rowCount) throw ApiError.notFound('Order not found');
+    const order = r.rows[0];
+
+    if (!isEditableStatus(order.status)) {
+      throw ApiError.conflict('order_not_editable', { status: order.status });
+    }
+
+    // IDEMPOTENT REPLAY, checked while holding the order lock: an owner on 2G
+    // retries the same edit and the money must move exactly once. The unique
+    // index on (order_id, client_request_id, order_item_id) is the second rail.
+    if (clientRequestId) {
+      const dup = await client.query(
+        'SELECT 1 FROM order_edits WHERE order_id = $1 AND client_request_id = $2 LIMIT 1',
+        [order.id, clientRequestId]
+      );
+      if (dup.rowCount) {
+        return { replayed: true, order: await freshOrder(client.query.bind(client), order.id) };
+      }
+    }
+
+    const itemsRes = await client.query(
+      `SELECT id, product_id, name, unit_price, quantity, line_total, weight_grams
+         FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
+      [order.id]
+    );
+
+    // Validate + work out the whole change before writing anything, so a bad
+    // line anywhere in the request leaves the order exactly as it was.
+    const plan = planReduction(itemsRes.rows, req.body.lines);
+
+    // A request that changes nothing (every qty equal to what is already there)
+    // is not an error and not an edit: write nothing, stamp nothing, notify
+    // nobody, and hand back the current state.
+    if (!plan.changes.length) {
+      return { noop: true, order: await freshOrder(client.query.bind(client), order.id) };
+    }
+
+    const oldSubtotal = Number(order.subtotal);
+    const oldFee = Number(order.delivery_fee);
+    const oldTotal = oldSubtotal + oldFee;
+
+    const newSubtotal = plan.newSubtotal;
+    // The delivery fee is recomputed by the SAME rule createOrder used, so a
+    // reduction that drops the order back under `free_delivery_min` re-adds the
+    // fee instead of quietly keeping a threshold the order no longer meets.
+    // `delivery_min_order` is deliberately NOT re-enforced: the shop has already
+    // chosen to serve this order.
+    const newFee = deliveryFeeFor({
+      fulfillmentType: order.fulfillment_type,
+      subtotal: newSubtotal,
+      shop: { delivery_fee: order.shop_delivery_fee, free_delivery_min: order.shop_free_delivery_min },
+    });
+    const newTotal = newSubtotal + newFee;
+    const reduction = oldTotal - newTotal;
+
+    // Apply the lines and audit each one in the same loop, so an audit row can
+    // never be missing for a line that moved.
+    for (const c of plan.changes) {
+      if (c.qty_after === 0) {
+        await client.query('DELETE FROM order_items WHERE id = $1 AND order_id = $2', [c.order_item_id, order.id]);
+      } else {
+        await client.query(
+          'UPDATE order_items SET quantity = $1, line_total = $2 WHERE id = $3 AND order_id = $4',
+          [c.qty_after, c.line_total_after, c.order_item_id, order.id]
+        );
+      }
+      await client.query(
+        `INSERT INTO order_edits
+           (order_id, order_item_id, name, qty_before, qty_after, amount_delta, edited_by, client_request_id)
+         VALUES ($1,$2,$3,$4,$5,$6,(SELECT u.id FROM users u WHERE u.id = $7),$8)`,
+        [order.id, c.order_item_id, c.name, c.qty_before, c.qty_after, c.amount_delta, actorId(req), clientRequestId]
+      );
+    }
+
+    // `original_subtotal` is snapshotted on the FIRST edit only (COALESCE), so
+    // "was X, now Y" keeps meaning the ORIGINAL X after a second reduction.
+    await client.query(
+      `UPDATE orders
+          SET subtotal = $2,
+              delivery_fee = $3,
+              original_subtotal = COALESCE(original_subtotal, $4),
+              edited_at = NOW(),
+              edited_by = (SELECT u.id FROM users u WHERE u.id = $5),
+              updated_at = NOW()
+        WHERE id = $1`,
+      [order.id, newSubtotal, newFee, oldSubtotal, actorId(req)]
+    );
+
+    // THE MONEY, per payment mode (see utils/orderEdit.needsLedgerAdjustment):
+    //   credit  — one compensating 'adjustment' brings the balance DOWN by
+    //             exactly `reduction`; the original purchase row is untouched.
+    //   prepaid — the same entry, which drives the balance NEGATIVE: the
+    //             difference becomes an ADVANCE at this shop. No refund API is
+    //             called and no payment_orders row is touched.
+    //   cash    — nothing was ever posted, so nothing is posted now.
+    //
+    // `reduction > 0` is the guard that keeps rule 1 true end to end. It can be
+    // zero or negative ONLY when a reduction pushed the order back under the
+    // shop's free-delivery threshold and the fee returned; in that case we post
+    // NOTHING rather than raising what the customer owes for an order they
+    // already agreed to.
+    let adjustment = null;
+    if (needsLedgerAdjustment(order.payment_mode) && reduction > 0) {
+      const tx = await client.query(
+        `INSERT INTO transactions
+           (shop_id, customer_id, type, amount, method, note, source, created_by, order_id)
+         VALUES ($1,$2,'adjustment',$3,'adjustment',$4,'api',(SELECT u.id FROM users u WHERE u.id = $5),$6)
+         RETURNING *`,
+        [req.user.shopId, order.cust_id, reduction, `Order ${order.id} reduced by the shop`, actorId(req), order.id]
+      );
+      adjustment = tx.rows[0];
+      await client.query(
+        'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
+        [reduction, order.cust_id]
+      );
+    }
+
+    return {
+      order: await freshOrder(client.query.bind(client), order.id),
+      adjustment,
+      changes: plan.changes,
+      oldTotal,
+      newTotal,
+      reduction,
+      oldFee,
+      newFee,
+      customer: {
+        name: order.customer_name,
+        phone: order.customer_phone,
+        notifications_enabled: order.notifications_enabled,
+        customer_language: order.customer_language,
+      },
+      shopName: order.shop_name,
+      paymentMode: order.payment_mode,
+    };
+  });
+
+  // Only a genuinely applied edit tells the customer. A replay or a no-op must
+  // never send a second "your order was reduced" message for the same change.
+  if (!result.replayed && !result.noop) {
+    notifyCustomerEdit(result);
+  }
+
+  res.json({
+    order: result.order,
+    adjustment: result.adjustment || null,
+    replayed: Boolean(result.replayed),
+  });
 };
 
 // ===========================================================================
