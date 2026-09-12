@@ -63,6 +63,39 @@ if [ "${SEED_ADMIN:-false}" = "true" ]; then
   $DC exec -T backend npm run seed || true
 fi
 
+# --- post-deploy smoke check ------------------------------------------------
+# Migrations running and containers starting is NOT the same as the app serving
+# traffic: a bad env var, a failed module load or a crash-loop all leave the
+# steps above green while the shop is down. So ask the API, on the host, whether
+# it is actually alive before calling this a deployment. `set -e` is relaxed
+# around the probe so we can report the failure ourselves with the logs that
+# explain it, rather than dying on a bare non-zero curl.
+log "Smoke-checking the API..."
+API_PORT="${BACKEND_HOST_PORT:-4000}"
+HEALTH_URL="http://127.0.0.1:${API_PORT}/api/health"
+smoke_ok=false
+for attempt in $(seq 1 20); do
+  set +e
+  code=$(curl -fsS -o /tmp/skhata_health.json -w '%{http_code}' --max-time 5 "$HEALTH_URL" 2>/dev/null)
+  rc=$?
+  set -e
+  if [ "$rc" -eq 0 ] && [ "$code" = "200" ] && grep -q '"status":"ok"' /tmp/skhata_health.json; then
+    smoke_ok=true
+    log "API healthy after ${attempt} attempt(s): $(cat /tmp/skhata_health.json)"
+    break
+  fi
+  sleep 3
+done
+
+if [ "$smoke_ok" != "true" ]; then
+  log "DEPLOY FAILED: the API did not answer ${HEALTH_URL} with status ok."
+  log "Container state:"
+  $DC ps || true
+  log "Last 80 lines from backend:"
+  $DC logs --tail=80 backend || true
+  exit 1
+fi
+
 log "Deployment complete."
 $DC ps
 echo
