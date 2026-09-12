@@ -29,10 +29,17 @@ export function Button({ title, onPress, disabled, loading, variant = 'primary',
       accessibilityRole="button"
       accessibilityLabel={title}
     >
+      {/* While loading, btnDisabled makes the fill neutral, so the spinner and
+          label both use the LIGHT text colour — the dark on-accent ink would be
+          almost invisible on slate. */}
       {loading ? (
-        <ActivityIndicator color={isSecondary ? colors.text : colors.onAccent} />
+        <ActivityIndicator color={colors.text} />
       ) : (
-        <Text style={[styles.btnText, (isSecondary || isDanger) && styles.btnTextLight]}>
+        <Text style={[
+          styles.btnText,
+          (isSecondary || isDanger) && styles.btnTextLight,
+          (disabled || loading) && styles.btnTextDisabled,
+        ]}>
           {title}
         </Text>
       )}
@@ -111,7 +118,12 @@ const styles = StyleSheet.create({
   },
   btnSecondary: { backgroundColor: colors.border },
   btnDanger: { backgroundColor: colors.danger },
-  btnDisabled: { opacity: 0.5 },
+  // A DISABLED button must not look tappable. Fading the accent green to 50%
+  // left the app's one "go" colour on a dead control, and dimmed the label with
+  // it — worst on a cheap screen in daylight, which is where these apps live.
+  // Neutral fill, full-contrast label: clearly inert, still readable.
+  btnDisabled: { backgroundColor: colors.border },
+  btnTextDisabled: { color: colors.textMuted },
   btnPressed: { opacity: 0.85 },
   btnText: { color: colors.onAccent, fontWeight: '800', fontSize: sizes.body },
   btnTextLight: { color: colors.text },

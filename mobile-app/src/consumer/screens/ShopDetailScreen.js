@@ -181,9 +181,11 @@ export default function ShopDetailScreen({ route, navigation }) {
                     <Pressable
                       onPress={() => cart.addUnit(shopId, name, p)}
                       disabled={!shopOpen}
-                      style={[styles.addBtn, !shopOpen && styles.disabled]}
+                      style={[styles.addBtn, !shopOpen && styles.addBtnClosed]}
                     >
-                      <Text style={styles.addText}>{shopOpen ? t('shopdetail.add') : t('open.cannotOrder')}</Text>
+                      <Text style={[styles.addText, !shopOpen && styles.addTextClosed]}>
+                        {shopOpen ? t('shopdetail.add') : t('open.cannotOrder')}
+                      </Text>
                     </Pressable>
                   )}
                 </View>
@@ -229,7 +231,16 @@ const styles = StyleSheet.create({
   closedTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
   closedLine: { color: colors.text, fontSize: 14, marginTop: 6 },
   closedHint: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
-  disabled: { opacity: 0.45 },
+  // INERT, NOT GHOSTED.
+  //
+  // A disabled control used to be the live green button at 45% opacity. Two
+  // things were wrong with that on a cheap phone in daylight: the colour still
+  // said "go", and the label — which on a shut shop carries the REASON — faded
+  // with it. So the closed state swaps the FILL to a neutral and keeps the text
+  // at full contrast. Nothing is hidden; it simply stops looking tappable.
+  disabled: { backgroundColor: colors.border, borderColor: colors.border, opacity: 0.9 },
+  addBtnClosed: { backgroundColor: colors.border },
+  addTextClosed: { color: colors.text },
   prodRow: { flexDirection: 'row', alignItems: 'center' },
   thumb: {
     width: 56, height: 56, borderRadius: 12,
