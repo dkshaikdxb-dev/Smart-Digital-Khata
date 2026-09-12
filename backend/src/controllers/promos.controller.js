@@ -27,34 +27,36 @@ function resolveLang(raw) {
   return KNOWN_LANGS.has(lang) ? lang : 'en';
 }
 
-// GET /api/public/promos?town=&village=&pincode=&lang=
+// A blank/absent geo value → null, so the SQL's `IS NOT NULL` guards treat it as
+// "not supplied" (matches only 'all' campaigns for that dimension).
+function geoOrNull(raw) {
+  return raw != null && String(raw).trim() !== '' ? String(raw) : null;
+}
+
+// The ONE campaign-serving query, shared by the discovery band (listPromos) and
+// the storefront sponsored slot (discovery.getShop via pickStorefrontCampaign),
+// so both places match geo, window, status and localization identically.
 //
-// Eligibility: status='active' AND within window (no starts_at = open start, no
-// ends_at = open end) — so always-on campaigns show whenever active and seasonal
-// campaigns show only inside their dates.
+// Eligibility: status='active' AND placement = the requested slot AND within
+// window (no starts_at = open start, no ends_at = open end) — so always-on
+// campaigns show whenever active and seasonal campaigns show only inside their
+// dates. A 'storefront' campaign never serves on the discovery band and vice
+// versa.
 //
 // Geo match: the campaign has at least one target row that is geo_type='all' OR
-// matches a value the shopper actually supplied — town/village trimmed +
+// matches a value the caller actually supplied — town/village trimmed +
 // case-insensitive, pincode exact. Each geo branch is guarded by an `IS NOT NULL`
-// on its bound value, so a shopper who sends NO location matches ONLY 'all'
+// on its bound value, so a caller who sends NO location matches ONLY 'all'
 // campaigns: a town-targeted promo can never leak to an unknown location.
 //
 // The EXISTS keeps each campaign to a single row even when it matches on more
-// than one of the shopper's geos (DISTINCT campaign). Ranked by priority then
-// recency, capped at 5.
+// than one of the caller's geos (DISTINCT campaign). Ranked by priority then
+// recency, capped at `limit`.
 //
 // Localized creative: per field, prefer the i18n override for the resolved lang
 // (i18n -> lang ->> field) and fall back to the base column. Internal counters
-// (impressions/clicks) and the raw i18n blob are never returned; a constant
-// `sponsored: true` flag is added so the client always shows the sponsored label.
-exports.listPromos = async (req, res) => {
-  const lang = resolveLang(req.query.lang);
-  const town = req.query.town != null && String(req.query.town).trim() !== '' ? String(req.query.town) : null;
-  const village =
-    req.query.village != null && String(req.query.village).trim() !== '' ? String(req.query.village) : null;
-  const pincode =
-    req.query.pincode != null && String(req.query.pincode).trim() !== '' ? String(req.query.pincode) : null;
-
+// (impressions/clicks) and the raw i18n blob are never returned.
+async function serveCampaigns({ lang, town, village, pincode, placement, limit }) {
   const r = await query(
     `SELECT c.id, c.style, c.glyph, c.image_url, c.advertiser,
             c.link_type, c.link_shop_id, c.link_product_id, c.link_url,
@@ -63,6 +65,7 @@ exports.listPromos = async (req, res) => {
             COALESCE(c.i18n -> $1 ->> 'subtitle', c.subtitle) AS subtitle
        FROM ad_campaigns c
       WHERE c.status = 'active'
+        AND c.placement = $5
         AND (c.starts_at IS NULL OR c.starts_at <= NOW())
         AND (c.ends_at IS NULL OR c.ends_at >= NOW())
         AND EXISTS (
@@ -79,11 +82,29 @@ exports.listPromos = async (req, res) => {
              )
         )
       ORDER BY c.priority DESC, c.created_at DESC
-      LIMIT 5`,
-    [lang, town, village, pincode]
+      LIMIT $6`,
+    [lang, geoOrNull(town), geoOrNull(village), geoOrNull(pincode), placement, limit]
   );
+  return r.rows;
+}
 
-  const promos = r.rows.map((row) => ({
+// GET /api/public/promos?town=&village=&pincode=&lang=
+//
+// The discovery band: ONLY placement='discovery' campaigns, capped at 5 (see
+// serveCampaigns for the eligibility / geo / localization rules). A constant
+// `sponsored: true` flag is added so the client always shows the sponsored label.
+exports.listPromos = async (req, res) => {
+  const lang = resolveLang(req.query.lang);
+  const rows = await serveCampaigns({
+    lang,
+    town: req.query.town,
+    village: req.query.village,
+    pincode: req.query.pincode,
+    placement: 'discovery',
+    limit: 5,
+  });
+
+  const promos = rows.map((row) => ({
     id: row.id,
     style: row.style,
     title: row.title,
@@ -104,6 +125,39 @@ exports.listPromos = async (req, res) => {
   res.json({ promos });
 };
 
+// The storefront sponsored slot (batch STOREFRONT-FULL): AT MOST ONE
+// placement='storefront' campaign for a SHOP's own geography (its town=city /
+// village / pincode; 'all' always matches), highest priority then newest, using
+// the exact same serving query as the discovery band. Returns the composed
+// sponsored slide (already localized for `lang`) or null when nothing matches.
+// The caller (discovery.getShop) decides whether the shop is even eligible
+// (ad-free buy-out / branded → no slide at all).
+exports.pickStorefrontCampaign = async ({ lang, town, village, pincode }) => {
+  const rows = await serveCampaigns({
+    lang: resolveLang(lang),
+    town,
+    village,
+    pincode,
+    placement: 'storefront',
+    limit: 1,
+  });
+  if (!rows.length) return null;
+  const row = rows[0];
+  return {
+    type: 'sponsored',
+    campaign_id: row.id,
+    title: row.title,
+    offer_text: row.offer_text,
+    subtitle: row.subtitle,
+    glyph: row.glyph,
+    image_url: row.image_url,
+    link_type: row.link_type,
+    link_shop_id: row.link_shop_id,
+    link_product_id: row.link_product_id,
+    link_url: row.link_url,
+  };
+};
+
 // POST /api/public/promos/:id/impression
 // POST /api/public/promos/:id/click
 //
@@ -115,6 +169,9 @@ exports.listPromos = async (req, res) => {
 
 // A guarded raw increment: bump the counter iff the campaign is active. Used by
 // clicks (always) and by impressions when no viewer id is supplied (back-compat).
+// Placement-agnostic on purpose: the storefront sponsored slide (batch
+// STOREFRONT-FULL) fires these SAME beacons, so its impressions/clicks accrue on
+// the campaign row and revenue attribution is by ad_campaigns.placement.
 async function rawIncrement(column, id) {
   await query(
     `UPDATE ad_campaigns SET ${column} = ${column} + 1 WHERE id = $1 AND status = 'active'`,

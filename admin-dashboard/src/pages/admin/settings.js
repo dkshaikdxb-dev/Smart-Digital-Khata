@@ -20,14 +20,16 @@ const TOGGLE_KEYS = [
   ['shop_promo_enabled', 'Shop promos', 'Self-serve promo campaigns a shop buys with Khata Credits.'],
   ['branded_store_enabled', 'Branded store', 'Paid branded storefront upgrade for a shop.'],
   ['consumer_prepay_enabled', 'Consumer prepay', 'Lets a customer hold a prepaid advance with a shop.'],
+  ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
 ];
 // Amount keys stored in paise, shown/edited as ₹.
 const RUPEE_KEYS = [
   'enrolment_fee_basic_paise', 'enrolment_fee_premium_paise',
   'shop_promo_credits_per_day_paise', 'branded_store_credits_per_day_paise',
+  'storefront_ad_free_credits_per_day_paise',
   'consumer_prepay_max_advance_paise', 'delivery_champion_fee_paise',
 ];
-const INT_KEYS = ['shop_promo_max_days', 'branded_store_max_days'];
+const INT_KEYS = ['shop_promo_max_days', 'branded_store_max_days', 'storefront_ad_free_max_days'];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
 
 // Build the editable form state from the API `features` object: amounts → ₹.
@@ -133,6 +135,8 @@ export default function AdminSettings() {
       shop_promo_max_days: Number(feat.shop_promo_max_days),
       branded_store_credits_per_day_paise: toPaise(feat.branded_store_credits_per_day_paise),
       branded_store_max_days: Number(feat.branded_store_max_days),
+      storefront_ad_free_credits_per_day_paise: toPaise(feat.storefront_ad_free_credits_per_day_paise),
+      storefront_ad_free_max_days: Number(feat.storefront_ad_free_max_days),
       consumer_prepay_max_advance_paise: toPaise(feat.consumer_prepay_max_advance_paise),
       delivery_champion_fee_paise: toPaise(feat.delivery_champion_fee_paise),
     }, 'Pricing saved.');
@@ -317,11 +321,17 @@ export default function AdminSettings() {
                     <input type="number" min="1" step="1" value={feat.branded_store_max_days}
                       onChange={(e) => setFeat({ ...feat, branded_store_max_days: e.target.value })} />
                   </div>
+                  {rupeeInput('storefront_ad_free_credits_per_day_paise', 'Storefront ad-free — per day')}
+                  <div>
+                    <label className="muted">Storefront ad-free — max days</label>
+                    <input type="number" min="1" step="1" value={feat.storefront_ad_free_max_days}
+                      onChange={(e) => setFeat({ ...feat, storefront_ad_free_max_days: e.target.value })} />
+                  </div>
                   {rupeeInput('consumer_prepay_max_advance_paise', 'Consumer prepay — max advance')}
                   {rupeeInput('delivery_champion_fee_paise', 'Delivery champion fee')}
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>
-                  Promo {`₹${INR.format(feat.shop_promo_credits_per_day_paise)}`}/day · branded {`₹${INR.format(feat.branded_store_credits_per_day_paise)}`}/day ·
+                  Promo {`₹${INR.format(feat.shop_promo_credits_per_day_paise)}`}/day · branded {`₹${INR.format(feat.branded_store_credits_per_day_paise)}`}/day · ad-free {`₹${INR.format(feat.storefront_ad_free_credits_per_day_paise)}`}/day ·
                   prepay cap {`₹${INR.format(feat.consumer_prepay_max_advance_paise)}`} · delivery {`₹${INR.format(feat.delivery_champion_fee_paise)}`}
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>

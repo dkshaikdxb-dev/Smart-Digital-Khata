@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataSaverToggle from '../components/DataSaverToggle';
 import ImageStudio from '../components/ImageStudio';
-import { apiFetch } from '../lib/api';
+import { apiFetch, apiPost } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
 
 // The multipart cover upload needs the raw API base (apiFetch is JSON-only and
@@ -15,6 +15,30 @@ const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${A
 const langName = (code) => (LANGS.find((l) => l.code === code)?.name || code);
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
+
+// Indian-grouped rupees for the Khata-Credits card (mirrors promote.js).
+const nf = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const rupees = (paise) => `₹${nf.format((Number(paise) || 0) / 100)}`;
+function fmtDate(v) {
+  if (!v) return '';
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch {
+    return d.toISOString().slice(0, 10);
+  }
+}
+
+// Per-photo moderation status pill (batch STOREFRONT-FULL): pending / live /
+// rejected. Small, high-contrast, sits on the thumbnail.
+function photoPill(t, status) {
+  switch (status) {
+    case 'active': return { label: t('set.photoLive'), bg: '#dcfce7', ink: '#166534' };
+    case 'rejected': return { label: t('set.photoRejected'), bg: '#fee2e2', ink: '#991b1b' };
+    default: return { label: t('set.photoPending'), bg: '#fef3c7', ink: '#92400e' };
+  }
+}
 
 // Money is paise everywhere; the fulfillment form edits in rupees. These helpers
 // convert a paise value to a rupee string for an input, and back to paise ints on
@@ -60,6 +84,23 @@ export default function Settings() {
         setPhotosFull(list.length >= MAX_PHOTOS);
       })
       .catch(console.error);
+  }
+  // "Remove sponsored slide" buy-out (batch STOREFRONT-FULL): live config +
+  // balance + the current ad-free window from the owner-only endpoint. Stays
+  // null (card hidden) for staff logins (403) or when the fetch fails.
+  const [adFree, setAdFree] = useState(null);
+  const [adFreeDays, setAdFreeDays] = useState(7);
+  const [adFreeBusy, setAdFreeBusy] = useState(false);
+  const [adFreeMsg, setAdFreeMsg] = useState('');
+  const [adFreeErr, setAdFreeErr] = useState('');
+
+  function loadAdFree() {
+    apiFetch('/api/shops/me/storefront-ad-free')
+      .then((r) => {
+        setAdFree(r);
+        setAdFreeDays((d) => Math.min(Math.max(1, d), Math.max(1, Number(r.max_days) || 1)));
+      })
+      .catch(() => setAdFree(null));
   }
   const [plans, setPlans] = useState([]);
   const [sub, setSub] = useState(null);
@@ -125,6 +166,7 @@ export default function Settings() {
     loadFaqs();
     loadNameI18n();
     loadPhotos();
+    loadAdFree();
   }, [router]);
 
   // Build the consumer link and render its QR client-side (window + the qrcode
@@ -209,7 +251,9 @@ export default function Settings() {
       }
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
       setPhotoBlob(null);
-      setPhotoMsg(t('common.saved'));
+      // A moderated upload waits for review — tell the owner so the pending pill
+      // is not a surprise; a trusted shop's photo is live at once.
+      setPhotoMsg(body.status === 'pending_review' ? t('set.photoUploadedPending') : t('common.saved'));
       loadPhotos();
     } catch (e) {
       setPhotoMsg(e.message);
@@ -226,6 +270,32 @@ export default function Settings() {
       loadPhotos();
     } catch (e) {
       setPhotoMsg(e.message);
+    }
+  }
+
+  // Buy (or extend) the ad-free window. Mirrors the Branded Store activate
+  // handler in promote.js: 402 → the friendly low-balance line, else the message.
+  const adFreePerDay = adFree ? Number(adFree.credits_per_day_paise) || 0 : 0;
+  const adFreeBalance = adFree ? Number(adFree.balance_paise) || 0 : 0;
+  const adFreeMaxDays = adFree ? Math.max(1, Number(adFree.max_days) || 1) : 1;
+  const adFreeEnabled = !!(adFree && adFree.enabled);
+  const adFreeCost = adFreeDays * adFreePerDay;
+  const adFreeShort = adFreeEnabled && adFreeCost > adFreeBalance;
+  const isAdFree = !!(adFree && adFree.is_ad_free);
+
+  async function buyAdFree(e) {
+    e.preventDefault();
+    if (!adFreeEnabled || adFreeShort || adFreeBusy) return;
+    setAdFreeBusy(true); setAdFreeErr(''); setAdFreeMsg('');
+    try {
+      await apiPost('/api/shops/me/storefront-ad-free', { days: adFreeDays });
+      setAdFreeMsg(t('adfree.done'));
+      loadAdFree();
+    } catch (err) {
+      if (err && err.status === 402) setAdFreeErr(t('adfree.lowBalance'));
+      else setAdFreeErr(err.message || t('adfree.errGeneric'));
+    } finally {
+      setAdFreeBusy(false);
     }
   }
 
@@ -414,7 +484,9 @@ export default function Settings() {
           <p className="muted">{t('set.shopPhotosDesc')}</p>
           {photos.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-              {photos.map((p, i) => (
+              {photos.map((p, i) => {
+                const pill = photoPill(t, p.status);
+                return (
                 <div key={p.id} style={{ position: 'relative', width: 120 }}>
                   <img
                     src={resolveImg(p.url)}
@@ -423,8 +495,22 @@ export default function Settings() {
                     style={{
                       display: 'block', width: 120, height: 80,
                       objectFit: 'cover', borderRadius: 8, border: '1px solid #334155',
+                      opacity: p.status === 'rejected' ? 0.55 : 1,
                     }}
                   />
+                  {/* Moderation status pill (pending / live / rejected). */}
+                  <span
+                    title={p.status === 'rejected' && p.review_note ? p.review_note : undefined}
+                    style={{
+                      position: 'absolute', left: 4, bottom: 4, background: pill.bg, color: pill.ink,
+                      borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 700, lineHeight: '16px',
+                    }}
+                  >
+                    {pill.label}
+                  </span>
+                  {p.status === 'rejected' && p.review_note && (
+                    <div className="muted" style={{ fontSize: 11, marginTop: 4, lineHeight: 1.3 }}>{p.review_note}</div>
+                  )}
                   <button
                     type="button"
                     className="secondary"
@@ -439,7 +525,8 @@ export default function Settings() {
                     ✕
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
           {photosFull ? (
@@ -464,6 +551,65 @@ export default function Settings() {
           )}
           {photoMsg && <div className="muted" style={{ marginTop: 8 }}>{photoMsg}</div>}
         </div>
+
+        {/* "Remove sponsored slide" buy-out (batch STOREFRONT-FULL). Owner-only
+            (the endpoint 403s staff → card hidden). Spends Khata Credits, never
+            cash; mirrors the Branded Store card in promote.js. */}
+        {adFree && (
+          <div className="card" style={{ maxWidth: 520, display: 'grid', gap: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0 }}>{t('adfree.title')}</h3>
+              {isAdFree ? (
+                <span style={{ background: '#dcfce7', color: '#166534', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
+                  {t('adfree.statusActive', { date: fmtDate(adFree.ad_free_until) })}
+                </span>
+              ) : (
+                <span style={{ background: '#e5e7eb', color: '#374151', borderRadius: 999, padding: '2px 10px', fontSize: 12, fontWeight: 600 }}>
+                  {t('adfree.statusInactive')}
+                </span>
+              )}
+            </div>
+            <p className="muted" style={{ margin: 0, fontSize: 13 }}>{t('adfree.subtitle')}</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+              <span className="muted">{t('adfree.balanceLabel')}</span>
+              <strong style={{ fontSize: 20 }}>{rupees(adFreeBalance)}</strong>
+            </div>
+
+            {adFreeErr && <div style={{ color: 'var(--danger)' }}>{adFreeErr}</div>}
+            {adFreeMsg && <div style={{ color: 'var(--accent)' }}>{adFreeMsg}</div>}
+
+            {!adFreeEnabled ? (
+              <div className="muted">{t('adfree.disabledNote')}</div>
+            ) : (
+              <form onSubmit={buyAdFree} style={{ display: 'grid', gap: 12 }}>
+                <div>
+                  <label className="muted">{t('adfree.days')}</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <input
+                      type="range" min={1} max={adFreeMaxDays} step={1}
+                      value={adFreeDays} onChange={(ev) => setAdFreeDays(Number(ev.target.value))}
+                      style={{ flex: 1 }} aria-label={t('adfree.days')}
+                    />
+                    <input
+                      type="number" min={1} max={adFreeMaxDays} value={adFreeDays}
+                      onChange={(ev) => setAdFreeDays(Math.min(adFreeMaxDays, Math.max(1, Number(ev.target.value) || 1)))}
+                      style={{ width: 72 }}
+                    />
+                  </div>
+                  <div className="muted" style={{ fontSize: 12 }}>{t('adfree.perDay', { amount: rupees(adFreePerDay) })}</div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                  <span className="muted">{t('adfree.costLabel')}</span>
+                  <strong style={{ fontSize: 20, color: adFreeShort ? 'var(--danger)' : 'inherit' }}>{rupees(adFreeCost)}</strong>
+                </div>
+                {adFreeShort && <div className="muted" style={{ color: 'var(--danger)' }}>{t('adfree.lowBalance')}</div>}
+                <button type="submit" disabled={adFreeBusy || adFreeShort}>
+                  {adFreeBusy ? t('adfree.buying') : t(isAdFree ? 'adfree.extend' : 'adfree.buy', { amount: rupees(adFreeCost) })}
+                </button>
+              </form>
+            )}
+          </div>
+        )}
 
         {nameI18n && nameI18n.languages && nameI18n.languages.length > 0 && (
         <div className="card" style={{ maxWidth: 520 }}>

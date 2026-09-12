@@ -4,6 +4,7 @@ const logger = require('../utils/logger');
 const { RENDER_LANGS, reseedShopName } = require('../utils/shop-name-i18n');
 const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
 const { getBrandedStoreConfig } = require('../utils/brandedStore');
+const { getStorefrontAdFreeConfig } = require('../utils/storefrontAdFree');
 const { spendCredits } = require('../utils/wallet');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
@@ -250,6 +251,108 @@ exports.patchBranding = async (req, res) => {
   res.json({ brand_accent: r.rows[0].brand_accent, brand_tagline: r.rows[0].brand_tagline });
 };
 
+// ===========================================================================
+// Storefront ad-free buy-out (batch STOREFRONT-FULL). A shop OWNER spends its
+// earned Khata Credits to keep the sponsored slide OFF its storefront slider for
+// a time-boxed window (shops.storefront_ad_free_until). Mirrors the Branded Store
+// activate flow EXACTLY: owner-scoped, config read LIVE from platform_settings,
+// a pre-check 402, and the guarded debit in the SAME transaction as the window
+// extension (so the balance can never go negative and a debit never happens
+// without the window it paid for). All money is integer paise.
+// ===========================================================================
+
+// GET /api/shops/me/storefront-ad-free — the live config + this shop's current
+// ad-free window + spendable balance, so the owner card can render the day
+// picker, the live ₹ cost, the disabled state and the "ad-free until" line.
+exports.getStorefrontAdFree = async (req, res) => {
+  const shopId = req.user.shopId;
+  const cfg = await getStorefrontAdFreeConfig();
+  const r = await query(
+    `SELECT storefront_ad_free_until,
+            (storefront_ad_free_until IS NOT NULL AND storefront_ad_free_until > NOW()) AS is_ad_free
+       FROM shops WHERE id = $1`,
+    [shopId]
+  );
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  const balance = await shopBalancePaise(shopId);
+  res.json({
+    enabled: cfg.enabled,
+    credits_per_day_paise: cfg.credits_per_day_paise,
+    max_days: cfg.max_days,
+    balance_paise: balance,
+    ad_free_until: r.rows[0].storefront_ad_free_until,
+    is_ad_free: r.rows[0].is_ad_free,
+  });
+};
+
+// POST /api/shops/me/storefront-ad-free — spend credits to start (or extend)
+// the ad-free window for `days`. Validated by Joi in the route: { days (1..365) };
+// the upper bound is clamped again against the LIVE max_days here. 403 when the
+// feature is off, 402 when the balance is short. The debit + the extension commit
+// together (or roll back together).
+exports.buyStorefrontAdFree = async (req, res) => {
+  const shopId = req.user.shopId;
+  if (!shopId) throw ApiError.badRequest('No shop associated with this account');
+
+  const cfg = await getStorefrontAdFreeConfig();
+  if (!cfg.enabled) {
+    throw new ApiError(403, 'storefront_ad_free_disabled', ['Removing the sponsored slide is currently disabled']);
+  }
+
+  const days = Number(req.body.days);
+  if (!Number.isInteger(days) || days < 1 || days > cfg.max_days) {
+    throw ApiError.badRequest('Validation failed', [`days must be an integer between 1 and ${cfg.max_days}`]);
+  }
+
+  const cost = days * cfg.credits_per_day_paise;
+
+  // Pre-check the balance for a clean 402 with the shortfall. The guarded debit in
+  // spendCredits below is the real non-negativity guarantee (it writes nothing when
+  // the balance is short), so a race between this check and the debit is safe.
+  const balance = await shopBalancePaise(shopId);
+  if (balance < cost) {
+    throw new ApiError(402, 'insufficient_credits', [
+      `Need ${cost} paise, have ${balance} paise (short ${cost - balance})`,
+    ]);
+  }
+
+  try {
+    const result = await withTx(async (client) => {
+      // Guarded debit IN THE SAME TRANSACTION as the window extension.
+      await spendCredits(
+        {
+          shop: shopId,
+          amount_paise: cost,
+          purpose: 'redeem_premium',
+          ref_note: `storefront ad-free ${shopId}`,
+          created_by: req.user.sub,
+        },
+        client
+      );
+      // Extend from the later of the current window end and now, so buying again
+      // while already ad-free ADDS to the remaining time rather than resetting.
+      const upd = await client.query(
+        `UPDATE shops
+            SET storefront_ad_free_until =
+                  GREATEST(COALESCE(storefront_ad_free_until, NOW()), NOW()) + make_interval(days => $2),
+                updated_at = NOW()
+          WHERE id = $1
+          RETURNING storefront_ad_free_until`,
+        [shopId, days]
+      );
+      if (!upd.rowCount) throw ApiError.notFound('Shop not found');
+      return { ad_free_until: upd.rows[0].storefront_ad_free_until };
+    });
+    res.json({ ad_free_until: result.ad_free_until, cost_paise: cost });
+  } catch (e) {
+    // A concurrent spend drained the balance between the pre-check and the debit.
+    if (e && e.code === 'insufficient') {
+      throw new ApiError(402, 'insufficient_credits', ['Balance changed — not enough Khata Credits']);
+    }
+    throw e;
+  }
+};
+
 /**
  * Owner/staff, shop-scoped: upload the shop cover photo (multipart field
  * `image`). Validate mime, resize/compress with the shared sharp pipeline (wider
@@ -292,9 +395,16 @@ exports.uploadImage = async (req, res) => {
 // ===========================================================================
 // Storefront photo gallery (batch LITE). Up to 3 owner-uploaded photos per
 // shop, stored IN Postgres exactly like the single cover above and served under
-// /api/shop-images/<id>. Same trust model as the cover (owner-controlled, no
-// moderation). The 3-photo cap is enforced HERE, in the app — a 4th upload is
-// rejected with 409 shop_images_full — not in the DB.
+// /api/shop-images/<id>. The 3-photo cap is enforced HERE, in the app — a 4th
+// upload is rejected with 409 shop_images_full — not in the DB.
+//
+// MODERATION (batch STOREFRONT-FULL): a photo carries a status. A new upload
+// starts 'pending_review' unless the shop is trusted (shops.slides_auto_publish,
+// an admin toggle) in which case it is 'active' at once. Only 'active' photos are
+// composed into the PUBLIC storefront (discovery.getShop); the owner list shows
+// every photo with its status + the admin's review_note. The raw bytes stay
+// servable by id regardless of status (the id is an unguessable UUID and the
+// admin review queue needs to render the pending photo).
 // ===========================================================================
 
 // Hard cap of photos per shop (spec §1/§2). Enforced in the app, not the schema.
@@ -310,12 +420,14 @@ function galleryImageUrl(id, updatedAt) {
 
 /**
  * Owner/staff, shop-scoped: list this shop's storefront photos ordered by
- * position. Never returns the raw BYTEA — only { id, url, position } with a
- * cache-busted url pointing at the public serve endpoint.
+ * position. Never returns the raw BYTEA — only { id, url, position, status,
+ * review_note } with a cache-busted url pointing at the public serve endpoint.
+ * Every photo is listed regardless of moderation status so the owner can see
+ * what is pending / live / rejected (and why).
  */
 exports.listImages = async (req, res) => {
   const r = await query(
-    `SELECT id, position, updated_at
+    `SELECT id, position, updated_at, status, review_note
        FROM shop_images
       WHERE shop_id = $1
       ORDER BY position, updated_at, id`,
@@ -325,6 +437,8 @@ exports.listImages = async (req, res) => {
     id: row.id,
     url: galleryImageUrl(row.id, row.updated_at),
     position: row.position,
+    status: row.status,
+    review_note: row.review_note || null,
   }));
   res.json({ images });
 };
@@ -355,8 +469,12 @@ exports.uploadGalleryImage = async (req, res) => {
 
   const created = await withTx(async (client) => {
     // Lock the owning shop row so a concurrent upload for the same shop
-    // serializes behind us — the cap check below then sees a stable count.
-    const shop = await client.query('SELECT id FROM shops WHERE id = $1 FOR UPDATE', [req.user.shopId]);
+    // serializes behind us — the cap check below then sees a stable count. The
+    // same read gives us the trust toggle that decides the initial status.
+    const shop = await client.query(
+      'SELECT id, slides_auto_publish FROM shops WHERE id = $1 FOR UPDATE',
+      [req.user.shopId]
+    );
     if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
     const cnt = await client.query('SELECT COUNT(*)::int AS n FROM shop_images WHERE shop_id = $1', [
@@ -366,13 +484,17 @@ exports.uploadGalleryImage = async (req, res) => {
       throw ApiError.conflict('shop_images_full', [`A shop can have at most ${MAX_SHOP_IMAGES} photos`]);
     }
 
+    // Moderation: a trusted shop (slides_auto_publish) goes live at once; every
+    // other upload waits for an admin in 'pending_review'.
+    const status = shop.rows[0].slides_auto_publish === true ? 'active' : 'pending_review';
+
     const ins = await client.query(
-      `INSERT INTO shop_images (shop_id, position, mime, data, updated_at)
+      `INSERT INTO shop_images (shop_id, position, mime, data, updated_at, status)
        VALUES ($1,
                COALESCE((SELECT MAX(position) + 1 FROM shop_images WHERE shop_id = $1), 0),
-               $2, $3, NOW())
-       RETURNING id, position, updated_at`,
-      [req.user.shopId, mime, data]
+               $2, $3, NOW(), $4)
+       RETURNING id, position, updated_at, status`,
+      [req.user.shopId, mime, data, status]
     );
     return ins.rows[0];
   });
@@ -381,6 +503,8 @@ exports.uploadGalleryImage = async (req, res) => {
     id: created.id,
     url: galleryImageUrl(created.id, created.updated_at),
     position: created.position,
+    status: created.status,
+    review_note: null,
   });
 };
 

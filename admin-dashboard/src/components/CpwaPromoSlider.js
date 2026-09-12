@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { publicFetch } from '../lib/customerApi';
 import { useLang } from '../lib/i18n';
 import { useDataSaver } from '../lib/useDataSaver';
+import { fireBeacon, followPromoLink } from '../lib/promoLink';
 
 // Consumer promo band (batch ADS5) — the visible finale of the geo-targeted promo
 // system. Sits on the home screen between search and categories. It fetches the
@@ -13,50 +14,12 @@ import { useDataSaver } from '../lib/useDataSaver';
 // so the home screen is unchanged. Lightweight: no new fonts/images/deps, all
 // colours from the --c-* theme tokens so it works in Light/Dark/Warm and the
 // standard/gaon layouts, and RTL-safe.
+//
+// The beacons (impression/click) and the link_type → destination rule live in
+// lib/promoLink.js, shared with the storefront sponsored slide (ShopCarousel).
 
 const LOC_KEY = 'skhata-loc';
-const VID_KEY = 'skhata-vid';
 const MAX_SLIDES = 5;
-
-// Per-session in-memory fallback viewer id, used only when localStorage is
-// unavailable (SSR, private mode, blocked store) so the impression beacon still
-// carries a stable-within-this-page token instead of nothing.
-let memoryVid = null;
-
-// A random opaque token — no PII. Prefers crypto.randomUUID; falls back to a
-// Math.random-based id when it (or crypto) is missing.
-function newVid() {
-  try {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-  } catch (e) {
-    /* fall through to the Math.random path */
-  }
-  return `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
-}
-
-// Return a stable anonymous viewer id from localStorage['skhata-vid'], creating
-// one on first use. SSR-guarded and wrapped in try/catch: if storage is blocked
-// we keep a per-session in-memory id so the beacon still carries something. The
-// id is a random opaque per-device token, never PII.
-function getViewerId() {
-  if (typeof window === 'undefined') {
-    if (!memoryVid) memoryVid = newVid();
-    return memoryVid;
-  }
-  try {
-    let vid = window.localStorage.getItem(VID_KEY);
-    if (!vid) {
-      vid = newVid();
-      window.localStorage.setItem(VID_KEY, vid);
-    }
-    return vid;
-  } catch (e) {
-    if (!memoryVid) memoryVid = newVid();
-    return memoryVid;
-  }
-}
 
 // Neutral per-style glyph fallbacks — used when a promo carries no glyph and no
 // (usable) image. Emoji only, so there is nothing to download.
@@ -67,9 +30,8 @@ const DEFAULT_GLYPH = {
   festival: '🎉',
 };
 
-// The base URL that customerApi's publicFetch targets. Used only for the
-// fire-and-forget beacons, which we send with sendBeacon/keepalive so a same-tab
-// navigation on click does not cancel them.
+// The base URL that customerApi's publicFetch targets — used to resolve a
+// relative promo image_url.
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // Read the shopper's saved location (Batch 1's CpwaLocationPicker persisted
@@ -91,33 +53,6 @@ function readLoc() {
     };
   } catch (e) {
     return empty;
-  }
-}
-
-// Best-effort impression/click beacon. Fire-and-forget: never awaited, and every
-// path is wrapped so a failure (blocked network, cancelled request, missing API)
-// can never throw into the shopper's UI. Prefers sendBeacon so the click beacon
-// survives the same-tab navigation that immediately follows it.
-function fireBeacon(id, kind) {
-  if (!id) return;
-  try {
-    let url = `${API_BASE}/api/public/promos/${encodeURIComponent(id)}/${kind}`;
-    // The impression beacon carries the stable viewer id so the server can dedup
-    // per (campaign, viewer, day). Passed in the URL so it survives sendBeacon
-    // (which sends no readable body). Clicks stay raw — no vid.
-    if (kind === 'impression') {
-      const vid = getViewerId();
-      if (vid) url += `?vid=${encodeURIComponent(vid)}`;
-    }
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-      navigator.sendBeacon(url);
-      return;
-    }
-    if (typeof fetch === 'function') {
-      fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
-    }
-  } catch (e) {
-    /* beacons are best-effort — swallow everything, never surface to the shopper */
   }
 }
 
@@ -245,27 +180,12 @@ export default function CpwaPromoSlider() {
     return () => clearInterval(id);
   }, [promos.length, scrollToSlide]);
 
-  // Tap a slide → click beacon (fire-and-forget) then navigate by link_type.
+  // Tap a slide → click beacon (fire-and-forget) then navigate by link_type
+  // (the shared rule in lib/promoLink.js).
   const onSlideClick = useCallback(
     (p) => {
       fireBeacon(p.id, 'click');
-      const type = p.link_type;
-      if (type === 'shop' && p.link_shop_id) {
-        router.push(`/c/shop/${p.link_shop_id}`);
-      } else if (type === 'product' && p.link_shop_id) {
-        // No standalone product-detail route exists in the consumer app, so a
-        // product link opens the seller's shop page (the shop lists the product).
-        router.push(`/c/shop/${p.link_shop_id}`);
-      } else if (type === 'url' && p.link_url) {
-        try {
-          window.open(p.link_url, '_blank', 'noopener');
-        } catch (e) {
-          /* popup blocked — nothing to recover, do not disturb the shopper */
-        }
-      } else if (type === 'brand' && p.title) {
-        router.push(`/c/products?q=${encodeURIComponent(p.title)}`);
-      }
-      // 'none' (or a link with no usable target) → no-op.
+      followPromoLink(router, p);
     },
     [router]
   );
