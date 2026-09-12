@@ -46,7 +46,12 @@ const INT_KEYS = [
   // Shop availability (batch A): the ceiling on a single "pause my shop", so a
   // mis-tap can never shutter a shop indefinitely. Policy, not a credential.
   'shop_pause_max_minutes',
+  // One-tap accept (batch B): the ceiling a promised ready time is clamped to.
+  'order_eta_max_minutes',
 ];
+// TEXT feature keys — edited as plain strings. `order_eta_chips` (batch B) is the
+// comma-separated minute list behind the owner's three accept chips.
+const TEXT_KEYS = ['order_eta_chips'];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
 
 // Build the editable form state from the API `features` object: amounts → ₹.
@@ -57,6 +62,7 @@ function featFromApi(f) {
   INT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
   PCT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
   DEC_KEYS.forEach((k) => { o[k] = Number.isFinite(Number(f[k])) ? Number(f[k]) : 0.9; });
+  TEXT_KEYS.forEach((k) => { o[k] = f[k] == null ? '' : String(f[k]); });
   o.ai_moderation_configured = !!f.ai_moderation_configured;
   return o;
 }
@@ -292,6 +298,24 @@ export default function AdminSettings() {
     const n = parseInt(feat.shop_pause_max_minutes, 10);
     if (!(n >= 1)) { setErr('The pause ceiling must be a whole number of 1 minute or more.'); return; }
     saveFeat({ shop_pause_max_minutes: n }, 'Shop pause ceiling saved.');
+  }
+
+  // One-tap accept (batch B): the three coarse ready-time chips and the ceiling.
+  // Not credentials, so no I CONFIRM — the same plain save every other feature
+  // policy value uses. The server re-validates and answers 400 `invalid_eta_chips`;
+  // this check is here only so the admin gets the reason in words, not a code.
+  function saveEtaChips() {
+    const max = parseInt(feat.order_eta_max_minutes, 10);
+    if (!(max >= 1)) { setErr('The ready-time ceiling must be a whole number of 1 minute or more.'); return; }
+    const parts = String(feat.order_eta_chips || '').split(',').map((x) => x.trim());
+    const nums = parts.map((x) => (/^\d+$/.test(x) ? parseInt(x, 10) : NaN));
+    if (parts.length < 1 || parts.length > 4 || nums.some((n) => !(n >= 1))) {
+      setErr('Give 1 to 4 chips as whole minutes, separated by commas — for example 15,30,60.');
+      return;
+    }
+    if (new Set(nums).size !== nums.length) { setErr('The chips must all be different.'); return; }
+    if (nums.some((n) => n > max)) { setErr(`Every chip must be ${max} minutes or less.`); return; }
+    saveFeat({ order_eta_chips: nums.join(','), order_eta_max_minutes: max }, 'Ready-time chips saved.');
   }
 
   async function testRazorpay() {
@@ -768,6 +792,38 @@ export default function AdminSettings() {
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={savePauseCeiling}>Save pause ceiling</button>
+                </div>
+              </div>
+            </div>
+
+            {/* One-tap accept (batch B): the three coarse chips an owner taps to
+                accept an order AND promise a ready time, plus the ceiling that
+                promise is clamped to. Coarse on purpose — a kirana owner is not
+                dispatching riders, and minute-precision would be false precision. */}
+            <div className="card">
+              <h3>Order ready-time chips</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                When a shopkeeper accepts an order they tap one of these to tell the customer roughly when it will be
+                ready. The customer is sent a clock time (&ldquo;ready by 4:45 PM&rdquo;), never &ldquo;in 30 minutes&rdquo;.
+                1 to 4 chips, whole minutes, comma-separated, each no more than the ceiling.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                <div>
+                  <label className="muted">Chips (minutes, comma-separated)</label>
+                  <input type="text" inputMode="numeric" placeholder="15,30,60" value={feat.order_eta_chips}
+                    onChange={(e) => setFeat({ ...feat, order_eta_chips: e.target.value })} />
+                </div>
+                <div>
+                  <label className="muted">Max ready time (minutes)</label>
+                  <input type="number" min="1" max="1440" step="1" inputMode="numeric" value={feat.order_eta_max_minutes}
+                    onChange={(e) => setFeat({ ...feat, order_eta_max_minutes: e.target.value })} />
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  A promise longer than {feat.order_eta_max_minutes} minutes is clamped to it. An owner can always accept
+                  with no time at all, and can push the time out later with &ldquo;Need more time&rdquo;.
+                </p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={saveEtaChips}>Save ready-time chips</button>
                 </div>
               </div>
             </div>

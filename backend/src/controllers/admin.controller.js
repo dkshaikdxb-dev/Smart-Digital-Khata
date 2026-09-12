@@ -4,6 +4,9 @@ const settings = require('../config/settings');
 const razorpay = require('../services/razorpay.service');
 const whatsapp = require('../services/whatsapp.service');
 const { hasPermission, permissionsFor } = require('../config/permissions');
+// The chip-count ceiling lives with the rest of the ready-time rule (batch B),
+// so the admin validator and the live reader agree on what "too many" means.
+const { MAX_CHIPS: ETA_MAX_CHIPS } = require('../utils/orderEta');
 
 // Append one row to the moderation audit trail. Best-effort metadata is JSON.
 // Exported so other admin moderation surfaces (e.g. the storefront photo queue in
@@ -422,6 +425,18 @@ const FEATURE_NUM_DEFAULTS = {
   // in minutes, so a mis-tap can never shutter a shop indefinitely. Default 24h.
   // Policy number, not a credential — no I CONFIRM.
   shop_pause_max_minutes: 1440,
+  // One-tap accept (batch B, 0067): the ceiling a promised ready time is clamped
+  // to, so a fat-fingered chip can never promise next week. Policy, not a credential.
+  order_eta_max_minutes: 240,
+};
+
+// TEXT feature keys — stored and edited as plain strings rather than numbers or
+// booleans. `order_eta_chips` (batch B) is the comma-separated minute list
+// behind the owner's three accept chips; utils/orderEta.getEtaConfig() parses,
+// validates and sorts it live, and falls back to this default on anything
+// malformed. Policy, not a credential — no I CONFIRM.
+const FEATURE_TEXT_DEFAULTS = {
+  order_eta_chips: '15,30,60',
 };
 
 // The three referral-split percents feed the zero-burn accrual: their sum can
@@ -479,6 +494,10 @@ exports.getSettings = async (_req, res) => {
       for (const k of Object.keys(FEATURE_BOOL_DEFAULTS)) f[k] = settings.get(k) === 'true';
       for (const k of Object.keys(FEATURE_NUM_DEFAULTS)) f[k] = featureNumber(k);
       for (const k of Object.keys(FEATURE_DEC_DEFAULTS)) f[k] = featureDecimal(k);
+      for (const k of Object.keys(FEATURE_TEXT_DEFAULTS)) {
+        const v = settings.get(k);
+        f[k] = v == null || v === '' ? FEATURE_TEXT_DEFAULTS[k] : String(v);
+      }
       // Read-only: whether the environment carries the AI moderation key + model
       // id. The toggle above is inert without it. Lazy require — the service
       // itself requires this controller (writeAudit).
@@ -675,6 +694,33 @@ exports.updateSettings = async (req, res) => {
       if (!Number.isFinite(n)) throw ApiError.badRequest('invalid_threshold');
       patch[key] = String(Math.min(DEC_MAX, Math.max(DEC_MIN, n)));
     }
+  }
+
+  // Ready-time chips (batch B) -> the TEXT list getEtaConfig() parses. Validated
+  // STRICTLY here, not merely clamped, because this is the vocabulary the owner's
+  // one-tap accept offers: 1..4 comma-separated whole minutes, each at least 1
+  // and no more than the ceiling. Anything else is a clear 400 rather than a
+  // silent correction, so an admin never walks away believing they saved chips
+  // that were quietly dropped. The ceiling checked against is the RESULTING one
+  // (the value in this body if present, else the stored one).
+  if (b.order_eta_chips !== undefined) {
+    const max = b.order_eta_max_minutes !== undefined
+      ? parseInt(b.order_eta_max_minutes, 10)
+      : featureNumber('order_eta_max_minutes');
+    const raw = String(b.order_eta_chips == null ? '' : b.order_eta_chips).trim();
+    const parts = raw.split(',').map((p) => p.trim());
+    const ok = raw !== ''
+      && parts.length >= 1 && parts.length <= ETA_MAX_CHIPS
+      && parts.every((p) => /^\d+$/.test(p))
+      && parts.every((p) => {
+        const n = parseInt(p, 10);
+        return n >= 1 && Number.isFinite(max) && n <= max;
+      })
+      && new Set(parts.map((p) => parseInt(p, 10))).size === parts.length;
+    if (!ok) throw ApiError.badRequest('invalid_eta_chips');
+    // Stored sorted, so the three buttons always read low → high whatever order
+    // they were typed in.
+    patch.order_eta_chips = parts.map((p) => parseInt(p, 10)).sort((x, y) => x - y).join(',');
   }
 
   // Zero-burn guard: if ANY split percent is being changed, validate the

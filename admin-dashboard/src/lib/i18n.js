@@ -8249,6 +8249,68 @@ for (const code of Object.keys(SHOPOPEN)) {
   Object.assign(DICT[code], SHOPOPEN[code]);
 }
 
+// Ready-time promise (batch B) — the owner's one-tap accept chips, the "need
+// more time" re-promise, and what the CUSTOMER reads about the promise. Own
+// block, merged into DICT like PAGE/OALERT/DELIV/SHOPOPEN. The SAME key set
+// exists in mobile-app/src/i18n.js (owner app) and mobile-app/src/consumer/i18n.js
+// (consumer app), so the four surfaces word the same promise identically.
+//
+// en and hi are AUTHORED here; every other language is deliberately NOT listed
+// and falls back to English via translate() — the honesty convention this file
+// already follows. A wrong ready time in a language the author cannot check
+// costs a customer a wasted trip, so nothing here is machine-translated.
+const ORDERETA = {
+  en: {
+    // Owner — accepting.
+    'eta.accept': 'Accept',
+    'eta.acceptTitle': 'Accept this order',
+    'eta.pickTime': 'Ready in about…',
+    'eta.noTime': 'Accept without a time',
+    'eta.notNow': 'Not now',
+    'eta.accepting': 'Accepting…',
+    // Chip labels, built from whatever minutes the platform is configured with.
+    'eta.chipMin': '~{n} min',
+    'eta.chipHour': '~{n} hour',
+    'eta.chipHourMin': '~{h} hr {m} min',
+    // Owner — after accepting.
+    'eta.promisedBy': 'You promised ready by {time}',
+    'eta.noPromise': 'No ready time promised',
+    'eta.needMore': 'Need more time',
+    'eta.needMoreHelp': 'Pick a new time — the customer is told straight away.',
+    'eta.sent': 'The customer has been told the new time.',
+    'eta.late': 'Past the time you promised',
+    // Customer — what a shopper reads. A passed promise is deliberately gentle:
+    // the shopkeeper is a neighbour who is busy, not a courier breaching an SLA.
+    'eta.readyBy': 'Ready by {time}',
+    'eta.takingLonger': 'Taking a little longer',
+    'eta.takingLongerHelp': 'It was expected by {time}. It should not be much longer.',
+  },
+  hi: {
+    'eta.accept': 'स्वीकार करें',
+    'eta.acceptTitle': 'यह ऑर्डर स्वीकार करें',
+    'eta.pickTime': 'लगभग कितनी देर में तैयार?',
+    'eta.noTime': 'बिना समय बताए स्वीकार करें',
+    'eta.notNow': 'अभी नहीं',
+    'eta.accepting': 'स्वीकार किया जा रहा है…',
+    'eta.chipMin': '~{n} मिनट',
+    'eta.chipHour': '~{n} घंटा',
+    'eta.chipHourMin': '~{h} घंटा {m} मिनट',
+    'eta.promisedBy': 'आपने {time} बजे तक तैयार होने को कहा है',
+    'eta.noPromise': 'कोई समय नहीं बताया गया',
+    'eta.needMore': 'और समय चाहिए',
+    'eta.needMoreHelp': 'नया समय चुनें — ग्राहक को तुरंत बता दिया जाएगा।',
+    'eta.sent': 'ग्राहक को नया समय बता दिया गया।',
+    'eta.late': 'आपके बताए समय से देर हो चुकी है',
+    'eta.readyBy': '{time} बजे तक तैयार',
+    'eta.takingLonger': 'थोड़ा और समय लग रहा है',
+    'eta.takingLongerHelp': '{time} बजे तक तैयार होना था। बस थोड़ी ही देर और।',
+  },
+};
+for (const code of Object.keys(ORDERETA)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], ORDERETA[code]);
+}
+
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
 // the other languages' wording here, so strip it from their strings — English
 // keeps it and receives 's'/'' at call time; every other language ignores the

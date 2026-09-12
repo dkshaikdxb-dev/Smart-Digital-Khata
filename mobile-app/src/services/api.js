@@ -215,7 +215,21 @@ export const orders = {
     return api.get(`/api/orders${qs}`).then((r) => r.data);
   },
   get: (id, lang = '') => api.get(`/api/orders/${id}${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
-  setStatus: (id, status) => api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data),
+  // ONE-TAP ACCEPT (batch B). `etaMinutes` is OPTIONAL and only meaningful on
+  // the move to 'accepted': passing it accepts the order AND makes the
+  // ready-time promise in the SAME request (and, as ever, silences the
+  // new-order alert through the implicit acknowledgement). Omitting it is the
+  // honest "accept without a time" — the API then leaves the promise NULL
+  // rather than inventing one.
+  setStatus: (id, status, etaMinutes) => api
+    .patch(`/api/orders/${id}/status`, etaMinutes == null ? { status } : { status, eta_minutes: etaMinutes })
+    .then((r) => r.data),
+  // "Need more time" — re-promise an order that is already accepted. The
+  // promise is recomputed from NOW and the customer is told straight away.
+  setEta: (id, etaMinutes) => api.patch(`/api/orders/${id}/eta`, { eta_minutes: etaMinutes }).then((r) => r.data),
+  // The live coarse chips + ceiling, so the app offers whatever the platform is
+  // configured with instead of hardcoding 15/30/60.
+  etaConfig: () => api.get('/api/orders/eta-config').then((r) => r.data),
   // Repeating new-order alert (batch ORDERALERT). ONE request per poll: the
   // response carries both the unacknowledged orders (oldest first) and the
   // shop's alert settings, so the banner never needs a second round trip on 2G.

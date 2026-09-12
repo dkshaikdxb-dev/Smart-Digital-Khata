@@ -293,6 +293,19 @@ const en = {
   'open.browseOnly': 'You can look around — ordering opens again when the shop does.',
   'open.cannotOrder': 'Closed — cannot order',
   'open.cartBlocked': 'This shop is closed right now, so the order cannot be placed. Your cart is saved.',
+
+  // Ready-time promise (batch B) — what a shopper reads once the shop has
+  // accepted the order and said when it will be ready. The SAME key names exist
+  // in admin-dashboard/src/lib/i18n.js (consumer PWA) and mobile-app/src/i18n.js
+  // (owner app), so the shopper reads the same words in the app and on the web.
+  // en is the source of truth and hi is authored below; every other language
+  // falls back to these English values the way this file already handles missing
+  // keys. Nothing here is machine-translated — a wrong ready time costs a
+  // shopper a wasted trip.
+  'eta.readyBy': 'Ready by {time}',
+  'eta.takingLonger': 'Taking a little longer',
+  'eta.takingLongerHelp': 'It was expected by {time}. It should not be much longer.',
+  'eta.noPromise': 'No ready time promised',
 };
 
 const hi = {
@@ -491,6 +504,13 @@ const hi = {
   'open.browseOnly': 'आप देख सकते हैं — दुकान खुलते ही ऑर्डर फिर चालू हो जाएगा।',
   'open.cannotOrder': 'बंद — ऑर्डर नहीं',
   'open.cartBlocked': 'यह दुकान अभी बंद है, इसलिए ऑर्डर नहीं हो सकता। आपका कार्ट सुरक्षित है।',
+
+  // Ready-time promise (batch B) — authored Hindi, matching the consumer PWA
+  // word for word so the app and the web never read differently.
+  'eta.readyBy': '{time} बजे तक तैयार',
+  'eta.takingLonger': 'थोड़ा और समय लग रहा है',
+  'eta.takingLongerHelp': '{time} बजे तक तैयार होना था। बस थोड़ी ही देर और।',
+  'eta.noPromise': 'कोई समय नहीं बताया गया',
 };
 
 const bn = {

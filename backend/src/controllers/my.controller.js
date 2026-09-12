@@ -763,6 +763,13 @@ exports.createOrder = async (req, res) => {
 /**
  * GET /my/orders — this customer's orders across every shop, newest first,
  * with shop_name + item count.
+ *
+ * `o.*` carries the ready-time promise (`eta_minutes`, `promised_at`,
+ * `eta_set_at` — batch B) straight through, so the consumer PWA and the consumer
+ * app render "Ready by 4:45 PM" from the same row the owner sees. Lateness is
+ * NOT computed here: each client compares promised_at with its own clock, so an
+ * offline client and the server never disagree about a column that would need
+ * keeping fresh.
  */
 exports.listOrders = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
@@ -830,6 +837,8 @@ exports.ordersCsv = async (req, res) => {
 
 /**
  * GET /my/orders/:id — order detail incl items. 404 if not this customer's.
+ * `o.*` carries the batch-B ready-time promise (eta_minutes / promised_at /
+ * eta_set_at) through unchanged, exactly as the list above does.
  */
 exports.getOrder = async (req, res) => {
   const phone = toE164(req.customerUser.phone);

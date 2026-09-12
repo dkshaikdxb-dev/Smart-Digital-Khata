@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../lib/orderEta';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -20,10 +21,13 @@ const statusColor = (s) => {
 };
 
 // Sensible forward transitions given the current status (Cancel is separate).
+// A PENDING order is deliberately absent from the buttons below: accepting is
+// the one decision that carries a ready-time promise with it, so it gets the
+// chip block (batch B) instead of a bare "Mark accepted".
 function nextStatuses(order) {
   const isPickup = order.fulfillment_type === 'pickup';
   switch (order.status) {
-    case 'pending': return ['accepted'];
+    case 'pending': return [];
     case 'accepted': return ['preparing'];
     case 'preparing': return ['ready'];
     case 'ready': return isPickup ? ['completed'] : ['out_for_delivery'];
@@ -42,6 +46,10 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  // ONE-TAP ACCEPT + "need more time" (batch B). The chips come from the
+  // platform config; DEFAULT_CHIPS stands in until it lands (and if it never does).
+  const [chips, setChips] = useState(DEFAULT_CHIPS);
+  const [needMore, setNeedMore] = useState(false);
 
   const load = useCallback(async () => {
     const r = await orders.get(id, lang);
@@ -50,6 +58,11 @@ export default function OrderDetailScreen({ route, navigation }) {
 
   useEffect(() => {
     load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
+    // Live ready-time chips. A failure is silent: the built-in defaults are
+    // perfectly usable, so accepting keeps working on a bad link.
+    orders.etaConfig()
+      .then((r) => { if (r && Array.isArray(r.chips) && r.chips.length) setChips(r.chips); })
+      .catch(() => {});
   }, [load, t]);
 
   const onRefresh = async () => {
@@ -70,6 +83,37 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   }
 
+  // ONE TAP: accept the order AND make the ready-time promise in a single
+  // request. `minutes` null is the honest "accept without a time".
+  async function accept(minutes) {
+    setBusy(true); setMsg('');
+    try {
+      await orders.setStatus(id, 'accepted', minutes);
+      await load();
+      setMsg(t('ord.marked', { s: enumT('ostatus', OSTATUS, 'accepted') }));
+    } catch (e) {
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // "NEED MORE TIME" — re-promise an order that is already accepted. Same three
+  // chips, a different endpoint, and no second mode for the owner to learn.
+  async function pushEta(minutes) {
+    setBusy(true); setMsg('');
+    try {
+      await orders.setEta(id, minutes);
+      setNeedMore(false);
+      await load();
+      setMsg(t('eta.sent'));
+    } catch (e) {
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function cancel() {
     Alert.alert(t('ord.cancelOrder'), t('ord.cancelConfirm'), [
       { text: t('common.keep'), style: 'cancel' },
@@ -83,6 +127,8 @@ export default function OrderDetailScreen({ route, navigation }) {
   const terminal = TERMINAL.includes(order.status);
   const forwards = nextStatuses(order);
   const items = order.items || [];
+  const promiseState = etaState(order);
+  const promisedTime = formatClock(order.promised_at, lang);
 
   return (
     <ScrollView
@@ -107,6 +153,58 @@ export default function OrderDetailScreen({ route, navigation }) {
           <Text style={s.badge}>{enumT('pmode', PMODE, order.payment_mode)}</Text>
           <Text style={s.badge}>{enumT('pstatus', PSTATUS, order.payment_status)}</Text>
         </View>
+
+        {/* ONE-TAP ACCEPT (batch B). A pending order shows the three coarse
+            chips: one big tap both accepts the order and tells the customer
+            when to come. "Accept without a time" stays, because an owner who
+            cannot say should not be made to guess. */}
+        {order.status === 'pending' && !terminal ? (
+          <View style={s.etaBlock}>
+            <Text style={s.etaHint}>{t('eta.pickTime')}</Text>
+            <View style={s.chipRow}>
+              {chips.map((m) => (
+                <Pressable key={m} style={[s.etaChip, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => accept(m)}>
+                  <Text style={s.etaChipText}>{chipLabel(t, m)}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Pressable style={[s.etaGhost, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => accept(null)}>
+              <Text style={s.etaGhostText}>{t('eta.noTime')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {/* Once accepted, the promise in words — and the way to move it. */}
+        {order.status !== 'pending' && !terminal ? (
+          <View style={s.etaBlock}>
+            <Text style={promiseState === 'late' ? s.etaLate : s.etaPromised}>
+              {promiseState === 'none'
+                ? t('eta.noPromise')
+                : promiseState === 'late'
+                  ? `${t('eta.late')} — ${t('eta.promisedBy', { time: promisedTime })}`
+                  : t('eta.promisedBy', { time: promisedTime })}
+            </Text>
+            {!needMore ? (
+              <Pressable style={[s.etaGhost, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => setNeedMore(true)}>
+                <Text style={s.etaGhostText}>{t('eta.needMore')}</Text>
+              </Pressable>
+            ) : (
+              <View>
+                <Text style={s.etaHint}>{t('eta.needMoreHelp')}</Text>
+                <View style={s.chipRow}>
+                  {chips.map((m) => (
+                    <Pressable key={m} style={[s.etaChip, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => pushEta(m)}>
+                      <Text style={s.etaChipText}>{chipLabel(t, m)}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Pressable style={s.etaGhost} onPress={() => setNeedMore(false)}>
+                  <Text style={s.etaGhostText}>{t('eta.notNow')}</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        ) : null}
 
         <View style={s.actions}>
           {forwards.map((st) => (
@@ -173,4 +271,15 @@ const s = StyleSheet.create({
   itemName: { color: '#e2e8f0', fontSize: 14, fontWeight: '600' },
   itemTotal: { color: '#e2e8f0', fontSize: 14, fontWeight: '700' },
   subtotalRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+  // Ready-time promise + one-tap accept (batch B). Touch targets are deliberately
+  // large: this is used one-handed, mid-rush, often on a cracked screen.
+  etaBlock: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#0f172a', paddingTop: 14 },
+  etaHint: { color: '#94a3b8', fontSize: 13, marginBottom: 10 },
+  etaPromised: { color: '#22c55e', fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  etaLate: { color: '#f87171', fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
+  etaChip: { backgroundColor: '#22c55e', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 14 },
+  etaChipText: { color: '#000', fontWeight: '800', fontSize: 15 },
+  etaGhost: { backgroundColor: '#334155', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, alignSelf: 'flex-start' },
+  etaGhostText: { color: '#e2e8f0', fontWeight: '600', fontSize: 14 },
 });

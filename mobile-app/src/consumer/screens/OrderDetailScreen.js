@@ -8,6 +8,7 @@ import { Card, Button, ErrorBanner, Loading, Badge } from '../components';
 import { money } from '../money';
 import { my } from '../consumerApi';
 import { useT } from '../i18n';
+import { etaState, formatClock } from '../../lib/orderEta';
 
 // The per-fulfillment status pipeline (pickup omits out_for_delivery), used to
 // draw a simple stepper. Reached stages are derived by rank from the status.
@@ -17,7 +18,7 @@ const DELIVERY_STEPS = ['pending', 'accepted', 'preparing', 'ready', 'out_for_de
 // Priority 5 — order detail from GET /my/orders/:id, with a status stepper and
 // a cancel action while the order is still pending (POST /my/orders/:id/cancel).
 export default function OrderDetailScreen({ route }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const { orderId } = route.params;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,10 @@ export default function OrderDetailScreen({ route }) {
   const cancellable = order && order.status === 'pending';
   const steps = order && order.fulfillment_type === 'delivery' ? DELIVERY_STEPS : PICKUP_STEPS;
   const currentIdx = order ? steps.indexOf(order.status) : -1;
+  // The shop's ready-time promise (batch B), derived from promised_at against
+  // this device's own clock — the API never computes "late" for us.
+  const promiseState = order ? etaState(order) : 'none';
+  const promisedTime = order ? formatClock(order.promised_at, lang) : '';
 
   function payLabel(o) {
     if (!o) return '';
@@ -90,6 +95,18 @@ export default function OrderDetailScreen({ route }) {
                 {t('orderdetail.payment')} {payLabel(order)}
               </Badge>
             </View>
+            {/* The promise, first thing a shopper looks for. A passed promise is
+                deliberately gentle — "taking a little longer", with the time it
+                was expected by, rather than an alarming "late". */}
+            {promiseState === 'promised' ? (
+              <Text style={styles.eta}>{t('eta.readyBy', { time: promisedTime })}</Text>
+            ) : null}
+            {promiseState === 'late' ? (
+              <View>
+                <Text style={styles.etaSoft}>{t('eta.takingLonger')}</Text>
+                <Text style={styles.meta}>{t('eta.takingLongerHelp', { time: promisedTime })}</Text>
+              </View>
+            ) : null}
             {order.address ? <Text style={styles.meta}>{t('orderdetail.deliverTo')} {order.address}</Text> : null}
             {order.note ? <Text style={styles.meta}>{t('orderdetail.note')} {order.note}</Text> : null}
           </Card>
@@ -162,6 +179,8 @@ const styles = StyleSheet.create({
   date: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
   badges: { flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' },
   meta: { color: colors.textMuted, fontSize: 14, marginTop: 8 },
+  eta: { color: colors.accent, fontSize: 18, fontWeight: '800', marginTop: 12 },
+  etaSoft: { color: colors.textMuted, fontSize: 18, fontWeight: '700', marginTop: 12 },
   sectTitle: { color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 },
   step: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   dot: { width: 14, height: 14, borderRadius: 7, backgroundColor: colors.border, marginRight: 12 },

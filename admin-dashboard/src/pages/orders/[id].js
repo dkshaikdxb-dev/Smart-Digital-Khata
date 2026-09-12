@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { nextStatus, stepsForOrder, currentStepIndex } from '../../lib/orderStatus';
+import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../../lib/orderEta';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -37,6 +38,10 @@ export default function OrderDetail() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
+  // ONE-TAP ACCEPT + "need more time" (batch B). The chips come from the
+  // platform config; DEFAULT_CHIPS stands in until it lands (and if it never does).
+  const [chips, setChips] = useState(DEFAULT_CHIPS);
+  const [needMore, setNeedMore] = useState(false);
 
   const load = useCallback(async () => {
     const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
@@ -50,6 +55,11 @@ export default function OrderDetail() {
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
     if (id) load().catch((e) => setError(e.message));
+    // Live ready-time chips. A failure is not worth an error banner — the
+    // built-in defaults are perfectly usable and accepting keeps working.
+    apiFetch('/api/orders/eta-config')
+      .then((r) => { if (Array.isArray(r.chips) && r.chips.length) setChips(r.chips); })
+      .catch(() => {});
   }, [id, load, router]);
 
   if (error) return <Shell><div className="card" style={{ color: 'var(--danger)' }}>{error}</div></Shell>;
@@ -70,8 +80,36 @@ export default function OrderDetail() {
     await setStatus('cancelled');
   }
 
+  // ONE TAP: accept AND promise, in a single request. `minutes` null is the
+  // honest "accept without a time" for an owner who genuinely cannot say.
+  async function accept(minutes) {
+    setError(''); setMsg(''); setBusy(true);
+    try {
+      const body = minutes == null ? { status: 'accepted' } : { status: 'accepted', eta_minutes: minutes };
+      await apiFetch(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify(body) });
+      await load();
+      setMsg(t('ord.marked', { s: enumLabel('status', 'accepted') }));
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+
+  // "NEED MORE TIME" — re-promise an order that is already accepted. Same three
+  // chips, a different endpoint, and no second mode for the owner to learn.
+  async function pushEta(minutes) {
+    setError(''); setMsg(''); setBusy(true);
+    try {
+      await apiFetch(`/api/orders/${id}/eta`, { method: 'PATCH', body: JSON.stringify({ eta_minutes: minutes }) });
+      setNeedMore(false);
+      await load();
+      setMsg(t('eta.sent'));
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+
   const terminal = TERMINAL.includes(order.status);
   const next = nextStatus(order);
+  const promiseState = etaState(order);
+  const promisedTime = formatClock(order.promised_at, lang);
   const steps = stepsForOrder(order.fulfillment_type);
   const currentIdx = currentStepIndex(order.status, steps);
   const items = order.items || [];
@@ -108,8 +146,52 @@ export default function OrderDetail() {
           </div>
         )}
 
+        {/* ONE-TAP ACCEPT (batch B). A pending order shows the three coarse
+            chips instead of a bare "Mark accepted": one tap both accepts the
+            order and tells the customer when to come. "Accept without a time"
+            stays, because an owner who cannot say should not be made to guess. */}
+        {order.status === 'pending' && !terminal && (
+          <div style={{ marginTop: 16 }}>
+            <div className="muted" style={{ marginBottom: 8 }}>{t('eta.pickTime')}</div>
+            <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+              {chips.map((m) => (
+                <button key={m} onClick={() => accept(m)} disabled={busy}>{chipLabel(t, m)}</button>
+              ))}
+              <button className="secondary" onClick={() => accept(null)} disabled={busy}>{t('eta.noTime')}</button>
+            </div>
+          </div>
+        )}
+
+        {/* Once accepted, the promise in words — and the way to move it. */}
+        {order.status !== 'pending' && !terminal && (
+          <div style={{ marginTop: 16 }}>
+            <div className={promiseState === 'late' ? '' : 'muted'} style={promiseState === 'late' ? { color: 'var(--danger)' } : undefined}>
+              {promiseState === 'none'
+                ? t('eta.noPromise')
+                : promiseState === 'late'
+                  ? `${t('eta.late')} — ${t('eta.promisedBy', { time: promisedTime })}`
+                  : t('eta.promisedBy', { time: promisedTime })}
+            </div>
+            {!needMore ? (
+              <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 8 }}>
+                <button className="secondary" onClick={() => setNeedMore(true)} disabled={busy}>{t('eta.needMore')}</button>
+              </div>
+            ) : (
+              <div style={{ marginTop: 8 }}>
+                <div className="muted" style={{ marginBottom: 8 }}>{t('eta.needMoreHelp')}</div>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  {chips.map((m) => (
+                    <button key={m} onClick={() => pushEta(m)} disabled={busy}>{chipLabel(t, m)}</button>
+                  ))}
+                  <button className="secondary" onClick={() => setNeedMore(false)} disabled={busy}>{t('eta.notNow')}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
-          {next && (
+          {next && order.status !== 'pending' && (
             <button onClick={() => setStatus(next)} disabled={busy || terminal}>{advanceLabel(next)}</button>
           )}
           <button className="secondary" onClick={cancel} disabled={busy || terminal}>{t('ord.cancelOrder')}</button>
