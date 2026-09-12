@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { colors, sizes } from '../theme';
 import { Card, ErrorBanner, Loading, Empty, Button } from '../components';
+import ShopCarousel from '../components/ShopCarousel';
 import { money } from '../money';
 import { publicApi, resolveImageUrl } from '../consumerApi';
 import { useCart, lineTotalPaise } from '../CartContext';
@@ -90,6 +91,10 @@ export default function ShopDetailScreen({ route, navigation }) {
             {fulfillmentLine() ? <Text style={styles.ful}>{fulfillmentLine()}</Text> : null}
           </View>
         ) : null}
+
+        {/* Storefront photos (0-3), directly under the sticky header. Same
+            horizontal padding as the header; nothing renders when empty. */}
+        {shop ? <ShopCarousel images={shop.images} alt={name} /> : null}
 
         <ErrorBanner>{error}</ErrorBanner>
 
