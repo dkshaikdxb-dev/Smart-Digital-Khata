@@ -12,6 +12,19 @@ function tokenHeader() {
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
+// Build the Error for a non-2xx response. The message is unchanged (the
+// server's `error` string), but the status and the parsed body ride along so a
+// caller can act on a TYPED failure — e.g. the 409 `shop_closed` from batch A,
+// whose `details: { reason, reopens_at }` becomes a readable sentence instead
+// of a raw error code. Mirrors apiFetch's error shape in lib/api.js.
+function httpError(res, body) {
+  const err = new Error(body.error || `HTTP ${res.status}`);
+  err.status = res.status;
+  err.body = body;
+  err.details = body.details;
+  return err;
+}
+
 export async function customerFetch(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
     ...options,
@@ -23,7 +36,7 @@ export async function customerFetch(path, options = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+    throw httpError(res, body);
   }
   return res.json();
 }
@@ -37,7 +50,7 @@ export async function publicFetch(path, options = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+    throw httpError(res, body);
   }
   return res.json();
 }

@@ -23,6 +23,10 @@ const TOGGLE_KEYS = [
   ['consumer_prepay_enabled', 'Consumer prepay', 'Lets a customer hold a prepaid advance with a shop.'],
   ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
   ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + moderation model id (Integrations → AI, below).'],
+  // Shop availability (batch A) — the MASTER KILL-SWITCH for the whole
+  // open/closed gate. Turning it off makes every shop count as open again, on
+  // every surface and at order time, with no deploy.
+  ['shop_hours_enabled', 'Shop open/closed gate', 'Honours each shop\u2019s open switch, daily hours, pause and holiday closures \u2014 and refuses orders to a shut shop. Turn OFF to treat every shop as open again.'],
 ];
 // AI moderation thresholds (batch AI-MOD): decimals in 0.5..1.0, edited as-is.
 const DEC_KEYS = ['ai_moderation_auto_approve_min', 'ai_moderation_hold_min'];
@@ -39,6 +43,9 @@ const INT_KEYS = [
   // own alert cadence is clamped to. Plain policy numbers, NOT credentials — so
   // they save through the same numeric-defaults path and do NOT ask for I CONFIRM.
   'order_alert_min_minutes', 'order_alert_max_minutes', 'order_alert_max_repeats_cap',
+  // Shop availability (batch A): the ceiling on a single "pause my shop", so a
+  // mis-tap can never shutter a shop indefinitely. Policy, not a credential.
+  'shop_pause_max_minutes',
 ];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
 
@@ -277,6 +284,14 @@ export default function AdminSettings() {
       order_alert_max_minutes: max,
       order_alert_max_repeats_cap: cap,
     }, 'Order-alert bounds saved.');
+  }
+
+  // Shop availability (batch A): the pause ceiling. Same plain save as every
+  // other feature number — no I CONFIRM, because it is policy, not a credential.
+  function savePauseCeiling() {
+    const n = parseInt(feat.shop_pause_max_minutes, 10);
+    if (!(n >= 1)) { setErr('The pause ceiling must be a whole number of 1 minute or more.'); return; }
+    saveFeat({ shop_pause_max_minutes: n }, 'Shop pause ceiling saved.');
   }
 
   async function testRazorpay() {
@@ -729,6 +744,30 @@ export default function AdminSettings() {
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveOrderAlertBounds}>Save order-alert bounds</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Shop availability (batch A): the ceiling on a single shop pause.
+                The master kill-switch itself is a plain toggle above. */}
+            <div className="card">
+              <h3>Shop availability</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                A shopkeeper can pause their shop for a short while (&ldquo;back in 30 minutes&rdquo;) straight from Home.
+                This is the longest a single pause may last, so a mis-tap can never shutter a shop indefinitely.
+                A pause always expires on its own; the shop reopens with no further action.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                <div>
+                  <label className="muted">Max pause (minutes)</label>
+                  <input type="number" min="1" max="43200" step="1" inputMode="numeric" value={feat.shop_pause_max_minutes}
+                    onChange={(e) => setFeat({ ...feat, shop_pause_max_minutes: e.target.value })} />
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  A single pause can last at most {feat.shop_pause_max_minutes} minutes. &ldquo;Rest of today&rdquo; is capped by this too.
+                </p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={savePauseCeiling}>Save pause ceiling</button>
                 </div>
               </div>
             </div>

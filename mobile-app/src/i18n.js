@@ -278,6 +278,49 @@ const en = {
   'oalert.setSaved': 'Order alert settings saved.',
   'oalert.setClamped': 'Your value was adjusted to the nearest allowed one.',
   'oalert.noVoice': 'This device cannot speak your language yet — you will still see the banner.',
+
+  // Shop availability (batch A) — the open/closed switch, the pause chips, the
+  // daily hours and the festival closures. The SAME key names exist in
+  // admin-dashboard/src/lib/i18n.js (owner web + consumer PWA) and in
+  // mobile-app/src/consumer/i18n.js, so every surface says the same words about
+  // the same truth. en is the source of truth; hi is authored below; every
+  // other language falls back to these English values exactly the way this file
+  // already handles missing keys — nothing here is machine-translated.
+  'open.open': 'Open',
+  'open.closed': 'Closed',
+  'open.todayAt': 'at {time}',
+  'open.tomorrowAt': 'tomorrow at {time}',
+  'open.title': 'Shop availability',
+  'open.switchLabel': 'Shop is open',
+  'open.takingOrders': 'You are taking orders right now.',
+  'open.notTakingOrders': 'Customers cannot order right now.',
+  'open.stateClosed': 'Closed — you switched the shop off',
+  'open.statePaused': 'Paused until {when}',
+  'open.stateHoliday': 'Closed today — reopens {when}',
+  'open.stateHolidayReason': 'Closed today ({reason}) — reopens {when}',
+  'open.stateHours': 'Closed — opens {when}',
+  'open.pauseHelp': 'Shutting for a bit? One tap, no time picker.',
+  'open.pause30': '30 min',
+  'open.pause60': '1 hour',
+  'open.pauseToday': 'Rest of today',
+  'open.resume': 'Resume now',
+  'open.hoursTitle': 'Shop hours',
+  'open.hoursHelp': 'Set the daily opening and closing time, or leave both empty to stay open all day. A closing time earlier than the opening time means you stay open past midnight.',
+  'open.openTime': 'Opens at',
+  'open.closeTime': 'Closes at',
+  'open.timePlaceholder': 'HH:MM',
+  'open.alwaysOpen': 'No daily hours set — open all day.',
+  'open.saveHours': 'Save hours',
+  'open.clearHours': 'Clear hours',
+  'open.hoursIncomplete': 'Set both the opening and the closing time, or clear both.',
+  'open.closuresTitle': 'Holiday closures',
+  'open.closuresHelp': 'Add the dates your shop will be shut — a festival, a wedding, anything. Customers see it before they order.',
+  'open.closureDate': 'Date (YYYY-MM-DD)',
+  'open.closureReason': 'Reason (optional)',
+  'open.closureReasonPlaceholder': 'Diwali',
+  'open.addClosure': 'Add date',
+  'open.noClosures': 'No closures in the next 90 days.',
+  'open.removeClosure': 'Remove',
 };
 
 const hi = {
@@ -510,6 +553,44 @@ const hi = {
   'oalert.setSaved': 'ऑर्डर अलर्ट सेटिंग सेव हो गई।',
   'oalert.setClamped': 'आपका मान निकटतम मान्य मान में बदल दिया गया।',
   'oalert.noVoice': 'यह डिवाइस अभी आपकी भाषा नहीं बोल सकता — बैनर फिर भी दिखेगा।',
+
+  // Shop availability (batch A) — authored Hindi, matching the owner web
+  // console word for word so the two owner surfaces never read differently.
+  'open.open': 'खुली',
+  'open.closed': 'बंद',
+  'open.todayAt': '{time} बजे',
+  'open.tomorrowAt': 'कल {time} बजे',
+  'open.title': 'दुकान खुली है या बंद',
+  'open.switchLabel': 'दुकान खुली है',
+  'open.takingOrders': 'अभी ऑर्डर लिए जा रहे हैं।',
+  'open.notTakingOrders': 'अभी ग्राहक ऑर्डर नहीं कर सकते।',
+  'open.stateClosed': 'बंद — आपने दुकान बंद कर रखी है',
+  'open.statePaused': '{when} तक रोकी हुई',
+  'open.stateHoliday': 'आज बंद — {when} फिर खुलेगी',
+  'open.stateHolidayReason': 'आज बंद ({reason}) — {when} फिर खुलेगी',
+  'open.stateHours': 'बंद — {when} खुलेगी',
+  'open.pauseHelp': 'थोड़ी देर बंद करनी है? एक टैप, समय चुनने की ज़रूरत नहीं।',
+  'open.pause30': '30 मिनट',
+  'open.pause60': '1 घंटा',
+  'open.pauseToday': 'आज भर',
+  'open.resume': 'अभी खोलें',
+  'open.hoursTitle': 'दुकान का समय',
+  'open.hoursHelp': 'रोज़ खुलने और बंद होने का समय भरें, या दोनों खाली छोड़ दें तो दुकान पूरे दिन खुली मानी जाएगी। बंद होने का समय खुलने के समय से पहले रखें तो दुकान आधी रात के बाद तक खुली रहती है।',
+  'open.openTime': 'खुलने का समय',
+  'open.closeTime': 'बंद होने का समय',
+  'open.timePlaceholder': 'घंटा:मिनट',
+  'open.alwaysOpen': 'कोई समय तय नहीं — दुकान पूरे दिन खुली है।',
+  'open.saveHours': 'समय सहेजें',
+  'open.clearHours': 'समय हटाएँ',
+  'open.hoursIncomplete': 'खुलने और बंद होने — दोनों का समय भरें, या दोनों हटा दें।',
+  'open.closuresTitle': 'छुट्टी के दिन',
+  'open.closuresHelp': 'जिन दिनों दुकान बंद रहेगी वे तारीख़ें जोड़ें — त्योहार, शादी, कुछ भी। ग्राहक को ऑर्डर करने से पहले ही दिख जाएगा।',
+  'open.closureDate': 'तारीख़ (साल-महीना-दिन)',
+  'open.closureReason': 'वजह (ज़रूरी नहीं)',
+  'open.closureReasonPlaceholder': 'दिवाली',
+  'open.addClosure': 'तारीख़ जोड़ें',
+  'open.noClosures': 'अगले 90 दिनों में कोई छुट्टी नहीं।',
+  'open.removeClosure': 'हटाएँ',
 };
 
 const bn = {

@@ -8,6 +8,7 @@ import { money } from '../money';
 import { publicApi, my, resolveImageUrl } from '../consumerApi';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
+import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen';
 
 function gramsLabel(g) {
   const n = Number(g) || 0;
@@ -32,7 +33,7 @@ function LineThumb({ uri }) {
 // delivery. Delivery-fee preview mirrors the server (free above threshold, else
 // flat fee). prepaid returns a pay_link -> open PayWebView.
 export default function CartScreen({ navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const cart = useCart();
   const [shop, setShop] = useState(null);
   const [fulfillment, setFulfillment] = useState('pickup');
@@ -85,6 +86,13 @@ export default function CartScreen({ navigation }) {
   const fee = isDelivery ? (isFree ? 0 : deliveryFeeBase) : 0;
   const total = subtotal + fee;
   const belowMin = isDelivery && minOrder > 0 && subtotal < minOrder;
+  // Shop availability (batch A). Re-checked HERE, at checkout, from the freshly
+  // fetched storefront — the shop may well have shut while the cart sat open.
+  // This is a courtesy block; the server's 409 handled below is the guarantee.
+  // When the shop info could not be fetched at all we do NOT block: the server
+  // stays authoritative and an offline shopper is not stopped by a guess.
+  const shopOpen = isOpen(shop && shop.availability);
+  const closedLine = shopOpen ? '' : availabilityLine(t, shop.availability, lang);
 
   if (!cart.cart || cart.count === 0) {
     return (
@@ -104,6 +112,7 @@ export default function CartScreen({ navigation }) {
     try {
       setError('');
       if (belowMin) return;
+      if (!shopOpen) { setError(`${t('open.cartBlocked')} ${closedLine}`.trim()); return; }
       if (isDelivery && !address.trim()) { setError(t('cart.addressRequired')); return; }
       setPlacing(true);
       const items = cart.lines.map((l) => (l.sold_by_weight
@@ -132,7 +141,16 @@ export default function CartScreen({ navigation }) {
         navigation.navigate('OrdersTab', { screen: 'OrdersList' });
       }
     } catch (err) {
-      setError(err.message);
+      // A 409 `shop_closed` is a normal answer, not a crash: say WHY the shop is
+      // shut and when it reopens instead of dumping a raw error code. Anything
+      // else surfaces the server's own message unchanged.
+      const closed = shopClosedMessage(t, err, lang);
+      setError(closed || err.message);
+      // Re-fetch the storefront so the banner and the disabled button below
+      // match the refusal the server just gave.
+      if (closed && activeShopId) {
+        publicApi.shop(activeShopId).then((r) => setShop(r.shop || r)).catch(() => {});
+      }
       setPlacing(false);
     } finally {
       submittingRef.current = false;
@@ -153,6 +171,16 @@ export default function CartScreen({ navigation }) {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {shopName ? <Card><Text style={styles.shopName}>{shopName}</Text></Card> : null}
+
+        {/* Shop availability (batch A): the cart is kept, the reason is shown,
+            and the Place-order button below is disabled rather than hidden. */}
+        {!shopOpen ? (
+          <View style={styles.closedBanner}>
+            <Text style={styles.closedTitle}>{t('open.bannerTitle')}</Text>
+            <Text style={styles.closedLine}>{closedLine}</Text>
+            <Text style={styles.closedHint}>{t('open.cartBlocked')}</Text>
+          </View>
+        ) : null}
 
         <Card>
           {cart.lines.map((l) => (
@@ -244,10 +272,12 @@ export default function CartScreen({ navigation }) {
         <ErrorBanner>{error}</ErrorBanner>
 
         <Button
-          title={placing ? t('cart.placing') : `${t('cart.placeOrder')} · ${money(total)}`}
+          title={placing
+            ? t('cart.placing')
+            : shopOpen ? `${t('cart.placeOrder')} · ${money(total)}` : t('open.cannotOrder')}
           onPress={placeOrder}
           loading={placing}
-          disabled={belowMin}
+          disabled={belowMin || !shopOpen}
         />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -294,4 +324,15 @@ const styles = StyleSheet.create({
   addrWrap: { marginTop: 14 },
   payHint: { color: colors.textMuted, fontSize: 13, marginTop: 10 },
   warn: { color: colors.warn, fontSize: 14, marginTop: 10 },
+  closedBanner: {
+    backgroundColor: colors.card,
+    borderRadius: sizes.radius,
+    borderLeftWidth: 5,
+    borderLeftColor: colors.warn,
+    padding: sizes.pad,
+    marginBottom: sizes.gap,
+  },
+  closedTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  closedLine: { color: colors.text, fontSize: 14, marginTop: 6 },
+  closedHint: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
 });

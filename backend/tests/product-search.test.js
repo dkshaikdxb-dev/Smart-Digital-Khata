@@ -133,9 +133,12 @@ describe('GET /api/public/products/search', () => {
     expect(Object.keys(p).sort()).toEqual(
       ['id', 'image_url', 'name', 'price', 'shop', 'sold_by_weight', 'unit']
     );
+    // The nested shop is a payload a consumer SEES, so it carries the same
+    // `availability` object (batch A) as the directory and the storefront.
     expect(Object.keys(p.shop).sort()).toEqual(
-      ['area', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery']
+      ['area', 'availability', 'city', 'delivery_fee', 'id', 'name', 'offers_delivery']
     );
+    expect(p.shop.availability).toEqual({ open: true, reason: null, reopens_at: null });
   });
 
   it('matches a native-script term via search_text and localizes the name under lang=hi', async () => {

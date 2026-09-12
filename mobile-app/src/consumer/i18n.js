@@ -271,6 +271,28 @@ const en = {
 
   // Suffix appended to picker labels of UI-only (no catalogue) languages.
   'login.betaSuffix': ' (beta)',
+
+  // Shop availability (batch A) — whether the shop is taking orders right now.
+  // The SAME key names exist in admin-dashboard/src/lib/i18n.js (consumer PWA)
+  // and mobile-app/src/i18n.js (owner app), so a shopper reads the same words
+  // in the app and on the web. en is the source of truth and hi is authored
+  // below; every other language falls back to these English values the way this
+  // file already handles missing keys. Nothing here is machine-translated — a
+  // shopper mis-reading "closed" costs the shop a sale.
+  'open.open': 'Open',
+  'open.closed': 'Closed',
+  'open.closedPill': 'Closed',
+  'open.todayAt': 'at {time}',
+  'open.tomorrowAt': 'tomorrow at {time}',
+  'open.stateClosed': 'Closed — the shop is switched off right now',
+  'open.statePaused': 'Paused until {when}',
+  'open.stateHoliday': 'Closed today — reopens {when}',
+  'open.stateHolidayReason': 'Closed today ({reason}) — reopens {when}',
+  'open.stateHours': 'Closed — opens {when}',
+  'open.bannerTitle': 'This shop is closed right now',
+  'open.browseOnly': 'You can look around — ordering opens again when the shop does.',
+  'open.cannotOrder': 'Closed — cannot order',
+  'open.cartBlocked': 'This shop is closed right now, so the order cannot be placed. Your cart is saved.',
 };
 
 const hi = {
@@ -452,6 +474,23 @@ const hi = {
   'account.dataSaver': 'डेटा सेवर',
   'account.dataSaverSub': 'धीमे नेटवर्क पर अतिरिक्त फ़ोटो न लोड करें',
   'login.betaSuffix': ' (बीटा)',
+
+  // Shop availability (batch A) — authored Hindi, matching the consumer PWA
+  // word for word so the app and the web never read differently.
+  'open.open': 'खुली',
+  'open.closed': 'बंद',
+  'open.closedPill': 'बंद',
+  'open.todayAt': '{time} बजे',
+  'open.tomorrowAt': 'कल {time} बजे',
+  'open.stateClosed': 'बंद — दुकान अभी बंद कर रखी है',
+  'open.statePaused': '{when} तक रोकी हुई',
+  'open.stateHoliday': 'आज बंद — {when} फिर खुलेगी',
+  'open.stateHolidayReason': 'आज बंद ({reason}) — {when} फिर खुलेगी',
+  'open.stateHours': 'बंद — {when} खुलेगी',
+  'open.bannerTitle': 'यह दुकान अभी बंद है',
+  'open.browseOnly': 'आप देख सकते हैं — दुकान खुलते ही ऑर्डर फिर चालू हो जाएगा।',
+  'open.cannotOrder': 'बंद — ऑर्डर नहीं',
+  'open.cartBlocked': 'यह दुकान अभी बंद है, इसलिए ऑर्डर नहीं हो सकता। आपका कार्ट सुरक्षित है।',
 };
 
 const bn = {

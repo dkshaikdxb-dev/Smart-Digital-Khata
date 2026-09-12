@@ -82,6 +82,12 @@ function normalizeError(error) {
     'Something went wrong';
   const e = new Error(msg);
   e.status = error.response && error.response.status;
+  // Keep the TYPED part of the failure. The backend answers a refusal as
+  // { error: '<code>', details: {...} } — e.g. the 409 `shop_closed` from batch
+  // A with { reason, reopens_at } — and a screen can only say WHY and WHEN if
+  // those survive the normalization. The message is unchanged.
+  e.code = (data && data.error) || null;
+  e.details = (data && data.details) || null;
   return e;
 }
 

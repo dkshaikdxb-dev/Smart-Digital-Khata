@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { summary, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import AskShop from './AskShop';
+import ShopAvailabilityCard from './ShopAvailabilityCard';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -36,6 +37,10 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <ScrollView style={s.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e2e8f0" />}>
+      {/* Shop availability (batch A) — deliberately the FIRST card on Home, the
+          mirror of the owner web console. "Are we open?" is the switch a
+          shopkeeper reaches for mid-rush, so it is never buried in Settings. */}
+      <ShopAvailabilityCard />
       <AskShop />
       <View style={s.row}>
         <Card label={t('dash.todayPurchases')} value={today ? fmt(today.purchases) : '—'} />

@@ -377,6 +377,12 @@ const FEATURE_BOOL_DEFAULTS = {
   enrolment_fee_enabled: false, // MONEY-CRITICAL: paid-signup master switch
   storefront_ad_free_enabled: true, // storefront sponsored-slide buy-out (0063)
   ai_moderation_enabled: true, // AI triage of the photo/promo review queues (0064)
+  // Shop availability master KILL-SWITCH (batch A, 0066). 'false' makes
+  // utils/shopOpen.availability() report every shop open, so the whole
+  // open/closed gate can be turned off platform-wide without a deploy if it
+  // ever misbehaves. A policy flag, NOT an integration credential — it saves
+  // with no typed I CONFIRM.
+  shop_hours_enabled: true,
 };
 
 // decimal keys (0..1 confidence thresholds) -> seeded default. Stored as TEXT
@@ -412,6 +418,10 @@ const FEATURE_NUM_DEFAULTS = {
   order_alert_min_minutes: 2,
   order_alert_max_minutes: 60,
   order_alert_max_repeats_cap: 20,
+  // Shop availability (batch A, 0066): the ceiling on a single "pause my shop"
+  // in minutes, so a mis-tap can never shutter a shop indefinitely. Default 24h.
+  // Policy number, not a credential — no I CONFIRM.
+  shop_pause_max_minutes: 1440,
 };
 
 // The three referral-split percents feed the zero-burn accrual: their sum can

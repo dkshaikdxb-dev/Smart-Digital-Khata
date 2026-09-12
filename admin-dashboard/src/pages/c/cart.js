@@ -6,6 +6,7 @@ import ProductThumb from '../../components/ProductThumb';
 import { customerFetch, getCustomerToken, publicFetch } from '../../lib/customerApi';
 import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId, lineTotalPaise } from '../../lib/customerCart';
 import { useLang } from '../../lib/i18n';
+import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen';
 
 // Human label for a weight in grams: "250 g" or "1 kg".
 function gramsLabel(g) {
@@ -105,7 +106,14 @@ export default function Cart() {
   const total = subtotal + fee;
   const belowMin = isDelivery && minOrder > 0 && subtotal < minOrder;
   const freeGap = isDelivery && freeMin != null && subtotal < freeMin ? freeMin - subtotal : 0;
-  const canPlace = !placing && !belowMin;
+  // Shop availability (batch A). The shop is re-checked HERE, at checkout, from
+  // the freshly fetched storefront — the shop may well have shut while the cart
+  // sat open. This is a courtesy block; the server's 409 below is the guarantee.
+  // When the shop info could not be fetched at all we do NOT block: the server
+  // stays authoritative and an offline shopper is not stopped by a guess.
+  const shopOpen = isOpen(shop && shop.availability);
+  const closedLine = shopOpen ? '' : availabilityLine(t, shop.availability, lang);
+  const canPlace = !placing && !belowMin && shopOpen;
 
   function persist(nextCart) {
     setCart(nextCart);
@@ -122,6 +130,7 @@ export default function Cart() {
   async function placeOrder() {
     setError('');
     if (belowMin) return; // guarded by disabled button; belt-and-braces
+    if (!shopOpen) { setError(`${t('open.cartBlocked')} ${closedLine}`.trim()); return; }
     // Gate at submit — preserve the intent to return here.
     if (!getCustomerToken()) {
       const next = encodeURIComponent(`/c/cart?shop=${activeShopId}`);
@@ -159,8 +168,17 @@ export default function Cart() {
       const orderId = order?.id || r.order_id;
       router.replace(orderId ? `/c/orders/${orderId}` : '/c/orders');
     } catch (err) {
-      // Surface the server's message (e.g. a rejected minimum order).
-      setError(err.message);
+      // A 409 `shop_closed` is a normal answer, not a crash: say WHY the shop is
+      // shut and when it reopens instead of dumping the raw error code. Anything
+      // else surfaces the server's own message (e.g. a rejected minimum order).
+      const closed = shopClosedMessage(t, err, lang);
+      setError(closed || err.message);
+      // Re-fetch the storefront so the banner/disabled button match the refusal.
+      if (closed && activeShopId) {
+        publicFetch(`/api/public/shops/${activeShopId}`)
+          .then((r) => setShop(r.shop || r))
+          .catch(() => {});
+      }
       setPlacing(false);
     }
   }
@@ -181,6 +199,16 @@ export default function Cart() {
     <CustomerShell title={t('c.yourCart')} back={activeShopId ? `/c/shop/${activeShopId}` : '/c/shops'}>
       {(shop?.name || cart?.shop_name) && (
         <div className="card"><strong>{shop?.name || cart.shop_name}</strong></div>
+      )}
+
+      {/* Shop availability (batch A): the cart is kept, the reason is shown, and
+          the Place-order button below is disabled rather than hidden. */}
+      {!shopOpen && (
+        <div className="card cpwa-closed-banner">
+          <strong>{t('open.bannerTitle')}</strong>
+          <div>{closedLine}</div>
+          <div className="muted" style={{ marginTop: 4 }}>{t('open.cartBlocked')}</div>
+        </div>
       )}
 
       <div className="card">
@@ -295,7 +323,7 @@ export default function Cart() {
           <div className="cpwa-cartbar-total">{money(total)}</div>
         </div>
         <button type="button" className="cpwa-cartbar-btn" onClick={placeOrder} disabled={!canPlace}>
-          {placing ? t('c.placing') : t('c.placeOrder')}
+          {placing ? t('c.placing') : shopOpen ? t('c.placeOrder') : t('open.cannotOrder')}
         </button>
       </div>
     </CustomerShell>

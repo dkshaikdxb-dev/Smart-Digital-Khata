@@ -5,6 +5,7 @@ import CustomerShell, { money } from '../../components/CustomerShell';
 import ProductThumb from '../../components/ProductThumb';
 import { publicFetch } from '../../lib/customerApi';
 import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
+import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { useVoiceSearch } from '../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../components/VoiceSearchHint';
 
@@ -136,10 +137,21 @@ export default function ProductSearch() {
               {[p.shop.area, p.shop.city].filter(Boolean).length > 0 &&
                 ` · ${[p.shop.area, p.shop.city].filter(Boolean).join(', ')}`}
             </div>
-            {p.shop.distance_km != null && (
+            {/* Shop availability (batch A): the nested shop carries the SAME
+                availability object the directory does, so a result from a shut
+                shop says so here too instead of only on the storefront. */}
+            {(p.shop.distance_km != null || !isOpen(p.shop.availability)) && (
               <div className="cpwa-shopcard-meta">
-                <span className="badge">{p.shop.distance_km} {t('c.kmAway')}</span>
+                {!isOpen(p.shop.availability) && (
+                  <span className="badge cpwa-closed-pill">{t('open.closedPill')}</span>
+                )}
+                {p.shop.distance_km != null && (
+                  <span className="badge">{p.shop.distance_km} {t('c.kmAway')}</span>
+                )}
               </div>
+            )}
+            {!isOpen(p.shop.availability) && (
+              <div className="muted cpwa-closed-hint">{availabilityLine(t, p.shop.availability, lang)}</div>
             )}
           </div>
           <span className="cpwa-chev">›</span>

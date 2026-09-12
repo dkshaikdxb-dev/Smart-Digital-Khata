@@ -67,6 +67,36 @@ const updateSchema = Joi.object({
   order_alert_enabled: Joi.boolean(),
   order_alert_repeat_minutes: Joi.number().integer().min(1).max(1440),
   order_alert_max_repeats: Joi.number().integer().min(0).max(1000),
+  // Shop availability (batch A). `is_open` is the master switch the owner's
+  // Home screen flips. The daily window is 'HH:MM' (or null to clear) and must
+  // be sent as a PAIR — the controller rejects a one-sided window with 422
+  // `hours_incomplete`. `paused_until` is deliberately NOT settable here: a
+  // pause goes through POST /api/shops/me/pause, which owns the clamp.
+  is_open: Joi.boolean(),
+  open_time: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/).allow('', null),
+  close_time: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/).allow('', null),
+});
+
+// Shop availability (batch A). These are shop POLICY, not integration
+// credentials — they save with NO typed I CONFIRM, exactly like the fulfillment
+// and order-alert settings beside them.
+//
+// `minutes`: 0 clears the pause, a number is clamped to 1..shop_pause_max_minutes
+// in the controller (so an owner who types 9999 mid-rush gets the ceiling, not
+// an error), and the string 'today' means "rest of today" in the shop timezone.
+const pauseSchema = Joi.object({
+  minutes: Joi.alternatives()
+    .try(Joi.number().integer().min(0).max(43200), Joi.string().valid('today'))
+    .required(),
+});
+
+const closureSchema = Joi.object({
+  on_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required(),
+  reason: Joi.string().trim().max(120).allow('', null),
+});
+
+const closureIdSchema = Joi.object({
+  id: Joi.string().required(),
 });
 
 // Premium "Branded Store" (batch STORE1). Owner-scoped: buying premium is an
@@ -132,6 +162,16 @@ router.post('/me/image', uploadImageField, asyncHandler(ctrl.uploadImage));
 router.get('/me/images', asyncHandler(ctrl.listImages));
 router.post('/me/images', uploadImageField, asyncHandler(ctrl.uploadGalleryImage));
 router.delete('/me/images/:id', asyncHandler(ctrl.deleteImage));
+// Shop availability (batch A) — owner+staff, shop-scoped, reusing the guard
+// above. Whoever can mind the counter can also say "we're shut for an hour".
+router.post('/me/pause', validate(pauseSchema), asyncHandler(ctrl.pauseShop));
+router.post('/me/closures', validate(closureSchema), asyncHandler(ctrl.addClosure));
+router.delete(
+  '/me/closures/:id',
+  validate(closureIdSchema, 'params'),
+  asyncHandler(ctrl.deleteClosure)
+);
+
 router.get('/me/name-i18n', asyncHandler(ctrl.getNameI18n));
 router.put(
   '/me/name-i18n/:lang',
