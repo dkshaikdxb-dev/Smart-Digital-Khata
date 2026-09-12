@@ -5,6 +5,9 @@ import { customerFetch } from '../../../lib/customerApi';
 import { useLang } from '../../../lib/i18n';
 import { stepsForOrder, currentStepIndex } from '../../../lib/orderStatus';
 import { etaState, formatClock } from '../../../lib/orderEta';
+// The shop's reduction, rendered from the SAME audit rows the owner sees
+// (batch C) — the customer must never just find a smaller number.
+import { editLineText } from '../../../lib/orderEdit';
 
 const LABELS = {
   pending: 'Pending',
@@ -81,6 +84,28 @@ export default function OrderDetail() {
   // this device's own clock — the API never computes "late" for us.
   const promiseState = order ? etaState(order) : 'none';
   const promisedTime = order ? formatClock(order.promised_at, lang) : '';
+  // THE SHOP REDUCED THIS ORDER (batch C). `edits` is the line-by-line audit;
+  // `original_subtotal` is what the order started at, so "was X, now Y" is
+  // always available and the smaller number is never unexplained.
+  const edits = (order && order.edits) || [];
+  const nowTotal = order ? Number(order.total != null ? order.total : order.subtotal) : 0;
+  // The exact value of goods taken off, straight from the audit rows.
+  const goodsRemoved = edits.reduce((s, e) => s + Math.abs(Number(e.amount_delta)), 0);
+  // The exact paise the khata moved by, from the API (0 for a cash order).
+  const adjusted = order ? Number(order.adjusted_total || 0) : 0;
+
+  // What happened to the money, in the customer's own terms. Prepaid says
+  // plainly that the difference is CREDIT AT THE SHOP — there is no refund
+  // pipeline, and pretending otherwise would leave someone waiting for money
+  // that is never coming. Every figure here is an EXACT one the API sent, never
+  // a total this page derived and might get wrong.
+  function editMoneyText(o) {
+    if (!o) return '';
+    if (o.payment_mode === 'credit' && adjusted > 0) return t('coedit.credit', { amount: money(adjusted) });
+    if (o.payment_mode === 'prepaid' && adjusted > 0) return t('coedit.prepaid', { amount: money(adjusted) });
+    if (o.payment_mode === 'cash' && goodsRemoved > 0) return t('coedit.cash', { now: money(nowTotal), amount: money(goodsRemoved) });
+    return '';
+  }
 
   return (
     <CustomerShell title={t('ord.order')} back="/c/orders">
@@ -112,6 +137,40 @@ export default function OrderDetail() {
               <div className="cpwa-eta cpwa-eta-big cpwa-eta-soft">
                 {t('eta.takingLonger')}
                 <div className="muted" style={{ fontWeight: 400, marginTop: 2 }}>{t('eta.takingLongerHelp', { time: promisedTime })}</div>
+              </div>
+            )}
+            {/* THE SHOP REDUCED THIS ORDER (batch C). Put high, right under the
+                status — a customer scanning the screen must meet the
+                explanation before they meet the smaller number further down. */}
+            {edits.length > 0 && (
+              <div className="cpwa-eta cpwa-eta-soft" style={{ marginTop: 12 }}>
+                <div>{t('coedit.title')}</div>
+                <div className="muted" style={{ fontWeight: 400, marginTop: 4 }}>
+                  {t('coedit.intro', { shop: order.shop_name || t('c.shop') })}
+                </div>
+                <ul style={{ margin: '8px 0 0', paddingInlineStart: 20, fontWeight: 400 }}>
+                  {edits.map((e) => (
+                    <li key={e.id} className="muted">
+                      {editLineText(t, e, { removed: 'coedit.removed', reduced: 'coedit.reduced' })}
+                    </li>
+                  ))}
+                </ul>
+                {/* Every figure here is one the API actually STORED: the items
+                    total the order started at, and the total it comes to now.
+                    No old grand total is invented by adding today's delivery fee
+                    onto yesterday's subtotal snapshot — the delivery fee has its
+                    own line in the totals card below, where it changed. */}
+                {order.original_subtotal != null && (
+                  <div className="muted" style={{ fontWeight: 400, marginTop: 6 }}>
+                    {t('coedit.wasSubtotal', { was: money(order.original_subtotal) })}
+                  </div>
+                )}
+                <div className="muted" style={{ fontWeight: 400, marginTop: 2 }}>
+                  {t('coedit.nowTotal', { now: money(nowTotal) })}
+                </div>
+                {editMoneyText(order) && (
+                  <div className="muted" style={{ fontWeight: 400, marginTop: 4 }}>{editMoneyText(order)}</div>
+                )}
               </div>
             )}
             {order.address && <div className="muted" style={{ marginTop: 8 }}>{t('c.deliverTo')} {order.address}</div>}

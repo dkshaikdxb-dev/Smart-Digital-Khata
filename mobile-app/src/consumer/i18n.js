@@ -156,6 +156,28 @@ const en = {
   'txn.payment': 'Payment',
   'txn.cash': 'Cash paid',
   'txn.credit': 'Credit',
+  // UPI was already a possible ledger type and simply had no word here, so a
+  // row rendered the raw enum 'upi'. Fixed alongside the fourth type below.
+  'txn.upi': 'UPI paid',
+  // The FOURTH transaction type (batch C): the shop reducing an order it could
+  // not fully supply. It LOWERS what is owed, like a payment — but the customer
+  // handed nothing over, so it gets its own word rather than being called one.
+  'txn.adjustment': 'Adjusted by shop',
+
+  // --- THE SHOP REDUCED YOUR ORDER (batch C) ---------------------------
+  // en + hi are AUTHORED; every other language falls back to English through
+  // translate(). The customer must never simply find a smaller number with no
+  // explanation, and an explanation about money is not worth guessing at in a
+  // language the author cannot read back.
+  'coedit.title': 'The shop adjusted your order',
+  'coedit.intro': '{shop} could not supply everything you ordered.',
+  'coedit.removed': '{item} — removed',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'Your order now comes to {now}.',
+  'coedit.wasSubtotal': 'Original items total {was}',
+  'coedit.credit': '{amount} has been taken off your khata at this shop.',
+  'coedit.prepaid': 'You had already paid. {amount} is kept as credit at this shop — it comes off your next order here.',
+  'coedit.cash': 'Pay {now} when you collect — {amount} of items were taken off.',
 
   'pay.title': 'Payment',
   'pay.secure': 'You are paying securely on the shop’s payment page.',
@@ -380,6 +402,18 @@ const hi = {
   'txn.payment': 'भुगतान',
   'txn.cash': 'नकद भुगतान',
   'txn.credit': 'उधार',
+  'txn.upi': 'UPI भुगतान',
+  'txn.adjustment': 'दुकान द्वारा समायोजित',
+
+  'coedit.title': 'दुकान ने आपका ऑर्डर कम किया है',
+  'coedit.intro': '{shop} पर आपके ऑर्डर का पूरा सामान उपलब्ध नहीं था।',
+  'coedit.removed': '{item} — हटाया गया',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'आपके ऑर्डर का कुल अब {now} है।',
+  'coedit.wasSubtotal': 'मूल सामान का कुल {was}',
+  'coedit.credit': 'इस दुकान पर आपके खाते में से {amount} कम कर दिए गए हैं।',
+  'coedit.prepaid': 'आपने पहले ही भुगतान कर दिया था। {amount} इस दुकान पर आपके जमा (क्रेडिट) के रूप में रखे गए हैं — अगले ऑर्डर में कम हो जाएंगे।',
+  'coedit.cash': 'सामान लेते समय {now} दीजिए — {amount} का सामान हटा दिया गया है।',
 
   'pay.title': 'भुगतान',
   'pay.secure': 'आप दुकान के सुरक्षित पेज पर भुगतान कर रहे हैं।',

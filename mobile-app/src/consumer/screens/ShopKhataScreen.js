@@ -75,11 +75,16 @@ export default function ShopKhataScreen({ route, navigation }) {
     }
   }
 
+  // Every ledger type this API can return gets a word. 'adjustment' (batch C)
+  // is the shop reducing an order it could not fully supply; 'upi' was always
+  // possible and simply had no label, so it used to render the raw enum.
   function txnLabel(type) {
     if (type === 'purchase') return t('txn.purchase');
     if (type === 'payment') return t('txn.payment');
     if (type === 'cash') return t('txn.cash');
+    if (type === 'upi') return t('txn.upi');
     if (type === 'credit') return t('txn.credit');
+    if (type === 'adjustment') return t('txn.adjustment');
     return type;
   }
 

@@ -39,6 +39,17 @@ async function onTransaction(shopId, customer, tx) {
         `Purchase recorded: ₹${amount}.\n` +
         `Outstanding: ₹${balance}.\n` +
         (tx.note ? `Note: ${tx.note}\n` : '');
+    } else if (tx.type === 'adjustment') {
+      // A shop ADJUSTMENT (batch C) lowers the balance like a payment does, but
+      // the customer handed over nothing — telling them "we received your
+      // payment" would be plainly false. The order-edit path composes its own,
+      // much fuller message through utils/order-customer-copy and does not call
+      // this function at all; this branch exists so that any FUTURE caller which
+      // does route an adjustment through here cannot send the wrong sentence.
+      message =
+        `Hi ${customer.name}, ${shopName} has adjusted your khata by ₹${amount}.\n` +
+        `Outstanding: ₹${balance}.\n` +
+        (tx.note ? `Note: ${tx.note}\n` : '');
     } else {
       // payment received — always notify on smart & active
       message =

@@ -20,6 +20,9 @@ const orderAlertCopy = require('../utils/order-alert-copy');
 // every UI hint elsewhere is courtesy. assertShopOpenTx runs on the
 // transaction's own client, before any insert, in all three payment modes.
 const { assertShopOpenTx } = require('../utils/shopOpen');
+// The ONE delivery-fee rule (batch C). Shared with the order-edit path so an
+// edited order's fee is recomputed by exactly the rule the order was created on.
+const { deliveryFeeFor } = require('../utils/orderEdit');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -567,11 +570,11 @@ exports.createOrder = async (req, res) => {
 
   // Delivery fee: pickup is always free; for delivery the flat fee applies
   // unless a free-delivery threshold is met. All integer paise.
-  const freeMin = shop.free_delivery_min == null ? null : Number(shop.free_delivery_min);
-  const fee =
-    fulfillment_type === 'delivery' && !(freeMin != null && subtotal >= freeMin)
-      ? Number(shop.delivery_fee) || 0
-      : 0;
+  //
+  // The rule itself now lives in utils/orderEdit.deliveryFeeFor(), because an
+  // EDIT (batch C) has to recompute the fee for the reduced subtotal and the two
+  // must never be two different rules.
+  const fee = deliveryFeeFor({ fulfillmentType: fulfillment_type, subtotal, shop });
   const total = subtotal + fee;
 
   if (payment_mode === 'credit') {
@@ -857,7 +860,34 @@ exports.getOrder = async (req, res) => {
      FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
     [req.params.id]
   );
-  res.json({ order: { ...r.rows[0], items: items.rows } });
+  // What the shop changed, line by line (batch C). ALWAYS sent — an empty array
+  // when nobody has touched the order — so the customer can never find a
+  // smaller number with no explanation attached to it. `edited_by` is NOT
+  // exposed here: which member of the shop's staff pressed the button is the
+  // shop's internal business, and the customer needs the WHAT, not the WHO.
+  const edits = await query(
+    `SELECT id, order_item_id, name, qty_before, qty_after, amount_delta, created_at
+       FROM order_edits WHERE order_id = $1 ORDER BY created_at ASC, id ASC`,
+    [req.params.id]
+  );
+  // The EXACT paise the khata was adjusted by for this order — the compensating
+  // 'adjustment' entries, summed. Sent so the customer's screen can say the real
+  // figure instead of deriving one from subtotals (which would miss a delivery
+  // fee that moved with the reduction). 0 for a cash order, which never posts a
+  // ledger row at all.
+  const adjusted = await query(
+    `SELECT COALESCE(SUM(amount), 0)::bigint AS total
+       FROM transactions WHERE order_id = $1 AND type = 'adjustment'`,
+    [req.params.id]
+  );
+  res.json({
+    order: {
+      ...r.rows[0],
+      items: items.rows,
+      edits: edits.rows,
+      adjusted_total: Number(adjusted.rows[0].total),
+    },
+  });
 };
 
 /**

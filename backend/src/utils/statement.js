@@ -4,11 +4,20 @@
 // date range + a closing balance + totals.
 //
 // Money is integer paise everywhere and the math is EXACT (integer add only):
-//   delta(row)      = +amount for a purchase, −amount for a cash/upi payment
+//   delta(row)      = +amount for a purchase, −amount for everything else
 //   opening balance = Σ delta over every transaction STRICTLY BEFORE `from`
 //   closing balance = opening + Σ delta over the in-range transactions
 //   total purchases = Σ amount of purchases in range
-//   total paid      = Σ amount of payments (cash/upi) in range
+//   total paid      = Σ amount of PAYMENTS (cash/upi) in range
+//   total adjusted  = Σ amount of shop ADJUSTMENTS in range
+//
+// ADJUSTMENTS (batch C) are the fourth transaction type: the shop reducing an
+// order it could not fully supply. They lower the balance exactly like a
+// payment does — so the delta rule above needs no change — but they are NOT
+// money the customer handed over, so they are counted on their own line instead
+// of being folded into "total paid". A statement that claimed a customer had
+// paid ₹200 they never paid would be a lie in the one document they can take to
+// the shop and argue with.
 //
 // Range semantics: `from`/`to` are plain dates. `from` is inclusive from its
 // 00:00; `to` is inclusive of its WHOLE day (compared as `< to + 1 day`), so a
@@ -58,10 +67,12 @@ async function buildStatement(customerId, from, to, runner = query) {
   let balance = opening;
   let totalPurchases = 0;
   let totalPaid = 0;
+  let totalAdjusted = 0;
   const lines = rows.rows.map((r) => {
     const d = delta(r.type, r.amount);
     balance += d;
     if (r.type === 'purchase') totalPurchases += Number(r.amount);
+    else if (r.type === 'adjustment') totalAdjusted += Number(r.amount);
     else totalPaid += Number(r.amount);
     return {
       id: r.id,
@@ -82,6 +93,9 @@ async function buildStatement(customerId, from, to, runner = query) {
     closing: balance, // opening + Σ in-range deltas
     total_purchases: totalPurchases,
     total_paid: totalPaid,
+    // Always present (0 when there were none), so a client can render the line
+    // unconditionally instead of guessing whether the key exists.
+    total_adjusted: totalAdjusted,
     lines,
   };
 }
@@ -149,6 +163,11 @@ function statementCsvRows(stmt, { shopName, customerName } = {}) {
   rows.push('');
   rows.push(csvRow(['Total purchases (Rs)', rupees(stmt.total_purchases)]));
   rows.push(csvRow(['Total paid (Rs)', rupees(stmt.total_paid)]));
+  // Only printed when there actually were shop adjustments, so an untouched
+  // statement keeps exactly the shape (and the row count) it has always had.
+  if (Number(stmt.total_adjusted) > 0) {
+    rows.push(csvRow(['Total adjusted by shop (Rs)', rupees(stmt.total_adjusted)]));
+  }
   rows.push(csvRow(['Closing balance (Rs)', rupees(stmt.closing)]));
   return rows;
 }

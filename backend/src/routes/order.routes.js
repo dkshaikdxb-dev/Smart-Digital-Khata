@@ -39,6 +39,26 @@ const etaSchema = Joi.object({
   eta_minutes: ETA_MINUTES.required(),
 });
 
+// EDIT THE ORDER WHILE ACCEPTING (batch C). `qty` is the NEW quantity for a
+// line: 0 removes it. There is deliberately no way to send a price, a product
+// id or a new line — this endpoint can only ever take things AWAY, and the
+// controller refuses any qty above the line's current one with a 422
+// `increase_not_allowed`. 200 lines is a generous ceiling for a kirana order and
+// keeps a malformed body from becoming a long-running transaction.
+const editItemsSchema = Joi.object({
+  lines: Joi.array()
+    .items(Joi.object({
+      order_item_id: Joi.string().uuid().required(),
+      qty: Joi.number().integer().min(0).max(100000).required(),
+    }))
+    .min(1)
+    .max(200)
+    .required(),
+  // Optional client-generated id for idempotent retries from offline/2G
+  // clients. Same semantics as transactions.create: the money applies ONCE.
+  client_request_id: Joi.string().uuid().optional(),
+});
+
 // Repeating new-order alert (batch ORDERALERT).
 const alertsQuerySchema = Joi.object({
   lang: Joi.string().max(16).allow(''),
@@ -72,6 +92,13 @@ router.patch(
   validate(idParamSchema, 'params'),
   validate(etaSchema),
   asyncHandler(ctrl.setEta)
+);
+// Reduce an order the shop cannot fully supply (batch C). MONEY-CRITICAL.
+router.patch(
+  '/:id/items',
+  validate(idParamSchema, 'params'),
+  validate(editItemsSchema),
+  asyncHandler(ctrl.editItems)
 );
 
 module.exports = router;

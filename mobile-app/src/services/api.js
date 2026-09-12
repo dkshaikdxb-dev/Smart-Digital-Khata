@@ -230,6 +230,17 @@ export const orders = {
   // The live coarse chips + ceiling, so the app offers whatever the platform is
   // configured with instead of hardcoding 15/30/60.
   etaConfig: () => api.get('/api/orders/eta-config').then((r) => r.data),
+  // EDIT THE ORDER WHILE ACCEPTING (batch C). MONEY-CRITICAL, so
+  // `clientRequestId` is not optional in practice: the owner app runs on 2G and
+  // a retried edit must take the money off exactly ONCE. `lines` carries only
+  // the lines that MOVED, each with its new quantity (0 removes the line); the
+  // API refuses any quantity above the current one with 422
+  // `increase_not_allowed`, so this call can only ever take things away.
+  editItems: (id, lines, clientRequestId) => api
+    .patch(`/api/orders/${id}/items`, clientRequestId
+      ? { lines, client_request_id: clientRequestId }
+      : { lines })
+    .then((r) => r.data),
   // Repeating new-order alert (batch ORDERALERT). ONE request per poll: the
   // response carries both the unacknowledged orders (oldest first) and the
   // shop's alert settings, so the banner never needs a second round trip on 2G.

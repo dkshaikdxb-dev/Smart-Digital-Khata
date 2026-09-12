@@ -15,7 +15,9 @@ export default function CustomerDetailScreen({ route, navigation }) {
   const { id } = route.params;
   // Localize the known transaction type words; fall back to the raw enum for any
   // other value so nothing shows blank.
-  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' ? t(`txn.${v}`) : label(v));
+  // 'adjustment' (batch C) is the fourth type: the shop reducing an order it
+  // could not fully supply. Without it here the row would render the raw enum.
+  const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' || v === 'adjustment' ? t(`txn.${v}`) : label(v));
   const [customer, setCustomer] = useState(null);
   const [tx, setTx] = useState([]);
   const [loading, setLoading] = useState(true);

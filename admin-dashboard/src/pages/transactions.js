@@ -154,6 +154,12 @@ export default function Transactions() {
               <option value="purchase">{t('type.purchase')}</option>
               <option value="cash">{t('type.cash')}</option>
               <option value="upi">{t('type.upi')}</option>
+              {/* The fourth type (batch C): the shop reducing an order it could
+                  not fully supply. FILTERABLE here but deliberately absent from
+                  the "record an entry" form above — an adjustment is posted by
+                  the order-edit flow, with an order and an audit trail behind
+                  it, never typed in by hand. */}
+              <option value="adjustment">{t('type.adjustment')}</option>
             </select>
             <button className="secondary" onClick={() => load()}>{t('common.apply')}</button>
           </div>

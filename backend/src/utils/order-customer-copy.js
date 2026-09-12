@@ -52,6 +52,27 @@ const T = Object.freeze({
     // Last resort for a status this file has no line for, so a future pipeline
     // stage degrades to a sentence rather than to silence.
     status_generic: 'Hi {name}, your order at {shop} is now {status}.',
+
+    // --- THE SHOP REDUCED THE ORDER (batch C) ------------------------------
+    // The customer must NEVER just find a smaller number with no explanation.
+    // The message is built as: why → which lines → the new total → what happened
+    // to the money, in that order, because that is the order the questions come.
+    edit_intro: 'Hi {name}, {shop} could not supply everything you ordered, so your order has been reduced.',
+    edit_line_removed: '• {item} — removed',
+    edit_line_reduced: '• {item} — {before} → {after}',
+    edit_totals: 'New total: {total} (was {was}).',
+    // credit — the khata entry that raised the balance is compensated, so what
+    // is owed goes down by exactly the difference.
+    edit_money_credit: '{amount} has been taken off your khata at {shop}.',
+    // prepaid — the customer has already paid. There is no refund pipeline and
+    // none is invented: the difference is kept as credit AT THIS SHOP, said in
+    // plain words so nobody is left waiting for money back that is not coming.
+    edit_money_prepaid: 'You had already paid {was}. The difference of {amount} is kept as credit at {shop} — it comes off your next order there.',
+    // cash — nothing was ever posted anywhere; only what to hand over changes.
+    edit_money_cash: 'Please pay {total} instead of {was} when you collect your order.',
+    // The delivery fee is recomputed by the shop's own rule, so a reduction can
+    // move it. Appended only when it actually changed, never as boilerplate.
+    edit_fee_changed: 'Delivery fee is now {fee} (was {was_fee}).',
   },
   hi: {
     accepted_with_time: 'नमस्ते {name}, {shop} ने आपका ऑर्डर स्वीकार कर लिया है। यह {time} बजे तक तैयार हो जाना चाहिए।',
@@ -63,6 +84,15 @@ const T = Object.freeze({
     completed: 'नमस्ते {name}, {shop} पर आपका ऑर्डर पूरा हो गया। धन्यवाद!',
     cancelled: 'नमस्ते {name}, {shop} पर आपका ऑर्डर रद्द कर दिया गया है।',
     status_generic: 'नमस्ते {name}, {shop} पर आपके ऑर्डर की स्थिति अब {status} है।',
+
+    edit_intro: 'नमस्ते {name}, {shop} पर आपके ऑर्डर का पूरा सामान उपलब्ध नहीं था, इसलिए ऑर्डर कम कर दिया गया है।',
+    edit_line_removed: '• {item} — हटा दिया गया',
+    edit_line_reduced: '• {item} — {before} → {after}',
+    edit_totals: 'नया कुल: {total} (पहले {was})।',
+    edit_money_credit: 'आपके खाते में से {amount} कम कर दिए गए हैं ({shop})।',
+    edit_money_prepaid: 'आपने {was} पहले ही चुका दिए थे। बचे हुए {amount} {shop} पर आपके जमा (क्रेडिट) के रूप में रखे गए हैं — अगली बार के ऑर्डर में कम हो जाएंगे।',
+    edit_money_cash: 'सामान लेते समय {was} की जगह {total} दीजिए।',
+    edit_fee_changed: 'डिलीवरी शुल्क अब {fee} है (पहले {was_fee})।',
   },
 });
 
@@ -142,11 +172,78 @@ function buildCustomerMessage({ lang, customerName, shopName, status, promisedAt
   return t(l, 'status_generic', vars);
 }
 
+/**
+ * Integer paise as rupees, e.g. 12500 -> "₹125.00".
+ *
+ * Latin digits and the en-IN grouping, in every language, for the same reason
+ * formatClock() renders a Latin clock face: the AMOUNT is the part of a money
+ * message that must survive being read by anyone in the household, and a
+ * misread total is the one mistake this batch exists to avoid.
+ */
+function rupees(paise) {
+  const n = Number(paise);
+  if (!Number.isFinite(n)) return '';
+  return `₹${(n / 100).toFixed(2)}`;
+}
+
+/**
+ * The message a customer gets when the SHOP reduced their order (batch C).
+ * PURE — every fact is passed in.
+ *
+ *   paymentMode   'credit' | 'prepaid' | 'cash'
+ *   changes       [{ name, qty_before, qty_after }] — the lines that changed
+ *   oldTotal      subtotal + delivery fee BEFORE this edit (paise)
+ *   newTotal      subtotal + delivery fee AFTER  this edit (paise)
+ *   reduction     oldTotal - newTotal (paise). May be <= 0 only in the rare case
+ *                 where a reduction pushed the order back under the shop's
+ *                 free-delivery threshold and the fee returned; the money lines
+ *                 are then omitted rather than stating a refund that is not one.
+ *   oldFee/newFee the delivery fee before/after — mentioned only when it moved.
+ *
+ * Never says "refund": nothing in this app refunds money, and telling a customer
+ * otherwise would be the one lie this whole batch is built to avoid.
+ */
+function buildOrderEditMessage({
+  lang, customerName, shopName, paymentMode,
+  changes, oldTotal, newTotal, reduction, oldFee, newFee,
+}) {
+  const l = resolveLang(lang);
+  const vars = { name: customerName, shop: shopName };
+  const parts = [t(l, 'edit_intro', vars)];
+
+  for (const c of changes || []) {
+    parts.push(Number(c.qty_after) === 0
+      ? t(l, 'edit_line_removed', { item: c.name })
+      : t(l, 'edit_line_reduced', { item: c.name, before: c.qty_before, after: c.qty_after }));
+  }
+
+  if (oldFee != null && newFee != null && Number(oldFee) !== Number(newFee)) {
+    parts.push(t(l, 'edit_fee_changed', { fee: rupees(newFee), was_fee: rupees(oldFee) }));
+  }
+
+  parts.push(t(l, 'edit_totals', { total: rupees(newTotal), was: rupees(oldTotal) }));
+
+  const diff = Number(reduction);
+  if (Number.isFinite(diff) && diff > 0) {
+    if (paymentMode === 'credit') {
+      parts.push(t(l, 'edit_money_credit', { ...vars, amount: rupees(diff) }));
+    } else if (paymentMode === 'prepaid') {
+      parts.push(t(l, 'edit_money_prepaid', { ...vars, amount: rupees(diff), was: rupees(oldTotal) }));
+    } else if (paymentMode === 'cash') {
+      parts.push(t(l, 'edit_money_cash', { total: rupees(newTotal), was: rupees(oldTotal) }));
+    }
+  }
+
+  return parts.join('\n');
+}
+
 module.exports = {
   LANGS,
   FALLBACK,
   resolveLang,
   t,
   formatClock,
+  rupees,
   buildCustomerMessage,
+  buildOrderEditMessage,
 };
