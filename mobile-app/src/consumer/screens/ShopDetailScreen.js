@@ -94,7 +94,7 @@ export default function ShopDetailScreen({ route, navigation }) {
 
         {/* Storefront photos (0-3), directly under the sticky header. Same
             horizontal padding as the header; nothing renders when empty. */}
-        {shop ? <ShopCarousel images={shop.images} alt={name} /> : null}
+        {shop ? <ShopCarousel slides={shop.slides} images={shop.images} alt={name} /> : null}
 
         <ErrorBanner>{error}</ErrorBanner>
 
