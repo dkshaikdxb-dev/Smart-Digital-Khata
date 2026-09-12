@@ -8168,7 +8168,7 @@ const SHOPOPEN = {
     'open.takingOrders': 'You are taking orders right now.',
     'open.notTakingOrders': 'Customers cannot order right now.',
     'open.stateClosed': 'Closed — you switched the shop off',
-    'open.statePaused': 'Paused until {when}',
+    'open.statePaused': 'Paused — back {when}',
     'open.stateHoliday': 'Closed today — reopens {when}',
     'open.stateHolidayReason': 'Closed today ({reason}) — reopens {when}',
     'open.stateHours': 'Closed — opens {when}',

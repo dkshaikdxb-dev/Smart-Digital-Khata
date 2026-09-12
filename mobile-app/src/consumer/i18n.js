@@ -307,7 +307,7 @@ const en = {
   'open.todayAt': 'at {time}',
   'open.tomorrowAt': 'tomorrow at {time}',
   'open.stateClosed': 'Closed — the shop is switched off right now',
-  'open.statePaused': 'Paused until {when}',
+  'open.statePaused': 'Paused — back {when}',
   'open.stateHoliday': 'Closed today — reopens {when}',
   'open.stateHolidayReason': 'Closed today ({reason}) — reopens {when}',
   'open.stateHours': 'Closed — opens {when}',

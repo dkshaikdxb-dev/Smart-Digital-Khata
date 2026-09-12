@@ -90,6 +90,8 @@ export default function OrderAlert() {
   const [busyId, setBusyId] = useState(null);
 
   const ctxRef = useRef(null);
+  // The banner element, measured so the page can be pushed clear of it.
+  const bannerRef = useRef(null);
   const timerRef = useRef(null);
   // orderId -> { at: epoch ms of the last chime/speak, count: how many fired }.
   const spokenRef = useRef(new Map());
@@ -193,6 +195,41 @@ export default function OrderAlert() {
     }
   }, [items]);
 
+  // KEEP THE PAGE CLEAR OF THE BANNER.
+  //
+  // The banner is position:fixed at the very top so it cannot be scrolled away
+  // from — that is the point of an alarm. But fixed elements are out of normal
+  // flow, so without this the banner sits ON TOP of the app bar and the owner
+  // loses their navigation for as long as an order is unacknowledged. On a phone
+  // the bottom tab bar hides the damage; on a desktop there is no bottom bar and
+  // the header is simply gone.
+  //
+  // So reserve exactly the banner's height as padding on <body>. It is measured
+  // rather than hardcoded because the banner wraps to two or three rows
+  // depending on width and language, and re-measured on resize. The padding is
+  // removed when the banner goes away (acknowledged, muted, or unmounted), so a
+  // quiet console is pixel-identical to before this feature existed.
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!el) return undefined;
+    const apply = () => {
+      const h = el.getBoundingClientRect().height;
+      document.body.style.paddingTop = h ? `${Math.ceil(h)}px` : '';
+    };
+    apply();
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(apply);
+      ro.observe(el);
+    }
+    window.addEventListener('resize', apply);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', apply);
+      document.body.style.paddingTop = '';
+    };
+  }, [oldest && oldest.id, audio, muted]);
+
   // The one-tap escape from the browser's autoplay block: a real user gesture, so
   // creating/resuming the context here is always allowed.
   async function enableSound() {
@@ -231,7 +268,7 @@ export default function OrderAlert() {
   const name = oldest.customer_name_local || oldest.customer_name || '';
 
   return (
-    <div className="oalert" role="alert" aria-live="assertive">
+    <div className="oalert" ref={bannerRef} role="alert" aria-live="assertive">
       <div className="oalert-main">
         <div className="oalert-title">
           {t('oalert.title')}
