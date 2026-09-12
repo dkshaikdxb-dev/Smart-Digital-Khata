@@ -20,7 +20,7 @@ const statusColor = (s) => {
 };
 
 export default function OrdersScreen({ navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   // Localize known order enums; fall back to the de-underscored raw value for any
   // value not in the set, so a label is never blank.
   const enumT = (prefix, set, v) => (set.has(v) ? t(`${prefix}.${v}`) : label(v));
@@ -31,9 +31,9 @@ export default function OrdersScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async (st) => {
-    const r = await orders.list(st);
+    const r = await orders.list(st, lang);
     setItems(r.items || []);
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     load('all').catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
@@ -81,7 +81,7 @@ export default function OrdersScreen({ navigation }) {
           renderItem={({ item }) => (
             <Pressable style={s.row} onPress={() => navigation.navigate('OrderDetail', { id: item.id })}>
               <View style={{ flex: 1 }}>
-                <Text style={s.name}>{item.customer_name || '—'}</Text>
+                <Text style={s.name}>{item.customer_name_local || item.customer_name || '—'}</Text>
                 <Text style={s.muted}>{new Date(item.created_at).toLocaleString()}</Text>
                 <View style={s.badgeRow}>
                   <Text style={s.badge}>{enumT('ful', FUL, item.fulfillment_type)}</Text>

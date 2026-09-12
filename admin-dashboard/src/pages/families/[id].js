@@ -10,7 +10,11 @@ const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function FamilyDetail() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Show member/payer/statement customer names in the owner's active language
+  // (the family label is owner-typed and stays as-is). English needs no
+  // name_local, so only ask when localized.
+  const localized = lang && lang !== 'en';
   const txnLabel = (v) => { const s = t(`txn.${v}`); return s === `txn.${v}` ? v : s; };
   const { id } = router.query;
   const [data, setData] = useState(null);
@@ -21,13 +25,14 @@ export default function FamilyDetail() {
   const [msg, setMsg] = useState('');
 
   const load = useCallback(async () => {
-    const r = await apiFetch(`/api/families/${id}`);
+    const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
+    const r = await apiFetch(`/api/families/${id}${qs}`);
     setData(r);
-    const st = await apiFetch(`/api/families/${id}/statement`);
+    const st = await apiFetch(`/api/families/${id}/statement${qs}`);
     setStatement(st.transactions || []);
     const cs = await apiFetch('/api/customers');
     setCustomers(cs.items || []);
-  }, [id]);
+  }, [id, lang, localized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -61,7 +66,7 @@ export default function FamilyDetail() {
   }
 
   async function removeMember(m) {
-    if (!window.confirm(t('fam.removeConfirm', { name: m.name }))) return;
+    if (!window.confirm(t('fam.removeConfirm', { name: m.name_local || m.name }))) return;
     setMsg(''); setError('');
     try {
       await apiFetch(`/api/families/${id}/members/${m.id}`, { method: 'DELETE' });
@@ -88,7 +93,7 @@ export default function FamilyDetail() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <div>
             <h2 style={{ margin: '0 0 2px' }}>{family.name}</h2>
-            <div className="muted">{t('fam.membersN', { n: members.length, s: members.length === 1 ? '' : 's' })}{data.payer ? t('fam.payerSuffix', { name: data.payer.name }) : t('fam.noPayer')}</div>
+            <div className="muted">{t('fam.membersN', { n: members.length, s: members.length === 1 ? '' : 's' })}{data.payer ? t('fam.payerSuffix', { name: data.payer.name_local || data.payer.name }) : t('fam.noPayer')}</div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div className="muted">{t('fam.combinedOutstanding')}</div>
@@ -122,7 +127,7 @@ export default function FamilyDetail() {
         <DataTable
           empty={t('fam.membersEmpty')}
           columns={[
-            { key: 'name', label: t('common.name'), render: (m) => <strong>{m.name}</strong> },
+            { key: 'name', label: t('common.name'), render: (m) => <strong>{m.name_local || m.name}</strong> },
             { key: 'phone', label: t('common.phone'), render: (m) => m.phone || '—' },
             { key: 'balance', label: t('common.outstanding'), align: 'right', render: (m) => (
               <Balance paise={m.balance} />
@@ -145,7 +150,7 @@ export default function FamilyDetail() {
           empty={t('tx.empty')}
           columns={[
             { key: 'created_at', label: t('common.when'), render: (row) => new Date(row.created_at).toLocaleString() },
-            { key: 'customer_name', label: t('common.customer') },
+            { key: 'customer_name', label: t('common.customer'), render: (row) => row.customer_name_local || row.customer_name },
             { key: 'type', label: t('common.type'), render: (row) => <span className="badge">{txnLabel(row.type)}</span> },
             { key: 'method', label: t('common.method'), render: (row) => (row.method ? txnLabel(row.method) : '—') },
             { key: 'amount', label: t('common.amount'), align: 'right', render: (row) => (

@@ -33,7 +33,7 @@ function nextStatuses(order) {
 }
 
 export default function OrderDetailScreen({ route, navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   // Localize known order enums; fall back to the de-underscored raw value.
   const enumT = (prefix, set, v) => (set.has(v) ? t(`${prefix}.${v}`) : label(v));
   const { id } = route.params;
@@ -44,9 +44,9 @@ export default function OrderDetailScreen({ route, navigation }) {
   const [msg, setMsg] = useState('');
 
   const load = useCallback(async () => {
-    const r = await orders.get(id);
+    const r = await orders.get(id, lang);
     setOrder(r.order || r);
-  }, [id]);
+  }, [id, lang]);
 
   useEffect(() => {
     load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
@@ -93,7 +93,7 @@ export default function OrderDetailScreen({ route, navigation }) {
       <View style={s.card}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Text style={s.title}>{order.customer_name || t('title.order')}</Text>
+            <Text style={s.title}>{order.customer_name_local || order.customer_name || t('title.order')}</Text>
             {order.customer_phone ? <Text style={s.muted}>{order.customer_phone}</Text> : null}
             <Text style={s.muted}>{new Date(order.created_at).toLocaleString()}</Text>
           </View>
