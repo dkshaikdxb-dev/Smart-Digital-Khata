@@ -3,6 +3,8 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { spendCredits } = require('../utils/wallet');
 const { getShopPromoConfig, getShopPromoFreeConfig } = require('../utils/shopPromo');
+// AI triage of a submitted owner promo (batch AI-MOD) — enqueue only, after commit.
+const moderation = require('../services/moderation.service');
 
 // Public, unauthenticated promo serving (batch ADS4). Serves the localized,
 // geo-matched, in-window, active campaigns to the consumer app and records
@@ -410,6 +412,11 @@ exports.mineCreate = async (req, res) => {
       return { id: campaignId, ends_at: ins.rows[0].ends_at };
     });
 
+    // AI triage (batch AI-MOD): enqueued AFTER the transaction committed, fire-
+    // and-forget — an enqueue failure never fails the purchase; the promo just
+    // waits for a human like before.
+    moderation.enqueueCampaign(result.id);
+
     res.status(201).json({ id: result.id, status: 'pending_review', cost_paise: cost, ends_at: result.ends_at });
   } catch (e) {
     // A concurrent spend drained the balance between the pre-check and the debit.
@@ -491,6 +498,9 @@ async function mineCreateFree(req, res, shopId) {
     }
     return { id: campaignId, ends_at: ins.rows[0].ends_at };
   });
+
+  // AI triage — same as the paid path: after commit, fire-and-forget.
+  moderation.enqueueCampaign(result.id);
 
   res.status(201).json({ id: result.id, status: 'pending_review', mode: 'free', cost_paise: 0, ends_at: result.ends_at });
 }

@@ -7,13 +7,29 @@ const weekly = require('../services/weekly-summary.service');
 const publisher = require('../services/content-publisher.service');
 const strategist = require('../services/content-strategist.service');
 const drafter = require('../services/content-drafter.service');
+const moderation = require('../services/moderation.service');
 
 const QUEUES = {
   reminders: new Queue('reminders', { connection }),
   summaries: new Queue('summaries', { connection }),
   weekly: new Queue('weekly', { connection }),
   content: new Queue('content', { connection }),
+  moderation: new Queue('moderation', { connection }),
 };
+
+// AI moderation triage (batch AI-MOD). One job per uploaded photo / submitted
+// owner promo, enqueued by the controllers AFTER their transaction commits (via
+// moderation.service.enqueueShopImage / enqueueCampaign). `kind` is the job name:
+// 'shop_image' or 'campaign'. The jobId dedups a double enqueue for one row.
+async function enqueueModeration(kind, id) {
+  await QUEUES.moderation.add(kind, { id }, {
+    jobId: `${kind}:${id}`,
+    attempts: 2,
+    backoff: { type: 'exponential', delay: 30_000 },
+    removeOnComplete: 1000,
+    removeOnFail: 1000,
+  });
+}
 
 async function enqueueDailyReminders() {
   // For every "active" shop, send a reminder to each opted-in customer with dues.
@@ -94,6 +110,20 @@ function startWorkers() {
     { connection, concurrency: 1 }
   );
 
+  new Worker(
+    'moderation',
+    async (job) => {
+      // AI triage of one pending photo / owner promo. The processors are
+      // Redis-free (unit-tested by calling them straight) and FAIL-OPEN: they
+      // re-check the config gate + the row's state, never throw, and on any
+      // failure leave the row pending for a human. Nothing is ever auto-rejected.
+      if (job.name === 'shop_image') return moderation.moderateShopImage(job.data.id);
+      if (job.name === 'campaign') return moderation.moderateCampaign(job.data.id);
+      return undefined;
+    },
+    { connection, concurrency: 2 }
+  );
+
   scheduleRecurring().catch((e) => logger.error({ err: e.message }, 'scheduleRecurring failed'));
 }
 
@@ -172,4 +202,4 @@ async function scheduleRecurring() {
   new QueueEvents('reminders', { connection });
 }
 
-module.exports = { startWorkers, QUEUES };
+module.exports = { startWorkers, QUEUES, enqueueModeration };

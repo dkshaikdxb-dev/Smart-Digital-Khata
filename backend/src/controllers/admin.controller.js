@@ -7,9 +7,13 @@ const { hasPermission, permissionsFor } = require('../config/permissions');
 
 // Append one row to the moderation audit trail. Best-effort metadata is JSON.
 // Exported so other admin moderation surfaces (e.g. the storefront photo queue in
-// ads.controller) write to the SAME trail instead of a parallel one.
-async function writeAudit({ adminUserId, action, targetType, targetId, reason, metadata }) {
-  await query(
+// ads.controller) write to the SAME trail instead of a parallel one. An optional
+// `client` (a pg transaction client) lets a caller record the audit row in the
+// SAME transaction as the change it describes (the AI moderation job does this);
+// adminUserId NULL marks an automated (AI) action.
+async function writeAudit({ adminUserId, action, targetType, targetId, reason, metadata, client }) {
+  const run = client && typeof client.query === 'function' ? (t, p) => client.query(t, p) : query;
+  await run(
     `INSERT INTO moderation_actions (admin_user_id, action, target_type, target_id, reason, metadata)
      VALUES ($1,$2,$3,$4,$5,$6)`,
     [adminUserId || null, action, targetType, targetId, reason || null, metadata ? JSON.stringify(metadata) : null]
@@ -371,7 +375,18 @@ const FEATURE_BOOL_DEFAULTS = {
   consumer_prepay_enabled: true,
   enrolment_fee_enabled: false, // MONEY-CRITICAL: paid-signup master switch
   storefront_ad_free_enabled: true, // storefront sponsored-slide buy-out (0063)
+  ai_moderation_enabled: true, // AI triage of the photo/promo review queues (0064)
 };
+
+// decimal keys (0..1 confidence thresholds) -> seeded default. Stored as TEXT
+// like everything else; parsed with parseFloat (NOT parseInt) and clamped to the
+// 0.5..1.0 band the moderation policy accepts.
+const FEATURE_DEC_DEFAULTS = {
+  ai_moderation_auto_approve_min: 0.9,
+  ai_moderation_hold_min: 0.9,
+};
+const DEC_MIN = 0.5;
+const DEC_MAX = 1.0;
 
 // numeric keys (paise amounts, day counts, split percents) -> seeded default
 const FEATURE_NUM_DEFAULTS = {
@@ -399,6 +414,14 @@ const SPLIT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referr
 function featureNumber(key) {
   const n = parseInt(settings.get(key), 10);
   return Number.isFinite(n) ? n : FEATURE_NUM_DEFAULTS[key];
+}
+
+// A decimal threshold as a number in the 0.5..1.0 band, defaulting to the seeded
+// value when the stored TEXT is missing or unparseable.
+function featureDecimal(key) {
+  const n = Number.parseFloat(settings.get(key));
+  if (!Number.isFinite(n)) return FEATURE_DEC_DEFAULTS[key];
+  return Math.min(DEC_MAX, Math.max(DEC_MIN, n));
 }
 
 exports.getSettings = async (_req, res) => {
@@ -436,6 +459,11 @@ exports.getSettings = async (_req, res) => {
       };
       for (const k of Object.keys(FEATURE_BOOL_DEFAULTS)) f[k] = settings.get(k) === 'true';
       for (const k of Object.keys(FEATURE_NUM_DEFAULTS)) f[k] = featureNumber(k);
+      for (const k of Object.keys(FEATURE_DEC_DEFAULTS)) f[k] = featureDecimal(k);
+      // Read-only: whether the environment carries the AI moderation key + model
+      // id. The toggle above is inert without it. Lazy require — the service
+      // itself requires this controller (writeAudit).
+      f.ai_moderation_configured = require('../services/moderation.service').isConfigured();
       return f;
     })(),
   });
@@ -492,6 +520,14 @@ exports.updateSettings = async (req, res) => {
   // amounts / counts / percents -> String(int)
   for (const key of Object.keys(FEATURE_NUM_DEFAULTS)) {
     if (b[key] !== undefined) patch[key] = String(parseInt(b[key], 10));
+  }
+  // decimal thresholds -> String(number), clamped to 0.5..1.0 (Joi also guards)
+  for (const key of Object.keys(FEATURE_DEC_DEFAULTS)) {
+    if (b[key] !== undefined) {
+      const n = Number.parseFloat(b[key]);
+      if (!Number.isFinite(n)) throw ApiError.badRequest('invalid_threshold');
+      patch[key] = String(Math.min(DEC_MAX, Math.max(DEC_MIN, n)));
+    }
   }
 
   // Zero-burn guard: if ANY split percent is being changed, validate the
