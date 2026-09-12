@@ -338,6 +338,7 @@ exports.moderationLog = async (req, res) => {
               WHEN 'shop'     THEN (SELECT name FROM shops WHERE id = m.target_id)
               WHEN 'user'     THEN (SELECT name FROM users WHERE id = m.target_id)
               WHEN 'customer' THEN (SELECT COALESCE(name, phone) FROM customer_users WHERE id = m.target_id)
+              WHEN 'settings' THEN 'Platform settings'
             END AS target_label
      FROM moderation_actions m
      LEFT JOIN users a ON a.id = m.admin_user_id
@@ -466,8 +467,88 @@ exports.getSettings = async (_req, res) => {
       f.ai_moderation_configured = require('../services/moderation.service').isConfigured();
       return f;
     })(),
+    integrations: integrationsStatus(),
   });
 };
+
+// ---- Integrations (batch INTEG) ----------------------------------------------
+// Every third-party credential the panel edits goes through config/settings
+// (platform_settings overrides .env). The status block below NEVER echoes a
+// secret — only `*_set` booleans, key sources ('db' | 'env' | 'none') and the
+// non-secret ids. Lazy requires: moderation.service requires this controller.
+function integrationsStatus() {
+  const set = (k) => Boolean(settings.get(k));
+  const moderation = require('../services/moderation.service');
+  const drafter = require('../services/content-drafter.service');
+  const meta = require('../services/content-meta.service');
+  const newsletter = require('../services/content-newsletter.service');
+  const nmt = require('../services/nmtProvider');
+  return {
+    ai: {
+      api_key_set: set('ANTHROPIC_API_KEY'),
+      api_key_source: settings.source('ANTHROPIC_API_KEY'),
+      moderation_model: settings.get('MODERATION_LLM_MODEL'),
+      moderation_model_source: settings.source('MODERATION_LLM_MODEL'),
+      content_model: settings.get('CONTENT_LLM_MODEL'),
+      content_model_source: settings.source('CONTENT_LLM_MODEL'),
+      moderation_configured: moderation.isConfigured(),
+      content_configured: drafter.isConfigured(),
+    },
+    meta: {
+      app_id: settings.get('META_APP_ID'),
+      app_id_source: settings.source('META_APP_ID'),
+      app_secret_set: set('META_APP_SECRET'),
+      app_secret_source: settings.source('META_APP_SECRET'),
+      page_token_set: set('META_PAGE_TOKEN'),
+      page_token_source: settings.source('META_PAGE_TOKEN'),
+      ig_token_set: set('META_IG_TOKEN'),
+      ig_token_source: settings.source('META_IG_TOKEN'),
+      facebook_configured: meta.metaConfigured('facebook'),
+      instagram_configured: meta.metaConfigured('instagram'),
+    },
+    smtp: {
+      url_set: set('SMTP_URL'),
+      url_source: settings.source('SMTP_URL'),
+      host: settings.get('SMTP_HOST'),
+      host_source: settings.source('SMTP_HOST'),
+      port: settings.get('SMTP_PORT'),
+      user: settings.get('SMTP_USER'),
+      pass_set: set('SMTP_PASS'),
+      pass_source: settings.source('SMTP_PASS'),
+      secure: settings.get('SMTP_SECURE') === 'true',
+      from: settings.get('NEWSLETTER_FROM'),
+      from_source: settings.source('NEWSLETTER_FROM'),
+      configured: newsletter.isConfigured(),
+    },
+    nmt: {
+      enabled: nmt.enabled(),
+      enabled_source: settings.source('BHASHINI_NMT'),
+      bhashini_key_set: set('BHASHINI_API_KEY'),
+      bhashini_key_source: settings.source('BHASHINI_API_KEY'),
+      bhashini_user_id: settings.get('BHASHINI_USER_ID'),
+      bhashini_user_id_source: settings.source('BHASHINI_USER_ID'),
+      sarvam_key_set: set('SARVAM_API_KEY'),
+      sarvam_key_source: settings.source('SARVAM_API_KEY'),
+      // No provider adapter consumes these keys yet — they are stored for when
+      // it lands. The UI shows 'keys only' while this is false.
+      adapter_wired: false,
+    },
+  };
+}
+
+// The exact typed confirmation an admin must send with ANY integration change.
+const CONFIRM_PHRASE = 'I CONFIRM';
+
+// The moderation_actions audit row for an integration change targets the
+// platform-settings singleton (target_type 'settings'); the column is a NOT NULL
+// UUID, so the nil UUID stands in for that singleton.
+const SETTINGS_TARGET_ID = '00000000-0000-0000-0000-000000000000';
+
+// A model id is an opaque, operator-supplied string: short, printable ASCII, no
+// whitespace. There is deliberately NO allowlist of names in code.
+function validModelId(v) {
+  return v === '' || /^[\x21-\x7e]{1,120}$/.test(v);
+}
 
 exports.updateSettings = async (req, res) => {
   const b = req.body;
@@ -483,10 +564,36 @@ exports.updateSettings = async (req, res) => {
     whatsapp_verify_token: 'WHATSAPP_VERIFY_TOKEN',
     whatsapp_template_reminder: 'WHATSAPP_TEMPLATE_REMINDER',
     whatsapp_template_lang: 'WHATSAPP_TEMPLATE_LANG',
+    // Integrations (batch INTEG) — non-secret ids; empty string clears (falls
+    // back to the .env value, if any).
+    moderation_llm_model: 'MODERATION_LLM_MODEL',
+    content_llm_model: 'CONTENT_LLM_MODEL',
+    meta_app_id: 'META_APP_ID',
+    smtp_host: 'SMTP_HOST',
+    smtp_user: 'SMTP_USER',
+    newsletter_from: 'NEWSLETTER_FROM',
+    bhashini_user_id: 'BHASHINI_USER_ID',
   };
   for (const [field, key] of Object.entries(passthrough)) {
-    if (b[field] !== undefined) patch[key] = b[field];
+    if (b[field] !== undefined) patch[key] = b[field] === null ? '' : b[field];
   }
+  // Model ids: opaque short printable strings (no allowlist of names).
+  for (const key of ['MODERATION_LLM_MODEL', 'CONTENT_LLM_MODEL']) {
+    if (patch[key] !== undefined && !validModelId(patch[key])) throw ApiError.badRequest('invalid_model_id');
+  }
+  // SMTP port: an integer 1..65535, or '' to clear.
+  if (b.smtp_port !== undefined) {
+    const raw = b.smtp_port === null ? '' : String(b.smtp_port).trim();
+    if (raw === '') patch.SMTP_PORT = '';
+    else {
+      const n = Number(raw);
+      if (!Number.isInteger(n) || n < 1 || n > 65535) throw ApiError.badRequest('invalid_smtp_port');
+      patch.SMTP_PORT = String(n);
+    }
+  }
+  // SMTP TLS + the NMT seam switch: booleans stored as the TEXT the readers expect.
+  if (b.smtp_secure !== undefined) patch.SMTP_SECURE = b.smtp_secure ? 'true' : 'false';
+  if (b.bhashini_nmt !== undefined) patch.BHASHINI_NMT = b.bhashini_nmt ? '1' : '';
   // Landing WhatsApp number: store digits only (strip +, spaces, dashes) so the
   // public /config and the landing's wa.me link are always well-formed. Empty
   // clears it (landing falls back to its built-in default).
@@ -494,13 +601,35 @@ exports.updateSettings = async (req, res) => {
     patch.LANDING_WHATSAPP = String(b.landing_whatsapp).replace(/\D/g, '');
   }
   // secrets: only overwrite when a non-empty value is supplied
+  // (blank = keep). An explicit `null` CLEARS the stored secret (writes '', so
+  // the reader falls back to the .env value, if any).
   const secrets = {
     razorpay_key_secret: 'RAZORPAY_KEY_SECRET',
     razorpay_webhook_secret: 'RAZORPAY_WEBHOOK_SECRET',
     whatsapp_api_token: 'WHATSAPP_API_TOKEN',
+    anthropic_api_key: 'ANTHROPIC_API_KEY',
+    meta_app_secret: 'META_APP_SECRET',
+    meta_page_token: 'META_PAGE_TOKEN',
+    meta_ig_token: 'META_IG_TOKEN',
+    smtp_url: 'SMTP_URL',
+    smtp_pass: 'SMTP_PASS',
+    bhashini_api_key: 'BHASHINI_API_KEY',
+    sarvam_api_key: 'SARVAM_API_KEY',
   };
+  const cleared = [];
   for (const [field, key] of Object.entries(secrets)) {
-    if (b[field]) patch[key] = b[field];
+    if (b[field] === null) { patch[key] = ''; cleared.push(key); }
+    else if (b[field]) patch[key] = String(b[field]);
+  }
+
+  // Typed confirmation, ENFORCED HERE (not just in the UI): a body that touches
+  // ANY integration key must carry confirm: "I CONFIRM" (exact, case-sensitive,
+  // trimmed). Otherwise 428 and NOTHING in this body is written — the feature
+  // toggles / pricing below share the same single setMany, so it is
+  // all-or-nothing. Bodies that touch no integration key are unaffected.
+  const touched = Object.keys(patch).filter((k) => settings.INTEGRATION_KEYS.includes(k));
+  if (touched.length && String(b.confirm == null ? '' : b.confirm).trim() !== CONFIRM_PHRASE) {
+    throw new ApiError(428, 'confirmation_required');
   }
 
   // ---- Feature flags & pricing (batch FLAGS1) ----------------------------
@@ -545,6 +674,17 @@ exports.updateSettings = async (req, res) => {
   }
 
   await settings.setMany(patch);
+
+  // Audit every integration change — key NAMES only, never a value.
+  if (touched.length) {
+    await writeAudit({
+      adminUserId: req.user.sub,
+      action: 'settings.integrations_update',
+      targetType: 'settings',
+      targetId: SETTINGS_TARGET_ID,
+      metadata: { keys: touched, cleared: cleared.filter((k) => touched.includes(k)) },
+    });
+  }
   res.json({ ok: true });
 };
 
@@ -555,6 +695,42 @@ exports.testRazorpay = async (_req, res) => {
   } catch (err) {
     const msg = err.error?.description || err.message || 'Connection failed';
     res.status(400).json({ ok: false, message: msg });
+  }
+};
+
+// POST /settings/ai/test — one tiny generation through the drafter's client to
+// prove the key + content model id work. Never throws a 500 for a provider
+// error and never logs the key.
+exports.testAi = async (_req, res) => {
+  if (!settings.get('ANTHROPIC_API_KEY') || !settings.get('CONTENT_LLM_MODEL')) {
+    throw ApiError.badRequest('not_configured');
+  }
+  const model = settings.get('CONTENT_LLM_MODEL');
+  try {
+    const client = require('../services/content-drafter.service').getClient();
+    if (!client) throw new Error('AI client unavailable');
+    await client.messages.create({
+      model,
+      max_tokens: 8,
+      messages: [{ role: 'user', content: 'Reply with OK' }],
+    });
+    res.json({ ok: true, model, message: 'AI connection works.' });
+  } catch (err) {
+    res.status(400).json({ ok: false, message: (err && err.message) || 'Connection failed' });
+  }
+};
+
+// POST /settings/smtp/test — transporter.verify() against the configured SMTP.
+exports.testSmtp = async (_req, res) => {
+  const newsletter = require('../services/content-newsletter.service');
+  if (!newsletter.isConfigured()) throw ApiError.badRequest('not_configured');
+  try {
+    const transport = newsletter.getTransport();
+    if (!transport || typeof transport.verify !== 'function') throw new Error('SMTP transport unavailable');
+    await transport.verify();
+    res.json({ ok: true, message: 'SMTP connection verified.' });
+  } catch (err) {
+    res.status(400).json({ ok: false, message: (err && err.message) || 'Connection failed' });
   }
 };
 

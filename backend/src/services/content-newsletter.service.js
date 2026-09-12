@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { query } = require('../config/db');
 const logger = require('../utils/logger');
+const settings = require('../config/settings');
 
 // Real NEWSLETTER publisher (Batch T) — a double-opt-in subscriber list plus an
 // SMTP send adapter for the `newsletter_community` / `newsletter_ecosystem`
@@ -26,16 +27,19 @@ const LIST_BY_CHANNEL = Object.freeze({
   newsletter_ecosystem: 'ecosystem',
 });
 
-// A cached built transport (undefined = not built yet, null = unconfigured), and
-// a test-only injected transport that overrides everything.
-let cachedTransport;
+// A cached built transport, keyed by the SMTP values it was built from (so a
+// credential change in Admin -> Settings rebuilds it on the next call), and a
+// test-only injected transport that overrides everything.
+let cachedTransport = null;
+let cachedTransportKey = null;
 let injectedTransport = null;
 
 // TEST SEAM ONLY — inject a fake nodemailer-like transport ({ sendMail }). Never
 // called in production paths.
 function __setTransport(t) {
   injectedTransport = t || null;
-  cachedTransport = undefined;
+  cachedTransport = null;
+  cachedTransportKey = null;
 }
 
 // The public base URL (never derived from a request). Mirrors the social
@@ -45,40 +49,61 @@ function baseUrl() {
   return (raw || DEFAULT_BASE_URL).replace(/\/+$/, '');
 }
 
-// isConfigured() — true when SMTP is configured: SMTP_URL OR (SMTP_HOST +
-// SMTP_PORT), plus a NEWSLETTER_FROM address. Reads process.env directly (like
-// token-crypto / the social service), lazily, so a later env change is honored.
-function isConfigured() {
-  const hasServer = Boolean(
-    (process.env.SMTP_URL && process.env.SMTP_URL.trim()) ||
-      (process.env.SMTP_HOST && process.env.SMTP_HOST.trim() &&
-        process.env.SMTP_PORT && String(process.env.SMTP_PORT).trim())
-  );
-  return Boolean(hasServer && process.env.NEWSLETTER_FROM && process.env.NEWSLETTER_FROM.trim());
+// The SMTP values, read THROUGH config/settings at call time (Admin -> Settings
+// overrides the env, the env is the fallback) so a later change is honored
+// without a restart. Trimmed; every field is '' when unset.
+function smtp() {
+  const g = (k) => String(settings.get(k) || '').trim();
+  return {
+    url: g('SMTP_URL'),
+    host: g('SMTP_HOST'),
+    port: g('SMTP_PORT'),
+    user: g('SMTP_USER'),
+    pass: g('SMTP_PASS'),
+    secure: g('SMTP_SECURE'),
+    from: g('NEWSLETTER_FROM'),
+  };
 }
 
-// Build (and cache) a nodemailer transport from the env, or return null when
-// unconfigured. `nodemailer` is required lazily here only. A test-injected
-// transport always wins.
+// The sender address (empty when unset).
+function fromAddress() {
+  return smtp().from;
+}
+
+// isConfigured() — true when SMTP is configured: SMTP_URL OR (SMTP_HOST +
+// SMTP_PORT), plus a NEWSLETTER_FROM address.
+function isConfigured() {
+  const c = smtp();
+  const hasServer = Boolean(c.url || (c.host && c.port));
+  return Boolean(hasServer && c.from);
+}
+
+// Build (and cache) a nodemailer transport from the settings, or return null
+// when unconfigured. The cache is keyed by a join of every SMTP value, so a
+// change to ANY of them (panel or env) builds a fresh transport on the next
+// call. `nodemailer` is required lazily here only. A test-injected transport
+// always wins.
 function getTransport() {
   if (injectedTransport) return injectedTransport;
   if (!isConfigured()) return null;
-  if (cachedTransport !== undefined) return cachedTransport;
+  const c = smtp();
+  const key = JSON.stringify([c.url, c.host, c.port, c.user, c.pass, c.secure]);
+  if (cachedTransport && cachedTransportKey === key) return cachedTransport;
 
   // eslint-disable-next-line global-require
   const nodemailer = require('nodemailer');
-  const { SMTP_URL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SECURE } = process.env;
-  if (SMTP_URL && SMTP_URL.trim()) {
-    cachedTransport = nodemailer.createTransport(SMTP_URL.trim());
+  if (c.url) {
+    cachedTransport = nodemailer.createTransport(c.url);
   } else {
-    const port = Number(SMTP_PORT);
+    const port = Number(c.port);
     cachedTransport = nodemailer.createTransport({
-      host: SMTP_HOST,
+      host: c.host,
       port,
-      secure: SMTP_SECURE === 'true' || port === 465,
-      auth: SMTP_USER && SMTP_PASS ? { user: SMTP_USER, pass: SMTP_PASS } : undefined,
+      secure: c.secure === 'true' || port === 465,
+      auth: c.user && c.pass ? { user: c.user, pass: c.pass } : undefined,
     });
   }
+  cachedTransportKey = key;
   return cachedTransport;
 }
 
@@ -100,7 +125,7 @@ function newToken() {
 async function sendConfirmation(transport, email, token) {
   const link = confirmLink(token);
   await transport.sendMail({
-    from: process.env.NEWSLETTER_FROM,
+    from: fromAddress(),
     to: email,
     subject: 'Confirm your Smart Digital Khata subscription',
     text:
@@ -224,7 +249,7 @@ const newsletterAdapter = Object.freeze({
       const results = await Promise.allSettled(
         group.map((s) =>
           transport.sendMail({
-            from: process.env.NEWSLETTER_FROM,
+            from: fromAddress(),
             to: s.email,
             subject,
             text:

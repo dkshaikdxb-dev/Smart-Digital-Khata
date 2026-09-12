@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
+import ConfirmTyped, { CONFIRM_PHRASE } from '../../components/ConfirmTyped';
 import { apiFetch } from '../../lib/api';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
@@ -21,7 +22,7 @@ const TOGGLE_KEYS = [
   ['branded_store_enabled', 'Branded store', 'Paid branded storefront upgrade for a shop.'],
   ['consumer_prepay_enabled', 'Consumer prepay', 'Lets a customer hold a prepaid advance with a shop.'],
   ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
-  ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + model id in the server environment.'],
+  ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + moderation model id (Integrations → AI, below).'],
 ];
 // AI moderation thresholds (batch AI-MOD): decimals in 0.5..1.0, edited as-is.
 const DEC_KEYS = ['ai_moderation_auto_approve_min', 'ai_moderation_hold_min'];
@@ -47,12 +48,72 @@ function featFromApi(f) {
   return o;
 }
 
+// ---- Integrations (batch INTEG) ---------------------------------------------
+// Every credential is saved through config/settings on the server (panel value
+// overrides .env) and EVERY integration save goes through the typed I CONFIRM
+// modal — the backend refuses the PATCH (428) without `confirm: 'I CONFIRM'`.
+// Secrets are never returned by the API: the form keeps '' = "leave blank to
+// keep", a typed string = new value, and null = "clear" (falls back to .env).
+const SECRET_FIELDS = new Set([
+  'razorpay_key_secret', 'razorpay_webhook_secret', 'whatsapp_api_token',
+  'anthropic_api_key', 'meta_app_secret', 'meta_page_token', 'meta_ig_token',
+  'smtp_url', 'smtp_pass', 'bhashini_api_key', 'sarvam_api_key',
+]);
+const FIELD_LABELS = {
+  razorpay_key_id: 'Razorpay Key ID', razorpay_key_secret: 'Razorpay Key Secret', razorpay_webhook_secret: 'Razorpay Webhook Secret',
+  razorpay_plan_pro: 'Razorpay Pro plan ID', razorpay_plan_family: 'Razorpay Family plan ID',
+  whatsapp_api_token: 'WhatsApp access token', whatsapp_phone_number_id: 'WhatsApp Phone Number ID',
+  whatsapp_business_account_id: 'WhatsApp Business Account ID', whatsapp_verify_token: 'WhatsApp verify token',
+  whatsapp_template_reminder: 'WhatsApp reminder template', whatsapp_template_lang: 'WhatsApp template language',
+  anthropic_api_key: 'AI API key', moderation_llm_model: 'Moderation model id', content_llm_model: 'Content model id',
+  meta_app_id: 'Meta App ID', meta_app_secret: 'Meta App Secret', meta_page_token: 'Facebook Page token', meta_ig_token: 'Instagram token',
+  smtp_url: 'SMTP URL', smtp_host: 'SMTP host', smtp_port: 'SMTP port', smtp_user: 'SMTP user', smtp_pass: 'SMTP password',
+  smtp_secure: 'SMTP TLS (secure)', newsletter_from: 'Newsletter From address',
+  bhashini_nmt: 'Neural translation (NMT)', bhashini_api_key: 'Bhashini API key', bhashini_user_id: 'Bhashini user id', sarvam_api_key: 'Sarvam API key',
+};
+
+// The PATCH body for one integration card: only fields that actually changed
+// against the loaded snapshot. Secrets: '' (blank) is "keep" and is dropped;
+// null is "clear"; any other string is a new value.
+function integrationDiff(form, initial) {
+  const body = {};
+  for (const [k, v] of Object.entries(form)) {
+    if (SECRET_FIELDS.has(k)) {
+      if (v === null) body[k] = null;
+      else if (typeof v === 'string' && v !== '') body[k] = v;
+    } else if (v !== (initial ? initial[k] : undefined)) {
+      body[k] = v;
+    }
+  }
+  return body;
+}
+
+// The human-readable change list the modal shows. Secrets are never echoed.
+function describeChanges(body) {
+  return Object.entries(body).map(([k, v]) => {
+    const label = FIELD_LABELS[k] || k;
+    if (SECRET_FIELDS.has(k)) return { label, detail: v === null ? '(cleared)' : '•••• (updated)' };
+    if (v === null || v === '') return { label, detail: '(cleared — falls back to .env if set)' };
+    if (typeof v === 'boolean') return { label, detail: v ? 'on' : 'off' };
+    return { label, detail: String(v) };
+  });
+}
+
 export default function AdminSettings() {
   const router = useRouter();
   const [s, setS] = useState(null);
   const [rz, setRz] = useState({});
   const [wa, setWa] = useState({});
   const [landing, setLanding] = useState({ landing_whatsapp: '' });
+  const [ai, setAi] = useState({});
+  const [meta, setMeta] = useState({});
+  const [smtp, setSmtp] = useState({});
+  const [nmt, setNmt] = useState({});
+  // Snapshots of the loaded (non-secret) values, so a save only sends what changed.
+  const [initial, setInitial] = useState({});
+  // The pending integration save awaiting the typed confirmation.
+  const [pending, setPending] = useState(null); // { title, body, note, changes }
+  const [busy, setBusy] = useState(false);
   const [feat, setFeat] = useState(null);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
@@ -65,18 +126,35 @@ export default function AdminSettings() {
     setOrigin(window.location.origin);
     apiFetch('/api/admin/settings').then((d) => {
       setS(d);
-      setRz({ razorpay_key_id: d.razorpay.key_id || '', razorpay_plan_pro: d.razorpay.plan_pro || '', razorpay_plan_family: d.razorpay.plan_family || '' });
-      setWa({
-        whatsapp_phone_number_id: d.whatsapp.phone_number_id || '',
-        whatsapp_business_account_id: d.whatsapp.business_account_id || '',
-        whatsapp_verify_token: d.whatsapp.verify_token || '',
-        whatsapp_template_reminder: d.whatsapp.template_reminder || '',
-        whatsapp_template_lang: d.whatsapp.template_lang || 'en',
-      });
+      hydrate(d);
       setLanding({ landing_whatsapp: (d.landing && d.landing.whatsapp) || '' });
       if (d.features) setFeat(featFromApi(d.features));
     }).catch((e) => setErr(e.message));
   }, [router]);
+
+  // Fill every integration form from the API. Secret inputs start blank
+  // ("leave blank to keep"); the snapshot records the non-secret values.
+  function hydrate(d) {
+    const i = d.integrations || {};
+    const rzF = { razorpay_key_id: d.razorpay.key_id || '', razorpay_plan_pro: d.razorpay.plan_pro || '', razorpay_plan_family: d.razorpay.plan_family || '' };
+    const waF = {
+      whatsapp_phone_number_id: d.whatsapp.phone_number_id || '',
+      whatsapp_business_account_id: d.whatsapp.business_account_id || '',
+      whatsapp_verify_token: d.whatsapp.verify_token || '',
+      whatsapp_template_reminder: d.whatsapp.template_reminder || '',
+      whatsapp_template_lang: d.whatsapp.template_lang || 'en',
+    };
+    const aiF = { moderation_llm_model: (i.ai && i.ai.moderation_model) || '', content_llm_model: (i.ai && i.ai.content_model) || '' };
+    const metaF = { meta_app_id: (i.meta && i.meta.app_id) || '' };
+    const smtpF = {
+      smtp_host: (i.smtp && i.smtp.host) || '', smtp_port: (i.smtp && i.smtp.port) || '',
+      smtp_user: (i.smtp && i.smtp.user) || '', smtp_secure: !!(i.smtp && i.smtp.secure),
+      newsletter_from: (i.smtp && i.smtp.from) || '',
+    };
+    const nmtF = { bhashini_nmt: !!(i.nmt && i.nmt.enabled), bhashini_user_id: (i.nmt && i.nmt.bhashini_user_id) || '' };
+    setRz(rzF); setWa(waF); setAi(aiF); setMeta(metaF); setSmtp(smtpF); setNmt(nmtF);
+    setInitial({ ...rzF, ...waF, ...aiF, ...metaF, ...smtpF, ...nmtF });
+  }
 
   if (err && !s) return <Shell><div className="card" style={{ color: 'var(--danger)' }}>{err}</div></Shell>;
   if (!s) return <Shell><div className="card">Loading…</div></Shell>;
@@ -88,6 +166,30 @@ export default function AdminSettings() {
       const fresh = await apiFetch('/api/admin/settings'); setS(fresh);
       setMsg(note);
     } catch (e) { setErr(e.message); }
+  }
+
+  // Every INTEGRATION save (Razorpay, WhatsApp, AI, Meta, SMTP, NMT): diff the
+  // form, open the typed I CONFIRM modal, and only then PATCH with confirm.
+  function requestIntegrationSave(title, form, note) {
+    setMsg(''); setErr('');
+    const body = integrationDiff(form, initial);
+    if (!Object.keys(body).length) { setMsg('Nothing to save — no values changed.'); return; }
+    setPending({ title, body, note, changes: describeChanges(body) });
+  }
+
+  async function confirmIntegrationSave() {
+    if (!pending) return;
+    setBusy(true);
+    try {
+      await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ ...pending.body, confirm: CONFIRM_PHRASE }) });
+      const fresh = await apiFetch('/api/admin/settings');
+      setS(fresh);
+      hydrate(fresh);
+      setMsg(pending.note);
+      setPending(null);
+    } catch (e) {
+      setErr(e.status === 428 ? 'Confirmation required — type I CONFIRM exactly.' : e.message);
+    } finally { setBusy(false); }
   }
 
   // Feature flags & pricing: PATCH then refresh both the raw settings and the
@@ -173,14 +275,98 @@ export default function AdminSettings() {
     } catch (e) { setErr(`WhatsApp: ${e.message}`); }
   }
 
+  async function testAi() {
+    setMsg(''); setErr('');
+    try {
+      const r = await apiFetch('/api/admin/settings/ai/test', { method: 'POST' });
+      setMsg(r.ok ? `✅ AI connection works (model ${r.model}).` : r.message);
+    } catch (e) {
+      const m = (e.body && (e.body.message || e.body.error)) || e.message;
+      setErr(`AI: ${m === 'not_configured' ? 'not configured — set the API key and the content model id first.' : m}`);
+    }
+  }
+
+  async function testSmtp() {
+    setMsg(''); setErr('');
+    try {
+      const r = await apiFetch('/api/admin/settings/smtp/test', { method: 'POST' });
+      setMsg(r.ok ? `✅ ${r.message}` : r.message);
+    } catch (e) {
+      const m = (e.body && (e.body.message || e.body.error)) || e.message;
+      setErr(`SMTP: ${m === 'not_configured' ? 'not configured — set the SMTP URL or host/port and a From address first.' : m}`);
+    }
+  }
+
   const badge = (label, on) => (
     <span className="badge" style={on ? { background: 'var(--accent)', color: '#000' } : undefined}>{label}: {on ? 'set' : 'not set'}</span>
   );
+  const onBadge = (label, on, offLabel) => (
+    <span className="badge" style={on ? { background: 'var(--accent)', color: '#000' } : undefined}>{on ? label : (offLabel || `not ${label}`)}</span>
+  );
+  // "source: environment" hint — the value is inherited from .env, so the panel
+  // field is empty; a panel value would override it.
+  const sourceHint = (source) => (source === 'env'
+    ? <span className="badge" title="Inherited from the server .env — a value saved here overrides it">source: environment</span>
+    : null);
+
+  // A password input for a secret: never shows the value; "saved" badge when
+  // set; leave blank to keep; a Clear link marks it null (cleared on save).
+  function secretField({ label, field, isSet, source, placeholder, form, setForm }) {
+    const v = form[field];
+    const clearing = v === null;
+    return (
+      <div>
+        <label className="muted" htmlFor={`f-${field}`}>
+          {label} {isSet && <span className="badge" style={{ background: 'var(--accent)', color: '#000' }}>saved</span>} {sourceHint(source)}
+        </label>
+        {clearing ? (
+          <p className="muted" style={{ margin: '4px 0', fontSize: 13 }}>
+            Will be cleared on save. <a href="#clear" onClick={(e) => { e.preventDefault(); setForm({ ...form, [field]: '' }); }}>Undo</a>
+          </p>
+        ) : (
+          <input id={`f-${field}`} type="password" autoComplete="new-password" value={v || ''}
+            placeholder={isSet ? '•••••••• (leave blank to keep)' : placeholder}
+            onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
+        )}
+        {isSet && !clearing && (
+          <p className="muted" style={{ margin: '4px 0 0', fontSize: 12 }}>
+            <a href="#clear" onClick={(e) => { e.preventDefault(); setForm({ ...form, [field]: null }); }}>Clear</a> the saved value
+          </p>
+        )}
+      </div>
+    );
+  }
+  function textField({ label, field, source, placeholder, form, setForm, inputMode }) {
+    return (
+      <div>
+        <label className="muted" htmlFor={`f-${field}`}>{label} {sourceHint(source)}</label>
+        <input id={`f-${field}`} value={form[field] == null ? '' : form[field]} placeholder={placeholder} inputMode={inputMode}
+          onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
+      </div>
+    );
+  }
+
+  const integ = s.integrations || {};
+  const iAi = integ.ai || {};
+  const iMeta = integ.meta || {};
+  const iSmtp = integ.smtp || {};
+  const iNmt = integ.nmt || {};
 
   return (
     <Shell>
+      <ConfirmTyped
+        open={!!pending}
+        title={pending ? pending.title : ''}
+        changes={pending ? pending.changes : []}
+        busy={busy}
+        onCancel={() => { if (!busy) setPending(null); }}
+        onConfirm={confirmIntegrationSave}
+      />
       <button className="secondary" onClick={() => router.push('/admin')} style={{ marginBottom: 12 }}>← Platform</button>
       <h1>Integration settings</h1>
+      <p className="muted" style={{ fontSize: 13 }}>
+        Values saved here override the server <code>.env</code> and apply immediately. Every credential change asks you to type <b>I CONFIRM</b>.
+      </p>
       {msg && <div className="card" style={{ color: 'var(--accent)' }}>{msg}</div>}
       {err && <div className="card" style={{ color: 'var(--danger)' }}>{err}</div>}
 
@@ -191,16 +377,14 @@ export default function AdminSettings() {
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
           <label className="muted">Key ID</label>
           <input placeholder="rzp_live_… or rzp_test_…" value={rz.razorpay_key_id} onChange={(e) => setRz({ ...rz, razorpay_key_id: e.target.value })} />
-          <label className="muted">Key Secret {s.razorpay.key_secret_set && <span className="badge" style={{ background: 'var(--accent)', color: '#000' }}>saved</span>}</label>
-          <input type="password" placeholder={s.razorpay.key_secret_set ? '•••••••• (leave blank to keep)' : 'Key secret'} onChange={(e) => setRz({ ...rz, razorpay_key_secret: e.target.value })} />
-          <label className="muted">Webhook Secret {s.razorpay.webhook_secret_set && <span className="badge" style={{ background: 'var(--accent)', color: '#000' }}>saved</span>}</label>
-          <input type="password" placeholder={s.razorpay.webhook_secret_set ? '•••••••• (leave blank to keep)' : 'Webhook secret'} onChange={(e) => setRz({ ...rz, razorpay_webhook_secret: e.target.value })} />
+          {secretField({ label: 'Key Secret', field: 'razorpay_key_secret', isSet: s.razorpay.key_secret_set, placeholder: 'Key secret', form: rz, setForm: setRz })}
+          {secretField({ label: 'Webhook Secret', field: 'razorpay_webhook_secret', isSet: s.razorpay.webhook_secret_set, placeholder: 'Webhook secret', form: rz, setForm: setRz })}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div><label className="muted">Pro plan ID</label><input placeholder="plan_…" value={rz.razorpay_plan_pro} onChange={(e) => setRz({ ...rz, razorpay_plan_pro: e.target.value })} /></div>
             <div><label className="muted">Family plan ID</label><input placeholder="plan_…" value={rz.razorpay_plan_family} onChange={(e) => setRz({ ...rz, razorpay_plan_family: e.target.value })} /></div>
           </div>
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-            <button onClick={() => save(rz, 'Razorpay settings saved.')}>Save Razorpay</button>
+            <button onClick={() => requestIntegrationSave('Save Razorpay settings', rz, 'Razorpay settings saved.')}>Save Razorpay</button>
             <button className="secondary" onClick={testRazorpay}>Test connection</button>
           </div>
           <p className="muted" style={{ fontSize: 13 }}>Webhook URL to paste in Razorpay → Webhooks: <code>{origin}/api/webhooks/razorpay</code></p>
@@ -212,8 +396,7 @@ export default function AdminSettings() {
         <h3>WhatsApp Cloud API {badge('token', s.whatsapp.api_token_set)}</h3>
         <p className="muted">Notifications + inbound commands. From Meta → WhatsApp → API Setup.</p>
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-          <label className="muted">Permanent Access Token {s.whatsapp.api_token_set && <span className="badge" style={{ background: 'var(--accent)', color: '#000' }}>saved</span>}</label>
-          <input type="password" placeholder={s.whatsapp.api_token_set ? '•••••••• (leave blank to keep)' : 'EAA…'} onChange={(e) => setWa({ ...wa, whatsapp_api_token: e.target.value })} />
+          {secretField({ label: 'Permanent Access Token', field: 'whatsapp_api_token', isSet: s.whatsapp.api_token_set, placeholder: 'EAA…', form: wa, setForm: setWa })}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div><label className="muted">Phone Number ID</label><input value={wa.whatsapp_phone_number_id} onChange={(e) => setWa({ ...wa, whatsapp_phone_number_id: e.target.value })} /></div>
             <div><label className="muted">Business Account ID</label><input value={wa.whatsapp_business_account_id} onChange={(e) => setWa({ ...wa, whatsapp_business_account_id: e.target.value })} /></div>
@@ -225,7 +408,7 @@ export default function AdminSettings() {
             <div><label className="muted">Template language</label><input value={wa.whatsapp_template_lang} onChange={(e) => setWa({ ...wa, whatsapp_template_lang: e.target.value })} /></div>
           </div>
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-            <button onClick={() => save(wa, 'WhatsApp settings saved.')}>Save WhatsApp</button>
+            <button onClick={() => requestIntegrationSave('Save WhatsApp settings', wa, 'WhatsApp settings saved.')}>Save WhatsApp</button>
             <button className="secondary" onClick={testWhatsapp}>Send test message</button>
           </div>
           <p className="muted" style={{ fontSize: 13 }}>Webhook URL for Meta: <code>{origin}/api/webhooks/whatsapp</code> (subscribe to <b>messages</b>)</p>
@@ -238,6 +421,106 @@ export default function AdminSettings() {
           <input inputMode="numeric" placeholder="919731422995" value={landing.landing_whatsapp} onChange={(e) => setLanding({ landing_whatsapp: e.target.value })} />
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
             <button onClick={() => save(landing, 'Landing settings saved.')}>Save landing</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Integrations (batch INTEG): AI, Meta, SMTP, NMT — all via config/settings */}
+      <h2 id="integrations" style={{ marginTop: 24 }}>Integrations</h2>
+
+      {/* 1. AI */}
+      <div className="card" id="integrations-ai">
+        <h3>
+          AI (moderation &amp; content drafts){' '}
+          {onBadge('moderation configured', iAi.moderation_configured, 'moderation not configured')}{' '}
+          {onBadge('drafts configured', iAi.content_configured, 'drafts not configured')}
+        </h3>
+        <p className="muted" style={{ fontSize: 13 }}>
+          One API key powers the AI moderation triage and the content-desk drafting agent. The model ids are plain strings
+          from your provider — nothing is built in. Without a key + model id both features stay inert.
+        </p>
+        <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+          {secretField({ label: 'API key', field: 'anthropic_api_key', isSet: iAi.api_key_set, source: iAi.api_key_source, placeholder: 'API key', form: ai, setForm: setAi })}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {textField({ label: 'Moderation model id', field: 'moderation_llm_model', source: iAi.moderation_model_source, placeholder: 'model id', form: ai, setForm: setAi })}
+            {textField({ label: 'Content model id', field: 'content_llm_model', source: iAi.content_model_source, placeholder: 'model id', form: ai, setForm: setAi })}
+          </div>
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            <button onClick={() => requestIntegrationSave('Save AI settings', ai, 'AI settings saved.')}>Save AI</button>
+            <button className="secondary" onClick={testAi}>Test connection</button>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Meta */}
+      <div className="card" id="integrations-meta">
+        <h3>
+          Meta (Facebook / Instagram publishing){' '}
+          {onBadge('facebook configured', iMeta.facebook_configured, 'facebook not configured')}{' '}
+          {onBadge('instagram configured', iMeta.instagram_configured, 'instagram not configured')}
+        </h3>
+        <p className="muted" style={{ fontSize: 13 }}>
+          A Meta app (App ID + App Secret) plus a long-lived Page token and an Instagram Business token. <b>Auto-post stays locked until Meta app review.</b>
+        </p>
+        <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+          {textField({ label: 'App ID', field: 'meta_app_id', source: iMeta.app_id_source, placeholder: 'Meta App ID', form: meta, setForm: setMeta })}
+          {secretField({ label: 'App Secret', field: 'meta_app_secret', isSet: iMeta.app_secret_set, source: iMeta.app_secret_source, placeholder: 'App secret', form: meta, setForm: setMeta })}
+          {secretField({ label: 'Facebook Page token', field: 'meta_page_token', isSet: iMeta.page_token_set, source: iMeta.page_token_source, placeholder: 'EAA…', form: meta, setForm: setMeta })}
+          {secretField({ label: 'Instagram token', field: 'meta_ig_token', isSet: iMeta.ig_token_set, source: iMeta.ig_token_source, placeholder: 'IGQ…', form: meta, setForm: setMeta })}
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            <button onClick={() => requestIntegrationSave('Save Meta settings', meta, 'Meta settings saved.')}>Save Meta</button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. SMTP */}
+      <div className="card" id="integrations-smtp">
+        <h3>Email (SMTP newsletters) {onBadge('configured', iSmtp.configured, 'not configured')}</h3>
+        <p className="muted" style={{ fontSize: 13 }}>
+          Either one SMTP URL (<code>smtps://user:pass@host:465</code>) <b>or</b> host / port / user / password. A From address is always required.
+        </p>
+        <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+          {secretField({ label: 'SMTP URL', field: 'smtp_url', isSet: iSmtp.url_set, source: iSmtp.url_source, placeholder: 'smtps://user:pass@smtp.example.com:465', form: smtp, setForm: setSmtp })}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}>
+            {textField({ label: 'Host', field: 'smtp_host', source: iSmtp.host_source, placeholder: 'smtp.example.com', form: smtp, setForm: setSmtp })}
+            {textField({ label: 'Port', field: 'smtp_port', placeholder: '587', inputMode: 'numeric', form: smtp, setForm: setSmtp })}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {textField({ label: 'User', field: 'smtp_user', placeholder: 'user', form: smtp, setForm: setSmtp })}
+            {secretField({ label: 'Password', field: 'smtp_pass', isSet: iSmtp.pass_set, source: iSmtp.pass_source, placeholder: 'password', form: smtp, setForm: setSmtp })}
+          </div>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <input type="checkbox" checked={!!smtp.smtp_secure} style={{ width: 'auto' }} onChange={(e) => setSmtp({ ...smtp, smtp_secure: e.target.checked })} />
+            <span>TLS from the start (secure) — port 465 is always secure</span>
+          </label>
+          {textField({ label: 'From address', field: 'newsletter_from', source: iSmtp.from_source, placeholder: 'news@example.com', form: smtp, setForm: setSmtp })}
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            <button onClick={() => requestIntegrationSave('Save email (SMTP) settings', smtp, 'SMTP settings saved.')}>Save email</button>
+            <button className="secondary" onClick={testSmtp}>Test connection</button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Speech & translation */}
+      <div className="card" id="integrations-nmt">
+        <h3>
+          Speech &amp; translation (Bhashini / Sarvam){' '}
+          {iNmt.adapter_wired ? onBadge('configured', iNmt.bhashini_key_set || iNmt.sarvam_key_set, 'not configured') : <span className="badge">keys only</span>}
+        </h3>
+        <p className="muted" style={{ fontSize: 13 }}>
+          <b>Provider adapter not wired yet — keys are stored for when it is.</b> The NMT switch turns on the translation seam
+          (it returns nothing until a provider is wired), so it is safe to leave off.
+        </p>
+        <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
+          <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <input type="checkbox" checked={!!nmt.bhashini_nmt} style={{ width: 'auto' }} onChange={(e) => setNmt({ ...nmt, bhashini_nmt: e.target.checked })} />
+            <span>Enable neural translation (NMT) {sourceHint(iNmt.enabled_source)}</span>
+          </label>
+          {secretField({ label: 'Bhashini API key', field: 'bhashini_api_key', isSet: iNmt.bhashini_key_set, source: iNmt.bhashini_key_source, placeholder: 'Bhashini API key', form: nmt, setForm: setNmt })}
+          {textField({ label: 'Bhashini user id', field: 'bhashini_user_id', source: iNmt.bhashini_user_id_source, placeholder: 'user id', form: nmt, setForm: setNmt })}
+          {secretField({ label: 'Sarvam API key', field: 'sarvam_api_key', isSet: iNmt.sarvam_key_set, source: iNmt.sarvam_key_source, placeholder: 'Sarvam API key', form: nmt, setForm: setNmt })}
+          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+            <button onClick={() => requestIntegrationSave('Save speech & translation settings', nmt, 'Speech & translation settings saved.')}>Save keys</button>
           </div>
         </div>
       </div>
@@ -355,7 +638,7 @@ export default function AdminSettings() {
 
             {/* AI moderation (batch AI-MOD): the toggle lives in Feature toggles
                 above; here the two confidence thresholds + whether the server is
-                configured at all (read-only — the key + model id are env vars). */}
+                configured at all (the key + model id live in Integrations → AI). */}
             <div className="card">
               <h3>AI moderation</h3>
               <p className="muted" style={{ fontSize: 13 }}>
@@ -366,8 +649,9 @@ export default function AdminSettings() {
               </p>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
                 <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-                  Server configured: <b>{feat.ai_moderation_configured ? 'yes' : 'no'}</b>
-                  {!feat.ai_moderation_configured && ' — set the API key and model id in the server environment; the toggle is inert until then.'}
+                  Server configured: <b>{iAi.moderation_configured ? 'yes' : 'no'}</b>
+                  {!iAi.moderation_configured && <> — set the API key and the moderation model id in <a href="#integrations-ai">Integrations → AI</a>; the toggle is inert until then.</>}
+                  {iAi.moderation_configured && <> (model <code>{iAi.moderation_model}</code> — <a href="#integrations-ai">change</a>)</>}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div>

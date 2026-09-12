@@ -40,18 +40,40 @@ const adminRoleSchema = Joi.object({
 
 const settingsSchema = Joi.object({
   razorpay_key_id: Joi.string().allow(''),
-  razorpay_key_secret: Joi.string().allow(''),
-  razorpay_webhook_secret: Joi.string().allow(''),
+  razorpay_key_secret: Joi.string().allow('', null),
+  razorpay_webhook_secret: Joi.string().allow('', null),
   razorpay_plan_pro: Joi.string().allow(''),
   razorpay_plan_family: Joi.string().allow(''),
   whatsapp_api_url: Joi.string().allow(''),
-  whatsapp_api_token: Joi.string().allow(''),
+  whatsapp_api_token: Joi.string().allow('', null),
   whatsapp_phone_number_id: Joi.string().allow(''),
   whatsapp_business_account_id: Joi.string().allow(''),
   whatsapp_verify_token: Joi.string().allow(''),
   whatsapp_template_reminder: Joi.string().allow(''),
   whatsapp_template_lang: Joi.string().allow(''),
   landing_whatsapp: Joi.string().allow('').max(20),
+  // Integrations (batch INTEG). Secrets: blank = keep, null = clear. Any body
+  // touching an integration key must also carry confirm: 'I CONFIRM' — the
+  // controller enforces it (428 confirmation_required, nothing written).
+  confirm: Joi.string().allow(''),
+  anthropic_api_key: Joi.string().allow('', null),
+  moderation_llm_model: Joi.string().allow('', null).max(120),
+  content_llm_model: Joi.string().allow('', null).max(120),
+  meta_app_id: Joi.string().allow('', null).max(200),
+  meta_app_secret: Joi.string().allow('', null),
+  meta_page_token: Joi.string().allow('', null),
+  meta_ig_token: Joi.string().allow('', null),
+  smtp_url: Joi.string().allow('', null),
+  smtp_host: Joi.string().allow('', null).max(255),
+  smtp_port: Joi.alternatives().try(Joi.number().integer(), Joi.string().allow('')).allow(null),
+  smtp_user: Joi.string().allow('', null).max(255),
+  smtp_pass: Joi.string().allow('', null),
+  smtp_secure: Joi.boolean(),
+  newsletter_from: Joi.string().allow('', null).max(255),
+  bhashini_nmt: Joi.boolean(),
+  bhashini_api_key: Joi.string().allow('', null),
+  bhashini_user_id: Joi.string().allow('', null).max(200),
+  sarvam_api_key: Joi.string().allow('', null),
   // Feature flags & pricing (batch FLAGS1). All optional; the object keeps
   // .min(1). Booleans are real booleans; amounts/day-counts are non-negative
   // integers (max_days >= 1); split percents are integers in 0..100. The
@@ -241,6 +263,8 @@ router.get('/moderation-log', requirePerm('audit:view'), asyncHandler(ctrl.moder
 router.get('/settings', requirePerm('settings:manage'), asyncHandler(ctrl.getSettings));
 router.patch('/settings', requirePerm('settings:manage'), validate(settingsSchema), asyncHandler(ctrl.updateSettings));
 router.post('/settings/razorpay/test', requirePerm('settings:manage'), asyncHandler(ctrl.testRazorpay));
+router.post('/settings/ai/test', requirePerm('settings:manage'), asyncHandler(ctrl.testAi));
+router.post('/settings/smtp/test', requirePerm('settings:manage'), asyncHandler(ctrl.testSmtp));
 router.post('/settings/whatsapp/test', requirePerm('settings:manage'), validate(Joi.object({ to: Joi.string().required() })), asyncHandler(ctrl.testWhatsapp));
 
 // Referrals / onboarding-source analytics (Phase D). Reads gated with
