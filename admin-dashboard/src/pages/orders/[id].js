@@ -24,7 +24,10 @@ const TERMINAL = ['completed', 'cancelled'];
 
 export default function OrderDetail() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Show the customer name in the owner's active language. English needs no
+  // customer_name_local, so only ask when localized.
+  const localized = lang && lang !== 'en';
   const enumLabel = (ns, s) => { const v = t(`${ns}.${s}`); return v === `${ns}.${s}` ? label(s) : v; };
   // Action label for advancing to the next stage, e.g. "Start preparing",
   // "Out for delivery", "Mark completed". Falls back to the generic "Mark {s}".
@@ -36,9 +39,10 @@ export default function OrderDetail() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const r = await apiFetch(`/api/orders/${id}`);
+    const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
+    const r = await apiFetch(`/api/orders/${id}${qs}`);
     setOrder(r.order || r);
-  }, [id]);
+  }, [id, lang, localized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -79,7 +83,7 @@ export default function OrderDetail() {
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <h2 style={{ margin: '0 0 2px' }}>{order.customer_name || t('ord.order')}</h2>
+            <h2 style={{ margin: '0 0 2px' }}>{order.customer_name_local || order.customer_name || t('ord.order')}</h2>
             {order.customer_phone && <div className="muted">{order.customer_phone}</div>}
             <div className="muted">{new Date(order.created_at).toLocaleString()}</div>
           </div>

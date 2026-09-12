@@ -9,7 +9,7 @@ const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 
 export default function FamilyDetailScreen({ route, navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   // Localize the known transaction type words; fall back to the raw enum otherwise.
   const typeLabel = (v) => (v === 'purchase' || v === 'cash' || v === 'upi' ? t(`txn.${v}`) : label(v));
   const { id } = route.params;
@@ -23,14 +23,14 @@ export default function FamilyDetailScreen({ route, navigation }) {
 
   const load = useCallback(async () => {
     const [d, st, cs] = await Promise.all([
-      families.get(id),
-      families.statement(id),
+      families.get(id, lang),
+      families.statement(id, lang),
       customers.list(),
     ]);
     setDetail(d);
     setStatement(st.transactions || []);
     setAllCustomers(cs.items || []);
-  }, [id]);
+  }, [id, lang]);
 
   useEffect(() => {
     load().catch((e) => { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); }).finally(() => setLoading(false));
@@ -49,7 +49,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
   }
 
   function confirmRemove(member) {
-    Alert.alert(t('famd.removeTitle'), t('famd.removeConfirm', { name: member.name }), [
+    Alert.alert(t('famd.removeTitle'), t('famd.removeConfirm', { name: member.name_local || member.name }), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('common.remove'), style: 'destructive', onPress: async () => {
@@ -101,7 +101,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
             <Text style={s.kpiValue}>{Number(detail.combined_limit) > 0 ? fmt(detail.combined_limit) : '—'}</Text>
           </View>
         </View>
-        <Text style={s.muted}>{t('famd.payerLabel')}: {detail.payer?.name || t('famd.notSet')}</Text>
+        <Text style={s.muted}>{t('famd.payerLabel')}: {detail.payer?.name_local || detail.payer?.name || t('famd.notSet')}</Text>
         <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={remind} disabled={busy}>
           <Text style={s.primaryText}>{t('famd.sendReminder')}</Text>
         </Pressable>
@@ -131,7 +131,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
         ) : detail.members.map((m) => (
           <View key={m.id} style={s.memberRow}>
             <View style={{ flex: 1 }}>
-              <Text style={s.body}>{m.name}{detail.payer?.id === m.id ? `  ${t('famd.payerTag')}` : ''}</Text>
+              <Text style={s.body}>{m.name_local || m.name}{detail.payer?.id === m.id ? `  ${t('famd.payerTag')}` : ''}</Text>
               <Text style={s.muted}>{m.phone} · {fmt(m.balance)}{m.sub_limit != null ? ` · ${t('famd.subLimit', { amt: fmt(m.sub_limit) })}` : ''}</Text>
             </View>
             <Pressable onPress={() => confirmRemove(m)}><Text style={[s.action, { color: '#f87171' }]}>{t('common.remove')}</Text></Pressable>
@@ -146,7 +146,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
         ) : statement.map((row) => (
           <View key={row.id} style={s.txRow}>
             <View style={{ flex: 1 }}>
-              <Text style={s.body}>{row.customer_name} · {typeLabel(row.type)}</Text>
+              <Text style={s.body}>{row.customer_name_local || row.customer_name} · {typeLabel(row.type)}</Text>
               <Text style={s.muted}>{new Date(row.created_at).toLocaleString()}{row.note ? ` · ${row.note}` : ''}</Text>
             </View>
             <Text style={[s.txAmount, { color: row.type === 'purchase' ? '#f87171' : '#22c55e' }]}>

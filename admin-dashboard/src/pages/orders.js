@@ -24,7 +24,10 @@ const payColor = (s) => {
 
 export default function Orders() {
   const router = useRouter();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Show customer names in the owner's active language. English needs no
+  // customer_name_local, so only ask when localized.
+  const localized = lang && lang !== 'en';
   const enumLabel = (ns, s) => { const v = t(`${ns}.${s}`); return v === `${ns}.${s}` ? label(s) : v; };
   const advanceLabel = (s) => { const v = t(`ord.advance.${s}`); return v === `ord.advance.${s}` ? t('ord.mark', { s: enumLabel('status', s) }) : v; };
   const [items, setItems] = useState([]);
@@ -34,7 +37,10 @@ export default function Orders() {
 
   async function load(s) {
     const st = s === undefined ? status : s;
-    const qs = st && st !== 'all' ? `?status=${encodeURIComponent(st)}` : '';
+    const parts = [];
+    if (st && st !== 'all') parts.push(`status=${encodeURIComponent(st)}`);
+    if (localized) parts.push(`lang=${encodeURIComponent(lang)}`);
+    const qs = parts.length ? `?${parts.join('&')}` : '';
     const r = await apiFetch(`/api/orders${qs}`);
     setItems(r.items || r.orders || []);
   }
@@ -43,9 +49,9 @@ export default function Orders() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load('all').catch((e) => setError(e.message));
+    load(status).catch((e) => setError(e.message));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   function pick(s) {
     setStatus(s);
@@ -73,7 +79,7 @@ export default function Orders() {
   const columns = [
     { key: 'created_at', label: t('common.when'), render: (o) => new Date(o.created_at).toLocaleString() },
     { key: 'customer', label: t('common.customer'), render: (o) => (
-      <><strong>{o.customer_name || '—'}</strong>{o.customer_phone ? <div className="muted">{o.customer_phone}</div> : null}</>
+      <><strong>{o.customer_name_local || o.customer_name || '—'}</strong>{o.customer_phone ? <div className="muted">{o.customer_phone}</div> : null}</>
     ) },
     { key: 'fulfillment_type', label: t('ord.fulfillment'), render: (o) => <span className="badge">{enumLabel('ful', o.fulfillment_type)}</span> },
     { key: 'payment_mode', label: t('ord.payment'), render: (o) => (

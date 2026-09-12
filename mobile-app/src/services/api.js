@@ -204,22 +204,30 @@ export const catalog = {
     api.post('/api/catalog/select', { catalog_item_id: catalogItemId, price: pricePaise }).then((r) => r.data),
 };
 
+// `lang` (optional) asks the API to also return `customer_name_local` on each
+// order so screens can show `customer_name_local || customer_name`.
 export const orders = {
-  list: (status = '') => {
-    const qs = status && status !== 'all' ? `?status=${encodeURIComponent(status)}` : '';
+  list: (status = '', lang = '') => {
+    const parts = [];
+    if (status && status !== 'all') parts.push(`status=${encodeURIComponent(status)}`);
+    if (lang) parts.push(`lang=${encodeURIComponent(lang)}`);
+    const qs = parts.length ? `?${parts.join('&')}` : '';
     return api.get(`/api/orders${qs}`).then((r) => r.data);
   },
-  get: (id) => api.get(`/api/orders/${id}`).then((r) => r.data),
+  get: (id, lang = '') => api.get(`/api/orders/${id}${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
   setStatus: (id, status) => api.patch(`/api/orders/${id}/status`, { status }).then((r) => r.data),
 };
 
+// `lang` (optional) on get/statement asks the API to also return localized
+// member/payer names (`name_local`) and statement `customer_name_local`. The
+// family label itself is owner-typed and never localized.
 export const families = {
   list: () => api.get('/api/families').then((r) => r.data),
   create: (body) => api.post('/api/families', body).then((r) => r.data),
-  get: (id) => api.get(`/api/families/${id}`).then((r) => r.data),
+  get: (id, lang = '') => api.get(`/api/families/${id}${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
   addMember: (id, body) => api.post(`/api/families/${id}/members`, body).then((r) => r.data),
   removeMember: (id, customerId) => api.delete(`/api/families/${id}/members/${customerId}`).then((r) => r.data),
-  statement: (id) => api.get(`/api/families/${id}/statement`).then((r) => r.data),
+  statement: (id, lang = '') => api.get(`/api/families/${id}/statement${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
   remind: (id) => api.post(`/api/families/${id}/remind`).then((r) => r.data),
 };
 
