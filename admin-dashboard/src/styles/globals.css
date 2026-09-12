@@ -396,6 +396,52 @@ th { color: var(--muted); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {
   .cpwa-shopcar-track { scroll-behavior: auto; }
 }
+/* The SPONSORED slide (batch STOREFRONT-FULL): one server-composed card in the
+   second slot. Same 20/9 box as a photo so the slider never jumps; a soft-accent
+   gradient (never a raw-accent flood) + glyph + localized text + a small
+   Sponsored tag. All --c-* tokens, logical properties (RTL-safe), no assets. */
+.cpwa-shopcar-sponsored {
+  display: flex; align-items: center; gap: 14px; position: relative;
+  width: 100%; aspect-ratio: 20 / 9; max-width: 100%; box-sizing: border-box;
+  padding: 14px 16px; border-radius: 10px; cursor: pointer; text-align: start;
+  background: linear-gradient(135deg, var(--c-accent-soft) 0%, var(--c-surface) 85%);
+  color: var(--c-text); border: 1px solid var(--c-accent-soft-border);
+  font: inherit;
+}
+.cpwa-shopcar-sponsored:focus-visible { outline: 2px solid var(--c-accent-ink); outline-offset: 2px; }
+.cpwa-shopcar-lone { margin-bottom: 10px; }
+.cpwa-shopcar-sponsored-tag {
+  position: absolute; inset-block-start: 10px; inset-inline-end: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--c-surface-2); color: var(--c-muted); border: 1px solid var(--c-border);
+}
+.cpwa-shopcar-sponsored-media {
+  flex: 0 0 auto; width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-accent-soft); border: 1px solid var(--c-accent-soft-border); color: var(--c-accent-ink);
+}
+.cpwa-shopcar-sponsored-glyph { font-size: 34px; line-height: 1; }
+.cpwa-shopcar-sponsored-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cpwa-shopcar-sponsored-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-inline-end: 58px; }
+.cpwa-shopcar-sponsored-offer { font-size: 20px; font-weight: 800; line-height: 1.15; color: var(--c-accent-ink); }
+.cpwa-shopcar-sponsored-title {
+  font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--c-text);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.cpwa-shopcar-sponsored-sub {
+  font-size: 13px; color: var(--c-muted); line-height: 1.35;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;
+}
+/* The sponsored slide's dot is hollow so a shopper can tell it apart at a glance. */
+.cpwa-shopcar-dot.sponsored { background: transparent; border: 1.5px solid var(--c-border-strong); box-sizing: border-box; }
+.cpwa-shopcar-dot.sponsored.active { border-color: var(--c-accent); background: var(--c-accent-soft); }
+@media (max-width: 380px) {
+  .cpwa-shopcar-sponsored { gap: 10px; padding: 10px 12px; }
+  .cpwa-shopcar-sponsored-media { width: 52px; height: 52px; }
+  .cpwa-shopcar-sponsored-glyph { font-size: 26px; }
+  .cpwa-shopcar-sponsored-offer { font-size: 16px; }
+}
 
 /* ==========================================================================
    HOOK DEFAULTS — inert in the STANDARD layout.

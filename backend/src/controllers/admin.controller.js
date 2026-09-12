@@ -6,6 +6,8 @@ const whatsapp = require('../services/whatsapp.service');
 const { hasPermission, permissionsFor } = require('../config/permissions');
 
 // Append one row to the moderation audit trail. Best-effort metadata is JSON.
+// Exported so other admin moderation surfaces (e.g. the storefront photo queue in
+// ads.controller) write to the SAME trail instead of a parallel one.
 async function writeAudit({ adminUserId, action, targetType, targetId, reason, metadata }) {
   await query(
     `INSERT INTO moderation_actions (admin_user_id, action, target_type, target_id, reason, metadata)
@@ -13,6 +15,7 @@ async function writeAudit({ adminUserId, action, targetType, targetId, reason, m
     [adminUserId || null, action, targetType, targetId, reason || null, metadata ? JSON.stringify(metadata) : null]
   );
 }
+exports.writeAudit = writeAudit;
 
 // Monthly price per plan, in paise (mirrors subscription.controller PLANS).
 // Exported so the admin CSV exports (revenue.csv) reuse the same plan config.
@@ -367,6 +370,7 @@ const FEATURE_BOOL_DEFAULTS = {
   branded_store_enabled: true,
   consumer_prepay_enabled: true,
   enrolment_fee_enabled: false, // MONEY-CRITICAL: paid-signup master switch
+  storefront_ad_free_enabled: true, // storefront sponsored-slide buy-out (0063)
 };
 
 // numeric keys (paise amounts, day counts, split percents) -> seeded default
@@ -377,6 +381,8 @@ const FEATURE_NUM_DEFAULTS = {
   shop_promo_max_days: 30,
   branded_store_credits_per_day_paise: 2000,
   branded_store_max_days: 90,
+  storefront_ad_free_credits_per_day_paise: 500,
+  storefront_ad_free_max_days: 30,
   consumer_prepay_max_advance_paise: 2000000,
   delivery_champion_fee_paise: 2000,
   referral_split_infra_pct: 50,

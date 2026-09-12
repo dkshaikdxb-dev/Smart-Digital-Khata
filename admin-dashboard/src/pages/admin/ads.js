@@ -48,9 +48,22 @@ const OVERRIDE_LANGS = [
 const LINK_TYPES = ['none', 'shop', 'product', 'brand', 'url'];
 const STATUSES = ['draft', 'active', 'paused'];
 
+// Where a campaign serves (batch STOREFRONT-FULL). 'discovery' is the home-screen
+// band every campaign served on before; 'storefront' is the ONE sponsored slot
+// composed into a shop's own storefront slider (geo-matched to the shop).
+const PLACEMENTS = [
+  { value: 'discovery', label: 'Discovery band', hint: 'Home screen, up to 5 slides' },
+  { value: 'storefront', label: 'Storefront slot', hint: 'One slide inside a shop page' },
+];
+const PLACEMENT_LABEL = Object.fromEntries(PLACEMENTS.map((p) => [p.value, p.label]));
+
+// The gallery photo bytes are served by the API host (not the dashboard origin).
+const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API}${url}`));
+
 const EMPTY = {
   id: null,
   style: 'offer',
+  placement: 'discovery',
   title: '',
   offer_text: '',
   subtitle: '',
@@ -143,9 +156,13 @@ export default function AdminAds() {
   const [items, setItems] = useState([]);
   const [pending, setPending] = useState([]); // self-serve shop promos awaiting moderation
   const [modBusy, setModBusy] = useState(null); // id currently being approved/rejected
+  // Storefront photo moderation queue (batch STOREFRONT-FULL): photos awaiting
+  // review + the shops currently trusted to auto-publish.
+  const [photoQueue, setPhotoQueue] = useState({ items: [], auto_publish_shops: [] });
+  const [photoBusy, setPhotoBusy] = useState(null); // photo id / shop id being acted on
   const [geo, setGeo] = useState({ towns: [], villages: [], pincodes: [] });
   const [shops, setShops] = useState(null); // null = picker unavailable (no shops:view), else [] list
-  const [filters, setFilters] = useState({ status: '', style: '', geo: '' });
+  const [filters, setFilters] = useState({ status: '', style: '', geo: '', placement: '' });
   const [form, setForm] = useState(EMPTY);
   const [overrideLang, setOverrideLang] = useState('hi');
   const [error, setError] = useState('');
@@ -162,6 +179,7 @@ export default function AdminAds() {
       if (filters.status) qs.set('status', filters.status);
       if (filters.style) qs.set('style', filters.style);
       if (filters.geo) qs.set('geo', filters.geo);
+      if (filters.placement) qs.set('placement', filters.placement);
       const list = await apiFetch(`/api/admin/ads${qs.toString() ? `?${qs}` : ''}`);
       setItems(list.items || []);
     } catch (e) { setError(e.message); }
@@ -202,6 +220,45 @@ export default function AdminAds() {
 
   useEffect(() => { if (canManage) loadPending(); }, [canManage, loadPending]);
 
+  // Storefront photo queue (batch STOREFRONT-FULL). Manager-only like the promo
+  // queue; a failure just leaves it empty.
+  const loadPhotoQueue = useCallback(async () => {
+    if (!canManage) return;
+    try {
+      const r = await apiFetch('/api/admin/shop-images/pending');
+      setPhotoQueue({ items: r.items || [], auto_publish_shops: r.auto_publish_shops || [] });
+    } catch (e) { /* non-fatal — the queue just stays empty */ }
+  }, [canManage]);
+
+  useEffect(() => { if (canManage) loadPhotoQueue(); }, [canManage, loadPhotoQueue]);
+
+  // Approve → the photo goes live on the storefront. Reject → it never shows and
+  // the note is shown to the owner on their photo. No money moves either way.
+  async function moderatePhoto(id, action, note) {
+    if (!canManage || photoBusy) return;
+    setPhotoBusy(id); setError(''); setMsg('');
+    try {
+      const body = note ? { review_note: note } : {};
+      await apiFetch(`/api/admin/shop-images/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
+      setMsg(action === 'approve' ? 'Photo approved — now live on the storefront.' : 'Photo rejected.');
+      await loadPhotoQueue();
+    } catch (e) { setError(e.message); }
+    finally { setPhotoBusy(null); }
+  }
+
+  // Per-shop trust toggle: future uploads from this shop publish without review
+  // (on) or wait in this queue (off). Already-pending photos stay in the queue.
+  async function setAutoPublish(shopId, on) {
+    if (!canManage || photoBusy) return;
+    setPhotoBusy(shopId); setError(''); setMsg('');
+    try {
+      await apiFetch(`/api/admin/shops/${shopId}/slides`, { method: 'PATCH', body: JSON.stringify({ auto_publish: !!on }) });
+      setMsg(on ? 'Shop trusted — its new photos publish without review.' : 'Trust removed — this shop’s new photos wait for review.');
+      await loadPhotoQueue();
+    } catch (e) { setError(e.message); }
+    finally { setPhotoBusy(null); }
+  }
+
   // Approve → the promo goes active and starts serving. Reject → it is declined
   // and the shop's Khata Credits are refunded (idempotently, server-side).
   async function moderate(id, action, note, isFree) {
@@ -230,6 +287,7 @@ export default function AdminAds() {
     setForm({
       id: c.id,
       style: c.style,
+      placement: c.placement === 'storefront' ? 'storefront' : 'discovery',
       title: c.title || '',
       offer_text: c.offer_text || '',
       subtitle: c.subtitle || '',
@@ -258,6 +316,7 @@ export default function AdminAds() {
     const lt = form.link_type;
     return {
       style: form.style,
+      placement: form.placement === 'storefront' ? 'storefront' : 'discovery',
       title: form.title.trim(),
       offer_text: form.offer_text || null,
       subtitle: form.subtitle || null,
@@ -423,6 +482,33 @@ export default function AdminAds() {
               </div>
             </div>
 
+            {/* Placement: discovery band (default) or the storefront slot */}
+            <div>
+              <label className="muted">Placement</label>
+              <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                {PLACEMENTS.map((p) => {
+                  const on = form.placement === p.value;
+                  return (
+                    <button
+                      type="button"
+                      key={p.value}
+                      onClick={() => setF({ placement: p.value })}
+                      className={on ? '' : 'secondary'}
+                      style={{ display: 'grid', gap: 2, textAlign: 'left', padding: '10px 12px', outline: on ? '2px solid var(--accent)' : 'none' }}
+                    >
+                      <span>{p.value === 'storefront' ? '🏬' : '🏠'} <strong>{p.label}</strong></span>
+                      <span style={{ fontSize: 11, opacity: 0.75 }}>{p.hint}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {form.placement === 'storefront' && (
+                <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
+                  Shown as the second slide on shop pages whose town / village / pincode match the targets below (one slide per shop, highest priority wins). Never shown on branded or ad-free shops.
+                </p>
+              )}
+            </div>
+
             {/* Creative */}
             <fieldset style={fieldset}>
               <legend style={legend}>Creative</legend>
@@ -560,11 +646,80 @@ export default function AdminAds() {
             {STYLES.map((s) => <option key={s.value} value={s.value}>{s.letter} · {s.label}</option>)}
           </select>
         </Field>
+        <Field label="Placement" style={{ maxWidth: 180 }}>
+          <select value={filters.placement} onChange={(e) => setFilters({ ...filters, placement: e.target.value })}>
+            <option value="">All</option>
+            {PLACEMENTS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+        </Field>
         <Field label="Geo value" style={{ maxWidth: 200 }}>
           <input value={filters.geo} onChange={(e) => setFilters({ ...filters, geo: e.target.value })} placeholder="town / village / pincode" />
         </Field>
         <button className="secondary" onClick={load}>Refresh</button>
       </div>
+
+      {/* Storefront photo moderation queue (batch STOREFRONT-FULL). Owner photos
+          wait here at pending_review until a manager approves (→ live on the
+          storefront) or rejects them (→ never shown, note goes to the owner).
+          The per-shop trust toggle lets a shop's uploads skip the queue. */}
+      {canManage && (
+        <div className="card">
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 0 }}>Shop photos <span className="badge">{photoQueue.items.length}</span></h3>
+            <button type="button" className="secondary" onClick={loadPhotoQueue}>Refresh</button>
+          </div>
+          <p className="muted" style={{ marginTop: 8 }}>Storefront photos owners uploaded. Approve to show them on the shop page, or reject with a reason the owner will see. Trusted shops publish without review.</p>
+          {photoQueue.items.length === 0 ? (
+            <div className="muted">No shop photos awaiting review.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Shop</th>
+                    <th>Photo</th>
+                    <th>Uploaded</th>
+                    <th>Auto-publish</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {photoQueue.items.map((p) => (
+                    <PhotoPendingRow
+                      key={p.id} p={p}
+                      busy={photoBusy === p.id || photoBusy === p.shop_id}
+                      onModerate={moderatePhoto}
+                      onAutoPublish={setAutoPublish}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {photoQueue.auto_publish_shops.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Trusted shops (photos publish without review):</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {photoQueue.auto_publish_shops.map((s) => (
+                  <span key={s.shop_id} className="badge" style={{ display: 'inline-flex', gap: 6, alignItems: 'center', background: '#14532d', color: '#bbf7d0' }}>
+                    {s.shop_name}{s.shop_city ? ` · ${s.shop_city}` : ''}
+                    <button
+                      type="button"
+                      disabled={photoBusy === s.shop_id}
+                      onClick={() => setAutoPublish(s.shop_id, false)}
+                      title="Remove trust — new photos wait for review"
+                      aria-label={`Remove trust for ${s.shop_name}`}
+                      style={{ background: 'transparent', color: 'inherit', padding: 0, fontWeight: 700, lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Shop self-serve promo moderation queue (batch PROMO-BUY). Shops buy a
           promo with Khata Credits; it waits here at pending_review until a manager
@@ -610,7 +765,7 @@ export default function AdminAds() {
             {dlBusy ? 'Preparing…' : 'Download CSV'}
           </button>
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>CTR reflects the impression/click beacons (no per-viewer dedup) — treat as directional. Shop self-serve promos are managed in the Shop requests queue above, not here.</p>
+        <p className="muted" style={{ marginTop: 8 }}>CTR reflects the impression/click beacons (no per-viewer dedup) — treat as directional. Placement separates storefront-slot revenue from the discovery band (also a CSV column). Shop self-serve promos are managed in the Shop requests queue above, not here.</p>
         {manageable.length === 0 ? (
           <div className="muted">No campaigns yet.</div>
         ) : (
@@ -620,6 +775,7 @@ export default function AdminAds() {
                 <tr>
                   <th>Campaign</th>
                   <th>Style</th>
+                  <th>Placement</th>
                   <th>Ranging</th>
                   <th>Window</th>
                   <th>Status</th>
@@ -653,6 +809,11 @@ function CampaignRow({ c, canManage, onEdit, onToggle, onDelete }) {
         {c.advertiser && <div className="muted" style={{ fontSize: 12 }}>{c.advertiser}</div>}
       </td>
       <td style={cell}><span className="badge">{style.letter} · {style.label}</span></td>
+      <td style={cell}>
+        <span className="badge" style={c.placement === 'storefront' ? { background: '#312e81', color: '#c7d2fe' } : undefined}>
+          {c.placement === 'storefront' ? '🏬 ' : ''}{PLACEMENT_LABEL[c.placement] || PLACEMENT_LABEL.discovery}
+        </span>
+      </td>
       <td style={cell}><GeoChips targets={c.targets} /></td>
       <td style={cell}>
         <div style={{ fontSize: 13 }}>{c.starts_at || c.ends_at ? `${fmtDate(c.starts_at) || '…'} → ${fmtDate(c.ends_at) || '…'}` : 'Always'}</div>
@@ -755,6 +916,74 @@ function PendingRow({ p, busy, onModerate }) {
   );
 }
 
+// One row in the storefront photo moderation queue (batch STOREFRONT-FULL).
+// Mirrors PendingRow: Approve → live; Reject captures an optional note shown to
+// the owner. The auto-publish checkbox is the per-shop trust toggle.
+function PhotoPendingRow({ p, busy, onModerate, onAutoPublish }) {
+  const [note, setNote] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+  const when = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+  const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined);
+  return (
+    <tr>
+      <td style={cell}>
+        <div style={{ fontWeight: 600 }}>{p.shop_name || '—'}</div>
+        {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
+      </td>
+      <td style={cell}>
+        <a href={resolveImg(p.url)} target="_blank" rel="noreferrer" title="Open full size">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={resolveImg(p.url)}
+            alt={`${p.shop_name || 'Shop'} photo ${(p.position || 0) + 1}`}
+            loading="lazy"
+            style={{ display: 'block', width: 160, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #334155' }}
+          />
+        </a>
+      </td>
+      <td style={cell}><div style={{ fontSize: 13 }}>{when}</div></td>
+      <td style={cell}>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center', width: 'auto', cursor: 'pointer' }} title="Publish this shop's future photos without review">
+          <input
+            type="checkbox"
+            style={{ width: 'auto' }}
+            checked={!!p.auto_publish}
+            disabled={busy}
+            onChange={(e) => onAutoPublish(p.shop_id, e.target.checked)}
+          />
+          <span style={{ fontSize: 12 }}>Trust shop</span>
+        </label>
+      </td>
+      <td style={cell}>
+        {rejecting ? (
+          <div style={{ display: 'grid', gap: 6, minWidth: 200 }}>
+            <input
+              value={note}
+              placeholder="Reason (shown to the owner)"
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={1000}
+              aria-label="Rejection reason"
+            />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={doReject}>
+                {busy ? '…' : 'Confirm reject'}
+              </button>
+              <button type="button" className="secondary" disabled={busy} onClick={() => { setRejecting(false); setNote(''); }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve')}>
+              {busy ? '…' : 'Approve'}
+            </button>
+            <button type="button" className="secondary" disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
+          </div>
+        )}
+      </td>
+    </tr>
+  );
+}
+
 function OverrideInputs({ lang, value, onChange }) {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
@@ -805,16 +1034,19 @@ function ChipMulti({ label, options, values, onChange, placeholder }) {
 }
 
 // Self-contained consumer-slide preview (local light styles — no consumer app
-// tokens). Always shows the "प्रचार / Sponsored" tag.
+// tokens). Always shows the "प्रचार / Sponsored" tag. A storefront-slot campaign
+// previews in the slider's 20/9 box so the marketer sees the real proportions.
 function SlidePreview({ form }) {
   const theme = STYLE_THEME[form.style] || STYLE_THEME.offer;
   const glyph = form.glyph || STYLE_BY_VALUE[form.style].glyph;
+  const storefront = form.placement === 'storefront';
   return (
     <div style={{
       borderRadius: 16, overflow: 'hidden', color: theme.ink,
       background: `linear-gradient(135deg, ${theme.from}, ${theme.to})`,
       padding: 18, minHeight: 190, position: 'relative', boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
       display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+      ...(storefront ? { aspectRatio: '20 / 9', minHeight: 0 } : {}),
     }}>
       <div style={{ position: 'absolute', top: 10, insetInlineEnd: 10, background: 'rgba(255,255,255,0.7)', color: '#111', borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>
         प्रचार / Sponsored

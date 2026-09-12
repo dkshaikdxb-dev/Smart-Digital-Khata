@@ -563,7 +563,12 @@ const PAGE = {
     'set.saveCover': 'Save cover',
     'set.savingCover': 'Saving…',
     'set.shopPhotos': 'Storefront photos',
-    'set.shopPhotosDesc': 'Up to 3 photos shown at the top of your storefront.',
+    'set.shopPhotosDesc': 'Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.',
+    // Per-photo moderation status pill (batch STOREFRONT-FULL).
+    'set.photoPending': 'Pending review',
+    'set.photoLive': 'Live',
+    'set.photoRejected': 'Rejected',
+    'set.photoUploadedPending': 'Photo added. It will show on your storefront once our team approves it.',
     'set.choosePhoto': 'Choose a photo',
     'set.addPhoto': 'Add photo',
     'set.savingPhoto': 'Saving…',
@@ -1180,7 +1185,11 @@ const PAGE = {
     'set.saveCover': 'कवर सहेजें',
     'set.savingCover': 'सहेजा जा रहा है…',
     'set.shopPhotos': 'दुकान की फ़ोटो',
-    'set.shopPhotosDesc': 'आपके स्टोर के ऊपर दिखने वाली 3 फ़ोटो तक।',
+    'set.shopPhotosDesc': 'आपके स्टोर के ऊपर दिखने वाली 3 फ़ोटो तक। नई फ़ोटो लाइव होने से पहले हमारी टीम जाँचती है।',
+    'set.photoPending': 'समीक्षा बाकी',
+    'set.photoLive': 'लाइव',
+    'set.photoRejected': 'अस्वीकृत',
+    'set.photoUploadedPending': 'फ़ोटो जोड़ी गई। हमारी टीम की मंज़ूरी के बाद यह आपके स्टोरफ़्रंट पर दिखेगी।',
     'set.choosePhoto': 'फ़ोटो चुनें',
     'set.addPhoto': 'फ़ोटो जोड़ें',
     'set.savingPhoto': 'सहेजा जा रहा है…',
@@ -7889,6 +7898,52 @@ const BRAND = {
 for (const code of Object.keys(BRAND)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], BRAND[code]);
+}
+
+// Owner "Remove sponsored slide" buy-out strings (batch STOREFRONT-FULL). A shop
+// spends Khata Credits to keep the sponsored slide off its storefront slider for
+// a window. en + hi authored; ta/te/kn/ml/ur fall back to English via translate().
+const ADFREE_EN = {
+  'adfree.title': 'Remove sponsored slide from my storefront',
+  'adfree.subtitle': 'Shoppers may see one sponsored slide in your storefront photos. Spend Khata Credits to keep your storefront ad-free for a while. Branded Store shops are always ad-free.',
+  'adfree.statusActive': 'Ad-free until {date}',
+  'adfree.statusInactive': 'Sponsored slide may show',
+  'adfree.balanceLabel': 'Your Khata Credits',
+  'adfree.disabledNote': 'This option is not available right now. Please check back later.',
+  'adfree.days': 'How many days',
+  'adfree.perDay': '{amount} / day',
+  'adfree.costLabel': 'Cost',
+  'adfree.buy': 'Remove for {amount}',
+  'adfree.extend': 'Extend for {amount}',
+  'adfree.buying': 'Applying…',
+  'adfree.lowBalance': 'Not enough Khata Credits for this. Reduce the days or earn more credits.',
+  'adfree.done': 'Done. Your storefront is ad-free for the chosen days.',
+  'adfree.errGeneric': 'Could not do this right now. Please try again.',
+};
+const ADFREE_HI = {
+  'adfree.title': 'मेरे स्टोरफ़्रंट से प्रचार स्लाइड हटाएँ',
+  'adfree.subtitle': 'ग्राहकों को आपकी दुकान की फ़ोटो के बीच एक प्रचार स्लाइड दिख सकती है। खाता क्रेडिट खर्च करके अपना स्टोरफ़्रंट कुछ समय के लिए प्रचार-मुक्त रखें। ब्रांडेड स्टोर हमेशा प्रचार-मुक्त रहते हैं।',
+  'adfree.statusActive': '{date} तक प्रचार-मुक्त',
+  'adfree.statusInactive': 'प्रचार स्लाइड दिख सकती है',
+  'adfree.balanceLabel': 'आपके खाता क्रेडिट',
+  'adfree.disabledNote': 'यह विकल्प अभी उपलब्ध नहीं है। कृपया बाद में देखें।',
+  'adfree.days': 'कितने दिन',
+  'adfree.perDay': '{amount} / दिन',
+  'adfree.costLabel': 'लागत',
+  'adfree.buy': '{amount} में हटाएँ',
+  'adfree.extend': '{amount} में बढ़ाएँ',
+  'adfree.buying': 'लागू किया जा रहा है…',
+  'adfree.lowBalance': 'इसके लिए पर्याप्त खाता क्रेडिट नहीं हैं। दिन कम करें या और क्रेडिट कमाएँ।',
+  'adfree.done': 'हो गया। चुने हुए दिनों तक आपका स्टोरफ़्रंट प्रचार-मुक्त है।',
+  'adfree.errGeneric': 'अभी यह नहीं हो सका। कृपया फिर से प्रयास करें।',
+};
+const ADFREE = {
+  en: ADFREE_EN, hi: ADFREE_HI,
+  ta: ADFREE_EN, te: ADFREE_EN, kn: ADFREE_EN, ml: ADFREE_EN, ur: ADFREE_EN,
+};
+for (const code of Object.keys(ADFREE)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], ADFREE[code]);
 }
 
 // Delivery Champions (batch DELIV1). The owner "Delivery" page (manage champions

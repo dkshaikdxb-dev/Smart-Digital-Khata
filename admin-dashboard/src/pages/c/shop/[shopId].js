@@ -279,12 +279,13 @@ export default function ShopCatalog() {
               {shop.brand_tagline}
             </div>
           )}
-          {/* Storefront photos (batch LITE): the owner's up-to-3 photos as a
-              lightweight, data-saver-aware carousel, sitting where the single
-              cover used to. `shop.images` comes back in the SAME getShop request
-              (0..3 entries, with a legacy fallback to the old image_url cover),
-              so nothing renders when there are no photos — exactly as before. */}
-          <ShopCarousel images={shop.images} alt={shop.name || ''} />
+          {/* Storefront slider (batch LITE → FULL): the owner's up-to-3 moderated
+              photos plus at most one server-composed sponsored slide, as a
+              lightweight, data-saver-aware carousel where the single cover used
+              to sit. `shop.slides` (and the legacy `shop.images` fallback) come
+              back in the SAME getShop request, so nothing renders when there is
+              nothing to show — exactly as before. */}
+          <ShopCarousel slides={shop.slides} images={shop.images} alt={shop.name || ''} />
           <div className="muted">{[shop.area, shop.city].filter(Boolean).join(', ') || t('c.locationNotSet')}</div>
           {fulfillmentSummary(shop).map((line, i) => (
             <div key={i} className="cpwa-ful-summary">{line}</div>

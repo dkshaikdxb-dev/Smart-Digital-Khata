@@ -163,11 +163,15 @@ describe('CSV export', () => {
     expect(res.headers['content-type']).toMatch(/text\/csv/);
     expect(res.headers['content-disposition']).toMatch(/campaigns\.csv/);
     const lines = res.text.split('\r\n');
+    // `placement` (batch STOREFRONT-FULL) sits after style so storefront-slot
+    // revenue is separable from the discovery band in the export.
     expect(lines[0]).toBe(
-      'id,title,advertiser,style,status,targets,starts_at,ends_at,priority,impressions,clicks,ctr_percent,created_at'
+      'id,title,advertiser,style,placement,status,targets,starts_at,ends_at,priority,impressions,clicks,ctr_percent,created_at'
     );
     const row = lines.find((l) => l.startsWith(id));
     expect(row).toBeTruthy();
+    // An admin-built campaign defaults to the discovery band.
+    expect(row).toContain(',offer,discovery,');
     // targets space-joined (town:Pune + the everywhere 'all' row), then the
     // seeded impressions/clicks and their computed ctr_percent.
     expect(row).toContain('town:Pune');

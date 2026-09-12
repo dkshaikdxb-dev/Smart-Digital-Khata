@@ -100,6 +100,18 @@ router.post(
 );
 router.patch('/me/branding', auth(['owner']), validate(brandingPatchSchema), asyncHandler(ctrl.patchBranding));
 
+// Storefront ad-free buy-out (batch STOREFRONT-FULL) — OWNER-ONLY, exactly like
+// the Branded Store above: spending the shop's credits to keep the sponsored
+// slide off the storefront is an owner decision. Same Joi day-cap; the LIVE
+// max_days is re-clamped in the controller.
+router.get('/me/storefront-ad-free', auth(['owner']), asyncHandler(ctrl.getStorefrontAdFree));
+router.post(
+  '/me/storefront-ad-free',
+  auth(['owner']),
+  validate(brandingActivateSchema),
+  asyncHandler(ctrl.buyStorefrontAdFree)
+);
+
 router.use(auth(['owner', 'staff']));
 router.get('/me', asyncHandler(ctrl.getMine));
 router.patch('/me', validate(updateSchema), asyncHandler(ctrl.updateMine));

@@ -44,8 +44,14 @@ beforeAll(async () => {
   const b = await register('GalB', `${uniq}1`.slice(-9));
   tokenA = a.token; shopA = a.shop;
   tokenB = b.token; shopB = b.shop;
-  // Both shops must be listed so the public getShop endpoint returns them.
-  await pool.query('UPDATE shops SET is_listed = true WHERE id = ANY($1::uuid[])', [[shopA.id, shopB.id]]);
+  // Both shops must be listed so the public getShop endpoint returns them. They
+  // are also TRUSTED (slides_auto_publish) so uploads go live at once — this
+  // suite covers the gallery mechanics; the moderation flow (pending → approve /
+  // reject, the trust toggle) is covered in storefront-full.test.js.
+  await pool.query(
+    'UPDATE shops SET is_listed = true, slides_auto_publish = true WHERE id = ANY($1::uuid[])',
+    [[shopA.id, shopB.id]]
+  );
 });
 
 afterAll(async () => {

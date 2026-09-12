@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { normalizeQuery } = require('../utils/search-normalize');
+const { pickStorefrontCampaign } = require('./promos.controller');
 
 // pg_trgm word-similarity threshold for single-word fuzzy recall (typos / noisy
 // ASR). `qn <% blob` is true when word_similarity(qn, blob) >= this. 0.6 (the
@@ -17,6 +18,10 @@ const WORD_SIM_THRESHOLD = 0.5;
 // catalog_i18n for a localized product name (English fallback). Mirrors
 // catalog.controller's resolveLang (owner catalogue) so both paths agree.
 const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
+
+// Cap on owner photo slides composed into a storefront (mirrors the upload cap
+// in shop.controller MAX_SHOP_IMAGES; a defensive LIMIT on the public read).
+const MAX_PHOTO_SLIDES = 3;
 
 // Resolve ?lang= to a known language, defaulting to 'en'. Unknown/absent values
 // fall back to 'en' (base behaviour) rather than erroring — the public
@@ -327,12 +332,23 @@ exports.getShop = async (req, res) => {
   // clock). The raw branded_until is NEVER returned; the accent/tagline are only
   // surfaced while branded (nulled out below when not), so an expired or never-set
   // premium leaks nothing.
+  //
+  // Storefront sponsored slot (batch STOREFRONT-FULL): the shop's own village +
+  // pincode feed the geo match for the slot, and `_sponsored_ok` (computed in
+  // SQL on the DB clock) says whether a sponsored slide may be composed at all —
+  // never while the shop is branded (branded_until > NOW()) or bought itself
+  // ad-free (storefront_ad_free_until > NOW()). These three helper columns are
+  // stripped from the response below (village/pincode/raw windows never leak
+  // from this endpoint).
   const shop = await query(
     `SELECT s.id, ${shopNameSelect} AS name, s.city, s.area, s.image_url,
             s.offers_pickup, s.offers_delivery, s.delivery_fee, s.free_delivery_min,
             s.delivery_min_order, s.delivery_radius_km, s.delivery_hours,
             (s.branded_until IS NOT NULL AND s.branded_until > NOW()) AS is_branded,
-            s.brand_accent, s.brand_tagline
+            s.brand_accent, s.brand_tagline,
+            s.village AS _village, s.pincode AS _pincode,
+            ((s.branded_until IS NULL OR s.branded_until <= NOW())
+             AND (s.storefront_ad_free_until IS NULL OR s.storefront_ad_free_until <= NOW())) AS _sponsored_ok
        FROM shops s
        ${shopNameJoin}
       WHERE s.id = $1 AND s.is_listed = true`,
@@ -400,11 +416,16 @@ exports.getShop = async (req, res) => {
   // Storefront photo gallery (batch LITE): the up-to-3 owner photos, returned in
   // THIS request (no extra round-trip) so the consumer carousel renders on first
   // load. Ordered by position; each url is the cache-busted public serve
-  // endpoint. LEGACY FALLBACK: a shop with no shop_images rows but a legacy
-  // single cover (image_url) still returns images:[{url:image_url}] so existing
-  // covers keep showing; neither → images:[]. image_url stays in the payload.
+  // endpoint. ONLY status='active' photos are public (batch STOREFRONT-FULL
+  // moderation) — a pending or rejected upload never reaches a shopper. LEGACY
+  // FALLBACK: a shop with no active shop_images rows but a legacy single cover
+  // (image_url) still returns images:[{url:image_url}] so existing covers keep
+  // showing; neither → images:[]. image_url stays in the payload.
   const gallery = await query(
-    `SELECT id, updated_at FROM shop_images WHERE shop_id = $1 ORDER BY position, updated_at, id`,
+    `SELECT id, updated_at FROM shop_images
+      WHERE shop_id = $1 AND status = 'active'
+      ORDER BY position, updated_at, id
+      LIMIT ${MAX_PHOTO_SLIDES}`,
     [shopId]
   );
   let images;
@@ -419,7 +440,28 @@ exports.getShop = async (req, res) => {
     images = [];
   }
 
-  const body = { ...shop.rows[0], products: products.rows, images };
+  // The FULL slider (batch STOREFRONT-FULL): `slides` = the active photos (as
+  // {type:'photo'}) plus AT MOST ONE sponsored slide, composed here so the
+  // consumer renders it from the same getShop request. `images` is kept as-is
+  // (photos only) for back-compat with older clients.
+  const { _village: village, _pincode: pincode, _sponsored_ok: sponsoredOk } = shop.rows[0];
+  delete shop.rows[0]._village;
+  delete shop.rows[0]._pincode;
+  delete shop.rows[0]._sponsored_ok;
+  const slides = images.map((im) => ({ type: 'photo', url: im.url }));
+  if (sponsoredOk) {
+    // Geo-matched to the SHOP's own town (= city) / village / pincode, using the
+    // same serving query as the discovery band; 'all' campaigns always match.
+    // Already localized for ?lang= (i18n override → base fallback).
+    const sponsored = await pickStorefrontCampaign({ lang, town: shop.rows[0].city, village, pincode });
+    if (sponsored) {
+      // Position rule: second slot when the shop has at least one photo (the
+      // owner's own photo always leads), else the only slot. Never more than one.
+      slides.splice(slides.length ? 1 : 0, 0, sponsored);
+    }
+  }
+
+  const body = { ...shop.rows[0], products: products.rows, images, slides };
 
   // Only expose the accent/tagline while premium is active. When not branded,
   // return is_branded:false and null out the theming fields so a lapsed shop's

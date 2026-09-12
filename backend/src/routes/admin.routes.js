@@ -63,6 +63,7 @@ const settingsSchema = Joi.object({
   branded_store_enabled: Joi.boolean(),
   consumer_prepay_enabled: Joi.boolean(),
   enrolment_fee_enabled: Joi.boolean(),
+  storefront_ad_free_enabled: Joi.boolean(),
   meta_autopost_enabled: Joi.boolean(),
   enrolment_fee_basic_paise: Joi.number().integer().min(0),
   enrolment_fee_premium_paise: Joi.number().integer().min(0),
@@ -72,6 +73,8 @@ const settingsSchema = Joi.object({
   delivery_champion_fee_paise: Joi.number().integer().min(0),
   shop_promo_max_days: Joi.number().integer().min(1),
   branded_store_max_days: Joi.number().integer().min(1),
+  storefront_ad_free_credits_per_day_paise: Joi.number().integer().min(0),
+  storefront_ad_free_max_days: Joi.number().integer().min(1),
   referral_split_infra_pct: Joi.number().integer().min(0).max(100),
   referral_split_l1_pct: Joi.number().integer().min(0).max(100),
   referral_split_l2_pct: Joi.number().integer().min(0).max(100),
@@ -136,11 +139,21 @@ const campaignSchema = Joi.object({
   ends_at: Joi.date().iso().allow(null),
   priority: Joi.number().integer().min(0).max(1000000).default(0),
   status: Joi.string().valid('draft', 'active', 'paused').default('draft'),
+  // Where the campaign serves (batch STOREFRONT-FULL): the home-screen discovery
+  // band (default, unchanged behaviour) or a shop storefront's sponsored slot.
+  placement: Joi.string().valid('discovery', 'storefront').default('discovery'),
   targets: Joi.array().items(adTargetSchema).default([]),
 });
 
 const adStatusSchema = Joi.object({
   status: Joi.string().valid('draft', 'active', 'paused').required(),
+});
+
+// Per-shop trust toggle for storefront photos (batch STOREFRONT-FULL): when on,
+// the shop's uploads publish without review.
+const shopSlidesSchema = Joi.object({
+  auto_publish: Joi.boolean().required(),
+  reason: Joi.string().max(1000).allow('', null),
 });
 
 // Seasonal + geo referral campaigns (CAMP1). A campaign carries geo targets
@@ -280,5 +293,15 @@ router.delete('/ads/:id', requirePerm('ads:manage'), asyncHandler(adsCtrl.remove
 router.get('/promos/pending', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingPromos));
 router.post('/promos/:id/approve', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.approvePromo));
 router.post('/promos/:id/reject', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.rejectPromo));
+
+// Storefront photo moderation (batch STOREFRONT-FULL). An owner's storefront
+// photo starts 'pending_review' (unless the shop is trusted) and only reaches
+// the public storefront once approved here. Same ads:manage gate as the promo
+// queue above (the same admin desk moderates both), same review_note body shape.
+router.get('/shop-images/pending', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingShopImages));
+router.post('/shop-images/:id/approve', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.approveShopImage));
+router.post('/shop-images/:id/reject', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.rejectShopImage));
+// Per-shop trust toggle: let a shop's uploads go live without review.
+router.patch('/shops/:id/slides', requirePerm('ads:manage'), validate(shopSlidesSchema), asyncHandler(adsCtrl.setShopSlidesAutoPublish));
 
 module.exports = router;
