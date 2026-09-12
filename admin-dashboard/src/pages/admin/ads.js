@@ -160,6 +160,9 @@ export default function AdminAds() {
   // review + the shops currently trusted to auto-publish.
   const [photoQueue, setPhotoQueue] = useState({ items: [], auto_publish_shops: [] });
   const [photoBusy, setPhotoBusy] = useState(null); // photo id / shop id being acted on
+  // AI moderation stats strip (batch AI-MOD): last-30-day AI decisions + how
+  // often admins agreed with them. null until loaded / when unavailable.
+  const [aiStats, setAiStats] = useState(null);
   const [geo, setGeo] = useState({ towns: [], villages: [], pincodes: [] });
   const [shops, setShops] = useState(null); // null = picker unavailable (no shops:view), else [] list
   const [filters, setFilters] = useState({ status: '', style: '', geo: '', placement: '' });
@@ -232,6 +235,16 @@ export default function AdminAds() {
 
   useEffect(() => { if (canManage) loadPhotoQueue(); }, [canManage, loadPhotoQueue]);
 
+  // AI stats strip. Manager-only like the queues; a failure just hides it.
+  const loadAiStats = useCallback(async () => {
+    if (!canManage) return;
+    try {
+      setAiStats(await apiFetch('/api/admin/moderation/ai-stats'));
+    } catch (e) { setAiStats(null); }
+  }, [canManage]);
+
+  useEffect(() => { if (canManage) loadAiStats(); }, [canManage, loadAiStats]);
+
   // Approve → the photo goes live on the storefront. Reject → it never shows and
   // the note is shown to the owner on their photo. No money moves either way.
   async function moderatePhoto(id, action, note) {
@@ -241,7 +254,7 @@ export default function AdminAds() {
       const body = note ? { review_note: note } : {};
       await apiFetch(`/api/admin/shop-images/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
       setMsg(action === 'approve' ? 'Photo approved — now live on the storefront.' : 'Photo rejected.');
-      await loadPhotoQueue();
+      await Promise.all([loadPhotoQueue(), loadAiStats()]);
     } catch (e) { setError(e.message); }
     finally { setPhotoBusy(null); }
   }
@@ -271,7 +284,7 @@ export default function AdminAds() {
       await apiFetch(`/api/admin/promos/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
       const rejectMsg = isFree ? 'Promo rejected.' : 'Promo rejected — credits refunded.';
       setMsg(action === 'approve' ? 'Promo approved — now live.' : rejectMsg);
-      await Promise.all([loadPending(), load()]);
+      await Promise.all([loadPending(), load(), loadAiStats()]);
     } catch (e) { setError(e.message); }
     finally { setModBusy(null); }
   }
@@ -658,6 +671,28 @@ export default function AdminAds() {
         <button className="secondary" onClick={load}>Refresh</button>
       </div>
 
+      {/* AI moderation stats strip (batch AI-MOD): what the AI decided in the
+          last 30 days and how often the desk agreed with it. Rows the AI flagged
+          ("hold") sort to the top of both queues below and are tinted red. */}
+      {canManage && aiStats && (
+        <div className="card">
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 0 }}>AI triage <span className="badge">last {aiStats.days} days</span></h3>
+            <button type="button" className="secondary" onClick={loadAiStats}>Refresh</button>
+          </div>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 10, fontSize: 13 }}>
+            <span><b>{aiStats.auto_approved}</b> auto-approved</span>
+            <span><b>{aiStats.held}</b> flagged (hold)</span>
+            <span><b>{aiStats.reviewed}</b> left for review</span>
+            <span className="muted">·</span>
+            <span>Admins agreed <b>{aiStats.agreement.agreed}</b> / disagreed <b>{aiStats.agreement.disagreed}</b></span>
+            <span className="muted">
+              (rejected after AI approve {aiStats.admin.reject_after_ai_approve}, approved after AI hold {aiStats.admin.approve_after_ai_hold})
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Storefront photo moderation queue (batch STOREFRONT-FULL). Owner photos
           wait here at pending_review until a manager approves (→ live on the
           storefront) or rejects them (→ never shown, note goes to the owner).
@@ -678,6 +713,7 @@ export default function AdminAds() {
                   <tr>
                     <th>Shop</th>
                     <th>Photo</th>
+                    <th>AI</th>
                     <th>Uploaded</th>
                     <th>Auto-publish</th>
                     <th>Actions</th>
@@ -740,6 +776,7 @@ export default function AdminAds() {
                   <tr>
                     <th>Shop</th>
                     <th>Creative</th>
+                    <th>AI</th>
                     <th>Targets</th>
                     <th>Window</th>
                     <th>Paid</th>
@@ -858,10 +895,39 @@ function GeoChips({ targets }) {
   );
 }
 
+// The AI's suggestion on a queue row (batch AI-MOD): decision + confidence % +
+// its one-line reason. "Hold" is a red pill (the row is also tinted), "Approve"
+// green (it sat below the auto-approve threshold, so a human still decides),
+// "Review" neutral. Nothing when the job has not run (feature off / no verdict).
+const AI_BADGE = {
+  approve: { label: 'AI: Approve', bg: '#14532d', fg: '#bbf7d0' },
+  hold: { label: 'AI: Hold', bg: '#7f1d1d', fg: '#fecaca' },
+  review: { label: 'AI: Review', bg: '#334155', fg: '#cbd5e1' },
+};
+function AiBadge({ v }) {
+  if (!v || !AI_BADGE[v.decision]) return <span className="muted" style={{ fontSize: 12 }}>—</span>;
+  const b = AI_BADGE[v.decision];
+  const pct = Number.isFinite(Number(v.confidence)) ? `${Math.round(Number(v.confidence) * 100)}%` : '';
+  const cats = Array.isArray(v.categories) && v.categories.length ? v.categories.join(', ') : '';
+  return (
+    <div style={{ display: 'grid', gap: 3, maxWidth: 220 }}>
+      <span className="badge" style={{ background: b.bg, color: b.fg, width: 'fit-content' }} title={cats || undefined}>
+        {b.label}{pct ? ` · ${pct}` : ''}
+      </span>
+      {v.reason && <div className="muted" style={{ fontSize: 12 }}>{v.reason}</div>}
+    </div>
+  );
+}
+// Rows the AI flagged sort first and read as "look at me".
+const flaggedRow = { background: 'rgba(127, 29, 29, 0.28)' };
+const aiReason = (p) => (p && p.ai_verdict && typeof p.ai_verdict.reason === 'string' ? p.ai_verdict.reason : '');
+
 // One row in the shop self-serve moderation queue. Approve → live; Reject captures
 // an optional note (shown to the owner) and, for a PAID promo, refunds the shop's
 // credits server-side. A FREE request (is_free) paid nothing, so its reject refunds
-// nothing — the row makes that explicit with a "Free" pill.
+// nothing — the row makes that explicit with a "Free" pill. The AI badge shows
+// the model's suggestion; Reject pre-fills its reason (editable), Approve stays
+// one tap.
 function PendingRow({ p, busy, onModerate }) {
   const [note, setNote] = useState('');
   const [rejecting, setRejecting] = useState(false);
@@ -869,8 +935,9 @@ function PendingRow({ p, busy, onModerate }) {
   const paid = `₹${((Number(p.credits_spent_paise) || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const win = (v) => (v ? new Date(v).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
   const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined, isFree);
+  const startReject = () => { setNote(aiReason(p)); setRejecting(true); };
   return (
-    <tr>
+    <tr style={p.ai_flagged ? flaggedRow : undefined}>
       <td style={cell}>
         <div style={{ fontWeight: 600 }}>{p.shop_name || p.advertiser || '—'}</div>
         {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
@@ -879,6 +946,7 @@ function PendingRow({ p, busy, onModerate }) {
         <div>{p.glyph} {p.offer_text || <span className="muted">No offer line</span>}</div>
         {p.subtitle && <div className="muted" style={{ fontSize: 12 }}>{p.subtitle}</div>}
       </td>
+      <td style={cell}><AiBadge v={p.ai_verdict} /></td>
       <td style={cell}><GeoChips targets={p.targets} /></td>
       <td style={cell}>{win(p.starts_at)} – {win(p.ends_at)}</td>
       <td style={cell}>
@@ -908,7 +976,7 @@ function PendingRow({ p, busy, onModerate }) {
             <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve', undefined, isFree)}>
               {busy ? '…' : 'Approve'}
             </button>
-            <button type="button" className="secondary" disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
+            <button type="button" className="secondary" disabled={busy} onClick={startReject}>Reject</button>
           </div>
         )}
       </td>
@@ -918,14 +986,16 @@ function PendingRow({ p, busy, onModerate }) {
 
 // One row in the storefront photo moderation queue (batch STOREFRONT-FULL).
 // Mirrors PendingRow: Approve → live; Reject captures an optional note shown to
-// the owner. The auto-publish checkbox is the per-shop trust toggle.
+// the owner (pre-filled with the AI's reason when there is one). The
+// auto-publish checkbox is the per-shop trust toggle.
 function PhotoPendingRow({ p, busy, onModerate, onAutoPublish }) {
   const [note, setNote] = useState('');
   const [rejecting, setRejecting] = useState(false);
   const when = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
   const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined);
+  const startReject = () => { setNote(aiReason(p)); setRejecting(true); };
   return (
-    <tr>
+    <tr style={p.ai_flagged ? flaggedRow : undefined}>
       <td style={cell}>
         <div style={{ fontWeight: 600 }}>{p.shop_name || '—'}</div>
         {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
@@ -941,6 +1011,7 @@ function PhotoPendingRow({ p, busy, onModerate, onAutoPublish }) {
           />
         </a>
       </td>
+      <td style={cell}><AiBadge v={p.ai_verdict} /></td>
       <td style={cell}><div style={{ fontSize: 13 }}>{when}</div></td>
       <td style={cell}>
         <label style={{ display: 'flex', gap: 6, alignItems: 'center', width: 'auto', cursor: 'pointer' }} title="Publish this shop's future photos without review">
@@ -976,7 +1047,7 @@ function PhotoPendingRow({ p, busy, onModerate, onAutoPublish }) {
             <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve')}>
               {busy ? '…' : 'Approve'}
             </button>
-            <button type="button" className="secondary" disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
+            <button type="button" className="secondary" disabled={busy} onClick={startReject}>Reject</button>
           </div>
         )}
       </td>

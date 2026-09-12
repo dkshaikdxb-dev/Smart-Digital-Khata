@@ -261,12 +261,15 @@ exports.remove = async (req, res) => {
 // ===========================================================================
 
 // GET /api/admin/promos/pending — self_serve + pending_review campaigns with the
-// shop name, geo targets and the cost the shop paid, newest first.
+// shop name, geo targets and the cost the shop paid. AI-flagged rows first (the
+// model said "hold"), then oldest first so the longest-waiting shop is served
+// next; each row carries the AI verdict (batch AI-MOD) for the queue's badge.
 exports.pendingPromos = async (_req, res) => {
   const r = await query(
     `SELECT c.id, c.title, c.offer_text, c.subtitle, c.glyph, c.advertiser,
             c.link_shop_id, c.starts_at, c.ends_at, c.credits_spent_paise,
-            c.created_at, s.name AS shop_name, s.city AS shop_city,
+            c.created_at, c.ai_verdict, c.ai_flagged,
+            s.name AS shop_name, s.city AS shop_city,
             COALESCE((
               SELECT json_agg(json_build_object('geo_type', t.geo_type, 'geo_value', t.geo_value)
                               ORDER BY t.geo_type, t.geo_value)
@@ -275,7 +278,7 @@ exports.pendingPromos = async (_req, res) => {
        FROM ad_campaigns c
        LEFT JOIN shops s ON s.id = c.link_shop_id
       WHERE c.self_serve = true AND c.status = 'pending_review'
-      ORDER BY c.created_at DESC
+      ORDER BY c.ai_flagged DESC, c.created_at ASC
       LIMIT 500`
   );
   res.json({
@@ -286,9 +289,21 @@ exports.pendingPromos = async (_req, res) => {
       // to show a "Free" vs "Paid" pill and to word the reject confirmation (a free
       // reject refunds nothing).
       is_free: Number(row.credits_spent_paise) === 0,
+      ai_verdict: row.ai_verdict || null,
+      ai_flagged: row.ai_flagged === true,
     })),
   });
 };
+
+// The AI verdict fields an admin decision is measured against (batch AI-MOD):
+// recorded on the admin's audit row so overrides are countable (aiStats).
+function aiOverrideMeta(aiVerdict) {
+  const v = aiVerdict && typeof aiVerdict === 'object' ? aiVerdict : null;
+  return {
+    ai_decision: v && v.decision ? v.decision : null,
+    ai_confidence: v && Number.isFinite(Number(v.confidence)) ? Number(v.confidence) : null,
+  };
+}
 
 // POST /api/admin/promos/:id/approve — pending_review → active. The guard on
 // status='pending_review' means only a promo actually awaiting review can be
@@ -303,7 +318,7 @@ exports.approvePromo = async (req, res) => {
     `UPDATE ad_campaigns
         SET status = 'active', review_note = COALESCE($2, review_note), updated_at = NOW()
       WHERE id = $1 AND self_serve = true AND status = 'pending_review'
-      RETURNING id`,
+      RETURNING id, link_shop_id, ai_verdict`,
     [req.params.id, reviewNote]
   );
   if (!r.rowCount) {
@@ -315,6 +330,16 @@ exports.approvePromo = async (req, res) => {
     if (!exists.rowCount) throw ApiError.notFound('Promo not found');
     throw ApiError.conflict(`Promo is '${exists.rows[0].status}', not pending review`);
   }
+  // Audit the human decision on the ONE trail, with the AI's verdict alongside
+  // so an override (reject-after-ai-approve etc.) is measurable.
+  await writeAudit({
+    adminUserId: req.user.sub,
+    action: 'promo.approve',
+    targetType: 'campaign',
+    targetId: r.rows[0].id,
+    reason: reviewNote,
+    metadata: { shop_id: r.rows[0].link_shop_id, to: 'active', ...aiOverrideMeta(r.rows[0].ai_verdict) },
+  });
   res.json({ id: r.rows[0].id, status: 'active' });
 };
 
@@ -338,12 +363,22 @@ exports.rejectPromo = async (req, res) => {
       `UPDATE ad_campaigns
           SET status = 'rejected', review_note = $2, updated_at = NOW()
         WHERE id = $1 AND self_serve = true AND status = 'pending_review'
-        RETURNING id, link_shop_id, credits_spent_paise`,
+        RETURNING id, link_shop_id, credits_spent_paise, ai_verdict`,
       [req.params.id, reason]
     );
     if (!upd.rowCount) return { transitioned: false };
 
     const row = upd.rows[0];
+    // Audit in the same transaction as the flip + refund (AI verdict alongside).
+    await writeAudit({
+      adminUserId: req.user.sub,
+      action: 'promo.reject',
+      targetType: 'campaign',
+      targetId: row.id,
+      reason,
+      metadata: { shop_id: row.link_shop_id, to: 'rejected', ...aiOverrideMeta(row.ai_verdict) },
+      client,
+    });
     let refunded = 0;
     // Refund only when there is a shop wallet target and a recorded amount. The
     // refund is a 'refund'-kind credit (free-text ledger kind) referencing the promo.
@@ -393,18 +428,20 @@ function galleryImageUrl(id, updatedAt) {
   return `/api/shop-images/${id}?v=${epoch}`;
 }
 
-// GET /api/admin/shop-images/pending — every photo awaiting review (oldest
-// first, so the longest-waiting owner is served first) with its shop, plus the
-// shops currently trusted to auto-publish (so an admin can revoke that trust).
+// GET /api/admin/shop-images/pending — every photo awaiting review with its
+// shop, plus the shops currently trusted to auto-publish (so an admin can revoke
+// that trust). AI-flagged photos first (the model said "hold"), then oldest
+// first so the longest-waiting owner is served next; each row carries the AI
+// verdict (batch AI-MOD) for the queue's badge.
 exports.pendingShopImages = async (_req, res) => {
   const [pending, trusted] = await Promise.all([
     query(
-      `SELECT i.id, i.shop_id, i.position, i.updated_at,
+      `SELECT i.id, i.shop_id, i.position, i.updated_at, i.ai_verdict, i.ai_flagged,
               s.name AS shop_name, s.city AS shop_city, s.slides_auto_publish
          FROM shop_images i
          JOIN shops s ON s.id = i.shop_id
         WHERE i.status = 'pending_review'
-        ORDER BY i.updated_at ASC, i.id ASC
+        ORDER BY i.ai_flagged DESC, i.updated_at ASC, i.id ASC
         LIMIT 500`
     ),
     query(
@@ -423,6 +460,8 @@ exports.pendingShopImages = async (_req, res) => {
       url: galleryImageUrl(row.id, row.updated_at),
       uploaded_at: row.updated_at,
       auto_publish: row.slides_auto_publish === true,
+      ai_verdict: row.ai_verdict || null,
+      ai_flagged: row.ai_flagged === true,
     })),
     auto_publish_shops: trusted.rows,
   });
@@ -448,7 +487,7 @@ async function moderateShopImage(req, next, note) {
             review_note = ${next === 'active' ? 'COALESCE($3, review_note)' : '$3'},
             reviewed_at = NOW()
       WHERE id = $1 AND status <> $2
-      RETURNING id, shop_id, status`,
+      RETURNING id, shop_id, status, ai_verdict`,
     [id, next, note]
   );
   if (!upd.rowCount) {
@@ -463,10 +502,56 @@ async function moderateShopImage(req, next, note) {
     targetType: 'shop',
     targetId: row.shop_id,
     reason: note,
-    metadata: { image_id: row.id, to: next },
+    // The AI's verdict rides along so an override is measurable (aiStats).
+    metadata: { image_id: row.id, to: next, ...aiOverrideMeta(row.ai_verdict) },
   });
   return row;
 }
+
+// GET /api/admin/moderation/ai-stats — last-30-day counts from the ONE audit
+// trail (batch AI-MOD): how many rows the AI auto-approved / held / left for
+// review, and every admin approve/reject on the two queues split by the AI
+// decision it followed (null = no AI verdict on that row). `agreement` sums
+// the clear cases: approve-after-approve + reject-after-hold agree;
+// reject-after-approve + approve-after-hold disagree.
+exports.aiStats = async (_req, res) => {
+  const r = await query(
+    `SELECT action, metadata->>'ai_decision' AS ai_decision, COUNT(*)::int AS n
+       FROM moderation_actions
+      WHERE created_at > NOW() - interval '30 days'
+        AND action IN ('ai_auto_approve','ai_hold','ai_review',
+                       'shop_image.approve','shop_image.reject','promo.approve','promo.reject')
+      GROUP BY action, metadata->>'ai_decision'`
+  );
+  const out = {
+    days: 30,
+    auto_approved: 0,
+    held: 0,
+    reviewed: 0,
+    admin: {
+      approve_after_ai_approve: 0,
+      reject_after_ai_approve: 0,
+      approve_after_ai_hold: 0,
+      reject_after_ai_hold: 0,
+      approve_after_ai_review: 0,
+      reject_after_ai_review: 0,
+      approve_no_ai: 0,
+      reject_no_ai: 0,
+    },
+    agreement: { agreed: 0, disagreed: 0 },
+  };
+  for (const row of r.rows) {
+    if (row.action === 'ai_auto_approve') { out.auto_approved += row.n; continue; }
+    if (row.action === 'ai_hold') { out.held += row.n; continue; }
+    if (row.action === 'ai_review') { out.reviewed += row.n; continue; }
+    const verb = row.action.endsWith('.approve') ? 'approve' : 'reject';
+    const ai = ['approve', 'hold', 'review'].includes(row.ai_decision) ? row.ai_decision : null;
+    out.admin[ai ? `${verb}_after_ai_${ai}` : `${verb}_no_ai`] += row.n;
+  }
+  out.agreement.agreed = out.admin.approve_after_ai_approve + out.admin.reject_after_ai_hold;
+  out.agreement.disagreed = out.admin.reject_after_ai_approve + out.admin.approve_after_ai_hold;
+  res.json(out);
+};
 
 // POST /api/admin/shop-images/:id/approve  { review_note? } → active (served).
 // An approve with no note never wipes a note left earlier (COALESCE).

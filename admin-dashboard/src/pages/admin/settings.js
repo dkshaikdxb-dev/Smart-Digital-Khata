@@ -21,7 +21,10 @@ const TOGGLE_KEYS = [
   ['branded_store_enabled', 'Branded store', 'Paid branded storefront upgrade for a shop.'],
   ['consumer_prepay_enabled', 'Consumer prepay', 'Lets a customer hold a prepaid advance with a shop.'],
   ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
+  ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + model id in the server environment.'],
 ];
+// AI moderation thresholds (batch AI-MOD): decimals in 0.5..1.0, edited as-is.
+const DEC_KEYS = ['ai_moderation_auto_approve_min', 'ai_moderation_hold_min'];
 // Amount keys stored in paise, shown/edited as ₹.
 const RUPEE_KEYS = [
   'enrolment_fee_basic_paise', 'enrolment_fee_premium_paise',
@@ -39,6 +42,8 @@ function featFromApi(f) {
   RUPEE_KEYS.forEach((k) => { o[k] = toRupees(f[k]); });
   INT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
   PCT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
+  DEC_KEYS.forEach((k) => { o[k] = Number.isFinite(Number(f[k])) ? Number(f[k]) : 0.9; });
+  o.ai_moderation_configured = !!f.ai_moderation_configured;
   return o;
 }
 
@@ -140,6 +145,14 @@ export default function AdminSettings() {
       consumer_prepay_max_advance_paise: toPaise(feat.consumer_prepay_max_advance_paise),
       delivery_champion_fee_paise: toPaise(feat.delivery_champion_fee_paise),
     }, 'Pricing saved.');
+  }
+
+  // AI moderation thresholds: both must sit in 0.5..1.0 (the API clamps too).
+  function saveAiModeration() {
+    const a = Number(feat.ai_moderation_auto_approve_min);
+    const h = Number(feat.ai_moderation_hold_min);
+    if (!(a >= 0.5 && a <= 1) || !(h >= 0.5 && h <= 1)) { setErr('Thresholds must be between 0.5 and 1.0.'); return; }
+    saveFeat({ ai_moderation_auto_approve_min: a, ai_moderation_hold_min: h }, 'AI moderation thresholds saved.');
   }
 
   async function testRazorpay() {
@@ -336,6 +349,41 @@ export default function AdminSettings() {
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={savePricing}>Save pricing</button>
+                </div>
+              </div>
+            </div>
+
+            {/* AI moderation (batch AI-MOD): the toggle lives in Feature toggles
+                above; here the two confidence thresholds + whether the server is
+                configured at all (read-only — the key + model id are env vars). */}
+            <div className="card">
+              <h3>AI moderation</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                The AI only ever auto-<b>approves</b> or <b>flags</b> (holds) a row for you — it never rejects.
+                A row is auto-approved when the model says “approve” at or above the first threshold; it is flagged
+                to the top of the queue when the model says “hold” at or above the second. Everything else waits for
+                a human as before.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                <p className="muted" style={{ fontSize: 13, margin: 0 }}>
+                  Server configured: <b>{feat.ai_moderation_configured ? 'yes' : 'no'}</b>
+                  {!feat.ai_moderation_configured && ' — set the API key and model id in the server environment; the toggle is inert until then.'}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label className="muted">Auto-approve min confidence</label>
+                    <input type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_auto_approve_min}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_auto_approve_min: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Hold (flag) min confidence</label>
+                    <input type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_hold_min}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_hold_min: e.target.value })} />
+                  </div>
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>0.5 – 1.0. Raise the auto-approve threshold to publish less without a human; raise the hold threshold to flag less.</p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={saveAiModeration}>Save AI thresholds</button>
                 </div>
               </div>
             </div>

@@ -78,6 +78,11 @@ const settingsSchema = Joi.object({
   referral_split_infra_pct: Joi.number().integer().min(0).max(100),
   referral_split_l1_pct: Joi.number().integer().min(0).max(100),
   referral_split_l2_pct: Joi.number().integer().min(0).max(100),
+  // AI moderation (batch AI-MOD, 0064): the master toggle and the two confidence
+  // thresholds (decimals in 0.5..1.0) the job applies live.
+  ai_moderation_enabled: Joi.boolean(),
+  ai_moderation_auto_approve_min: Joi.number().min(0.5).max(1),
+  ai_moderation_hold_min: Joi.number().min(0.5).max(1),
 }).min(1);
 
 // Referrals (Phase D): create an offline influencer/other code, and the reward
@@ -303,5 +308,10 @@ router.post('/shop-images/:id/approve', requirePerm('ads:manage'), validate(prom
 router.post('/shop-images/:id/reject', requirePerm('ads:manage'), validate(promoReviewSchema), asyncHandler(adsCtrl.rejectShopImage));
 // Per-shop trust toggle: let a shop's uploads go live without review.
 router.patch('/shops/:id/slides', requirePerm('ads:manage'), validate(shopSlidesSchema), asyncHandler(adsCtrl.setShopSlidesAutoPublish));
+
+// AI moderation stats (batch AI-MOD): last-30-day counts of AI decisions and of
+// admin decisions split by agreement with the AI. Same ads:manage gate as the
+// two queues it describes.
+router.get('/moderation/ai-stats', requirePerm('ads:manage'), asyncHandler(adsCtrl.aiStats));
 
 module.exports = router;

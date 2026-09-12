@@ -6,6 +6,8 @@ const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
 const { getBrandedStoreConfig } = require('../utils/brandedStore');
 const { getStorefrontAdFreeConfig } = require('../utils/storefrontAdFree');
 const { spendCredits } = require('../utils/wallet');
+// AI triage of an uploaded storefront photo (batch AI-MOD) — enqueue only, after commit.
+const moderation = require('../services/moderation.service');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
@@ -498,6 +500,13 @@ exports.uploadGalleryImage = async (req, res) => {
     );
     return ins.rows[0];
   });
+
+  // AI triage (batch AI-MOD): a photo that landed in the review queue gets a
+  // moderation job — enqueued AFTER the transaction above committed (the job
+  // reads the committed row), fire-and-forget (an enqueue failure never fails
+  // the upload; the photo just waits for a human). A trusted shop's photo is
+  // already live and is not triaged.
+  if (created.status === 'pending_review') moderation.enqueueShopImage(created.id);
 
   res.status(201).json({
     id: created.id,
