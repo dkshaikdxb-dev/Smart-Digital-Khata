@@ -266,6 +266,8 @@ const en = {
   'account.language': 'Language',
   'account.logout': 'Log out',
   'account.logoutConfirm': 'Log out of Smart Digital Khata?',
+  'account.dataSaver': 'Data saver',
+  'account.dataSaverSub': 'Skip extra photos on slow networks',
 
   // Suffix appended to picker labels of UI-only (no catalogue) languages.
   'login.betaSuffix': ' (beta)',
@@ -447,6 +449,8 @@ const hi = {
   'account.language': 'भाषा',
   'account.logout': 'लॉग आउट',
   'account.logoutConfirm': 'स्मार्ट डिजिटल खाता से लॉग आउट करें?',
+  'account.dataSaver': 'डेटा सेवर',
+  'account.dataSaverSub': 'धीमे नेटवर्क पर अतिरिक्त फ़ोटो न लोड करें',
   'login.betaSuffix': ' (बीटा)',
 };
 

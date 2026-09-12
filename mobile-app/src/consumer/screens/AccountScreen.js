@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform,
+  View, Text, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform, Switch,
 } from 'react-native';
 import Constants from 'expo-constants';
 import { colors, sizes } from '../theme';
@@ -8,16 +8,19 @@ import { Card, Field, Button, ErrorBanner } from '../components';
 import { consumerAuth, setToken } from '../consumerApi';
 import { useConsumerAuth } from '../ConsumerAuthContext';
 import { useT, LANGUAGES, isBetaLang } from '../i18n';
+import { useDataSaver } from '../lib/dataSaver';
 
 // The consumer PWA base (`…/c`), bridged with the consumer token by FeatureWebView.
 const CONSUMER_URL =
   Constants.expoConfig?.extra?.consumerUrl || 'https://khata.dadashaik.com/c';
 
 // Priority 6 — Account: editable profile (name/email; phone read-only), a
-// language switch, and logout. Profile via GET/PATCH /customer-auth/*.
+// language switch, a data-saver toggle, and logout. Profile via GET/PATCH
+// /customer-auth/*.
 export default function AccountScreen({ navigation }) {
   const { t, lang, setLang } = useT();
   const { signOut } = useConsumerAuth();
+  const { dataSaver, setDataSaver } = useDataSaver();
   const [form, setForm] = useState(null);
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
@@ -128,6 +131,23 @@ export default function AccountScreen({ navigation }) {
           </View>
         </Card>
 
+        <Card>
+          <View style={styles.switchRow}>
+            <View style={styles.switchText}>
+              <Text style={styles.title}>{t('account.dataSaver')}</Text>
+              <Text style={styles.switchSub}>{t('account.dataSaverSub')}</Text>
+            </View>
+            <Switch
+              value={dataSaver}
+              onValueChange={setDataSaver}
+              trackColor={{ false: colors.border, true: colors.accentDark }}
+              thumbColor={dataSaver ? colors.accent : colors.textMuted}
+              ios_backgroundColor={colors.border}
+              accessibilityLabel={t('account.dataSaver')}
+            />
+          </View>
+        </Card>
+
         <Button title={`🚪 ${t('account.logout')}`} variant="secondary" onPress={confirmLogout} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -148,4 +168,7 @@ const styles = StyleSheet.create({
   langActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   langText: { color: colors.text, fontSize: 16, fontWeight: '600' },
   langTextActive: { color: colors.onAccent },
+  switchRow: { flexDirection: 'row', alignItems: 'center', minHeight: sizes.tap },
+  switchText: { flex: 1, paddingRight: 12 },
+  switchSub: { color: colors.textMuted, fontSize: 13 },
 });
