@@ -23,6 +23,10 @@ const TOGGLE_KEYS = [
   ['consumer_prepay_enabled', 'Consumer prepay', 'Lets a customer hold a prepaid advance with a shop.'],
   ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
   ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + moderation model id (Integrations → AI, below).'],
+  // Shop trust (batch MOD2) — its OWN switch, independent of the triage above.
+  // Off means every shop is judged at the plain platform bar whatever its
+  // history; the history keeps being recorded either way.
+  ['ai_moderation_trust_enabled', 'Shop trust for AI triage', 'Lets a shop’s own record bend its bar: a clean history auto-approves a little more easily, a rejected history a little less. Never below 75% confidence, and it never rejects. Turn OFF to judge every shop identically.'],
   // Shop availability (batch A) — the MASTER KILL-SWITCH for the whole
   // open/closed gate. Turning it off makes every shop count as open again, on
   // every surface and at order time, with no deploy.
@@ -30,6 +34,9 @@ const TOGGLE_KEYS = [
 ];
 // AI moderation thresholds (batch AI-MOD): decimals in 0.5..1.0, edited as-is.
 const DEC_KEYS = ['ai_moderation_auto_approve_min', 'ai_moderation_hold_min'];
+// Trust ADJUSTMENTS (batch MOD2): how far the auto-approve bar bends, 0..0.30.
+// A different band from DEC_KEYS because these are nudges, not bars.
+const ADJ_KEYS = ['ai_moderation_trust_bonus', 'ai_moderation_distrust_penalty'];
 // Amount keys stored in paise, shown/edited as ₹.
 const RUPEE_KEYS = [
   'enrolment_fee_basic_paise', 'enrolment_fee_premium_paise',
@@ -52,6 +59,10 @@ const INT_KEYS = [
   'shop_pause_max_minutes',
   // One-tap accept (batch B): the ceiling a promised ready time is clamped to.
   'order_eta_max_minutes',
+  // Shop trust + post-publish spot checks (batch MOD2): how much history a shop
+  // needs before trust bends its bar, and what percent of auto-approvals get a
+  // human second look after they are already live.
+  'ai_moderation_trust_min_items', 'ai_moderation_spot_check_pct',
 ];
 // TEXT feature keys — edited as plain strings. `order_eta_chips` (batch B) is the
 // comma-separated minute list behind the owner's three accept chips.
@@ -66,6 +77,7 @@ function featFromApi(f) {
   INT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
   PCT_KEYS.forEach((k) => { o[k] = Number(f[k]) || 0; });
   DEC_KEYS.forEach((k) => { o[k] = Number.isFinite(Number(f[k])) ? Number(f[k]) : 0.9; });
+  ADJ_KEYS.forEach((k) => { o[k] = Number.isFinite(Number(f[k])) ? Number(f[k]) : 0; });
   TEXT_KEYS.forEach((k) => { o[k] = f[k] == null ? '' : String(f[k]); });
   o.ai_moderation_configured = !!f.ai_moderation_configured;
   return o;
@@ -278,6 +290,25 @@ export default function AdminSettings() {
     const h = Number(feat.ai_moderation_hold_min);
     if (!(a >= 0.5 && a <= 1) || !(h >= 0.5 && h <= 1)) { setErr('Thresholds must be between 0.5 and 1.0.'); return; }
     saveFeat({ ai_moderation_auto_approve_min: a, ai_moderation_hold_min: h }, 'AI moderation thresholds saved.');
+  }
+
+  // Shop trust + spot-check sampling (batch MOD2). The bonus/penalty are how far
+  // the bar bends, in 0..0.30 — the server clamps them too, and whatever is set
+  // here the effective auto-approve bar can never drop below 0.75.
+  function saveAiTrust() {
+    const bonus = Number(feat.ai_moderation_trust_bonus);
+    const pen = Number(feat.ai_moderation_distrust_penalty);
+    const minItems = parseInt(feat.ai_moderation_trust_min_items, 10);
+    const pct = parseInt(feat.ai_moderation_spot_check_pct, 10);
+    if (!(bonus >= 0 && bonus <= 0.3) || !(pen >= 0 && pen <= 0.3)) { setErr('The trust bonus and penalty must be between 0 and 0.30.'); return; }
+    if (!(minItems >= 0 && minItems <= 100)) { setErr('Items before trust applies must be between 0 and 100.'); return; }
+    if (!(pct >= 0 && pct <= 100)) { setErr('The spot-check sample must be between 0 and 100 percent.'); return; }
+    saveFeat({
+      ai_moderation_trust_bonus: bonus,
+      ai_moderation_distrust_penalty: pen,
+      ai_moderation_trust_min_items: minItems,
+      ai_moderation_spot_check_pct: pct,
+    }, 'Shop trust settings saved.');
   }
 
   // Repeating new-order alert bounds (batch ORDERALERT). Not credentials, so no
@@ -736,6 +767,59 @@ export default function AdminSettings() {
                 <p className="muted" style={{ fontSize: 12 }}>0.5 – 1.0. Raise the auto-approve threshold to publish less without a human; raise the hold threshold to flag less.</p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveAiModeration}>Save AI thresholds</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Shop trust + post-publish spot checks (batch MOD2). The toggle is
+                in Feature toggles above; here is how far trust bends the bar and
+                how much of what gets published is looked at again. */}
+            <div className="card">
+              <h3>Shop trust &amp; spot checks</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                Each shop gets a <b>trust score from 0 to 1</b>: the share of its submitted content that was
+                judged acceptable, counted as if the shop already had one approval and one rejection on file
+                (so a brand-new shop sits at exactly 0.50 and one lucky approval proves nothing). A rejection
+                also costs a freshness penalty of 0.30 that fades to zero over 90 days, so a <i>recent</i>
+                {' '}rejection hurts more than an old one.
+              </p>
+              <p className="muted" style={{ fontSize: 13 }}>
+                A shop scoring <b>0.85 or more</b>, with at least the number of decided items below, is
+                <b> trusted</b>: its auto-approve bar drops by the bonus. A shop scoring <b>under 0.50</b>
+                {' '}— worse than a brand-new shop — is <b>distrusted</b>: its bar rises by the penalty, and
+                borderline flags reach you more readily. Everyone else is judged at the plain bar.
+                {' '}<b>The bar never drops below 0.75</b>, whatever is set here, and the AI still never rejects.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label className="muted">Trusted shop bonus (bar drops by)</label>
+                    <input type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_trust_bonus}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_trust_bonus: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Distrusted shop penalty (bar rises by)</label>
+                    <input type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_distrust_penalty}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_distrust_penalty: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Items before trust applies</label>
+                    <input type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_trust_min_items}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_trust_min_items: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="muted">Spot-check sample (% of auto-approvals)</label>
+                    <input type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_spot_check_pct}
+                      onChange={(e) => setFeat({ ...feat, ai_moderation_spot_check_pct: e.target.value })} />
+                  </div>
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  Spot checks are the safety net on auto-approval: this percentage of everything the AI
+                  publishes is queued for a human second look on the Campaigns desk. Marking one “Not OK”
+                  takes the item straight back down to the review queue. Set 0 to sample nothing (not advised).
+                </p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={saveAiTrust}>Save trust settings</button>
                 </div>
               </div>
             </div>

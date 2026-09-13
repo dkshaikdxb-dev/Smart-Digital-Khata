@@ -150,6 +150,17 @@ beforeAll(async () => {
   await setSetting('ai_moderation_enabled', 'true');
   await setSetting('ai_moderation_auto_approve_min', '0.90');
   await setSetting('ai_moderation_hold_min', '0.90');
+  // This suite is the PHASE-1 suite: it asserts the PLAIN platform policy, one
+  // item at a time, with no memory. Phase 2 (batch MOD2) adds a per-shop trust
+  // history that deliberately bends those bars once a shop has been approved or
+  // rejected a few times — and this suite approves and rejects the SAME shop
+  // repeatedly, so it would drift its own thresholds under itself. Trust is
+  // independently switchable exactly so it can be pinned off here; sampling is
+  // pinned off too so no spot-check rows are written behind these assertions.
+  // Both are restored in afterAll, and Phase 2 has its own suite
+  // (ai-moderation-trust.test.js) for the bent bars.
+  await setSetting('ai_moderation_trust_enabled', 'false');
+  await setSetting('ai_moderation_spot_check_pct', '0');
   marketing = await makeAdmin('mkt', 'marketing', '71');
   support = await makeAdmin('sup', 'support', '72');
   owner = await register('AiM', '73');
@@ -162,6 +173,9 @@ afterAll(async () => {
   await setSetting('ai_moderation_enabled', 'true');
   await setSetting('ai_moderation_auto_approve_min', '0.90');
   await setSetting('ai_moderation_hold_min', '0.90');
+  await setSetting('ai_moderation_trust_enabled', 'true');
+  await setSetting('ai_moderation_spot_check_pct', '10');
+  await pool.query('DELETE FROM shop_moderation_trust WHERE shop_id = $1', [owner.shop.id]);
   if (imageIds.length) {
     await pool.query("DELETE FROM moderation_actions WHERE metadata->>'image_id' = ANY($1::text[])", [imageIds]);
   }

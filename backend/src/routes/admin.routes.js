@@ -105,6 +105,15 @@ const settingsSchema = Joi.object({
   ai_moderation_enabled: Joi.boolean(),
   ai_moderation_auto_approve_min: Joi.number().min(0.5).max(1),
   ai_moderation_hold_min: Joi.number().min(0.5).max(1),
+  // Shop trust + post-publish spot checks (batch MOD2, 0070). The bonus/penalty
+  // are ADJUSTMENTS to the bar (0..0.30), not bars themselves, hence the
+  // different band. Whatever is set here, the effective auto-approve threshold
+  // can never fall below 0.75 (utils/moderationTrust.HARD_AUTO_APPROVE_FLOOR).
+  ai_moderation_trust_enabled: Joi.boolean(),
+  ai_moderation_trust_min_items: Joi.number().integer().min(0).max(100),
+  ai_moderation_trust_bonus: Joi.number().min(0).max(0.3),
+  ai_moderation_distrust_penalty: Joi.number().min(0).max(0.3),
+  ai_moderation_spot_check_pct: Joi.number().integer().min(0).max(100),
   // Repeating new-order alert (batch ORDERALERT, 0065): the platform bounds a
   // shop's own alert cadence is clamped to. Policy numbers, not credentials —
   // no I CONFIRM.
@@ -202,6 +211,17 @@ const adStatusSchema = Joi.object({
 // the shop's uploads publish without review.
 const shopSlidesSchema = Joi.object({
   auto_publish: Joi.boolean().required(),
+  reason: Joi.string().max(1000).allow('', null),
+});
+
+// A post-publish spot check verdict (batch MOD2): 'ok' closes it and changes
+// nothing; 'bad' takes the already-live item back down to pending_review and
+// costs the shop a trust point. Deliberately only these two words — a spot
+// check never rejects content outright, it returns it to the human queue.
+const spotCheckSchema = Joi.object({
+  verdict: Joi.string().valid('ok', 'bad').required(),
+  review_note: Joi.string().max(1000).allow('', null),
+  note: Joi.string().max(1000).allow('', null),
   reason: Joi.string().max(1000).allow('', null),
 });
 
@@ -359,5 +379,12 @@ router.patch('/shops/:id/slides', requirePerm('ads:manage'), validate(shopSlides
 // admin decisions split by agreement with the AI. Same ads:manage gate as the
 // two queues it describes.
 router.get('/moderation/ai-stats', requirePerm('ads:manage'), asyncHandler(adsCtrl.aiStats));
+
+// Post-publish spot checks (batch MOD2, 0070): a sample of what the AI
+// auto-approved, queued for a human SECOND look after it went live. Same
+// ads:manage gate as the two pre-publish queues. Marking one 'bad' takes the
+// item back down to pending_review and costs the shop a trust point.
+router.get('/moderation/spot-checks', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingSpotChecks));
+router.post('/moderation/spot-checks/:id', requirePerm('ads:manage'), validate(spotCheckSchema), asyncHandler(adsCtrl.reviewSpotCheck));
 
 module.exports = router;
