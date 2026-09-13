@@ -91,9 +91,12 @@ Razorpay's page, the payment is recorded and their balance drops automatically �
 needed. (If a link cannot be sent, that shop has not connected Razorpay yet.)
 
 **Q: What happens if I cancel an order that was already paid online?**
-The order is cancelled and a note is added that the refund must be handled manually — there is
-no automatic online refund. A cancelled **credit** order, by contrast, automatically reverses
-the khata entry.
+The amount the customer paid becomes **credit at your shop**: it is posted to their khata and
+comes off their next order with you. There is no automatic online refund and no manual-refund
+note any more — the money stays visible in the ledger instead of sitting in limbo. If the order
+was already reduced before being cancelled, only the remainder is credited, so the same money is
+never given back twice. A cancelled **credit** order, by contrast, reverses the khata entry, and
+a cancelled **cash** order moves no money at all because none had changed hands.
 
 ---
 
