@@ -174,10 +174,148 @@ function needsLedgerAdjustment(paymentMode) {
   return paymentMode === 'credit' || paymentMode === 'prepaid';
 }
 
+// ===========================================================================
+// THE ONE WAY MONEY MOVES BACK TO A CUSTOMER (batch C + batch ALERT2)
+//
+// The house rule is "prepaid: debit/credit only, NEVER a refund". A reduction
+// (batch C) already honours it; batch ALERT2 makes a CANCEL honour it too. Both
+// now go through the single writer below, so the two can never drift into two
+// different ways of moving the same money for the same reason.
+//
+// The shape is fixed and is the shape batch C established:
+//   type   'adjustment'   — neither a purchase (nothing more is owed) nor a
+//                           payment (the customer handed nothing over): the shop
+//                           correcting its own bill. Every aggregate in the app
+//                           sums `purchase` or `cash`/`upi`, so an adjustment is
+//                           excluded from all of them automatically.
+//   method 'adjustment'   — says plainly that no cash, no UPI and no credit
+//                           changed hands.
+//   order_id set          — the ledger row is tied to the order it explains.
+//   balance -= amount     — for a CREDIT order that cancels out what was owed;
+//                           for a PREPAID order it drives the balance NEGATIVE,
+//                           i.e. the money becomes an ADVANCE at this shop,
+//                           using the advance mechanism the consumer pre-pay
+//                           flow already proves. No refund API is called and
+//                           none is invented.
+// ===========================================================================
+
+/**
+ * Post ONE compensating 'adjustment' and lower the customer's balance by it,
+ * on the caller's transaction client so it commits with whatever it explains.
+ *
+ * Writes NOTHING and returns null for a non-positive amount — this writer only
+ * ever moves money TOWARDS the customer, so a zero or negative "adjustment"
+ * (which could only ever come from a bug) is refused rather than turned into a
+ * charge.
+ *
+ * @returns {Promise<object|null>} the inserted transactions row, or null
+ */
+async function postOrderAdjustment(client, { shopId, customerId, orderId, amount, note, actorId }) {
+  const paise = Number(amount);
+  if (!Number.isFinite(paise) || paise <= 0) return null;
+
+  const tx = await client.query(
+    `INSERT INTO transactions
+       (shop_id, customer_id, type, amount, method, note, source, created_by, order_id)
+     VALUES ($1,$2,'adjustment',$3,'adjustment',$4,'api',(SELECT u.id FROM users u WHERE u.id = $5),$6)
+     RETURNING *`,
+    [shopId, customerId, paise, note, actorId || null, orderId]
+  );
+  await client.query(
+    'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
+    [paise, customerId]
+  );
+  return tx.rows[0];
+}
+
+/**
+ * Is this an order whose cancellation must become shop credit? Only a PREPAID
+ * order the customer has actually PAID for. A prepaid order still awaiting
+ * payment has no money to move; cash never posted anything; credit has its own
+ * (older, unchanged) reversal.
+ */
+function isPaidPrepaid(order) {
+  return Boolean(order) && order.payment_mode === 'prepaid' && order.payment_status === 'paid';
+}
+
+/**
+ * How much of a paid prepaid order is still owed back to the customer, in paise.
+ *
+ *   what they actually paid            (the paid `payment_orders` rows for this
+ *                                       order; the order total is the fallback
+ *                                       when no payment row is on file)
+ *   MINUS what this order has already
+ *   credited them                      (the 'adjustment' rows already posted —
+ *                                       i.e. an earlier REDUCTION)
+ *
+ * Subtracting the earlier adjustments is what keeps a reduce-then-cancel from
+ * crediting the reduced part twice: batch C already gave that difference back,
+ * and only the remainder is still the customer's.
+ *
+ * Never negative.
+ */
+async function prepaidCreditRemaining(client, order) {
+  const paidRes = await client.query(
+    `SELECT COALESCE(SUM(amount), 0)::bigint AS paid
+       FROM payment_orders WHERE order_id = $1 AND status = 'paid'`,
+    [order.id]
+  );
+  const paid = Number(paidRes.rows[0].paid) || 0;
+  // A paid prepaid order with no payment_orders row on file (a hand-fixed row, a
+  // legacy import) still has a defensible figure: the order total, which is what
+  // the customer was asked for. Better than crediting nothing.
+  const base = paid > 0 ? paid : Number(order.subtotal) + Number(order.delivery_fee);
+
+  const adjRes = await client.query(
+    `SELECT COALESCE(SUM(amount), 0)::bigint AS adjusted
+       FROM transactions WHERE order_id = $1 AND type = 'adjustment'`,
+    [order.id]
+  );
+  const already = Number(adjRes.rows[0].adjusted) || 0;
+
+  return Math.max(0, base - already);
+}
+
+/**
+ * THE PREPAID CANCEL RULE (batch ALERT2), in one place for every caller: the
+ * owner rejecting an order (order.controller.updateStatus) and the customer
+ * cancelling their own (my.controller.cancelOrder).
+ *
+ * A cancelled PAID PREPAID order turns the money the customer handed over into
+ * CREDIT AT THIS SHOP — one 'adjustment', `order_id` set, balance lowered by
+ * exactly that amount. There is no refund, no Razorpay call and no note
+ * promising that somebody will sort it out by hand.
+ *
+ * Call it INSIDE the transaction that cancels the order, while the order and
+ * customer rows are locked. Returns the adjustment row, or null when there is
+ * nothing to credit (not prepaid, not paid, or already fully credited).
+ *
+ * IDEMPOTENCY is the caller's terminal guard: a cancelled order is terminal, so
+ * a second cancel is refused with a 409 before reaching here. The
+ * already-credited subtraction in prepaidCreditRemaining() is the second rail.
+ */
+async function creditPrepaidOnCancel(client, order, { actorId } = {}) {
+  if (!isPaidPrepaid(order)) return null;
+  const amount = await prepaidCreditRemaining(client, order);
+  if (amount <= 0) return null;
+  return postOrderAdjustment(client, {
+    shopId: order.shop_id,
+    customerId: order.customer_id,
+    orderId: order.id,
+    amount,
+    note: `Order ${order.id} cancelled — prepaid amount kept as shop credit`,
+    actorId,
+  });
+}
+
 module.exports = {
   EDITABLE_STATUSES,
   isEditableStatus,
   deliveryFeeFor,
   planReduction,
   needsLedgerAdjustment,
+  postOrderAdjustment,
+  isPaidPrepaid,
+  prepaidCreditRemaining,
+  creditPrepaidOnCancel,
 };

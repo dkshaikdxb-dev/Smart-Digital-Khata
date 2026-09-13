@@ -2,8 +2,10 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const whatsapp = require('../services/whatsapp.service');
 const { renderLang, withCustomerNameLocal } = require('../utils/name-local');
-// The ONE shared "this order still needs alerting" definition (batch ORDERALERT).
-const { needsAlertingSql } = require('../utils/orderAlerts');
+// The ONE shared "this order still needs alerting" definition (batch ORDERALERT,
+// rewritten by batch ALERT2: the order is still pending, full stop) plus the
+// snooze window a passive "Seen" now buys instead of a permanent silence.
+const { needsAlertingSql, getSnoozeMinutes } = require('../utils/orderAlerts');
 // The ONE shared ready-time rule: the chips, the ceiling, the clamp (batch B).
 const { getEtaConfig, clampEta } = require('../utils/orderEta');
 // Every customer-facing order line, en + hi authored (batch B). Replaces the
@@ -11,8 +13,12 @@ const { getEtaConfig, clampEta } = require('../utils/orderEta');
 const customerCopy = require('../utils/order-customer-copy');
 // The ONE shared reduction rule: what may be edited, what it does to the
 // delivery fee, and what the money does per payment mode (batch C).
+// The same file also holds the ONE way money moves back to a customer —
+// postOrderAdjustment (used by the reduction below) and creditPrepaidOnCancel
+// (used by a rejection), so the two can never drift (batch ALERT2).
 const {
   isEditableStatus, deliveryFeeFor, planReduction, needsLedgerAdjustment,
+  postOrderAdjustment, creditPrepaidOnCancel,
 } = require('../utils/orderEdit');
 
 // Owner/staff order management, scoped to req.user.shopId. A shop only ever
@@ -142,7 +148,7 @@ function customerLang(row) {
  * status change is already committed and must not be reported as failed because
  * Meta was unreachable.
  */
-function notifyCustomer({ customer, shopName, order, updated }) {
+function notifyCustomer({ customer, shopName, order, updated, reason, credit }) {
   if (customer.notifications_enabled === false) return;
   const message = customerCopy.buildCustomerMessage({
     lang: customerLang(customer),
@@ -151,8 +157,23 @@ function notifyCustomer({ customer, shopName, order, updated }) {
     status: order.status,
     promisedAt: order.promised_at,
     updated: Boolean(updated),
+    reason,
+    credit,
   });
   whatsapp.sendText(customer.phone, message).catch(() => {});
+}
+
+// The REJECT reason (batch ALERT2). Free text, trimmed, and hard-capped at 200
+// characters here as well as in the route validator — it is appended to the
+// order note and carried into the customer's WhatsApp line, so it must never be
+// able to become a wall of text in either place. Empty/blank is null, i.e. "no
+// reason given", which is legitimate: a reason is offered, never demanded.
+const REASON_MAX = 200;
+function cleanReason(raw) {
+  if (raw == null) return null;
+  const s = String(raw).replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  return s.slice(0, REASON_MAX);
 }
 
 /**
@@ -178,8 +199,14 @@ function notifyCustomer({ customer, shopName, order, updated }) {
 exports.updateStatus = async (req, res) => {
   const { status: next } = req.body;
   const etaRequested = req.body.eta_minutes !== undefined && req.body.eta_minutes !== null;
+  const reasonRequested = req.body.reason !== undefined && req.body.reason !== null;
+  const reason = cleanReason(req.body.reason);
 
   const result = await withTx(async (client) => {
+    // `FOR UPDATE OF o, c` — the customer row is locked too, because rejecting a
+    // PAID PREPAID order moves that customer's balance. Same pair and the same
+    // acquisition order as editItems and my.controller.cancelOrder, so the three
+    // money paths serialise on the order row instead of deadlocking.
     const r = await client.query(
       `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone,
               c.notifications_enabled, s.name AS shop_name
@@ -187,7 +214,7 @@ exports.updateStatus = async (req, res) => {
        JOIN customers c ON c.id = o.customer_id
        JOIN shops s ON s.id = o.shop_id
        WHERE o.id = $1 AND o.shop_id = $2
-       FOR UPDATE OF o`,
+       FOR UPDATE OF o, c`,
       [req.params.id, req.user.shopId]
     );
     if (!r.rowCount) throw ApiError.notFound('Order not found');
@@ -212,6 +239,14 @@ exports.updateStatus = async (req, res) => {
       throw ApiError.unprocessable('eta_not_applicable', { to: next });
     }
 
+    // A REJECT reason only means something on the move to 'cancelled'. Sent with
+    // anything else it is refused rather than dropped, for exactly the reason the
+    // eta guard above is: silently ignoring half of a request is how a client
+    // ends up believing something was recorded that never was.
+    if (reasonRequested && next !== 'cancelled') {
+      throw ApiError.unprocessable('reason_not_applicable', { to: next });
+    }
+
     // Clamp against the LIVE platform ceiling (getEtaConfig never throws), so a
     // stale client offering a chip an admin has since lowered cannot promise
     // beyond the ceiling. A value the clamp cannot use at all resolves to NULL,
@@ -223,11 +258,32 @@ exports.updateStatus = async (req, res) => {
     // collected the cash, so flip payment_status pending -> paid. Credit and
     // prepaid payment_status is untouched here (khata / Razorpay own those).
     const collectCash = order.payment_mode === 'cash' && next === 'completed';
+
+    // THE MONEY, when this is a REJECTION of an order the customer already paid
+    // for online (batch ALERT2). The house rule is "prepaid: debit/credit only,
+    // never a refund", so the amount becomes CREDIT AT THIS SHOP: one
+    // 'adjustment' with order_id set, the balance lowered by exactly that, in
+    // the SAME transaction that cancels the order. The ONE helper is shared with
+    // my.controller.cancelOrder and with the reduction path, so a rejection and
+    // a reduction cannot drift. Nothing is posted for credit (its purchase is
+    // reversed by the consumer cancel path), for cash (nothing was ever posted)
+    // or for an unpaid prepaid order (there is no money to move).
+    //
+    // Cancelling twice cannot credit twice: the terminal guard above refuses the
+    // second attempt with a 409 before this line is reached.
+    const creditAdjustment = next === 'cancelled'
+      ? await creditPrepaidOnCancel(client, order, { actorId: actorId(req) })
+      : null;
+
     // Acknowledging the new-order alert is IMPLICIT (batch ORDERALERT): any move
     // out of 'pending' means the owner has plainly seen the order, so the SAME
-    // update stamps acknowledged_at/by. Accepting silences the nagging with no
-    // extra tap; so does cancelling. COALESCE keeps an earlier explicit "Seen"
-    // timestamp — the first acknowledgement is the one that counts.
+    // update stamps acknowledged_at/by. COALESCE keeps an earlier explicit "Seen"
+    // timestamp — the first acknowledgement is the one that counts. Since batch
+    // ALERT2 the stamp is an AUDIT only: what actually ends the alert is the
+    // status leaving 'pending', which this same statement does.
+    //
+    // The REJECT reason rides along on the order note, so the owner's own list
+    // and the customer's order screen both show WHY, not just "cancelled".
     // The ready-time promise rides along in the SAME statement: status,
     // acknowledgement and promise are one row version, so a client can never
     // observe an accepted order that has not got its promise yet. NOW() is the
@@ -241,13 +297,18 @@ exports.updateStatus = async (req, res) => {
               eta_minutes = CASE WHEN $5::int IS NOT NULL THEN $5::int ELSE eta_minutes END,
               promised_at = CASE WHEN $5::int IS NOT NULL THEN NOW() + ($5::int * interval '1 minute') ELSE promised_at END,
               eta_set_at  = CASE WHEN $5::int IS NOT NULL THEN NOW() ELSE eta_set_at END,
+              note = CASE WHEN $6::text IS NOT NULL
+                          THEN TRIM(BOTH FROM COALESCE(note, '') || ' [Rejected: ' || $6::text || ']')
+                          ELSE note END,
               updated_at = NOW()
         WHERE id = $2
         RETURNING *`,
-      [next, order.id, collectCash, actorId(req), etaMinutes]
+      [next, order.id, collectCash, actorId(req), etaMinutes, reason]
     );
     return {
       order: upd.rows[0],
+      adjustment: creditAdjustment,
+      reason,
       customer: {
         name: order.customer_name,
         phone: order.customer_phone,
@@ -258,9 +319,17 @@ exports.updateStatus = async (req, res) => {
     };
   });
 
-  notifyCustomer({ customer: result.customer, shopName: result.shopName, order: result.order });
+  notifyCustomer({
+    customer: result.customer,
+    shopName: result.shopName,
+    order: result.order,
+    reason: result.reason,
+    // The credit, said in the customer's own language: "you had paid X, it is
+    // kept as credit at this shop" — never "a refund is being processed".
+    credit: result.adjustment ? Number(result.adjustment.amount) : 0,
+  });
 
-  res.json({ order: result.order });
+  res.json({ order: result.order, adjustment: result.adjustment || null });
 };
 
 /**
@@ -553,20 +622,19 @@ exports.editItems = async (req, res) => {
     // shop's free-delivery threshold and the fee returned; in that case we post
     // NOTHING rather than raising what the customer owes for an order they
     // already agreed to.
+    // ONE writer, shared with the prepaid CANCEL path (utils/orderEdit
+    // .postOrderAdjustment), so a reduction and a rejection can never end up
+    // moving the same money in two different shapes.
     let adjustment = null;
     if (needsLedgerAdjustment(order.payment_mode) && reduction > 0) {
-      const tx = await client.query(
-        `INSERT INTO transactions
-           (shop_id, customer_id, type, amount, method, note, source, created_by, order_id)
-         VALUES ($1,$2,'adjustment',$3,'adjustment',$4,'api',(SELECT u.id FROM users u WHERE u.id = $5),$6)
-         RETURNING *`,
-        [req.user.shopId, order.cust_id, reduction, `Order ${order.id} reduced by the shop`, actorId(req), order.id]
-      );
-      adjustment = tx.rows[0];
-      await client.query(
-        'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
-        [reduction, order.cust_id]
-      );
+      adjustment = await postOrderAdjustment(client, {
+        shopId: req.user.shopId,
+        customerId: order.cust_id,
+        orderId: order.id,
+        amount: reduction,
+        note: `Order ${order.id} reduced by the shop`,
+        actorId: actorId(req),
+      });
     }
 
     return {
@@ -603,11 +671,14 @@ exports.editItems = async (req, res) => {
 };
 
 // ===========================================================================
-// Repeating new-order alert (batch ORDERALERT). A new order keeps nagging the
-// owner — web banner, native banner, WhatsApp re-send — until it is
-// ACKNOWLEDGED. These three endpoints are the owner's side of that loop: "what
-// is still waiting", "I have seen this one", and "quiet for a while". All three
-// are owner/staff and shop-scoped, like the rest of this controller.
+// Repeating new-order alert (batch ORDERALERT, rewritten by batch ALERT2). A new
+// order keeps nagging the owner — web banner, native banner, WhatsApp re-send —
+// until the owner makes a DECISION: accept it, or reject it. Nothing else ends
+// it, because nothing else answers the customer. These three endpoints are the
+// owner's side of that loop: "what is still waiting", "not now, remind me again
+// in a few minutes" (the snooze that used to be a permanent silence), and "quiet
+// for a while" (the shop-wide mute). All three are owner/staff and shop-scoped,
+// like the rest of this controller. The two DECISIONS live in updateStatus.
 // ===========================================================================
 
 // Mute window bounds, in minutes. 1 minute is the smallest useful pause; 12
@@ -617,35 +688,60 @@ const MUTE_MIN_MINUTES = 1;
 const MUTE_MAX_MINUTES = 720;
 
 /**
- * POST /orders/:id/ack — "I have seen it". Sets acknowledged_at/by ONLY while
- * they are still NULL, so the endpoint is idempotent: a second call (a double
- * tap, a retry over a flaky 2G link, the web banner and the app racing) returns
- * 200 with the SAME timestamp and never moves it.
+ * POST /orders/:id/ack — "not now". A SNOOZE, not a silence (batch ALERT2).
  *
- * It deliberately does NOT change the status — the owner is saying "I have seen
- * it", not "I accept it". Accepting is a separate, explicit decision (and it
- * acknowledges implicitly; see updateStatus).
+ * The route and the response shape are unchanged for the clients that already
+ * call it, and the acknowledgement timestamp is still stamped (once, ONLY while
+ * still NULL — a useful audit of when the owner first laid eyes on the order).
+ * What changed is the EFFECT: instead of silencing the order forever while it
+ * sits undecided in 'pending', it sets a short per-order quiet window,
+ * `snoozed_until = NOW() + order_alert_snooze_minutes` (5 by default, clamped to
+ * 1..120 and read live from platform_settings). When the window lapses the order
+ * comes straight back — because nobody has answered the customer yet.
+ *
+ * Repeated taps EXTEND the quiet window from now (that is what tapping "not now"
+ * a second time plainly means), while `acknowledged_at` stays at its first
+ * value, so a double tap on a flaky 2G link is still harmless: it can only ever
+ * buy the same 5 minutes again, never a longer silence than one tap allows.
+ *
+ * It deliberately does NOT change the status — the owner is saying "not now",
+ * not "I accept it" and not "I reject it". Only those two decisions end the
+ * alert, and each is its own explicit call.
  *
  * 404 when the order is not this shop's — never a 403, so probing another
  * shop's ids reveals nothing.
  */
 exports.ack = async (req, res) => {
+  const minutes = await getSnoozeMinutes();
   const r = await query(
     `UPDATE orders
         SET acknowledged_at = COALESCE(acknowledged_at, NOW()),
-            acknowledged_by = COALESCE(acknowledged_by, (SELECT u.id FROM users u WHERE u.id = $3))
+            acknowledged_by = COALESCE(acknowledged_by, (SELECT u.id FROM users u WHERE u.id = $3)),
+            snoozed_until = NOW() + ($4 * interval '1 minute'),
+            updated_at = NOW()
       WHERE id = $1 AND shop_id = $2
-      RETURNING id, acknowledged_at`,
-    [req.params.id, req.user.shopId, actorId(req)]
+      RETURNING id, acknowledged_at, snoozed_until`,
+    [req.params.id, req.user.shopId, actorId(req), minutes]
   );
   if (!r.rowCount) throw ApiError.notFound('Order not found');
-  res.json({ id: r.rows[0].id, acknowledged_at: r.rows[0].acknowledged_at });
+  res.json({
+    id: r.rows[0].id,
+    acknowledged_at: r.rows[0].acknowledged_at,
+    snoozed_until: r.rows[0].snoozed_until,
+  });
 };
 
 /**
- * GET /orders/alerts?lang= — everything still waiting for this shop, OLDEST
- * FIRST, plus the shop's alert settings in the SAME response so a client needs
- * ONE request per poll, not two.
+ * GET /orders/alerts?lang= — every order still waiting for a DECISION at this
+ * shop, OLDEST FIRST, plus the shop's alert settings in the SAME response so a
+ * client needs ONE request per poll, not two.
+ *
+ * SNOOZED ORDERS ARE STILL IN THE LIST (batch ALERT2), carrying their
+ * `snoozed_until`. They are undecided, so hiding them from the API would be the
+ * old lie in a new place; the CLIENT skips them while the window runs (and can
+ * say "quiet for 4 more min"), then shows them again the moment it lapses. The
+ * `snooze_minutes` in the settings block is what a "Not now — 5 min" button
+ * should say, read live from platform_settings.
  *
  * The payload is deliberately SMALL (these clients are on 2G): just the facts a
  * banner needs, and no line items. `customer_name_local` is attached under the
@@ -662,6 +758,7 @@ exports.alerts = async (req, res) => {
   );
   if (!shopRes.rowCount) throw ApiError.notFound('Shop not found');
   const s = shopRes.rows[0];
+  const snoozeMinutes = await getSnoozeMinutes();
 
   const r = await query(
     `SELECT o.id,
@@ -672,6 +769,7 @@ exports.alerts = async (req, res) => {
             o.payment_mode,
             o.created_at,
             o.alert_count,
+            o.snoozed_until,
             EXTRACT(EPOCH FROM (NOW() - o.created_at))::int AS age_seconds
        FROM orders o
        JOIN customers c ON c.id = o.customer_id
@@ -687,6 +785,7 @@ exports.alerts = async (req, res) => {
       repeat_minutes: Number(s.order_alert_repeat_minutes),
       max_repeats: Number(s.order_alert_max_repeats),
       muted_until: s.order_alert_muted_until,
+      snooze_minutes: snoozeMinutes,
     },
   });
 };

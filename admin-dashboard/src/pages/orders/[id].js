@@ -48,6 +48,11 @@ export default function OrderDetail() {
   // platform config; DEFAULT_CHIPS stands in until it lands (and if it never does).
   const [chips, setChips] = useState(DEFAULT_CHIPS);
   const [needMore, setNeedMore] = useState(false);
+  // REJECT (batch ALERT2). Cancelling IS the rejection — no new status — and the
+  // reason is offered (two or three one-tap presets plus free text), never
+  // demanded. `rejecting` opens the panel; `rejectReason` is what will be sent.
+  const [rejecting, setRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   // EDIT MODE (batch C). `draft` is a purely LOCAL map of order_item_id -> the
   // quantity the owner has tapped down to; nothing is sent until Confirm, so the
   // running total updates instantly on a 2G link. `reqId` is minted ONCE when
@@ -90,9 +95,24 @@ export default function OrderDetail() {
     finally { setBusy(false); }
   }
 
-  async function cancel() {
-    if (!window.confirm(t('ord.cancelConfirm'))) return;
-    await setStatus('cancelled');
+  // REJECT / CANCEL. The other half of the decision the new-order alert waits
+  // for: until the owner accepts or rejects, the customer has no answer and the
+  // alert keeps going. The reason (optional) travels to the customer with the
+  // cancellation and is appended to the order note.
+  async function reject(why) {
+    setError(''); setMsg(''); setBusy(true);
+    try {
+      const text = String(why || '').trim();
+      await apiFetch(`/api/orders/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify(text ? { status: 'cancelled', reason: text } : { status: 'cancelled' }),
+      });
+      setRejecting(false);
+      setRejectReason('');
+      await load();
+      setMsg(t('orej.done'));
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
   }
 
   // ONE TAP: accept AND promise, in a single request. `minutes` null is the
@@ -232,6 +252,10 @@ export default function OrderDetail() {
                 <button key={m} onClick={() => accept(m)} disabled={busy}>{chipLabel(t, m)}</button>
               ))}
               <button className="secondary" onClick={() => accept(null)} disabled={busy}>{t('eta.noTime')}</button>
+              {/* The DECISION is two-sided: Reject sits right beside Accept, at
+                  the same size, because an order the shop cannot serve must be
+                  as easy to answer as one it can. */}
+              <button className="secondary" onClick={() => setRejecting(true)} disabled={busy}>{t('orej.reject')}</button>
             </div>
           </div>
         )}
@@ -264,11 +288,41 @@ export default function OrderDetail() {
           </div>
         )}
 
+        {rejecting && !terminal && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontWeight: 700 }}>{t('orej.title')}</div>
+            <div className="muted" style={{ margin: '4px 0 8px' }}>{t('orej.help')}</div>
+            {/* A PAID PREPAID order is never refunded — the money becomes credit
+                at this shop. The owner is told BEFORE they tap, not after. */}
+            {order.payment_mode === 'prepaid' && order.payment_status === 'paid' && (
+              <div className="muted" style={{ marginBottom: 8 }}>{t('orej.prepaidCredit')}</div>
+            )}
+            <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+              {['orej.r1', 'orej.r2', 'orej.r3'].map((k) => (
+                <button key={k} className="secondary" onClick={() => reject(t(k))} disabled={busy}>{t(k)}</button>
+              ))}
+            </div>
+            <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 8 }}>
+              <input type="text" maxLength={200} value={rejectReason} placeholder={t('orej.placeholder')}
+                style={{ flex: '1 1 200px', minWidth: 0 }}
+                onChange={(e) => setRejectReason(e.target.value)} />
+              <button onClick={() => reject(rejectReason)} disabled={busy}>{t('orej.confirm')}</button>
+              <button className="secondary" onClick={() => { setRejecting(false); setRejectReason(''); }} disabled={busy}>
+                {t('orej.back')}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="row-actions" style={{ justifyContent: 'flex-start', marginTop: 16 }}>
           {next && order.status !== 'pending' && (
             <button onClick={() => setStatus(next)} disabled={busy || terminal}>{advanceLabel(next)}</button>
           )}
-          <button className="secondary" onClick={cancel} disabled={busy || terminal}>{t('ord.cancelOrder')}</button>
+          {!rejecting && (
+            <button className="secondary" onClick={() => setRejecting(true)} disabled={busy || terminal}>
+              {order.status === 'pending' ? t('orej.reject') : t('ord.cancelOrder')}
+            </button>
+          )}
         </div>
         {terminal && <div className="muted" style={{ marginTop: 10 }}>{t('ord.terminal', { s: enumLabel('status', order.status) })}</div>}
         {msg && <div className="muted" style={{ marginTop: 10 }}>{msg}</div>}

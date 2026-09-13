@@ -421,6 +421,12 @@ const FEATURE_NUM_DEFAULTS = {
   order_alert_min_minutes: 2,
   order_alert_max_minutes: 60,
   order_alert_max_repeats_cap: 20,
+  // The DECISION alert (batch ALERT2, 0069). How long ONE "Not now" tap keeps a
+  // single order quiet, in minutes. It is a snooze, not a silence: only accepting
+  // or rejecting the order ends the alert. Clamped to 1..120 by
+  // utils/orderAlerts.getSnoozeMinutes(), which reads it live and never throws.
+  // Policy number, not a credential — no I CONFIRM.
+  order_alert_snooze_minutes: 5,
   // Shop availability (batch A, 0066): the ceiling on a single "pause my shop"
   // in minutes, so a mis-tap can never shutter a shop indefinitely. Default 24h.
   // Policy number, not a credential — no I CONFIRM.

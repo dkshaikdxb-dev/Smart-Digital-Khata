@@ -43,6 +43,10 @@ const INT_KEYS = [
   // own alert cadence is clamped to. Plain policy numbers, NOT credentials — so
   // they save through the same numeric-defaults path and do NOT ask for I CONFIRM.
   'order_alert_min_minutes', 'order_alert_max_minutes', 'order_alert_max_repeats_cap',
+  // The DECISION alert (batch ALERT2): how long one "Not now" tap keeps a single
+  // order quiet. A short quiet window, never a way to stop the alert. Policy,
+  // not a credential — no I CONFIRM.
+  'order_alert_snooze_minutes',
   // Shop availability (batch A): the ceiling on a single "pause my shop", so a
   // mis-tap can never shutter a shop indefinitely. Policy, not a credential.
   'shop_pause_max_minutes',
@@ -283,12 +287,15 @@ export default function AdminSettings() {
     const min = parseInt(feat.order_alert_min_minutes, 10);
     const max = parseInt(feat.order_alert_max_minutes, 10);
     const cap = parseInt(feat.order_alert_max_repeats_cap, 10);
+    const snooze = parseInt(feat.order_alert_snooze_minutes, 10);
     if (!(min >= 1) || !(max >= 1) || !(cap >= 1)) { setErr('Order-alert bounds must be whole numbers of 1 or more.'); return; }
     if (min > max) { setErr('The minimum repeat interval cannot be larger than the maximum.'); return; }
+    if (!(snooze >= 1 && snooze <= 120)) { setErr('The snooze window must be between 1 and 120 minutes.'); return; }
     saveFeat({
       order_alert_min_minutes: min,
       order_alert_max_minutes: max,
       order_alert_max_repeats_cap: cap,
+      order_alert_snooze_minutes: snooze,
     }, 'Order-alert bounds saved.');
   }
 
@@ -740,7 +747,8 @@ export default function AdminSettings() {
               <h3>Order alerts</h3>
               <p className="muted" style={{ fontSize: 13 }}>
                 A new order keeps alerting the shop owner — in the console, in the app and on WhatsApp —
-                until they mark it seen or accept it. Each shop picks its own repeat interval and repeat count;
+                until they <strong>accept it or reject it</strong>. Nothing else stops it, because nothing else
+                answers the customer. Each shop picks its own repeat interval and repeat count;
                 these are the limits those choices are clamped to, so no shop can hammer an owner every few
                 seconds or nag forever.
               </p>
@@ -762,9 +770,19 @@ export default function AdminSettings() {
                       onChange={(e) => setFeat({ ...feat, order_alert_max_repeats_cap: e.target.value })} />
                   </div>
                 </div>
+                <div style={{ maxWidth: 220 }}>
+                  <label className="muted">&ldquo;Not now&rdquo; snooze (minutes)</label>
+                  <input type="number" min="1" max="120" step="1" inputMode="numeric" value={feat.order_alert_snooze_minutes}
+                    onChange={(e) => setFeat({ ...feat, order_alert_snooze_minutes: e.target.value })} />
+                </div>
                 <p className="muted" style={{ fontSize: 12 }}>
                   A shop may repeat no faster than every {feat.order_alert_min_minutes} min and no slower than every {feat.order_alert_max_minutes} min,
                   and always stops after at most {feat.order_alert_max_repeats_cap} reminders.
+                </p>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  The snooze is a <strong>short quiet window, not a way to stop the alert</strong>: tapping
+                  &ldquo;Not now&rdquo; keeps one order quiet for {feat.order_alert_snooze_minutes} min and then it comes back,
+                  because the customer still has no answer. Only accepting or rejecting ends it. (1&ndash;120 min.)
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveOrderAlertBounds}>Save order-alert bounds</button>

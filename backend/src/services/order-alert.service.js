@@ -1,9 +1,10 @@
 // The repeating new-order WhatsApp re-send (batch ORDERALERT).
 //
 // This is the channel that works with NO app change at all: a locked phone in a
-// pocket still buzzes for a WhatsApp message, so an order that the owner has not
-// acknowledged gets re-sent on the shop's own cadence until they acknowledge it
-// or the repeat cap is reached.
+// pocket still buzzes for a WhatsApp message, so an order the owner has not
+// DECIDED on gets re-sent on the shop's own cadence until they accept it, reject
+// it, or the repeat cap is reached (batch ALERT2 — a passive "Seen" no longer
+// ends anything; it only buys a few minutes of quiet).
 //
 // Like weekly-summary.service, the iteration lives HERE and not in the BullMQ
 // wiring (src/jobs/index.js), so runTick() is Redis-free and unit-testable: a
@@ -12,9 +13,9 @@
 //
 // SAFETY PROPERTIES the tests pin down:
 //   - The candidate SELECT is only a hint. Every order is re-locked FOR UPDATE
-//     and the whole condition is re-checked inside the transaction, so an
-//     acknowledgement (or a mute, or a disable) that lands between the select and
-//     the update ALWAYS wins and no message goes out.
+//     and the whole condition is re-checked inside the transaction, so a snooze
+//     (or an accept, a reject, a mute, or a disable) that lands between the
+//     select and the update ALWAYS wins and no message goes out.
 //   - The counter is committed BEFORE the message is sent, and the send is
 //     fire-and-forget with every error swallowed and logged. A WhatsApp outage
 //     therefore can never fail the tick and can never roll the counter back —
@@ -25,7 +26,7 @@
 const { query, withTx } = require('../config/db');
 const whatsapp = require('./whatsapp.service');
 const logger = require('../utils/logger');
-const { needsAlertingSql, needsAlerting } = require('../utils/orderAlerts');
+const { needsAlertingSql, needsAlerting, notSnoozedSql, isSnoozed } = require('../utils/orderAlerts');
 const { buildOwnerAlert, resolveLang } = require('../utils/order-alert-copy');
 
 // Hard ceiling on how many orders one tick will alert. The tick runs every
@@ -55,7 +56,8 @@ const OWNER_PHONE_SQL = `
 
 /**
  * Candidate orders for this tick, oldest first. One query, no per-shop fan-out:
- *   - the order still needs alerting (the ONE shared predicate),
+ *   - the order still needs alerting (the ONE shared predicate: still pending),
+ *   - nobody has hit "not now" on it inside the snooze window,
  *   - the shop has order alerts on and is not muted right now,
  *   - the repeat cap has not been reached,
  *   - and enough time has passed since the last alert (or since the order was
@@ -68,6 +70,7 @@ async function selectCandidates(limit) {
             o.shop_id,
             o.status,
             o.acknowledged_at,
+            o.snoozed_until,
             o.alert_count,
             o.created_at,
             o.fulfillment_type,
@@ -86,6 +89,7 @@ async function selectCandidates(limit) {
        JOIN shops s ON s.id = o.shop_id
        JOIN customers c ON c.id = o.customer_id
       WHERE ${needsAlertingSql('o')}
+        AND ${notSnoozedSql('o')}
         AND s.order_alert_enabled = true
         AND (s.order_alert_muted_until IS NULL OR s.order_alert_muted_until < NOW())
         AND o.alert_count < s.order_alert_max_repeats
@@ -101,13 +105,14 @@ async function selectCandidates(limit) {
 /**
  * Claim ONE candidate: re-lock the order, re-check the whole condition against
  * live rows, and bump the counter. Returns the payload to send, or null when the
- * order no longer qualifies (acknowledged, accepted, cancelled, muted, disabled,
+ * order no longer qualifies (accepted, cancelled, snoozed, muted, disabled,
  * capped, or already alerted by a concurrent tick).
  *
  * The bump and the re-check are in the SAME transaction under FOR UPDATE, so two
- * overlapping ticks can never both send, and an owner acknowledging mid-flight
- * always wins: their UPDATE either lands before ours (we see acknowledged_at and
- * skip) or waits on our lock and then silences every FUTURE repeat.
+ * overlapping ticks can never both send, and an owner tapping "not now"
+ * mid-flight always wins: their UPDATE either lands before ours (we see
+ * snoozed_until in the future and skip) or waits on our lock and then quiets the
+ * repeats that fall inside the window.
  */
 async function claimOrder(orderId) {
   return withTx(async (client) => {
@@ -116,6 +121,7 @@ async function claimOrder(orderId) {
               o.shop_id,
               o.status,
               o.acknowledged_at,
+              o.snoozed_until,
               o.alert_count,
               o.last_alert_at,
               o.created_at,
@@ -144,8 +150,10 @@ async function claimOrder(orderId) {
     if (!r.rowCount) return null;
     const row = r.rows[0];
 
-    // THE RE-CHECK. An ack that landed between the select and this lock wins.
+    // THE RE-CHECK. A decision or a snooze that landed between the select and
+    // this lock wins — every condition is re-read from the locked row.
     if (!needsAlerting(row)) return null;
+    if (isSnoozed(row)) return null;
     if (row.order_alert_enabled === false) return null;
     if (row.order_alert_muted_until && new Date(row.order_alert_muted_until) > new Date()) return null;
     if (Number(row.alert_count) >= Number(row.order_alert_max_repeats)) return null;

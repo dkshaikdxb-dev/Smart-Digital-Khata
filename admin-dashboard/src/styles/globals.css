@@ -973,8 +973,33 @@ th { color: var(--muted); font-weight: 600; }
   min-height: 46px; min-width: 104px; padding: 10px 18px;
   border-radius: 10px; font-size: 16px; font-weight: 800; border: none;
 }
-.oalert-seen { background: #fff; color: #7f1d1d; }
+/* THE DECISION (batch ALERT2). Accept is the affirmative white button, Reject
+   is outlined so it can never be hit by muscle memory aiming for Accept, and
+   Open is the quiet third option. */
+.oalert-accept { background: #fff; color: #7f1d1d; }
+.oalert-reject { background: rgba(0, 0, 0, 0.3); color: #fff; border: 2px solid #fecaca; }
 .oalert-open { background: rgba(0, 0, 0, 0.3); color: #fff; border: 2px solid #fff; }
+/* The accept-chips / reject-reason panel, on its own row under the facts. */
+.oalert-panel { flex: 1 1 100%; }
+.oalert-panel-help { font-size: 13px; line-height: 1.35; opacity: 0.95; margin-bottom: 6px; }
+.oalert-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.oalert-chip {
+  min-height: 44px; padding: 8px 16px; border-radius: 10px; border: none;
+  background: #fff; color: #7f1d1d; font-size: 15px; font-weight: 800;
+}
+.oalert-input {
+  flex: 1 1 180px; min-width: 0; min-height: 44px; padding: 8px 12px;
+  border-radius: 10px; border: 2px solid #fecaca; background: #fff; color: #111;
+  font-size: 15px;
+}
+/* The SNOOZE strip: every pending order is inside its quiet window. Not an
+   alarm — no pulse, no shout — but never invisible either, because nobody has
+   answered these customers yet. */
+.oalert-quiet {
+  background: #7f1d1d; animation: none;
+  border-bottom-color: rgba(254, 202, 202, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
 .oalert-minor { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; flex: 0 0 auto; }
 .oalert-link {
   background: none; border: none; padding: 4px 0; min-height: 32px;
@@ -987,6 +1012,7 @@ th { color: var(--muted); font-weight: 600; }
   .oalert { gap: 8px 10px; padding: 10px 12px; }
   .oalert-main { flex-basis: 100%; }
   .oalert-actions { flex: 1 1 100%; }
-  .oalert-btn { flex: 1 1 0; min-width: 0; }
+  .oalert-btn { flex: 1 1 0; min-width: 0; padding: 10px 8px; }
   .oalert-minor { flex-basis: 100%; }
+  .oalert-chip { flex: 1 1 auto; }
 }

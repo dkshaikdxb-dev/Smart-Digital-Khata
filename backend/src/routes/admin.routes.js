@@ -111,6 +111,11 @@ const settingsSchema = Joi.object({
   order_alert_min_minutes: Joi.number().integer().min(1).max(720),
   order_alert_max_minutes: Joi.number().integer().min(1).max(720),
   order_alert_max_repeats_cap: Joi.number().integer().min(1).max(100),
+  // The DECISION alert (batch ALERT2, 0069): how long one "Not now" tap keeps a
+  // single order quiet. A short quiet window, never a way to stop the alert —
+  // only accepting or rejecting does that. Policy number, not a credential —
+  // no I CONFIRM.
+  order_alert_snooze_minutes: Joi.number().integer().min(1).max(120),
   // Shop availability (batch A, 0066): the master kill-switch and the ceiling
   // on a single shop pause. Policy, not credentials — no I CONFIRM.
   shop_hours_enabled: Joi.boolean(),

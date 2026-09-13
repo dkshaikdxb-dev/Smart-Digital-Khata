@@ -12,9 +12,14 @@ import { useNativeVoice } from './useNativeVoice';
 // (expo-speech, already installed). There is deliberately NO notification module
 // here — waking a LOCKED phone is a separate, explicitly deferred follow-up that
 // would need a native rebuild. What this hook gives is the in-app half: while
-// the owner has the app open, an unacknowledged order keeps speaking and keeps a
+// the owner has the app open, an UNDECIDED order keeps speaking and keeps a
 // banner on screen. The WhatsApp re-send from the backend is what reaches a
 // pocketed phone today.
+//
+// BATCH ALERT2. Only a DECISION ends it — `accept` or `reject` below. `ack` is
+// still here and still called "Seen" by the API, but it is now a SNOOZE: a few
+// quiet minutes, after which the order comes back because nobody has answered
+// the customer yet.
 //
 // Poll cadence: every 60s while AppState is 'active'. The timer is STOPPED on
 // background (no battery/data burn in a pocket) and a poll fires immediately on
@@ -22,6 +27,28 @@ import { useNativeVoice } from './useNativeVoice';
 // looks. Never polls when signed out — the caller passes `enabled`.
 
 const POLL_MS = 60_000;
+
+// A local clock tick, so a quiet window that lapses between two polls brings the
+// banner back within seconds instead of waiting up to a minute. Derived state
+// only — it fires no request and touches no network.
+const TICK_MS = 15_000;
+
+// Is this order inside its quiet window right now? The JS twin of
+// backend/src/utils/orderAlerts.isSnoozed — an unparseable timestamp reads as
+// NOT snoozed, so a garbled value can never hide an order still waiting.
+export function isSnoozed(o, now) {
+  if (!o || !o.snoozed_until) return false;
+  const until = new Date(o.snoozed_until).getTime();
+  return Number.isFinite(until) && until > now;
+}
+
+// Whole minutes left in the quiet window, at least 1 so it never reads
+// "0 more min".
+export function snoozeMinsLeft(o, now) {
+  const until = new Date(o.snoozed_until).getTime();
+  if (!Number.isFinite(until)) return 0;
+  return Math.max(1, Math.ceil((until - now) / 60_000));
+}
 
 // Languages expo-speech can actually speak for us today (the same map
 // useNativeVoice exposes through localeSupported): bn/gu/mr are honestly NOT
@@ -34,9 +61,10 @@ export function useOrderAlerts({ enabled = true } = {}) {
 
   const [items, setItems] = useState([]);
   const [settings, setSettings] = useState({
-    enabled: true, repeat_minutes: 5, max_repeats: 6, muted_until: null,
+    enabled: true, repeat_minutes: 5, max_repeats: 6, muted_until: null, snooze_minutes: 5,
   });
   const [busyId, setBusyId] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const timerRef = useRef(null);
   // orderId -> { at: ms of the last spoken line, count: how many have been said }
@@ -94,7 +122,26 @@ export function useOrderAlerts({ enabled = true } = {}) {
     };
   }, [enabled, load]);
 
-  const oldest = items.length ? items[0] : null;
+  // A cheap local clock so a quiet window expires on screen, not on the next
+  // poll. Stopped with the component; it fetches nothing.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), TICK_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  // EVERY order in `items` is still undecided — the API only returns pending
+  // ones (batch ALERT2). `waiting` is the subset NOT inside a quiet window:
+  // those are what the alarm is for. A snoozed order is not gone, only quiet, so
+  // it still counts and still shows its countdown.
+  const waiting = useMemo(() => items.filter((i) => !isSnoozed(i, now)), [items, now]);
+  const oldest = waiting.length ? waiting[0] : null;
+  // The nearest moment the quiet ends, for the slim "quiet for N more min" strip.
+  const quietMinsLeft = useMemo(() => {
+    if (!items.length || oldest) return 0;
+    return Math.min(...items.map((i) => snoozeMinsLeft(i, now)));
+  }, [items, oldest, now]);
+  // The live snooze length the API reports, for the button's own label.
+  const snoozeMinutes = Math.max(1, Number(settings.snooze_minutes) || 5);
 
   // Muted right now? Derived from the stored timestamp on every render, so the
   // banner goes quiet the moment a mute is set and speaks again when it lapses.
@@ -143,12 +190,41 @@ export function useOrderAlerts({ enabled = true } = {}) {
     });
   }, [items]);
 
-  // "Seen" — optimistic removal so the banner disappears instantly on a tap even
-  // on a slow link; the next poll is the source of truth either way.
+  // "Not now" — a SNOOZE (batch ALERT2). The order is deliberately NOT removed
+  // from the list: it is still undecided and still the customer's problem. We
+  // stamp the quiet window the server returned so the banner can count it down,
+  // and the alarm returns by itself the moment the window lapses.
   const ack = useCallback(async (id) => {
     setBusyId(id);
     try {
-      await orders.ack(id);
+      const r = await orders.ack(id);
+      const until = r && r.snoozed_until
+        ? r.snoozed_until
+        : new Date(Date.now() + snoozeMinutes * 60_000).toISOString();
+      setItems((list) => list.map((i) => (i.id === id ? { ...i, snoozed_until: until } : i)));
+      setNow(Date.now());
+    } catch (e) { /* the next poll re-syncs */ }
+    finally { setBusyId(null); }
+  }, [snoozeMinutes]);
+
+  // ACCEPT — and make the ready-time promise in the SAME request. `minutes` null
+  // is the honest "accept without a time". One of only two things that END the
+  // alert. Optimistic removal; the next poll is the source of truth either way.
+  const accept = useCallback(async (id, minutes) => {
+    setBusyId(id);
+    try {
+      await orders.setStatus(id, 'accepted', minutes == null ? undefined : minutes);
+      setItems((list) => list.filter((i) => i.id !== id));
+    } catch (e) { /* the next poll re-syncs */ }
+    finally { setBusyId(null); }
+  }, []);
+
+  // REJECT — cancelling IS the rejection. `reason` is optional free text that
+  // travels to the customer with the cancellation. The other thing that ENDS it.
+  const reject = useCallback(async (id, reason) => {
+    setBusyId(id);
+    try {
+      await orders.reject(id, reason);
       setItems((list) => list.filter((i) => i.id !== id));
     } catch (e) { /* the next poll re-syncs */ }
     finally { setBusyId(null); }
@@ -163,12 +239,18 @@ export function useOrderAlerts({ enabled = true } = {}) {
 
   return {
     items,
+    waiting,
     oldest,
+    quietMinsLeft,
+    snoozeMinutes,
+    now,
     settings,
     muted,
     canSpeak,
     busyId,
     ack,
+    accept,
+    reject,
     mute,
     refresh: load,
   };

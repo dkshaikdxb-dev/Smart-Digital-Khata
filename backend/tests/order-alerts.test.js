@@ -4,12 +4,17 @@
 // settings clamp), the implicit acknowledgement on a status change, the
 // migration backfill, and the BullMQ tick's processor — including the two
 // safety properties that matter most:
-//   * an acknowledgement that lands between the candidate SELECT and the UPDATE
-//     wins (the re-check happens under a row lock), and
+//   * a snooze that lands between the candidate SELECT and the UPDATE wins (the
+//     re-check happens under a row lock), and
 //   * a WhatsApp send that THROWS neither fails the tick nor rolls the alert
 //     counter back.
 //
-// Requires a real Postgres (DATABASE_URL) with ALL migrations (incl. 0065).
+// SINCE BATCH ALERT2 the rule is simply "the order is still pending": a passive
+// "Seen" (POST /ack) is a SNOOZE, not a silence, and only accepting or rejecting
+// ends the alert. The assertions here were updated to match; the DECISION rules
+// themselves live in order-decision.test.js.
+//
+// Requires a real Postgres (DATABASE_URL) with ALL migrations (incl. 0069).
 // WhatsApp is mocked AND the tick takes an injected `send`, so nothing here
 // touches the network.
 const request = require('supertest');
@@ -151,7 +156,7 @@ beforeEach(async () => {
 });
 
 describe('GET /api/orders/alerts', () => {
-  it('returns only pending + unacknowledged orders, OLDEST FIRST, with the settings block', async () => {
+  it('returns every still-PENDING order, OLDEST FIRST, with the settings block', async () => {
     const newest = await makeOrder({ minutesAgo: 1 });
     const oldest = await makeOrder({ minutesAgo: 30, items: 3, subtotal: 12000 });
     const accepted = await makeOrder({ minutesAgo: 20, status: 'accepted' });
@@ -164,9 +169,11 @@ describe('GET /api/orders/alerts', () => {
     expect(res.status).toBe(200);
 
     const ids = res.body.items.map((i) => i.id);
-    expect(ids).toEqual([oldest, newest]); // oldest first
+    // A merely ACKNOWLEDGED order is still listed (batch ALERT2): nobody has
+    // answered that customer, so it is still waiting for a decision. Only an
+    // order that LEFT 'pending' drops off.
+    expect(ids).toEqual([oldest, acked, newest]); // oldest first
     expect(ids).not.toContain(accepted);
-    expect(ids).not.toContain(acked);
 
     const first = res.body.items[0];
     expect(first.customer_name).toBe('Ramesh Kumar');
@@ -177,6 +184,8 @@ describe('GET /api/orders/alerts', () => {
     expect(first.alert_count).toBe(0);
     expect(first.age_seconds).toBeGreaterThanOrEqual(60 * 29);
     expect(first.created_at).toBeTruthy();
+    // Never snoozed -> null, i.e. "alerting right now" (batch ALERT2).
+    expect(first.snoozed_until).toBeNull();
     // 2G payload: no line items travel with the banner.
     expect(first.items).toBeUndefined();
 
@@ -185,6 +194,7 @@ describe('GET /api/orders/alerts', () => {
       repeat_minutes: 5,
       max_repeats: 6,
       muted_until: null,
+      snooze_minutes: 5,
     });
   });
 
@@ -227,8 +237,8 @@ describe('GET /api/orders/alerts', () => {
   });
 });
 
-describe('POST /api/orders/:id/ack', () => {
-  it('stamps the timestamp, is idempotent, and removes the order from the alerts list', async () => {
+describe('POST /api/orders/:id/ack (a SNOOZE since batch ALERT2)', () => {
+  it('stamps the timestamp once, snoozes the order, and does NOT remove it from the list', async () => {
     const id = await makeOrder({ minutesAgo: 10 });
 
     const first = await request(app)
@@ -238,8 +248,9 @@ describe('POST /api/orders/:id/ack', () => {
     expect(first.status).toBe(200);
     expect(first.body.id).toBe(id);
     expect(first.body.acknowledged_at).toBeTruthy();
+    expect(first.body.snoozed_until).toBeTruthy();
 
-    // Second call: 200, SAME timestamp, never overwritten.
+    // Second call: 200, SAME acknowledgement timestamp, never overwritten.
     const second = await request(app)
       .post(`/api/orders/${id}/ack`)
       .set('Authorization', `Bearer ${ownerToken(shopId)}`)
@@ -251,12 +262,14 @@ describe('POST /api/orders/:id/ack', () => {
     const row = await orderRow(id);
     expect(row.status).toBe('pending');
     expect(row.acknowledged_by).toBe(ownerId);
-    expect(needsAlerting(row)).toBe(false);
+    // THE CHANGE: the order still needs a decision, so it still needs alerting.
+    expect(needsAlerting(row)).toBe(true);
 
     const list = await request(app)
       .get('/api/orders/alerts')
       .set('Authorization', `Bearer ${ownerToken(shopId)}`);
-    expect(list.body.items.map((i) => i.id)).not.toContain(id);
+    expect(list.body.items.map((i) => i.id)).toContain(id);
+    expect(list.body.items.find((i) => i.id === id).snoozed_until).toBeTruthy();
   });
 
   it('404s for another shop\'s order and leaves it untouched', async () => {
@@ -283,6 +296,7 @@ describe('implicit acknowledgement on a status change', () => {
     expect(row.status).toBe('accepted');
     expect(row.acknowledged_at).toBeTruthy();
     expect(row.acknowledged_by).toBe(ownerId);
+    // Accepting is a DECISION, so it genuinely ends the alert.
     expect(needsAlerting(row)).toBe(false);
   });
 
@@ -400,6 +414,8 @@ describe('migration 0065 backfill', () => {
     expect((await orderRow(done)).acknowledged_at).toBeTruthy();
     expect((await orderRow(pending)).acknowledged_at).toBeNull();
     expect(needsAlerting(await orderRow(pending))).toBe(true);
+    // ...and the completed one does not, because it LEFT 'pending'.
+    expect(needsAlerting(await orderRow(done))).toBe(false);
   });
 });
 
@@ -488,22 +504,22 @@ describe('order-alert.service runTick()', () => {
     expect((await orderRow(id)).alert_count).toBe(1);
   });
 
-  it('an order acknowledged between the select and the update is NOT alerted (re-check under lock)', async () => {
+  it('an order snoozed between the select and the update is NOT alerted (re-check under lock)', async () => {
     const id = await makeOrder({ minutesAgo: 30 });
 
     // The tick's candidate SELECT sees it...
     const candidates = await alertSvc.selectCandidates(200);
     expect(candidates.map((c) => c.id)).toContain(id);
 
-    // ...and THEN the owner taps "Seen" (this is the mid-flight ack).
+    // ...and THEN the owner taps "Not now" (this is the mid-flight snooze).
     const ack = await request(app)
       .post(`/api/orders/${id}/ack`)
       .set('Authorization', `Bearer ${ownerToken(shopId)}`)
       .send({});
     expect(ack.status).toBe(200);
 
-    // The claim re-locks the row and re-checks: the owner wins, nothing is sent
-    // and the counter never moves.
+    // The claim re-locks the row and re-checks the snooze: the owner wins,
+    // nothing is sent and the counter never moves.
     const claim = await alertSvc.claimOrder(id);
     expect(claim).toBeNull();
     expect((await orderRow(id)).alert_count).toBe(0);

@@ -49,6 +49,16 @@ const T = Object.freeze({
     out_for_delivery: 'Hi {name}, your order from {shop} is on its way to you.',
     completed: 'Hi {name}, your order at {shop} is complete. Thank you!',
     cancelled: 'Hi {name}, your order at {shop} has been cancelled.',
+    // --- THE SHOP REJECTED / CANCELLED THE ORDER (batch ALERT2) -------------
+    // The reason the owner gave, in their own words. Offered, never demanded —
+    // an order cancelled without one simply gets the plain line above.
+    cancel_reason: 'Reason: {reason}',
+    // prepaid — the customer has already paid. There is no refund pipeline and
+    // none is invented: the whole amount becomes credit AT THIS SHOP, said in
+    // plain words so nobody is left waiting for money back that is not coming.
+    // The exact mirror of edit_money_prepaid, for the whole order instead of a
+    // difference.
+    cancel_money_prepaid: 'You had already paid {amount}. That amount is kept as credit at {shop} — it comes off your next order there.',
     // Last resort for a status this file has no line for, so a future pipeline
     // stage degrades to a sentence rather than to silence.
     status_generic: 'Hi {name}, your order at {shop} is now {status}.',
@@ -83,6 +93,8 @@ const T = Object.freeze({
     out_for_delivery: 'नमस्ते {name}, {shop} से आपका ऑर्डर आपके पास आ रहा है।',
     completed: 'नमस्ते {name}, {shop} पर आपका ऑर्डर पूरा हो गया। धन्यवाद!',
     cancelled: 'नमस्ते {name}, {shop} पर आपका ऑर्डर रद्द कर दिया गया है।',
+    cancel_reason: 'कारण: {reason}',
+    cancel_money_prepaid: 'आपने {amount} पहले ही चुका दिए थे। वह रकम {shop} पर आपके जमा (क्रेडिट) के रूप में रखी गई है — अगली बार के ऑर्डर में कम हो जाएगी।',
     status_generic: 'नमस्ते {name}, {shop} पर आपके ऑर्डर की स्थिति अब {status} है।',
 
     edit_intro: 'नमस्ते {name}, {shop} पर आपके ऑर्डर का पूरा सामान उपलब्ध नहीं था, इसलिए ऑर्डर कम कर दिया गया है।',
@@ -151,11 +163,19 @@ function formatClock(at) {
  *   promisedAt   the promise as an absolute instant (Date/ISO), or null
  *   updated      true for the "need more time" re-promise, which is not a status
  *                change at all and therefore has its own line
+ *   reason       the owner's short reason for a REJECTION (batch ALERT2), or
+ *                null/'' — an order cancelled without one gets the plain line
+ *   credit       paise turned into shop credit by cancelling a PAID PREPAID
+ *                order (batch ALERT2), or 0. Never a refund: this app has no
+ *                refund pipeline and telling a customer otherwise would be the
+ *                one lie the money batches are built to avoid.
  *
  * An 'accepted' order with no promise gets the honest no-time wording; it is
  * never given an invented time.
  */
-function buildCustomerMessage({ lang, customerName, shopName, status, promisedAt, updated }) {
+function buildCustomerMessage({
+  lang, customerName, shopName, status, promisedAt, updated, reason, credit,
+}) {
   const l = resolveLang(lang);
   const vars = { name: customerName, shop: shopName, status };
   const time = promisedAt ? formatClock(promisedAt) : '';
@@ -167,6 +187,19 @@ function buildCustomerMessage({ lang, customerName, shopName, status, promisedAt
   }
   if (status === 'accepted') {
     return time ? t(l, 'accepted_with_time', { ...vars, time }) : t(l, 'accepted_no_time', vars);
+  }
+  if (status === 'cancelled') {
+    // WHY, then WHERE THE MONEY WENT — in that order, because that is the order
+    // the questions come in. Each line is added only when there is something
+    // true to say, so a plain cancellation is still the plain one-liner it was.
+    const parts = [t(l, 'cancelled', vars)];
+    const why = reason == null ? '' : String(reason).trim();
+    if (why) parts.push(t(l, 'cancel_reason', { reason: why }));
+    const paise = Number(credit);
+    if (Number.isFinite(paise) && paise > 0) {
+      parts.push(t(l, 'cancel_money_prepaid', { ...vars, amount: rupees(paise) }));
+    }
+    return parts.join('\n');
   }
   if (T[FALLBACK][status]) return t(l, status, vars);
   return t(l, 'status_generic', vars);
