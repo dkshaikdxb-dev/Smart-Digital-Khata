@@ -50,10 +50,11 @@ export function snoozeMinsLeft(o, now) {
   return Math.max(1, Math.ceil((until - now) / 60_000));
 }
 
-// Languages expo-speech can actually speak for us today (the same map
-// useNativeVoice exposes through localeSupported): bn/gu/mr are honestly NOT
-// spoken. A device that cannot speak still gets the BANNER — speech is the
-// bonus, never the alert itself.
+// Languages we ask expo-speech for (the same map useNativeVoice exposes through
+// localeSupported). All ten are mapped now, bn/gu/mr included — but a mapped
+// language is only spoken if the HANDSET has that voice installed, which is a
+// per-device fact this code cannot see. A device that cannot speak still gets the
+// BANNER — speech is the bonus, never the alert itself.
 
 export function useOrderAlerts({ enabled = true } = {}) {
   const { t, lang } = useT();

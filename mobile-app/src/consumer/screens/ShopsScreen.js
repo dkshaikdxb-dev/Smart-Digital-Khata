@@ -34,8 +34,12 @@ export default function ShopsScreen({ navigation }) {
   const [error, setError] = useState('');
 
   // OS-native voice search. The mic shows only when this device can recognize
-  // speech AND the current language maps to a recognizer locale; bn/gu/mr get an
-  // honest "not in this language yet" note instead of a dead button.
+  // speech AND the current language maps to a recognizer locale. Since batch LANG
+  // every picker language maps, bn/gu/mr included, so the "not in this language
+  // yet" note is the fallback for a language outside the picker rather than the
+  // normal path for those three. A handset MISSING the language pack is a
+  // different, run-time failure: the hook reports `unavailable` and the hint
+  // below says so, instead of leaving a dead button or a spinning mic.
   const voice = useNativeVoice(lang);
   const canVoice = voice.supported && voice.localeSupported(lang);
   const showLangNote = voice.supported && !voice.localeSupported(lang);
