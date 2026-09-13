@@ -224,6 +224,16 @@ export const orders = {
   setStatus: (id, status, etaMinutes) => api
     .patch(`/api/orders/${id}/status`, etaMinutes == null ? { status } : { status, eta_minutes: etaMinutes })
     .then((r) => r.data),
+  // REJECT (batch ALERT2). Cancelling IS the rejection — there is deliberately
+  // no new status — and `reason` is short optional free text that is appended to
+  // the order note and carried into the customer's message. Rejecting is one of
+  // the only TWO things that end the new-order alert; the other is accepting.
+  reject: (id, reason) => {
+    const text = String(reason == null ? '' : reason).trim();
+    return api
+      .patch(`/api/orders/${id}/status`, text ? { status: 'cancelled', reason: text } : { status: 'cancelled' })
+      .then((r) => r.data);
+  },
   // "Need more time" — re-promise an order that is already accepted. The
   // promise is recomputed from NOW and the customer is told straight away.
   setEta: (id, etaMinutes) => api.patch(`/api/orders/${id}/eta`, { eta_minutes: etaMinutes }).then((r) => r.data),
@@ -245,7 +255,11 @@ export const orders = {
   // response carries both the unacknowledged orders (oldest first) and the
   // shop's alert settings, so the banner never needs a second round trip on 2G.
   alerts: (lang = '') => api.get(`/api/orders/alerts${lang ? `?lang=${encodeURIComponent(lang)}` : ''}`).then((r) => r.data),
-  // "I have seen it" — idempotent, and deliberately NOT a status change.
+  // "Not now" — a SNOOZE, not a silence (batch ALERT2). Same route and same
+  // response shape as before, plus `snoozed_until`: the order stays pending and
+  // stays on the alerts list, it simply goes quiet for a few minutes and then
+  // comes back, because nobody has answered the customer yet. The acknowledgement
+  // timestamp is still stamped once, as an audit of when the owner first saw it.
   ack: (id) => api.post(`/api/orders/${id}/ack`, {}).then((r) => r.data),
   // "Quiet for a while" — 0 clears the mute. Silences the app banner AND the
   // WhatsApp re-send, because it is the same shop-level flag.

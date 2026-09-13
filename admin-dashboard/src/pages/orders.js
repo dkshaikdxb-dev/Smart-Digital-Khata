@@ -42,6 +42,11 @@ export default function Orders() {
   // The one pending row whose chips are open. A row at a time: the point is one
   // tap, not a screen full of buttons.
   const [openAccept, setOpenAccept] = useState(null);
+  // REJECT (batch ALERT2). The pending row whose reason panel is open, and the
+  // free text typed into it. Cancelling IS the rejection — there is no separate
+  // status — and the reason is offered, never demanded.
+  const [openReject, setOpenReject] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   async function load(s) {
     const st = s === undefined ? status : s;
@@ -105,6 +110,26 @@ export default function Orders() {
     finally { setBusyId(null); }
   }
 
+  // REJECT. The other half of the decision the new-order alert waits for: until
+  // the owner accepts or rejects, the customer has no answer and the alert keeps
+  // going. `why` is optional free text sent to the customer with the cancellation.
+  async function reject(o, why, e) {
+    if (e) e.stopPropagation();
+    setBusyId(o.id);
+    setError('');
+    try {
+      const text = String(why || '').trim();
+      await apiFetch(`/api/orders/${o.id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify(text ? { status: 'cancelled', reason: text } : { status: 'cancelled' }),
+      });
+      setOpenReject(null);
+      setRejectReason('');
+      await load();
+    } catch (err) { setError(err.message); }
+    finally { setBusyId(null); }
+  }
+
   const columns = [
     { key: 'created_at', label: t('common.when'), render: (o) => new Date(o.created_at).toLocaleString() },
     { key: 'customer', label: t('common.customer'), render: (o) => (
@@ -137,12 +162,51 @@ export default function Orders() {
       // A PENDING order gets the accept control, not the generic "advance"
       // button: accepting is the one decision that carries a promise with it.
       if (o.status === 'pending') {
+        if (openReject === o.id) {
+          return (
+            <div onClick={(e) => e.stopPropagation()}>
+              <div className="muted" style={{ marginBottom: 6 }}>{t('orej.help')}</div>
+              {/* A PAID PREPAID order is never refunded — the money becomes shop
+                  credit. The owner is told BEFORE they tap, not after. */}
+              {o.payment_mode === 'prepaid' && o.payment_status === 'paid' && (
+                <div className="muted" style={{ marginBottom: 6 }}>{t('orej.prepaidCredit')}</div>
+              )}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {['orej.r1', 'orej.r2', 'orej.r3'].map((k) => (
+                  <button key={k} className="secondary" style={{ padding: '6px 12px', fontSize: 13 }}
+                    disabled={busyId === o.id} onClick={(e) => reject(o, t(k), e)}>
+                    {t(k)}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                <input type="text" maxLength={200} value={rejectReason} placeholder={t('orej.placeholder')}
+                  style={{ flex: '1 1 140px', minWidth: 0 }}
+                  onChange={(e) => setRejectReason(e.target.value)} />
+                <button style={{ padding: '4px 10px', fontSize: 12 }} disabled={busyId === o.id}
+                  onClick={(e) => reject(o, rejectReason, e)}>
+                  {t('orej.confirm')}
+                </button>
+                <button className="secondary" style={{ padding: '4px 10px', fontSize: 12 }}
+                  onClick={(e) => { e.stopPropagation(); setOpenReject(null); setRejectReason(''); }}>
+                  {t('orej.back')}
+                </button>
+              </div>
+            </div>
+          );
+        }
         if (openAccept !== o.id) {
           return (
-            <button style={{ padding: '4px 10px', fontSize: 13 }} disabled={busyId === o.id}
-              onClick={(e) => { e.stopPropagation(); setOpenAccept(o.id); }}>
-              {t('eta.accept')}
-            </button>
+            <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <button style={{ padding: '4px 10px', fontSize: 13 }} disabled={busyId === o.id}
+                onClick={(e) => { e.stopPropagation(); setOpenAccept(o.id); }}>
+                {t('eta.accept')}
+              </button>
+              <button className="secondary" style={{ padding: '4px 10px', fontSize: 13 }} disabled={busyId === o.id}
+                onClick={(e) => { e.stopPropagation(); setOpenReject(o.id); setRejectReason(''); }}>
+                {t('orej.reject')}
+              </button>
+            </div>
           );
         }
         return (
@@ -160,6 +224,10 @@ export default function Orders() {
               <button className="secondary" style={{ padding: '4px 10px', fontSize: 12 }} disabled={busyId === o.id}
                 onClick={(e) => accept(o, null, e)}>
                 {t('eta.noTime')}
+              </button>
+              <button className="secondary" style={{ padding: '4px 10px', fontSize: 12 }} disabled={busyId === o.id}
+                onClick={(e) => { e.stopPropagation(); setOpenAccept(null); setOpenReject(o.id); setRejectReason(''); }}>
+                {t('orej.reject')}
               </button>
               <button className="secondary" style={{ padding: '4px 10px', fontSize: 12 }}
                 onClick={(e) => { e.stopPropagation(); setOpenAccept(null); }}>

@@ -22,7 +22,13 @@ const orderAlertCopy = require('../utils/order-alert-copy');
 const { assertShopOpenTx } = require('../utils/shopOpen');
 // The ONE delivery-fee rule (batch C). Shared with the order-edit path so an
 // edited order's fee is recomputed by exactly the rule the order was created on.
-const { deliveryFeeFor } = require('../utils/orderEdit');
+// `creditPrepaidOnCancel` is the ONE money rule for a cancelled PAID PREPAID
+// order (batch ALERT2) — the same helper the owner's reject path uses, so a
+// customer-initiated cancel and an owner rejection cannot drift.
+const { deliveryFeeFor, creditPrepaidOnCancel } = require('../utils/orderEdit');
+// Customer-facing order copy, en + hi authored (batch B), extended by ALERT2
+// with the cancellation lines: the reason, and where a prepaid amount went.
+const orderCustomerCopy = require('../utils/order-customer-copy');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -892,20 +898,46 @@ exports.getOrder = async (req, res) => {
 
 /**
  * POST /my/orders/:id/cancel — cancel a still-pending order (else 409).
- * credit  → REVERSE the khata: insert a compensating `cash` (payment-in) entry
- *           for the subtotal and decrement the balance, so the ledger stays
- *           honest (the original purchase entry remains, netted by the reversal).
- * prepaid unpaid → just cancel.
- * prepaid already paid → cancel + note that a refund is manual (no auto-refund).
+ *
+ * THE MONEY, per payment mode. The house rule is "prepaid: debit/credit only,
+ * NEVER a refund", and since batch ALERT2 this path honours it:
+ *
+ *   credit         → REVERSE the khata: insert a compensating `cash` (payment-in)
+ *                    entry for the full amount and decrement the balance, so the
+ *                    ledger stays honest (the original purchase entry remains,
+ *                    netted by the reversal). UNCHANGED.
+ *   prepaid unpaid → nothing to move; just cancel. UNCHANGED.
+ *   prepaid PAID   → the amount the customer actually paid becomes CREDIT AT
+ *                    THIS SHOP: ONE 'adjustment' with `order_id` set and the
+ *                    balance lowered by it, in the SAME transaction that cancels
+ *                    the order — exactly what a REDUCTION does, through exactly
+ *                    the same helper (utils/orderEdit.creditPrepaidOnCancel), so
+ *                    the two can never drift. The old "[Cancelled after payment
+ *                    — refund to be processed manually.]" note is GONE: there is
+ *                    no refund pipeline, nobody was ever going to process it by
+ *                    hand, and leaving the customer's money in limbo behind a
+ *                    promise nobody made good is the thing this fixes.
+ *   cash           → nothing was ever posted. UNCHANGED.
+ *
+ * Cancelling twice cannot credit twice: the second call is a 409 before any
+ * money moves (the order is no longer 'pending').
+ *
+ * The customer is told where their money went, in their own language, over
+ * WhatsApp — respecting notifications_enabled and fire-and-forget, like every
+ * other customer-facing line in this app: the cancellation is already committed
+ * and must not be reported as failed because Meta was unreachable.
  */
 exports.cancelOrder = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
 
   const result = await withTx(async (client) => {
     const r = await client.query(
-      `SELECT o.*, c.id AS cust_id, c.balance
+      `SELECT o.*, c.id AS cust_id, c.balance, c.name AS customer_name,
+              c.phone AS customer_phone, c.notifications_enabled,
+              s.name AS shop_name
        FROM orders o
        JOIN customers c ON c.id = o.customer_id
+       JOIN shops s ON s.id = o.shop_id
        WHERE o.id = $1 AND c.phone = $2
        FOR UPDATE OF o, c`,
       [req.params.id, phone]
@@ -932,20 +964,41 @@ exports.cancelOrder = async (req, res) => {
       );
     }
 
-    const paidPrepaid = order.payment_mode === 'prepaid' && order.payment_status === 'paid';
+    // Prepaid + paid → shop credit, through the ONE shared helper. Returns null
+    // for every other mode and for an order that has already been fully credited.
+    const adjustment = await creditPrepaidOnCancel(client, order);
+
     const upd = await client.query(
-      `UPDATE orders
-         SET status = 'cancelled',
-             note = CASE WHEN $2 THEN COALESCE(note, '') || ' [Cancelled after payment — refund to be processed manually.]' ELSE note END,
-             updated_at = NOW()
-       WHERE id = $1
-       RETURNING *`,
-      [order.id, paidPrepaid]
+      `UPDATE orders SET status = 'cancelled', updated_at = NOW()
+        WHERE id = $1
+        RETURNING *`,
+      [order.id]
     );
-    return { order: upd.rows[0] };
+    return {
+      order: upd.rows[0],
+      adjustment,
+      customer: {
+        name: order.customer_name,
+        phone: order.customer_phone,
+        notifications_enabled: order.notifications_enabled,
+        customer_language: order.customer_language,
+      },
+      shopName: order.shop_name,
+    };
   });
 
-  res.json(result);
+  if (result.customer.notifications_enabled !== false) {
+    const message = orderCustomerCopy.buildCustomerMessage({
+      lang: orderCustomerCopy.resolveLang(result.customer.customer_language),
+      customerName: result.customer.name,
+      shopName: result.shopName,
+      status: 'cancelled',
+      credit: result.adjustment ? Number(result.adjustment.amount) : 0,
+    });
+    whatsapp.sendText(result.customer.phone, message).catch(() => {});
+  }
+
+  res.json({ order: result.order, adjustment: result.adjustment || null });
 };
 
 // ---------------------------------------------------------------------------

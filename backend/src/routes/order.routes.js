@@ -27,11 +27,21 @@ const idParamSchema = Joi.object({
 // corrected rather than rejected mid-rush.
 const ETA_MINUTES = Joi.number().integer().min(1).max(1440);
 
+// REJECT (batch ALERT2). Cancelling IS the rejection — there is deliberately no
+// new status — and `reason` is the short free text the owner taps or types. It
+// is OPTIONAL (a reason is offered, never demanded) and only meaningful on the
+// move to 'cancelled': the controller answers 422 `reason_not_applicable` on any
+// other target status rather than silently dropping it. 200 characters is the
+// hard rail here; the controller trims and re-caps before the text is appended
+// to the order note and sent to the customer.
+const REJECT_REASON = Joi.string().max(200).allow('', null);
+
 const statusSchema = Joi.object({
   status: Joi.string()
     .valid('pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled')
     .required(),
   eta_minutes: ETA_MINUTES,
+  reason: REJECT_REASON,
 });
 
 // "Need more time" — re-promise an order that is already accepted.

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, Pressable, Alert, ScrollView, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, Pressable, TextInput, Alert, ScrollView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
@@ -56,6 +56,10 @@ export default function OrderDetailScreen({ route, navigation }) {
   // platform config; DEFAULT_CHIPS stands in until it lands (and if it never does).
   const [chips, setChips] = useState(DEFAULT_CHIPS);
   const [needMore, setNeedMore] = useState(false);
+  // REJECT (batch ALERT2). Cancelling IS the rejection — no new status — and the
+  // reason is offered (three one-tap presets plus free text), never demanded.
+  const [rejecting, setRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   // EDIT MODE (batch C). `draft` is a purely LOCAL map of order_item_id -> the
   // quantity the owner has tapped down to; nothing is sent until Confirm, so the
   // running total moves under the thumb with no round trip. `reqId` is minted
@@ -165,11 +169,23 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   }
 
-  function cancel() {
-    Alert.alert(t('ord.cancelOrder'), t('ord.cancelConfirm'), [
-      { text: t('common.keep'), style: 'cancel' },
-      { text: t('ord.cancelOrder'), style: 'destructive', onPress: () => setStatus('cancelled') },
-    ]);
+  // REJECT / CANCEL. The other half of the decision the new-order alert waits
+  // for: until the owner accepts or rejects, the customer has no answer and the
+  // alert keeps going. The reason (optional) travels to the customer with the
+  // cancellation and is appended to the order note.
+  async function reject(why) {
+    setBusy(true); setMsg('');
+    try {
+      await orders.reject(id, why);
+      setRejecting(false);
+      setRejectReason('');
+      await load();
+      setMsg(t('orej.done'));
+    } catch (e) {
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
@@ -238,9 +254,54 @@ export default function OrderDetailScreen({ route, navigation }) {
                 </Pressable>
               ))}
             </View>
-            <Pressable style={[s.etaGhost, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => accept(null)}>
-              <Text style={s.etaGhostText}>{t('eta.noTime')}</Text>
-            </Pressable>
+            {/* The DECISION is two-sided: Reject sits right beside Accept, at the
+                same size, because an order the shop cannot serve must be as easy
+                to answer as one it can. */}
+            <View style={s.chipRow}>
+              <Pressable style={[s.etaGhost, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => accept(null)}>
+                <Text style={s.etaGhostText}>{t('eta.noTime')}</Text>
+              </Pressable>
+              <Pressable style={[s.rejectBtn, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => setRejecting(true)}>
+                <Text style={s.rejectBtnText}>{t('orej.reject')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {/* The reject panel: three one-tap presets plus free text. A reason is
+            offered, never demanded — confirming with the box empty is fine. */}
+        {rejecting && !terminal ? (
+          <View style={s.etaBlock}>
+            <Text style={s.rejectTitle}>{t('orej.title')}</Text>
+            <Text style={s.etaHint}>{t('orej.help')}</Text>
+            {/* A PAID PREPAID order is never refunded — the money becomes credit
+                at this shop. The owner is told BEFORE they tap, not after. */}
+            {order.payment_mode === 'prepaid' && order.payment_status === 'paid' ? (
+              <Text style={s.etaHint}>{t('orej.prepaidCredit')}</Text>
+            ) : null}
+            <View style={s.chipRow}>
+              {['orej.r1', 'orej.r2', 'orej.r3'].map((k) => (
+                <Pressable key={k} style={[s.etaGhost, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => reject(t(k))}>
+                  <Text style={s.etaGhostText}>{t(k)}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <TextInput
+              style={s.reasonInput}
+              value={rejectReason}
+              onChangeText={setRejectReason}
+              maxLength={200}
+              placeholder={t('orej.placeholder')}
+              placeholderTextColor="#64748b"
+            />
+            <View style={s.chipRow}>
+              <Pressable style={[s.rejectBtn, busy && { opacity: 0.5 }]} disabled={busy} onPress={() => reject(rejectReason)}>
+                <Text style={s.rejectBtnText}>{t('orej.confirm')}</Text>
+              </Pressable>
+              <Pressable style={s.etaGhost} onPress={() => { setRejecting(false); setRejectReason(''); }}>
+                <Text style={s.etaGhostText}>{t('orej.back')}</Text>
+              </Pressable>
+            </View>
           </View>
         ) : null}
 
@@ -282,9 +343,17 @@ export default function OrderDetailScreen({ route, navigation }) {
               <Text style={s.primaryText}>{t('ord.mark', { s: enumT('ostatus', OSTATUS, st) })}</Text>
             </Pressable>
           ))}
-          <Pressable style={[s.secondary, (busy || terminal) && { opacity: 0.5 }]} onPress={cancel} disabled={busy || terminal}>
-            <Text style={s.secondaryText}>{t('ord.cancelOrder')}</Text>
-          </Pressable>
+          {!rejecting ? (
+            <Pressable
+              style={[s.secondary, (busy || terminal) && { opacity: 0.5 }]}
+              onPress={() => setRejecting(true)}
+              disabled={busy || terminal}
+            >
+              <Text style={s.secondaryText}>
+                {order.status === 'pending' ? t('orej.reject') : t('ord.cancelOrder')}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
         {terminal ? <Text style={[s.muted, { marginTop: 10 }]}>{t('ord.terminal', { s: enumT('ostatus', OSTATUS, order.status) })}</Text> : null}
         {msg ? <Text style={[s.muted, { marginTop: 10 }]}>{msg}</Text> : null}
@@ -464,6 +533,19 @@ const s = StyleSheet.create({
   etaChipText: { color: '#000', fontWeight: '800', fontSize: 15 },
   etaGhost: { backgroundColor: '#334155', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, alignSelf: 'flex-start' },
   etaGhostText: { color: '#e2e8f0', fontWeight: '600', fontSize: 14 },
+  // REJECT (batch ALERT2). Outlined in the danger colour, never a filled button
+  // the thumb can hit on the way to Accept.
+  rejectBtn: {
+    borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, alignSelf: 'flex-start',
+    borderWidth: 2, borderColor: '#f87171', backgroundColor: '#1e293b',
+  },
+  rejectBtnText: { color: '#f87171', fontWeight: '800', fontSize: 14 },
+  rejectTitle: { color: '#e2e8f0', fontSize: 15, fontWeight: '800', marginBottom: 6 },
+  reasonInput: {
+    minHeight: 48, borderRadius: 10, borderWidth: 1, borderColor: '#334155',
+    paddingHorizontal: 12, paddingVertical: 10, color: '#e2e8f0', fontSize: 15,
+    backgroundColor: '#0f172a', marginBottom: 8,
+  },
   // Reduce-the-order controls (batch C). The minus is a big square target: it is
   // tapped one-handed, mid-rush, on a cracked screen, and a mis-tap here is
   // someone's money.

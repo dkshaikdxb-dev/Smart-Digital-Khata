@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, StyleSheet, Pressable, Alert, RefreshControl, ActivityIndicator,
+  View, Text, FlatList, StyleSheet, Pressable, TextInput, Alert, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
@@ -38,6 +38,11 @@ export default function OrdersScreen({ navigation }) {
   // A row at a time: the point is one tap, not a screen full of buttons.
   const [openAccept, setOpenAccept] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  // REJECT (batch ALERT2). The pending row whose reason panel is open, and the
+  // free text typed into it. Cancelling IS the rejection — there is no separate
+  // status — and the reason is offered, never demanded.
+  const [openReject, setOpenReject] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const load = useCallback(async (st) => {
     const r = await orders.list(st, lang);
@@ -60,6 +65,23 @@ export default function OrdersScreen({ navigation }) {
     try {
       await orders.setStatus(o.id, 'accepted', minutes);
       setOpenAccept(null);
+      await load(status);
+    } catch (e) {
+      if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // REJECT. The other half of the decision the new-order alert waits for: until
+  // the owner accepts or rejects, the customer has no answer and the alert keeps
+  // going. `why` is optional free text sent to the customer with the cancellation.
+  async function reject(o, why) {
+    setBusyId(o.id);
+    try {
+      await orders.reject(o.id, why);
+      setOpenReject(null);
+      setRejectReason('');
       await load(status);
     } catch (e) {
       if (!isAuthError(e)) Alert.alert(t('common.failed'), e.response?.data?.error || e.message);
@@ -138,11 +160,55 @@ export default function OrdersScreen({ navigation }) {
                 promises the time in a single request. Big touch targets, no
                 typing, and an honest escape for an owner who cannot say. */}
             {item.status === 'pending' ? (
-              openAccept !== item.id ? (
-                <Pressable style={[s.acceptBtn, busyId === item.id && { opacity: 0.5 }]}
-                  disabled={busyId === item.id} onPress={() => setOpenAccept(item.id)}>
-                  <Text style={s.acceptBtnText}>{t('eta.accept')}</Text>
-                </Pressable>
+              openReject === item.id ? (
+                /* REJECT: three one-tap presets plus free text. A reason is
+                   offered, never demanded — "Reject order" with the box empty
+                   is a legitimate answer. */
+                <View style={s.acceptPanel}>
+                  <Text style={s.acceptHint}>{t('orej.help')}</Text>
+                  {item.payment_mode === 'prepaid' && item.payment_status === 'paid' ? (
+                    <Text style={s.acceptHint}>{t('orej.prepaidCredit')}</Text>
+                  ) : null}
+                  <View style={s.chipRow}>
+                    {['orej.r1', 'orej.r2', 'orej.r3'].map((k) => (
+                      <Pressable key={k} style={[s.etaGhost, busyId === item.id && { opacity: 0.5 }]}
+                        disabled={busyId === item.id} onPress={() => reject(item, t(k))}>
+                        <Text style={s.etaGhostText}>{t(k)}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                  <TextInput
+                    style={s.reasonInput}
+                    value={rejectReason}
+                    onChangeText={setRejectReason}
+                    maxLength={200}
+                    placeholder={t('orej.placeholder')}
+                    placeholderTextColor="#64748b"
+                  />
+                  <View style={s.chipRow}>
+                    <Pressable style={[s.rejectBtn, busyId === item.id && { opacity: 0.5 }]}
+                      disabled={busyId === item.id} onPress={() => reject(item, rejectReason)}>
+                      <Text style={s.rejectBtnText}>{t('orej.confirm')}</Text>
+                    </Pressable>
+                    <Pressable style={s.etaGhost} onPress={() => { setOpenReject(null); setRejectReason(''); }}>
+                      <Text style={s.etaGhostText}>{t('orej.back')}</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : openAccept !== item.id ? (
+                /* THE DECISION, side by side and the same size: an order the
+                   shop cannot serve must be as easy to answer as one it can. */
+                <View style={s.decideRow}>
+                  <Pressable style={[s.acceptBtn, { flex: 1 }, busyId === item.id && { opacity: 0.5 }]}
+                    disabled={busyId === item.id} onPress={() => setOpenAccept(item.id)}>
+                    <Text style={s.acceptBtnText}>{t('eta.accept')}</Text>
+                  </Pressable>
+                  <Pressable style={[s.rejectBtn, { flex: 1 }, busyId === item.id && { opacity: 0.5 }]}
+                    disabled={busyId === item.id}
+                    onPress={() => { setOpenReject(item.id); setRejectReason(''); }}>
+                    <Text style={s.rejectBtnText}>{t('orej.reject')}</Text>
+                  </Pressable>
+                </View>
               ) : (
                 <View style={s.acceptPanel}>
                   <Text style={s.acceptHint}>{t('eta.pickTime')}</Text>
@@ -158,6 +224,11 @@ export default function OrdersScreen({ navigation }) {
                     <Pressable style={[s.etaGhost, busyId === item.id && { opacity: 0.5 }]}
                       disabled={busyId === item.id} onPress={() => accept(item, null)}>
                       <Text style={s.etaGhostText}>{t('eta.noTime')}</Text>
+                    </Pressable>
+                    <Pressable style={[s.etaGhost, busyId === item.id && { opacity: 0.5 }]}
+                      disabled={busyId === item.id}
+                      onPress={() => { setOpenAccept(null); setOpenReject(item.id); setRejectReason(''); }}>
+                      <Text style={s.etaGhostText}>{t('orej.reject')}</Text>
                     </Pressable>
                     <Pressable style={s.etaGhost} onPress={() => setOpenAccept(null)}>
                       <Text style={s.etaGhostText}>{t('eta.notNow')}</Text>
@@ -196,6 +267,19 @@ const s = StyleSheet.create({
   etaLate: { color: '#f87171', fontSize: 12, fontWeight: '700', marginTop: 4 },
   acceptBtn: { backgroundColor: '#22c55e', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: -4, marginBottom: 12 },
   acceptBtnText: { color: '#000', fontWeight: '800', fontSize: 16 },
+  // REJECT (batch ALERT2). Outlined in the danger colour, never a filled button
+  // the thumb can hit on the way to Accept.
+  decideRow: { flexDirection: 'row', gap: 8 },
+  rejectBtn: {
+    borderRadius: 10, paddingVertical: 14, paddingHorizontal: 12, alignItems: 'center',
+    marginTop: -4, marginBottom: 12, borderWidth: 2, borderColor: '#f87171', backgroundColor: '#1e293b',
+  },
+  rejectBtnText: { color: '#f87171', fontWeight: '800', fontSize: 16 },
+  reasonInput: {
+    minHeight: 48, borderRadius: 10, borderWidth: 1, borderColor: '#334155',
+    paddingHorizontal: 12, paddingVertical: 10, color: '#e2e8f0', fontSize: 15,
+    backgroundColor: '#0f172a', marginBottom: 6,
+  },
   acceptPanel: { backgroundColor: '#1e293b', borderRadius: 10, padding: 12, marginTop: -4, marginBottom: 12 },
   acceptHint: { color: '#94a3b8', fontSize: 13, marginBottom: 10 },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 6 },
