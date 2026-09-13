@@ -18,7 +18,7 @@ const customerCopy = require('../utils/order-customer-copy');
 // (used by a rejection), so the two can never drift (batch ALERT2).
 const {
   isEditableStatus, deliveryFeeFor, planReduction, needsLedgerAdjustment,
-  postOrderAdjustment, creditPrepaidOnCancel,
+  postOrderAdjustment, cancelOrderMoney,
 } = require('../utils/orderEdit');
 
 // Owner/staff order management, scoped to req.user.shopId. A shop only ever
@@ -272,7 +272,7 @@ exports.updateStatus = async (req, res) => {
     // Cancelling twice cannot credit twice: the terminal guard above refuses the
     // second attempt with a 409 before this line is reached.
     const creditAdjustment = next === 'cancelled'
-      ? await creditPrepaidOnCancel(client, order, { actorId: actorId(req) })
+      ? await cancelOrderMoney(client, order, { actorId: actorId(req) })
       : null;
 
     // Acknowledging the new-order alert is IMPLICIT (batch ORDERALERT): any move

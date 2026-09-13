@@ -25,7 +25,7 @@ const { assertShopOpenTx } = require('../utils/shopOpen');
 // `creditPrepaidOnCancel` is the ONE money rule for a cancelled PAID PREPAID
 // order (batch ALERT2) — the same helper the owner's reject path uses, so a
 // customer-initiated cancel and an owner rejection cannot drift.
-const { deliveryFeeFor, creditPrepaidOnCancel } = require('../utils/orderEdit');
+const { deliveryFeeFor, cancelOrderMoney } = require('../utils/orderEdit');
 // Customer-facing order copy, en + hi authored (batch B), extended by ALERT2
 // with the cancellation lines: the reason, and where a prepaid amount went.
 const orderCustomerCopy = require('../utils/order-customer-copy');
@@ -949,24 +949,13 @@ exports.cancelOrder = async (req, res) => {
       throw ApiError.conflict('Only a pending order can be cancelled');
     }
 
-    if (order.payment_mode === 'credit') {
-      // Compensating entry keeps the ledger honest and auditable. Reverse the
-      // full amount that was added to the khata: subtotal + delivery fee.
-      const reversal = Number(order.subtotal) + Number(order.delivery_fee);
-      await client.query(
-        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
-         VALUES ($1,$2,'cash',$3,'cash',$4,'api')`,
-        [order.shop_id, order.cust_id, reversal, `Reversal — order ${order.id} cancelled`]
-      );
-      await client.query(
-        'UPDATE customers SET balance = balance - $1, updated_at = NOW() WHERE id = $2',
-        [reversal, order.cust_id]
-      );
-    }
-
-    // Prepaid + paid → shop credit, through the ONE shared helper. Returns null
-    // for every other mode and for an order that has already been fully credited.
-    const adjustment = await creditPrepaidOnCancel(client, order);
+    // ALL the money a cancellation moves, through the ONE shared helper, so this
+    // path and the owner's REJECT cannot drift: a credit order has its khata
+    // entry reversed, a paid prepaid order becomes shop credit, and cash or an
+    // unpaid prepaid order moves nothing. It also posts type 'adjustment' rather
+    // than the 'cash' this path used to use — the customer handed over nothing,
+    // so counting it as a collection overstated every takings figure in the app.
+    const adjustment = await cancelOrderMoney(client, order);
 
     const upd = await client.query(
       `UPDATE orders SET status = 'cancelled', updated_at = NOW()

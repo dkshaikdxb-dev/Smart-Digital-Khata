@@ -250,12 +250,17 @@ describe('customer order reads + cancel', () => {
     // Balance reduced by exactly the subtotal; a compensating entry exists.
     const after = await pool.query('SELECT balance FROM customers WHERE id = $1', [custAId]);
     expect(Number(after.rows[0].balance)).toBe(beforeBal - 6000);
+    // The compensating entry is an ADJUSTMENT, not a 'cash' payment. The balance
+    // arithmetic above is unchanged; the TYPE is the fix. Every collections
+    // figure the owner sees sums type IN ('cash','upi'), so the old row made a
+    // cancelled credit order read as money the shop had taken in — it never was.
     const rev = await pool.query(
-      `SELECT * FROM transactions WHERE customer_id = $1 AND type = 'cash' AND note = $2`,
-      [custAId, `Reversal — order ${orderId} cancelled`]
+      `SELECT * FROM transactions WHERE customer_id = $1 AND type = 'adjustment' AND order_id = $2`,
+      [custAId, orderId]
     );
     expect(rev.rowCount).toBe(1);
     expect(Number(rev.rows[0].amount)).toBe(6000);
+    expect(rev.rows[0].method).toBe('adjustment');
   });
 
   it('cancel of an already-cancelled order returns 409', async () => {

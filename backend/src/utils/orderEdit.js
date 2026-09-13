@@ -229,6 +229,60 @@ async function postOrderAdjustment(client, { shopId, customerId, orderId, amount
 }
 
 /**
+ * CANCELLING AN ORDER — the whole money rule, in ONE place.
+ *
+ * Two paths reach a cancellation: the customer cancelling their own order, and
+ * the owner REJECTING it (which batch ALERT2 put behind a prominent button, so
+ * it is now the common path, not the rare one). They MUST move money
+ * identically; before this helper they did not, and an owner rejecting a credit
+ * order left the customer owing for goods that were never supplied.
+ *
+ *   credit       → reverse the whole amount that was added to the khata when the
+ *                  order was placed (subtotal + delivery fee), LESS anything
+ *                  already given back by an edit, so a reduce-then-reject can
+ *                  never refund the same paise twice.
+ *   prepaid paid → the money already taken becomes shop credit (the house rule:
+ *                  debit/credit only, never a refund).
+ *   prepaid unpaid, cash → nothing was ever posted, so nothing is posted now.
+ *
+ * Both cases go through postOrderAdjustment, i.e. type/method 'adjustment'.
+ * That matters beyond tidiness: the old credit reversal posted type 'cash',
+ * which every collections figure in the app sums (the daily digest, the
+ * analytics overview, the owner insights). A cancelled credit order therefore
+ * reported itself as money the shop had COLLECTED. It never was — the customer
+ * handed over nothing. 'adjustment' is excluded from those sums by construction.
+ *
+ * @returns {Promise<object|null>} the inserted transactions row, or null when
+ *          this order moves no money.
+ */
+async function cancelOrderMoney(client, order, { actorId } = {}) {
+  if (!order) return null;
+
+  if (order.payment_mode === 'credit') {
+    const charged = Number(order.subtotal || 0) + Number(order.delivery_fee || 0);
+    // Anything an edit already took off this order has already left the khata.
+    const back = await client.query(
+      `SELECT COALESCE(SUM(amount), 0)::bigint AS given
+         FROM transactions
+        WHERE order_id = $1 AND type = 'adjustment'`,
+      [order.id]
+    );
+    const amount = charged - Number(back.rows[0].given);
+    if (amount <= 0) return null;
+    return postOrderAdjustment(client, {
+      shopId: order.shop_id,
+      customerId: order.customer_id || order.cust_id,
+      orderId: order.id,
+      amount,
+      note: `Order ${order.id} cancelled — khata entry reversed`,
+      actorId,
+    });
+  }
+
+  return creditPrepaidOnCancel(client, order, { actorId });
+}
+
+/**
  * Is this an order whose cancellation must become shop credit? Only a PREPAID
  * order the customer has actually PAID for. A prepaid order still awaiting
  * payment has no money to move; cash never posted anything; credit has its own
@@ -318,4 +372,5 @@ module.exports = {
   isPaidPrepaid,
   prepaidCreditRemaining,
   creditPrepaidOnCancel,
+  cancelOrderMoney,
 };
