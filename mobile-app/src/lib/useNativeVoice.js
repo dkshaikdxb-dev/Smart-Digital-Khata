@@ -45,18 +45,33 @@ const SR = (SpeechRecognition && SpeechRecognition.ExpoSpeechRecognitionModule) 
 const SR_EMITTER = (SpeechRecognition && SpeechRecognition.ExpoSpeechRecognitionModuleEmitter) || null;
 
 // --- Language → BCP-47 recognizer locale ----------------------------------
-// Honestly supported today: en/hi/ta/te/kn/ml/ur. bn/gu/mr are deliberately
-// NOT mapped — they stay "not yet" until a cloud phase, so localeSupported()
-// returns false for them and callers show an honest "not in this language yet".
+// All ten UI languages are mapped, bn/gu/mr included (batch LANG): the owner app
+// now has real Bengali, Gujarati and Marathi strings, so hiding the mic from those
+// shopkeepers was the wrong default.
+//
+// Mapping a locale is a CLAIM ABOUT THIS APP, not about the handset. Android and
+// iOS only recognize (and only speak) a language whose pack the device actually
+// has installed. When it is missing, start() fails or the session ends with no
+// transcript, and the hook reports `unavailable` — the same honest outcome as an
+// unmapped language, surfaced by the same call-site hint — instead of a mic that
+// spins forever. See the watchdog in listen() below.
 const BCP47 = {
   en: 'en-IN',
   hi: 'hi-IN',
+  bn: 'bn-IN',
   ta: 'ta-IN',
   te: 'te-IN',
   kn: 'kn-IN',
   ml: 'ml-IN',
+  mr: 'mr-IN',
+  gu: 'gu-IN',
   ur: 'ur-IN',
 };
+
+// Hard ceiling on a single one-shot recognition session. Generous enough for a
+// slow speaker on a slow network, short enough that a silent failure is reported
+// rather than waited on forever.
+const WATCHDOG_MS = 15000;
 
 function twoLetter(lang) {
   return String(lang || '').slice(0, 2).toLowerCase();
@@ -64,6 +79,14 @@ function twoLetter(lang) {
 
 function toBcp47(lang) {
   return BCP47[twoLetter(lang)] || null;
+}
+
+// The SAME answer as the hook's localeSupported(), available without mounting a
+// hook — so a call site choosing a recognizer language before render reads the
+// one BCP47 map above instead of keeping a second hardcoded list beside it.
+export function isLocaleSupported(lang) {
+  const two = twoLetter(lang);
+  return !!two && !!BCP47[two];
 }
 
 // Map the module's Web-Speech-style error codes to our small stable set so the
@@ -109,6 +132,10 @@ export function useNativeVoice(lang = 'en') {
   const onResultRef = useRef(null);
   const gotResultRef = useRef(false);
   const subsRef = useRef([]);
+  // Mirrors `listening` for the watchdog, which reads it from inside a timer
+  // callback where the state value would be stale.
+  const listeningRef = useRef(false);
+  const watchdogRef = useRef(null);
 
   // `supported` = the STT module is present AND recognition is available on this
   // device. isRecognitionAvailable() is synchronous; if it is missing we treat
@@ -125,6 +152,13 @@ export function useNativeVoice(lang = 'en') {
     return true;
   }, []);
 
+  const clearWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+  }, []);
+
   const cleanupListeners = useCallback(() => {
     const subs = subsRef.current;
     subsRef.current = [];
@@ -137,13 +171,18 @@ export function useNativeVoice(lang = 'en') {
     });
   }, []);
 
-  // Remove any live listeners on unmount.
-  useEffect(() => cleanupListeners, [cleanupListeners]);
+  // Remove any live listeners AND the watchdog timer on unmount.
+  useEffect(() => () => {
+    clearWatchdog();
+    cleanupListeners();
+  }, [cleanupListeners, clearWatchdog]);
 
   const finish = useCallback(() => {
+    clearWatchdog();
+    listeningRef.current = false;
     setListening(false);
     cleanupListeners();
-  }, [cleanupListeners]);
+  }, [cleanupListeners, clearWatchdog]);
 
   const stop = useCallback(() => {
     if (!SR) return;
@@ -158,11 +197,7 @@ export function useNativeVoice(lang = 'en') {
     }
   }, []);
 
-  const localeSupported = useCallback((l) => {
-    const two = twoLetter(l);
-    if (!two) return false;
-    return !!BCP47[two];
-  }, []);
+  const localeSupported = useCallback((l) => isLocaleSupported(l), []);
 
   const listen = useCallback(
     async (onResult) => {
@@ -211,6 +246,11 @@ export function useNativeVoice(lang = 'en') {
       push(
         addListener('error', (event) => {
           setLastError(mapError(event && event.error));
+          // An error ENDS the session. Some platforms follow it with `end` and
+          // some do not — a device missing the bn/gu/mr language pack is exactly
+          // the case that reports `language-not-supported` and then goes quiet.
+          // Finishing here means the mic never keeps spinning on a dead session.
+          finish();
         }),
       );
       push(
@@ -226,6 +266,7 @@ export function useNativeVoice(lang = 'en') {
 
       // 3) Start. One-shot, final-result-only recognition in the mapped locale
       // (default en-IN so an unmapped language still records rather than throws).
+      listeningRef.current = true;
       setListening(true);
       try {
         SR.start({
@@ -236,9 +277,29 @@ export function useNativeVoice(lang = 'en') {
       } catch (e) {
         setLastError('unavailable');
         finish();
+        return;
       }
+
+      // 4) WATCHDOG. A handset without the language pack installed can accept
+      // start() and then emit nothing at all — no result, no error, no end. A
+      // shopkeeper tapping a mic that never answers is worse than one that says
+      // "not available in this language yet", so after WATCHDOG_MS we abort the
+      // session and report the honest `unavailable` (unless a transcript already
+      // arrived, in which case the session simply ran long and we say nothing).
+      clearWatchdog();
+      watchdogRef.current = setTimeout(() => {
+        watchdogRef.current = null;
+        if (!listeningRef.current) return;
+        try {
+          SR.abort();
+        } catch (e) {
+          /* ignore */
+        }
+        if (!gotResultRef.current) setLastError('unavailable');
+        finish();
+      }, WATCHDOG_MS);
     },
-    [lang, cleanupListeners, finish],
+    [lang, cleanupListeners, clearWatchdog, finish],
   );
 
   const speak = useCallback(

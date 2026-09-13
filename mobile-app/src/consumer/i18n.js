@@ -38,22 +38,25 @@ export const LANGUAGES = [
 // `catalogue` = a shop catalogue is served translated in this language.
 // `voice`     = ASR/TTS (BCP-47) is available for this language.
 //
-// All 10 languages above have fully authored UI strings, but bn/gu/mr have NO
-// translated catalogue and NO voice — they are UI-only today, so they are marked
-// { catalogue: false, voice: false } and surfaced in the picker with a "(beta)"
-// suffix (still fully selectable). NOTE: the native app has no voice/mic UI yet;
-// `voice` here is a forward-looking guard so any future native voice gates on
-// langHasVoice() from day one.
+// All 10 languages above have fully authored UI strings. bn/gu/mr still have NO
+// translated catalogue, so they keep { catalogue: false } and the picker's
+// "(beta)" suffix (still fully selectable) — isBetaLang() is derived from the
+// catalogue flag alone. Their `voice` flag flipped to true in batch LANG, when
+// mobile-app/src/lib/useNativeVoice.js started mapping bn-IN / gu-IN / mr-IN;
+// the LIVE gate on the shops screen is that hook's localeSupported(), and this
+// map is the forward-looking mirror of it. A mapped language is still only
+// spoken/heard if the handset has the language pack, which no static map can
+// know — the hook reports that honestly at run time as `unavailable`.
 export const LANG_CAPS = {
   en: { catalogue: true, voice: true },
   hi: { catalogue: true, voice: true },
-  bn: { catalogue: false, voice: false },
+  bn: { catalogue: false, voice: true },
   ta: { catalogue: true, voice: true },
   te: { catalogue: true, voice: true },
   kn: { catalogue: true, voice: true },
   ml: { catalogue: true, voice: true },
-  mr: { catalogue: false, voice: false },
-  gu: { catalogue: false, voice: false },
+  mr: { catalogue: false, voice: true },
+  gu: { catalogue: false, voice: true },
   ur: { catalogue: true, voice: true },
 };
 
@@ -64,9 +67,9 @@ export function langHasCatalogue(code) {
   return !!(caps && caps.catalogue);
 }
 
-// Future native voice UI should gate on langHasVoice(code) exactly like the
-// PWA's canUseVoice. There is NO voice in the native app today; this is the
-// forward-looking guard only.
+// Native voice UI gates on useNativeVoice().localeSupported() (the live BCP-47
+// map). langHasVoice(code) is the static mirror of that map, kept for parity with
+// the PWA's canUseVoice; keep the two in step when a language is added.
 export function langHasVoice(code) {
   const caps = LANG_CAPS[code];
   return !!(caps && caps.voice);
@@ -199,7 +202,8 @@ const en = {
 
   // OS-native voice search on the shops screen. The mic only shows when the
   // device supports recognition AND the current language maps to a recognizer
-  // locale; bn/gu/mr fall to `voice.notInLanguage`. Hints auto-clear.
+  // locale. All ten languages map since batch LANG, so `voice.notInLanguage` is
+  // now only reached by a language outside the picker. Hints auto-clear.
   'voice.search': 'Search by voice',
   'voice.listening': 'Listening…',
   'voice.hint.permission': 'Microphone access is off. Turn it on in Settings to search by voice.',

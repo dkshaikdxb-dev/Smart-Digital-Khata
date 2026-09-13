@@ -3,7 +3,8 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { NativeModules, Platform } from 'react-native';
 import Constants from 'expo-constants';
 import api from '../services/api';
-import { useNativeVoice } from '../lib/useNativeVoice';
+import { useNativeVoice, isLocaleSupported } from '../lib/useNativeVoice';
+import { useT } from '../i18n';
 
 // Owner "Ask" — a voice question on the owner home. The owner taps the mic,
 // SPEAKS a question about their shop and HEARS a one-line answer read aloud.
@@ -25,9 +26,16 @@ import { useNativeVoice } from '../lib/useNativeVoice';
 //    + English), first match wins. An unmatched question gets a friendly
 //    fallback naming a couple of example questions.
 //
-// Answers are authored inline for en + hi; every other supported recognizer
-// locale (ta/te/kn/ml/ur) falls back to the English answers, matching the batch
-// scope (bn/gu/mr are "not yet").
+// Answers are authored inline for en + hi; every other recognizer locale falls
+// back to the English answers.
+//
+// KEYWORDS (batch LANG): Bengali and Gujarati keywords are added below so the mic
+// is USEFUL in those languages and not merely enabled. MARATHI shares the
+// Devanagari script — and most of this vocabulary — with Hindi, so the Hindi
+// keywords already match a Marathi question ("बाकी", "उधार", "जमा", "वसूल",
+// "क्रेडिट", "इनाम", "प्लान", "लिंक", "सप्ताह" are the same words); only the few
+// genuinely Marathi forms ("कोण", "किती लोक", "वसुली", "आठवड्यात", "सर्वात जास्त")
+// are added, rather than duplicating what already matches.
 
 // Ordered intents — PORTED from the admin dashboard. The FIRST intent whose
 // keywords appear in the transcript wins (order matters where keywords overlap).
@@ -37,6 +45,10 @@ const INTENTS = [
     keywords: [
       'is hafte', 'hafte', 'is week', 'this week', 'week', 'saptah', 'weekly',
       'इस हफ्ते', 'इस हफ़्ते', 'हफ्ते', 'हफ़्ते', 'सप्ताह', 'साप्ताहिक',
+      // bn / gu / mr (Marathi: 'सप्ताह' above already matches)
+      'এই সপ্তাহে', 'সপ্তাহে', 'সপ্তাহ',
+      'આ અઠવાડિયે', 'અઠવાડિયે', 'અઠવાડિયું',
+      'या आठवड्यात', 'आठवड्यात', 'आठवडा',
     ],
   },
   {
@@ -44,6 +56,10 @@ const INTENTS = [
     keywords: [
       'collection', 'collected', 'collect', 'jama', 'vasool', 'vasuli', 'vasooli',
       'जमा', 'वसूली', 'वसूल', 'कितना आया', 'aaj kitna', 'today',
+      // bn / gu / mr (Marathi: 'जमा' and 'वसूल' above already match)
+      'আদায়', 'জমা', 'আজ কত',
+      'વસૂલી', 'વસૂલ', 'જમા', 'આજે કેટલા',
+      'वसुली', 'आज किती',
     ],
   },
   {
@@ -51,6 +67,10 @@ const INTENTS = [
     keywords: [
       'best', 'best seller', 'bestseller', 'sabse zyada', 'sabse jyada', 'zyada bika',
       'popular', 'top', 'सबसे ज़्यादा', 'सबसे अधिक', 'सबसे ज्यादा', 'बिका', 'बिकने',
+      // bn / gu / mr
+      'সবচেয়ে বেশি', 'বেশি বিক্রি',
+      'સૌથી વધુ', 'વધુ વેચાય',
+      'सर्वात जास्त', 'जास्त विकला',
     ],
   },
   {
@@ -58,6 +78,11 @@ const INTENTS = [
     keywords: [
       'kaun', 'who', 'kitne log', 'kitne customer', 'kitne grahak', 'how many',
       'कौन', 'कितने लोग', 'कितने ग्राहक', 'कितने कस्टमर',
+      // bn / gu / mr. Bengali 'কে' (who) is deliberately NOT a keyword: it is a
+      // substring of ordinary words like 'থেকে', so it would match everything.
+      'কারা', 'কতজন', 'কত জন',
+      'કોણ', 'કેટલા લોકો', 'કેટલા ગ્રાહક',
+      'कोण', 'किती लोक', 'किती ग्राहक',
     ],
   },
   {
@@ -65,6 +90,9 @@ const INTENTS = [
     keywords: [
       'mera plan', 'plan kya', 'plan', 'subscription', 'membership',
       'मेरा प्लान', 'प्लान', 'सदस्यता',
+      // bn / gu (Marathi: 'प्लान' above already matches)
+      'আমার প্ল্যান', 'প্ল্যান',
+      'મારો પ્લાન', 'પ્લાન',
     ],
   },
   {
@@ -72,6 +100,9 @@ const INTENTS = [
     keywords: [
       'dukaan ka link', 'dukaan link', 'store link', 'shop link', 'share link',
       'meri dukaan', 'link', 'दुकान का लिंक', 'दुकान लिंक', 'स्टोर लिंक', 'लिंक',
+      // bn / gu (Marathi: 'लिंक' above already matches)
+      'দোকানের লিঙ্ক', 'লিঙ্ক', 'লিংক',
+      'દુકાનની લિંક', 'લિંક',
     ],
   },
   {
@@ -79,6 +110,9 @@ const INTENTS = [
     keywords: [
       'inaam', 'mere inaam', 'khata credit', 'khata credits', 'credits', 'credit',
       'reward', 'rewards', 'इनाम', 'खाता क्रेडिट', 'क्रेडिट', 'रिवॉर्ड', 'रिवार्ड',
+      // bn / gu (Marathi: 'क्रेडिट' and 'इनाम' above already match)
+      'খাতা ক্রেডিট', 'ক্রেডিট', 'ইনাম',
+      'ખાતા ક્રેડિટ', 'ક્રેડિટ', 'ઇનામ',
     ],
   },
   {
@@ -86,6 +120,11 @@ const INTENTS = [
     keywords: [
       'outstanding', 'baaki', 'baki', 'bakaya', 'udhaar', 'udhar', 'pending', 'due', 'lena',
       'बाकी', 'बकाया', 'उधार', 'कितना लेना', 'लेना है',
+      // bn / gu / mr (Marathi: 'बाकी' and 'उधार' above already match, and
+      // 'उधारी' contains 'उधार')
+      'বাকি', 'বকেয়া', 'ধার', 'উধার',
+      'બાકી', 'ઉધાર', 'કેટલા લેવાના',
+      'किती येणे',
     ],
   },
 ];
@@ -108,6 +147,11 @@ const NAME_STOPWORDS = new Set([
   'hai', 'है', 'ho', 'kya', 'क्या', 'of', 'how', 'much', 'the', 'is', 'me',
   'mera', 'meri', 'mere', 'मेरा', 'मेरी', 'मेरे', 'balance', 'बैलेंस', 'baqi',
   'tell', 'show', 'batao', 'बताओ', 'remaining', 'left', 'kaa', 'naam', 'नाम',
+  // bn / gu / mr fillers, possessives and question words, so a spoken customer
+  // name survives the strip in those languages exactly as it does in Hindi.
+  'কত', 'কি', 'কী', 'আমার', 'হয়েছে', 'আছে', 'এর', 'নাম',
+  'કેટલા', 'કેટલી', 'શું', 'મારું', 'મારો', 'મારી', 'છે', 'નામ',
+  'किती', 'काय', 'माझा', 'माझी', 'माझे', 'आहे', 'नाव',
 ].map((k) => String(k).toLowerCase()));
 
 // A per-customer balance question names a real customer AND asks about a balance.
@@ -213,14 +257,27 @@ function deviceLang() {
 }
 
 export default function AskShop() {
-  // Pick a recognizer language: the device language when we support it for
-  // recognition, else English. Answers are en unless the language is Hindi.
+  // The language the owner CHOSE in Settings comes first; the device language is
+  // the fallback for an owner who never opened the picker. Answers are en unless
+  // the language is Hindi.
+  //
+  // "Can we recognize this language" has ONE source of truth: the BCP-47 map in
+  // useNativeVoice, read through isLocaleSupported(). This used to be a second
+  // hardcoded list right here, and it silently disagreed with that map — it still
+  // excluded bn/gu/mr after they were mapped, so a Bengali owner would have got
+  // English recognition on a Bengali app.
+  const { lang: uiLang } = useT();
   const voiceLang = useMemo(() => {
+    if (isLocaleSupported(uiLang)) return String(uiLang).slice(0, 2).toLowerCase();
     const two = deviceLang();
-    const supported = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
-    return supported.includes(two) ? two : 'en';
-  }, []);
-  const strings = STRINGS[voiceLang] || STRINGS.en;
+    return isLocaleSupported(two) ? two : 'en';
+  }, [uiLang]);
+  // The language the ANSWER is spoken in, which is NOT always the language the
+  // question was heard in: answers are authored for en + hi only, so for every
+  // other recognizer locale the reply is English and must be READ ALOUD in
+  // English. Handing English words to a Bengali or Tamil voice produces noise.
+  const answerLang = STRINGS[voiceLang] ? voiceLang : 'en';
+  const strings = STRINGS[answerLang];
   const tr = (key, vars) => interpolate(strings[key] != null ? strings[key] : STRINGS.en[key] != null ? STRINGS.en[key] : key, vars);
 
   const voice = useNativeVoice(voiceLang);
@@ -335,11 +392,11 @@ export default function AskShop() {
         reply = answerFor(intentId, data);
       }
       setAnswer(reply.display);
-      voice.speak(reply.speak, voiceLang);
+      voice.speak(reply.speak, answerLang);
     } catch (e) {
       const msg = tr('tryAgain');
       setAnswer(msg);
-      voice.speak(msg, voiceLang);
+      voice.speak(msg, answerLang);
     } finally {
       setActive(false);
     }
@@ -362,7 +419,7 @@ export default function AskShop() {
       setActive(false);
       const msg = tr('tryAgain');
       setAnswer(msg);
-      voice.speak(msg, voiceLang);
+      voice.speak(msg, answerLang);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voice.listening]);
