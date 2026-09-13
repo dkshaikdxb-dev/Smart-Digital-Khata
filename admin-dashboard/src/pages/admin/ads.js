@@ -163,6 +163,10 @@ export default function AdminAds() {
   // AI moderation stats strip (batch AI-MOD): last-30-day AI decisions + how
   // often admins agreed with them. null until loaded / when unavailable.
   const [aiStats, setAiStats] = useState(null);
+  // Post-publish spot checks (batch MOD2): a sample of what the AI published,
+  // waiting for a human second look. Everything in here is ALREADY LIVE.
+  const [spotChecks, setSpotChecks] = useState([]);
+  const [spotBusy, setSpotBusy] = useState(null);
   const [geo, setGeo] = useState({ towns: [], villages: [], pincodes: [] });
   const [shops, setShops] = useState(null); // null = picker unavailable (no shops:view), else [] list
   const [filters, setFilters] = useState({ status: '', style: '', geo: '', placement: '' });
@@ -244,6 +248,37 @@ export default function AdminAds() {
   }, [canManage]);
 
   useEffect(() => { if (canManage) loadAiStats(); }, [canManage, loadAiStats]);
+
+  // Spot-check queue. Manager-only like the other two; a failure just leaves it
+  // empty rather than blocking the desk.
+  const loadSpotChecks = useCallback(async () => {
+    if (!canManage) return;
+    try {
+      const r = await apiFetch('/api/admin/moderation/spot-checks');
+      setSpotChecks(r.items || []);
+    } catch (e) { /* non-fatal — the card just stays empty */ }
+  }, [canManage]);
+
+  useEffect(() => { if (canManage) loadSpotChecks(); }, [canManage, loadSpotChecks]);
+
+  // OK → the AI was right, the item stays live and the check closes. Not OK →
+  // the item is taken straight back down to the review queue (it stops being
+  // public), the shop loses the trust point the auto-approval earned, and the
+  // decision is audited against this admin.
+  async function reviewSpotCheck(id, verdict) {
+    if (!canManage || spotBusy) return;
+    setSpotBusy(id); setError(''); setMsg('');
+    try {
+      const r = await apiFetch(`/api/admin/moderation/spot-checks/${id}`, {
+        method: 'POST', body: JSON.stringify({ verdict }),
+      });
+      setMsg(verdict === 'ok'
+        ? 'Spot check cleared — the item stays live.'
+        : `Taken down${r && r.took_down === false ? ' (it was already down)' : ''} — it is back in the review queue below.`);
+      await Promise.all([loadSpotChecks(), loadAiStats(), loadPhotoQueue(), loadPending()]);
+    } catch (e) { setError(e.message); }
+    finally { setSpotBusy(null); }
+  }
 
   // Approve → the photo goes live on the storefront. Reject → it never shows and
   // the note is shown to the owner on their photo. No money moves either way.
@@ -690,6 +725,79 @@ export default function AdminAds() {
               (rejected after AI approve {aiStats.admin.reject_after_ai_approve}, approved after AI hold {aiStats.admin.approve_after_ai_hold})
             </span>
           </div>
+          {/* What was actually saved, and what being wrong cost (batch MOD2).
+              Counts first, always. The overturn RATE is shown only once the
+              sample is big enough to mean anything — under that the sentence
+              with the two raw numbers is the honest answer. */}
+          {aiStats.precision && (
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 10, fontSize: 13 }}>
+              <span><b>{aiStats.saved}</b> reviews saved (auto-approved, never overturned)</span>
+              <span style={aiStats.overturned > 0 ? { color: '#fecaca' } : undefined}>
+                <b>{aiStats.overturned}</b> overturned
+              </span>
+              <span className="muted">
+                {aiStats.precision.rate == null
+                  ? `Of ${aiStats.precision.auto_approved} auto-approved, ${aiStats.precision.overturned} were later judged wrong — too few to quote a rate (needs ${aiStats.precision.min_sample}).`
+                  : `Of ${aiStats.precision.auto_approved} auto-approved, ${aiStats.precision.overturned} were later judged wrong (${(aiStats.precision.rate * 100).toFixed(1)}%).`}
+              </span>
+            </div>
+          )}
+          {aiStats.trust && (
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 13 }}>
+              <span>
+                Shop trust {aiStats.trust.enabled ? '' : <span className="badge" style={{ background: '#7f1d1d', color: '#fecaca' }}>off</span>}
+                {' '}<b>{aiStats.trust.trusted_shops}</b> trusted · <b>{aiStats.trust.distrusted_shops}</b> distrusted · <b>{aiStats.trust.neutral}</b> neutral
+              </span>
+              <span className="muted">(trust needs {aiStats.trust.min_items} decided items)</span>
+              {aiStats.spot_checks && (
+                <span>
+                  Spot checks <b>{aiStats.spot_checks.pending}</b> pending · {aiStats.spot_checks.ok} ok · {aiStats.spot_checks.bad} bad
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* POST-PUBLISH SPOT CHECKS (batch MOD2). Deliberately its own card, above
+          the two pre-publish queues and tinted differently: everything here is
+          ALREADY PUBLIC. "OK" closes the check; "Not OK" takes the item down and
+          drops it back into the queue below. */}
+      {canManage && (
+        <div className="card" style={{ borderLeft: '4px solid #f59e0b' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <h3 style={{ marginTop: 0, marginBottom: 0 }}>
+              Already live — spot checks <span className="badge" style={{ background: '#78350f', color: '#fde68a' }}>{spotChecks.length}</span>
+            </h3>
+            <button type="button" className="secondary" onClick={loadSpotChecks}>Refresh</button>
+          </div>
+          <p className="muted" style={{ marginTop: 8 }}>
+            A random sample of what the AI published <strong>without a human</strong>. These are live on the
+            storefront right now. “OK” means the AI was right. “Not OK” takes the item down immediately, puts it
+            back in the review queue below and costs the shop a trust point.
+          </p>
+          {spotChecks.length === 0 ? (
+            <div className="muted">Nothing sampled awaiting a second look.</div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Shop</th>
+                    <th>Item</th>
+                    <th>AI said</th>
+                    <th>Published</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {spotChecks.map((sc) => (
+                    <SpotCheckRow key={sc.id} sc={sc} busy={spotBusy === sc.id} onReview={reviewSpotCheck} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -979,6 +1087,46 @@ function PendingRow({ p, busy, onModerate }) {
             <button type="button" className="secondary" disabled={busy} onClick={startReject}>Reject</button>
           </div>
         )}
+      </td>
+    </tr>
+  );
+}
+
+// One row in the POST-PUBLISH spot-check card (batch MOD2). The item is already
+// live, so this is a two-button row and nothing else: OK (the AI was right) or
+// Not OK (take it down now, back into the review queue). No note input — the
+// real decision happens in the pre-publish queue the item lands back in.
+function SpotCheckRow({ sc, busy, onReview }) {
+  const when = sc.created_at ? new Date(sc.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+  const creative = sc.creative || {};
+  return (
+    <tr>
+      <td style={cell}>
+        <div style={{ fontWeight: 600 }}>{sc.shop_name || '—'}</div>
+        {sc.shop_city && <div className="muted" style={{ fontSize: 12 }}>{sc.shop_city}</div>}
+      </td>
+      <td style={cell}>
+        {sc.kind === 'shop_image' ? (
+          sc.url
+            ? <img src={resolveImg(sc.url)} alt="Published photo" style={{ width: 88, height: 66, objectFit: 'cover', borderRadius: 6, border: '1px solid #334155' }} />
+            : <span className="muted">photo</span>
+        ) : (
+          <div style={{ maxWidth: 260 }}>
+            <div>{creative.glyph} {creative.offer_text || creative.title || <span className="muted">Promo</span>}</div>
+            {creative.subtitle && <div className="muted" style={{ fontSize: 12 }}>{creative.subtitle}</div>}
+          </div>
+        )}
+        {!sc.live && <div className="muted" style={{ fontSize: 12 }}>already taken down elsewhere</div>}
+      </td>
+      <td style={cell}><AiBadge v={sc.ai_verdict} /></td>
+      <td style={cell}>{when}</td>
+      <td style={cell}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button type="button" disabled={busy} onClick={() => onReview(sc.id, 'ok')}>{busy ? '…' : 'OK'}</button>
+          <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={() => onReview(sc.id, 'bad')}>
+            Not OK — take down
+          </button>
+        </div>
       </td>
     </tr>
   );

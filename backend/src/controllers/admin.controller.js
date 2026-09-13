@@ -380,6 +380,11 @@ const FEATURE_BOOL_DEFAULTS = {
   enrolment_fee_enabled: false, // MONEY-CRITICAL: paid-signup master switch
   storefront_ad_free_enabled: true, // storefront sponsored-slide buy-out (0063)
   ai_moderation_enabled: true, // AI triage of the photo/promo review queues (0064)
+  // Shop trust (batch MOD2, 0070). INDEPENDENTLY switchable: off means the
+  // auto-approve bar is the plain policy bar for every shop, whatever history
+  // they have. The counters keep being kept either way, so switching it back on
+  // is not blind. The AI never rejects with it on or off.
+  ai_moderation_trust_enabled: true,
   // Shop availability master KILL-SWITCH (batch A, 0066). 'false' makes
   // utils/shopOpen.availability() report every shop open, so the whole
   // open/closed gate can be turned off platform-wide without a deploy if it
@@ -397,6 +402,18 @@ const FEATURE_DEC_DEFAULTS = {
 };
 const DEC_MIN = 0.5;
 const DEC_MAX = 1.0;
+
+// Trust ADJUSTMENTS (batch MOD2, 0070) — decimals too, but in a different band:
+// these are how far the auto-approve bar bends, not the bar itself, so they live
+// in 0..0.30 rather than 0.5..1.0 and need their own clamp. 0.30 keeps trust a
+// nudge; and however these are set, utils/moderationTrust applies an absolute
+// 0.75 floor under the resulting auto-approve threshold.
+const FEATURE_ADJ_DEFAULTS = {
+  ai_moderation_trust_bonus: 0.05,
+  ai_moderation_distrust_penalty: 0.1,
+};
+const ADJ_MIN = 0;
+const ADJ_MAX = 0.3;
 
 // numeric keys (paise amounts, day counts, split percents) -> seeded default
 const FEATURE_NUM_DEFAULTS = {
@@ -434,6 +451,12 @@ const FEATURE_NUM_DEFAULTS = {
   // One-tap accept (batch B, 0067): the ceiling a promised ready time is clamped
   // to, so a fat-fingered chip can never promise next week. Policy, not a credential.
   order_eta_max_minutes: 240,
+  // Shop trust + post-publish spot checks (batch MOD2, 0070). How much history
+  // a shop needs before a clean record bends its bar at all, and what percent of
+  // AI auto-approvals get sampled for a human second look after publishing.
+  // Policy numbers, not credentials — no I CONFIRM.
+  ai_moderation_trust_min_items: 5,
+  ai_moderation_spot_check_pct: 10,
 };
 
 // TEXT feature keys — stored and edited as plain strings rather than numbers or
@@ -462,6 +485,13 @@ function featureDecimal(key) {
   const n = Number.parseFloat(settings.get(key));
   if (!Number.isFinite(n)) return FEATURE_DEC_DEFAULTS[key];
   return Math.min(DEC_MAX, Math.max(DEC_MIN, n));
+}
+
+// A trust adjustment as a number in the 0..0.30 band (batch MOD2).
+function featureAdjust(key) {
+  const n = Number.parseFloat(settings.get(key));
+  if (!Number.isFinite(n)) return FEATURE_ADJ_DEFAULTS[key];
+  return Math.min(ADJ_MAX, Math.max(ADJ_MIN, n));
 }
 
 exports.getSettings = async (_req, res) => {
@@ -500,6 +530,7 @@ exports.getSettings = async (_req, res) => {
       for (const k of Object.keys(FEATURE_BOOL_DEFAULTS)) f[k] = settings.get(k) === 'true';
       for (const k of Object.keys(FEATURE_NUM_DEFAULTS)) f[k] = featureNumber(k);
       for (const k of Object.keys(FEATURE_DEC_DEFAULTS)) f[k] = featureDecimal(k);
+      for (const k of Object.keys(FEATURE_ADJ_DEFAULTS)) f[k] = featureAdjust(k);
       for (const k of Object.keys(FEATURE_TEXT_DEFAULTS)) {
         const v = settings.get(k);
         f[k] = v == null || v === '' ? FEATURE_TEXT_DEFAULTS[k] : String(v);
@@ -699,6 +730,16 @@ exports.updateSettings = async (req, res) => {
       const n = Number.parseFloat(b[key]);
       if (!Number.isFinite(n)) throw ApiError.badRequest('invalid_threshold');
       patch[key] = String(Math.min(DEC_MAX, Math.max(DEC_MIN, n)));
+    }
+  }
+  // trust adjustments -> String(number), clamped to 0..0.30 (batch MOD2). These
+  // bend the auto-approve bar; the 0.75 hard floor under the RESULT is enforced
+  // in utils/moderationTrust and cannot be edited away from here.
+  for (const key of Object.keys(FEATURE_ADJ_DEFAULTS)) {
+    if (b[key] !== undefined) {
+      const n = Number.parseFloat(b[key]);
+      if (!Number.isFinite(n)) throw ApiError.badRequest('invalid_threshold');
+      patch[key] = String(Math.min(ADJ_MAX, Math.max(ADJ_MIN, n)));
     }
   }
 

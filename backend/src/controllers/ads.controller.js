@@ -7,6 +7,10 @@ const { csvRow, isoDate, sendCsv } = require('../utils/statement');
 // The ONE moderation audit trail (moderation_actions) — the storefront photo
 // queue below records into it like every other admin moderation action.
 const { writeAudit } = require('./admin.controller');
+// Shop trust + post-publish spot checks (batch MOD2). Every human decision on
+// the two queues feeds the SAME counters the AI job reads, so "this shop has a
+// clean history" means the same thing on both sides of the desk.
+const trust = require('../utils/moderationTrust');
 
 // Admin CRUD for the geo-targeted promo campaigns (batch ADS2). Routes live in
 // admin.routes.js under /api/admin/ads, gated per-verb by requirePerm:
@@ -297,6 +301,20 @@ exports.pendingPromos = async (_req, res) => {
 
 // The AI verdict fields an admin decision is measured against (batch AI-MOD):
 // recorded on the admin's audit row so overrides are countable (aiStats).
+// Record ONE human decision against the shop's trust history (batch MOD2).
+//
+// A rejection of something the AI had already published is an OVERTURN: the
+// approval was banked when the AI published it, so it has to be taken back as
+// the rejection is added — otherwise a wrong auto-approval would leave the shop
+// looking better than a shop that had simply never been approved. Everything
+// here is best-effort: the admin's decision has already been written and must
+// never be undone by a bookkeeping failure.
+async function recordHumanOutcome({ kind, targetId, shopId, outcome, client }) {
+  if (!shopId) return;
+  const overturned = outcome === 'rejected' && await trust.wasAutoApproved({ kind, targetId });
+  await trust.recordOutcome(client || null, { shopId, outcome, overturned });
+}
+
 function aiOverrideMeta(aiVerdict) {
   const v = aiVerdict && typeof aiVerdict === 'object' ? aiVerdict : null;
   return {
@@ -340,6 +358,9 @@ exports.approvePromo = async (req, res) => {
     reason: reviewNote,
     metadata: { shop_id: r.rows[0].link_shop_id, to: 'active', ...aiOverrideMeta(r.rows[0].ai_verdict) },
   });
+  await recordHumanOutcome({
+    kind: 'campaign', targetId: r.rows[0].id, shopId: r.rows[0].link_shop_id, outcome: 'approved',
+  });
   res.json({ id: r.rows[0].id, status: 'active' });
 };
 
@@ -378,6 +399,9 @@ exports.rejectPromo = async (req, res) => {
       reason,
       metadata: { shop_id: row.link_shop_id, to: 'rejected', ...aiOverrideMeta(row.ai_verdict) },
       client,
+    });
+    await recordHumanOutcome({
+      kind: 'campaign', targetId: row.id, shopId: row.link_shop_id, outcome: 'rejected', client,
     });
     let refunded = 0;
     // Refund only when there is a shop wallet target and a recorded amount. The
@@ -505,6 +529,15 @@ async function moderateShopImage(req, next, note) {
     // The AI's verdict rides along so an override is measurable (aiStats).
     metadata: { image_id: row.id, to: next, ...aiOverrideMeta(row.ai_verdict) },
   });
+  // The shop's trust history (batch MOD2): an approve banks a point, a reject
+  // costs one — and a reject of an AI-published photo takes back the point the
+  // auto-approval banked.
+  await recordHumanOutcome({
+    kind: 'shop_image',
+    targetId: row.id,
+    shopId: row.shop_id,
+    outcome: next === 'active' ? 'approved' : 'rejected',
+  });
   return row;
 }
 
@@ -514,6 +547,26 @@ async function moderateShopImage(req, next, note) {
 // decision it followed (null = no AI verdict on that row). `agreement` sums
 // the clear cases: approve-after-approve + reject-after-hold agree;
 // reject-after-approve + approve-after-hold disagree.
+// ---------------------------------------------------------------------------
+// The honest numbers (batch MOD2). `saved` and `overturned` are computed from
+// the ONE audit trail by ITEM, not by counting actions: an item is "saved" when
+// the AI published it and no human ever took it back, and "overturned" when a
+// human (in either queue) or a post-publish spot check later judged it wrong.
+//
+// Matching an AI decision to the human decision on the SAME item needs one
+// identity for both shapes of row: a photo's rows carry the image id in
+// metadata.image_id (their target_id is the shop), a campaign's target_id IS
+// the campaign. COALESCE(metadata->>'image_id', target_id::text) is that
+// identity, and it is why both writers keep those fields.
+const OVERTURN_ACTIONS = "('shop_image.reject','promo.reject','moderation.spot_check_bad')";
+const AI_ITEM_ID = "COALESCE(metadata->>'image_id', target_id::text)";
+
+// Below this many auto-approvals a percentage is noise, so the API returns
+// `rate: null` and the UI shows the two raw counts instead of a ratio. 20 is
+// the point at which one more overturn stops moving the number by tens of
+// percent.
+const PRECISION_MIN_SAMPLE = 20;
+
 exports.aiStats = async (_req, res) => {
   const r = await query(
     `SELECT action, metadata->>'ai_decision' AS ai_decision, COUNT(*)::int AS n
@@ -550,7 +603,200 @@ exports.aiStats = async (_req, res) => {
   }
   out.agreement.agreed = out.admin.approve_after_ai_approve + out.admin.reject_after_ai_hold;
   out.agreement.disagreed = out.admin.reject_after_ai_approve + out.admin.approve_after_ai_hold;
+
+  // ---- What was actually saved, and what it cost (batch MOD2) -------------
+  const cfg = await trust.getTrustConfig();
+  const [overturn, checks, bands] = await Promise.all([
+    // Auto-approvals in the window, split by whether anything ever took them
+    // back. One row, two numbers, no double counting: DISTINCT item.
+    query(
+      `WITH auto AS (
+         SELECT DISTINCT ${AI_ITEM_ID} AS item
+           FROM moderation_actions
+          WHERE action = 'ai_auto_approve' AND created_at > NOW() - interval '30 days'
+       ), overturned AS (
+         SELECT DISTINCT ${AI_ITEM_ID} AS item
+           FROM moderation_actions
+          WHERE action IN ${OVERTURN_ACTIONS}
+       )
+       SELECT COUNT(*)::int AS auto_approved,
+              COUNT(*) FILTER (WHERE a.item IN (SELECT item FROM overturned))::int AS overturned
+         FROM auto a`
+    ),
+    // Spot checks. `pending` is deliberately ALL-TIME, not windowed: a check
+    // still waiting after 30 days is work that still has to happen, and a
+    // dashboard that quietly dropped it would be the opposite of honest. The
+    // two settled counts use the same 30-day window as everything else.
+    query(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'pending')::int AS pending,
+         COUNT(*) FILTER (WHERE status = 'ok'  AND reviewed_at > NOW() - interval '30 days')::int AS ok,
+         COUNT(*) FILTER (WHERE status = 'bad' AND reviewed_at > NOW() - interval '30 days')::int AS bad
+       FROM moderation_spot_checks`
+    ),
+    // The trust picture right now (not a window — it is a standing state).
+    // Same constants the threshold maths uses, and the config's OWN min_items.
+    query(
+      `SELECT
+         COUNT(*) FILTER (WHERE score >= $1 AND approved_count + rejected_count >= $2)::int AS trusted_shops,
+         COUNT(*) FILTER (WHERE score < $3)::int AS distrusted_shops,
+         COUNT(*)::int AS total
+       FROM shop_moderation_trust`,
+      [trust.TRUSTED_SCORE, cfg.min_items, trust.DISTRUSTED_SCORE]
+    ),
+  ]);
+
+  const autoApproved = overturn.rows[0].auto_approved;
+  const overturned = overturn.rows[0].overturned;
+  out.saved = autoApproved - overturned;
+  out.overturned = overturned;
+  // Stated as counts first. A bare percentage over a handful of items is a lie
+  // with a decimal point in it, so `rate` is null until the sample is big
+  // enough and the UI renders the sentence instead.
+  out.precision = {
+    auto_approved: autoApproved,
+    overturned,
+    min_sample: PRECISION_MIN_SAMPLE,
+    rate: autoApproved >= PRECISION_MIN_SAMPLE ? Math.round((overturned / autoApproved) * 1000) / 1000 : null,
+    text: `of ${autoApproved} auto-approved, ${overturned} were later judged wrong`,
+  };
+  out.spot_checks = checks.rows[0];
+  const b = bands.rows[0];
+  out.trust = {
+    enabled: cfg.enabled,
+    min_items: cfg.min_items,
+    trusted_shops: b.trusted_shops,
+    distrusted_shops: b.distrusted_shops,
+    neutral: b.total - b.trusted_shops - b.distrusted_shops,
+  };
   res.json(out);
+};
+
+// ===========================================================================
+// POST-PUBLISH SPOT CHECKS (batch MOD2). Auto-approval is only safe if a sample
+// of what it published is looked at AGAIN. These two endpoints are that second
+// look. Same ads:manage gate as the two pre-publish queues, but a deliberately
+// separate surface: everything here is ALREADY LIVE.
+// ===========================================================================
+
+// GET /api/admin/moderation/spot-checks — pending checks, oldest first, with
+// enough to judge without leaving the page: the shop, the stored verdict, and a
+// link to the photo bytes or the campaign creative.
+exports.pendingSpotChecks = async (_req, res) => {
+  const r = await query(
+    `SELECT sc.id, sc.kind, sc.target_id, sc.shop_id, sc.ai_verdict, sc.created_at,
+            s.name AS shop_name, s.city AS shop_city,
+            i.updated_at AS image_updated_at, i.status AS image_status,
+            c.title AS campaign_title, c.offer_text, c.subtitle, c.glyph, c.status AS campaign_status
+       FROM moderation_spot_checks sc
+       LEFT JOIN shops s ON s.id = sc.shop_id
+       LEFT JOIN shop_images i ON sc.kind = 'shop_image' AND i.id = sc.target_id
+       LEFT JOIN ad_campaigns c ON sc.kind = 'campaign' AND c.id = sc.target_id
+      WHERE sc.status = 'pending'
+      ORDER BY sc.created_at ASC
+      LIMIT 200`
+  );
+  res.json({
+    items: r.rows.map((row) => ({
+      id: row.id,
+      kind: row.kind,
+      target_id: row.target_id,
+      shop_id: row.shop_id,
+      shop_name: row.shop_name,
+      shop_city: row.shop_city,
+      ai_verdict: row.ai_verdict || null,
+      created_at: row.created_at,
+      // The exact bytes the storefront is serving right now, or the promo lines.
+      url: row.kind === 'shop_image' ? galleryImageUrl(row.target_id, row.image_updated_at) : null,
+      creative: row.kind === 'campaign'
+        ? { title: row.campaign_title, offer_text: row.offer_text, subtitle: row.subtitle, glyph: row.glyph }
+        : null,
+      // Whether the item is still live; a check whose item was already taken
+      // down elsewhere is still worth closing, but the admin should see that.
+      live: row.kind === 'shop_image' ? row.image_status === 'active' : row.campaign_status === 'active',
+    })),
+  });
+};
+
+// POST /api/admin/moderation/spot-checks/:id  { verdict: 'ok'|'bad', note? }
+//
+// 'ok'  — the AI was right. The item stays live, the check is closed, and the
+//         shop's trust is NOT touched: the approval was already banked when the
+//         AI published it, and banking it twice would let sampling itself
+//         inflate a shop's record.
+// 'bad' — the AI was wrong. In ONE transaction: the item goes back to
+//         pending_review (so it stops being public and lands back in the
+//         pre-publish queue, flagged to the top), the shop's trust records a
+//         rejection that OVERTURNS the earlier auto-approval, and the decision
+//         is audited with the admin's id.
+exports.reviewSpotCheck = async (req, res) => {
+  const { id } = req.params;
+  if (!UUID_RE.test(id)) throw ApiError.notFound('Spot check not found');
+  const verdict = String(req.body && req.body.verdict);
+  if (verdict !== 'ok' && verdict !== 'bad') throw ApiError.badRequest('invalid_verdict');
+  // `note` is this endpoint's own field name (the spec's), with review_note /
+  // reason accepted too so the queue cards can share one note input.
+  const b = req.body || {};
+  const note = reviewNoteFrom({ review_note: b.note != null ? b.note : b.review_note, reason: b.reason });
+
+  const outcome = await withTx(async (client) => {
+    // The atomic transition: only the ONE update that actually moves the check
+    // out of 'pending' does the work, so a double-tap can never take an item
+    // down twice or decrement a shop twice.
+    const upd = await client.query(
+      `UPDATE moderation_spot_checks
+          SET status = $2, reviewed_by = $3, reviewed_at = NOW(), note = $4
+        WHERE id = $1 AND status = 'pending'
+        RETURNING id, kind, target_id, shop_id, ai_verdict`,
+      [id, verdict, req.user.sub, note]
+    );
+    if (!upd.rowCount) return { transitioned: false };
+    const row = upd.rows[0];
+    let tookDown = false;
+    if (verdict === 'bad') {
+      // Back to pending_review — NOT rejected. This is a take-down, not a
+      // verdict on the content: it stops being public immediately and a human
+      // decides properly in the pre-publish queue, where ai_flagged puts it on
+      // top.
+      const target = row.kind === 'shop_image'
+        ? await client.query(
+          `UPDATE shop_images SET status = 'pending_review', ai_flagged = true, reviewed_at = NOW()
+             WHERE id = $1 AND status = 'active' RETURNING id`,
+          [row.target_id]
+        )
+        : await client.query(
+          `UPDATE ad_campaigns SET status = 'pending_review', ai_flagged = true, updated_at = NOW()
+             WHERE id = $1 AND status = 'active' RETURNING id`,
+          [row.target_id]
+        );
+      tookDown = target.rowCount > 0;
+      await trust.recordOutcome(client, { shopId: row.shop_id, outcome: 'rejected', overturned: true });
+    }
+    await writeAudit({
+      adminUserId: req.user.sub,
+      action: verdict === 'bad' ? 'moderation.spot_check_bad' : 'moderation.spot_check_ok',
+      targetType: row.kind === 'shop_image' ? 'shop' : 'campaign',
+      targetId: row.kind === 'shop_image' ? row.shop_id : row.target_id,
+      reason: note,
+      metadata: {
+        spot_check_id: row.id,
+        kind: row.kind,
+        // The same item identity aiStats matches an auto-approval on.
+        ...(row.kind === 'shop_image' ? { image_id: row.target_id } : { shop_id: row.shop_id }),
+        took_down: tookDown,
+        ...aiOverrideMeta(row.ai_verdict),
+      },
+      client,
+    });
+    return { transitioned: true, kind: row.kind, target_id: row.target_id, took_down: tookDown };
+  });
+
+  if (!outcome.transitioned) {
+    const exists = await query('SELECT status FROM moderation_spot_checks WHERE id = $1', [id]);
+    if (!exists.rowCount) throw ApiError.notFound('Spot check not found');
+    throw ApiError.conflict(`Spot check is already '${exists.rows[0].status}'`);
+  }
+  res.json({ id, status: verdict, kind: outcome.kind, target_id: outcome.target_id, took_down: outcome.took_down });
 };
 
 // POST /api/admin/shop-images/:id/approve  { review_note? } → active (served).

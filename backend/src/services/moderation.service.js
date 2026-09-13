@@ -2,6 +2,10 @@ const { query, withTx } = require('../config/db');
 const logger = require('../utils/logger');
 const settings = require('../config/settings');
 const { writeAudit } = require('../controllers/admin.controller');
+// PHASE 2 (batch MOD2). Required as a MODULE (not destructured) so every call
+// goes through the live export — a test can stub one function to prove the
+// fail-open path, and the rule itself stays in the one file that documents it.
+const trust = require('../utils/moderationTrust');
 
 // AI-assisted content moderation, PHASE 1 (batch AI-MOD). An LLM triages the two
 // owner-content review queues — storefront photos (shop_images) and owner promos
@@ -21,6 +25,22 @@ const { writeAudit } = require('../controllers/admin.controller');
 // The MODEL id is NEVER hardcoded — it comes from the MODERATION_LLM_MODEL
 // setting (platform_settings, else env). Only the token budget and the timeout
 // (plain numbers) have code defaults.
+//
+// PHASE 2 (batch MOD2, migration 0070) EXTENDS the same file — it does not fork
+// it. Three additions, and nothing else changes:
+//   - SHOP TRUST. The thresholds a verdict is measured against are now resolved
+//     PER SHOP (resolveThresholds -> utils/moderationTrust), so a clean history
+//     earns a lower auto-approve bar and a rejected history earns a higher one.
+//     The bar can never fall below a hard floor of 0.75, trust can never turn a
+//     "hold" into a publish, and the AI still NEVER rejects.
+//   - POST-PUBLISH SPOT CHECKS. A sample of what was auto-approved is queued
+//     for a human second look (afterAutoApprove), so drift is caught rather
+//     than published quietly for weeks.
+//   - The counters behind both, written in the SAME transaction as the
+//     decision, which is what makes the honest metrics in ads.controller
+//     aiStats possible.
+// All of it is fail-open in exactly the Phase-1 sense: any failure in the trust
+// lookup, the config read or the sampling leaves the Phase-1 decision standing.
 
 // Output budget: the verdict is a ~5-field JSON object, so keep it tight.
 const DEFAULT_MAX_TOKENS = 300;
@@ -309,14 +329,53 @@ async function classifyText(input, opts = {}) {
 //   NEVER auto-rejects. Any failure is logged and leaves the row pending.
 // ===========================================================================
 
-// Which policy branch a verdict lands in under the live thresholds.
+// Which policy branch a verdict lands in under the live thresholds. `policy` is
+// either the plain Phase-1 policy or the per-shop EFFECTIVE thresholds from
+// resolveThresholds() below — the two have the same shape on purpose, so trust
+// can never introduce a fourth branch. There is still no 'reject' here.
 function decideOutcome(verdict, policy) {
   if (verdict.decision === 'approve' && verdict.confidence >= policy.auto_approve_min) return 'auto_approve';
   if (verdict.decision === 'hold' && verdict.confidence >= policy.hold_min) return 'hold';
   return 'review';
 }
 
+// resolveThresholds(shopId, policy) — PHASE 2. The bars THIS shop's verdict is
+// measured against: the plain policy bars bent by the shop's trust history
+// (utils/moderationTrust), or the plain policy bars when trust is switched off,
+// when the shop has no history, or when ANYTHING goes wrong.
+//
+// FAIL-OPEN, explicitly: a throwing config read or trust lookup falls straight
+// back to Phase-1 behaviour rather than to a guessed bar, so the worst a broken
+// trust table can do is leave the system exactly as it was before this batch.
+async function resolveThresholds(shopId, policy) {
+  try {
+    const cfg = await trust.getTrustConfig();
+    if (!cfg.enabled) return { ...policy, band: 'neutral', spot_check_pct: cfg.spot_check_pct };
+    const row = await trust.getTrust(shopId);
+    return { ...trust.effectiveThresholds(policy, row, cfg), spot_check_pct: cfg.spot_check_pct };
+  } catch (err) {
+    logger.warn({ err: err && err.message, shop_id: shopId }, 'moderation: trust unavailable — using the plain policy');
+    return { ...policy, band: 'neutral', spot_check_pct: 0 };
+  }
+}
+
 const OUTCOME_ACTION = { auto_approve: 'ai_auto_approve', hold: 'ai_hold', review: 'ai_review' };
+
+// afterAutoApprove(client, { kind, targetId, shopId, verdict, thresholds }) —
+// the PHASE 2 bookkeeping that rides along with an auto-approval, inside the
+// same transaction as the publish:
+//   1. the shop banks an 'approved' item (it is only counted as approved for as
+//      long as no human overturns it — see moderationTrust.recordOutcome);
+//   2. with probability `spot_check_pct`, the published item is queued for a
+//      post-publish second look.
+// Both are best-effort by construction (SAVEPOINT inside moderationTrust): a
+// failure here leaves the publish and the audit row untouched.
+async function afterAutoApprove(client, { kind, targetId, shopId, verdict, thresholds }) {
+  await trust.recordOutcome(client, { shopId, outcome: 'approved' });
+  if (trust.shouldSpotCheck(thresholds.spot_check_pct)) {
+    await trust.enqueueSpotCheck(client, { kind, targetId, shopId, verdict });
+  }
+}
 
 // moderateShopImage(imageId, { client }) → { outcome } | { skipped }.
 async function moderateShopImage(imageId, { client } = {}) {
@@ -339,7 +398,10 @@ async function moderateShopImage(imageId, { client } = {}) {
     if (!verdict) return { skipped: 'no_verdict' };
 
     const policy = await getPolicy();
-    const outcome = decideOutcome(verdict, policy);
+    // PHASE 2: the bars this SHOP is measured against (trust), not just the
+    // platform ones. Falls back to `policy` on any failure.
+    const thresholds = await resolveThresholds(row.shop_id, policy);
+    const outcome = decideOutcome(verdict, thresholds);
 
     const applied = await withTx(async (c) => {
       const locked = await c.query(
@@ -367,13 +429,20 @@ async function moderateShopImage(imageId, { client } = {}) {
         targetType: 'shop',
         targetId: row.shop_id,
         reason: verdict.reason || null,
-        metadata: { image_id: row.id, ...verdict },
+        // `band` records WHICH bar this row was judged against, so a decision
+        // is explainable months later from the audit trail alone.
+        metadata: { image_id: row.id, ...verdict, trust_band: thresholds.band || 'neutral' },
         client: c,
       });
+      if (outcome === 'auto_approve') {
+        await afterAutoApprove(c, {
+          kind: 'shop_image', targetId: row.id, shopId: row.shop_id, verdict, thresholds,
+        });
+      }
       return true;
     });
     if (!applied) return { skipped: 'raced' };
-    logger.info({ image_id: imageId, outcome, confidence: verdict.confidence }, 'moderation: photo triaged');
+    logger.info({ image_id: imageId, outcome, confidence: verdict.confidence, trust_band: thresholds.band }, 'moderation: photo triaged');
     return { outcome };
   } catch (err) {
     logger.error({ err: err && err.message, image_id: imageId }, 'moderation: photo job failed — row left pending');
@@ -405,7 +474,8 @@ async function moderateCampaign(campaignId, { client } = {}) {
     if (!verdict) return { skipped: 'no_verdict' };
 
     const policy = await getPolicy();
-    const outcome = decideOutcome(verdict, policy);
+    const thresholds = await resolveThresholds(row.link_shop_id, policy);
+    const outcome = decideOutcome(verdict, thresholds);
 
     const applied = await withTx(async (c) => {
       const locked = await c.query(
@@ -432,13 +502,18 @@ async function moderateCampaign(campaignId, { client } = {}) {
         targetType: 'campaign',
         targetId: row.id,
         reason: verdict.reason || null,
-        metadata: { shop_id: row.link_shop_id, ...verdict },
+        metadata: { shop_id: row.link_shop_id, ...verdict, trust_band: thresholds.band || 'neutral' },
         client: c,
       });
+      if (outcome === 'auto_approve') {
+        await afterAutoApprove(c, {
+          kind: 'campaign', targetId: row.id, shopId: row.link_shop_id, verdict, thresholds,
+        });
+      }
       return true;
     });
     if (!applied) return { skipped: 'raced' };
-    logger.info({ campaign_id: campaignId, outcome, confidence: verdict.confidence }, 'moderation: promo triaged');
+    logger.info({ campaign_id: campaignId, outcome, confidence: verdict.confidence, trust_band: thresholds.band }, 'moderation: promo triaged');
     return { outcome };
   } catch (err) {
     logger.error({ err: err && err.message, campaign_id: campaignId }, 'moderation: promo job failed — row left pending');
@@ -483,6 +558,7 @@ module.exports = {
   enqueueCampaign,
   // exported for tests / introspection
   decideOutcome,
+  resolveThresholds,
   GUARDRAILS,
   DEFAULT_MAX_TOKENS,
   DEFAULT_TIMEOUT_MS,
