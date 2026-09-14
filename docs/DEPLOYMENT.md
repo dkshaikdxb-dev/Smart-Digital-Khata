@@ -86,6 +86,34 @@ This creates a `admin@example.com` / password you set in `.env` as `ADMIN_PASSWO
 
 ---
 
+## Step 5b — Demo shops (optional, opt-in)
+
+Every deploy loads the product data — the base catalogue, the catalogue
+translations and the regional UI strings — without being asked. It does **not**
+load demo data, because that means inventing shops, owners, customers and
+transactions in your database.
+
+To get the ten demo shops (`store01..store10@demo.local`), store01's
+50-product catalogue and the house promo cards, set one variable in `.env`:
+
+```bash
+SEED_DEMO_DATA=true
+```
+
+then deploy as usual. The deploy log says which branch it took — `DEMO DATA:
+LOADING …` or `DEMO DATA: SKIPPED …` — and ends with a report of what the
+database now holds. Re-deploying with the flag still set is safe: the seeders
+converge rather than duplicate. Removing the flag stops future deploys from
+re-seeding; it deletes nothing.
+
+Check any database at any time with:
+
+```bash
+docker compose exec backend npm run data:status
+```
+
+---
+
 ## Step 6 — Point your domain
 
 In your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.):

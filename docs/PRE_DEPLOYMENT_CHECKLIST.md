@@ -124,6 +124,12 @@ SEED_ADMIN=true ./scripts/deploy.sh
 
 `SEED_ADMIN=true` creates the platform-level admin user using `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`.
 
+The deploy always loads the shipped product data (base catalogue, catalogue
+translations, regional UI strings). It loads **demo** shops only if you set
+`SEED_DEMO_DATA=true` in `.env` — leave it unset on a database that will hold
+real shops. Either way the deploy log ends with a data-state report, which you
+can print again at any time with `docker compose exec backend npm run data:status`.
+
 ## 8. SSL
 
 Pick ONE:

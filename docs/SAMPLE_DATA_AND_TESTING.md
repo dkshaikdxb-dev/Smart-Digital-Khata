@@ -14,58 +14,98 @@ Money is **integer paise** everywhere (display ₹ = paise / 100).
 
 ## 1. Sample / seed data
 
+### What a deploy loads, and what it does not
+
+`scripts/deploy.sh` hands the data phase to `scripts/deploy-data.sh`, which
+loads two very different things:
+
+- **Product data — always.** The base catalogue, the catalogue translations and
+  the regional UI strings all load inside `npm run migrate`, on every deploy, in
+  every environment. They are part of bringing a database up to date with the
+  repo: the schema without them is half a migration. All three UPSERT, so a
+  re-run rewrites each row with its own value; a failure fails the deploy.
+- **Demo data — only when you ask.** The ten demo shops, store01's commerce
+  catalogue and the house promo cards load only when `SEED_DEMO_DATA=true`. They
+  create users, shops, customers, orders and money rows, which is very hard to
+  undo in a production database, so the deploy will not do it on its own.
+
+```bash
+SEED_DEMO_DATA=true ./scripts/deploy.sh    # or set SEED_DEMO_DATA=true in .env
+```
+
+Either way the deploy log says which branch it took (`DEMO DATA: LOADING …` /
+`DEMO DATA: SKIPPED …`) and finishes by printing the data state.
+
+### What is in this database?
+
+```bash
+docker compose exec backend npm run data:status
+```
+
+One read-only command instead of five script names: how many of the shipped base
+SKUs, catalogue translations and regional UI strings are actually loaded (per
+language), how many demo shops exist, how many of them are listed, and how many
+have a catalogue — only listed shops with an active product appear in the public
+directory, so a demo shop missing from the storefront shows up here as
+`10 seeded, 10 listed, 0 with a catalogue`.
+
+### The individual loaders
+
 All seeders are `npm` scripts in `backend/` (`backend/package.json`). Run them
 inside the backend container (`docker compose exec backend …`) or, in a local
 non-Docker setup, from `backend/` with a valid `DATABASE_URL` in `.env`.
 
 | Script | What it loads | Prod guard |
 |---|---|---|
-| `npm run migrate` | Applies SQL migrations `0001..0020` (schema). Additive, idempotent, recorded in `_migrations`. | none — always safe |
+| `npm run migrate` | Applies the SQL migrations (schema; additive, idempotent, recorded in `_migrations`), then loads **all** the product data below. | none — always safe |
 | `npm run seed` | Creates the platform **admin** user from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. Skips if it exists. | refuses a weak/CHANGE_ME `ADMIN_PASSWORD` |
-| `npm run import:catalog` | **1,615** shared base SKUs (`src/data/catalog-seed.json`) into `catalog_items`. Real base data — UPSERT by `sku`, idempotent. Only touches global seed rows (never shop-owned custom items). | **none** — allowed in production |
-| `npm run import:catalog-i18n` | **1,042** catalog translations (`src/data/catalog-i18n.json`) into `catalog_i18n` for hi/ta/te/kn/ml/ur. UPSERT by `(term_type, term_en, lang)`, idempotent. Never touches `catalog_items`. | **none** — allowed in production |
-| `npm run seed:demo` | Demo shops `store01..store10` (owners `storeNN@demo.local`) + demo customers. Idempotent (skips existing). | **refuses in production** unless `FORCE_DEMO=true` |
-| `npm run seed:commerce` | ~50 bilingual demo products + variants + sample orders on the canonical demo shop (`store01@demo.local`); marks it listed with a location and **prints the consumer link**. Reseeds that demo shop's catalog on each run. | **refuses in production** unless `FORCE_DEMO=true` |
+| `npm run import:catalog` | **1,615** shared base SKUs (`src/data/catalog-seed.json`) into `catalog_items`. Real base data — UPSERT by `sku`, idempotent. Only touches global seed rows (never shop-owned custom items). Also runs inside `migrate`. | **none** — allowed in production |
+| `npm run import:catalog-i18n` | Catalogue translations (`src/data/catalog-i18n.json`) into `catalog_i18n`. UPSERT by `(term_type, term_en, lang)`, idempotent. Never touches `catalog_items`. Also runs inside `migrate`. | **none** — allowed in production |
+| `npm run import:i18n` | **6,716** regional UI strings (`src/data/regional-i18n.json`) into `i18n_overrides`. UPSERT by `(lang, key)`, idempotent. **bn/gu/mr have no block in the web dictionary at all** — these rows are the only UI text they have, so without this import those languages render entirely in English. Also runs inside `migrate`. | **none** — allowed in production |
+| `npm run data:demo` | Every demo dataset in the order that converges: `seed:demo`, then `seed:commerce`, then `seed:promo-demo`. What a deploy runs when `SEED_DEMO_DATA=true`. | inherits the guards below |
+| `npm run seed:demo` | Demo shops `store01..store10` (owners `storeNN@demo.local`) + demo customers + a starter catalogue for any demo shop that has none. Idempotent (skips existing). | **refuses in production** unless `FORCE_DEMO=true` |
+| `npm run seed:commerce` | ~50 demo products + variants + sample orders on the canonical demo shop (`store01@demo.local`); marks it listed with a location and **prints the consumer link**. Reseeds that demo shop's catalog on each run. | **refuses in production** unless `FORCE_DEMO=true` |
+| `npm run seed:promo-demo` | The house promo cards (`advertiser = 'Smart Khata'`) behind the consumer promo band. Skips creation if they already exist. | none, but it is demo content |
+| `npm run data:status` | Nothing — read-only report of everything above. | n/a |
+
+Order matters for the demo seeders and `data:demo` gets it right: `seed:demo`
+creates the ten shops (and `seed:commerce` refuses to run without store01), then
+`seed:commerce` clears and reseeds store01's richer catalogue, then the promos.
 
 ### Local (Docker) — a populated demo from scratch
 
 ```bash
 docker compose up -d --build
-./scripts/migrate.sh                        # or: docker compose exec backend npm run migrate
-docker compose exec backend npm run seed            # admin user
-docker compose exec backend npm run import:catalog       # 1,615 base SKUs
-docker compose exec backend npm run import:catalog-i18n  # 1,042 translations
-docker compose exec backend npm run seed:demo            # demo shops
-docker compose exec backend npm run seed:commerce        # demo products + orders (prints consumer link)
+./scripts/migrate.sh                      # schema + base catalogue + all translations
+docker compose exec backend npm run seed          # admin user
+docker compose exec backend npm run data:demo     # demo shops, catalogue, promos
+docker compose exec backend npm run data:status   # what did that leave behind?
 ```
 
 ### Production (VPS)
 
-The base catalog and translations are **real data** and carry no demo guard:
+The base catalogue, the catalogue translations and the regional UI strings are
+**real data**, carry no demo guard and need no hand-running at all — every
+deploy loads them. Seeding **demo** shops/products into a production database is
+the deliberate act:
 
 ```bash
-# inside the backend container on the VPS
-docker compose exec backend npm run import:catalog
-docker compose exec backend npm run import:catalog-i18n
-```
-
-Seeding **demo** shops/products into a production DB requires an explicit
-override (they only ever touch the demo shop, never real shops):
-
-```bash
-docker compose exec -e FORCE_DEMO=true backend npm run seed:demo
-docker compose exec -e FORCE_DEMO=true backend npm run seed:commerce
+SEED_DEMO_DATA=true ./scripts/deploy.sh          # the whole deploy, demo included
+# or, without a deploy:
+docker compose exec -e FORCE_DEMO=true backend npm run data:demo
 ```
 
 ### GitHub Actions (manual, `workflow_dispatch`)
 
-The same three loaders are wired as **manual** workflows that SSH into the VPS
-and run the script inside the backend container (Actions tab → *Run workflow*):
+The loaders are also wired as **manual** workflows that SSH into the VPS and run
+the script inside the backend container (Actions tab → *Run workflow*). They are
+a way to reload without deploying, not the way the data arrives:
 
 | Workflow file | Runs on the VPS | Notes |
 |---|---|---|
 | `.github/workflows/import-catalog.yml` | `npm run import:catalog` | real base data, no `FORCE_DEMO` |
 | `.github/workflows/import-catalog-i18n.yml` | `npm run import:catalog-i18n` | real i18n data, no `FORCE_DEMO` |
+| `.github/workflows/import-i18n.yml` | `npm run import:i18n` | real i18n data, no `FORCE_DEMO` |
 | `.github/workflows/seed-demo.yml` | `seed:demo` + `seed:commerce` with `FORCE_DEMO=true` | demo only; touches the demo shop, prints the consumer link in the run log |
 
 ---
