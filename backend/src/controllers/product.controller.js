@@ -3,6 +3,7 @@ const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { refreshProductSearchText } = require('../utils/refresh-search-text');
 const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
+const { resolveCatalogueLang } = require('../utils/language-registry');
 
 // Best-effort refresh of a product's search_text after a write. A failure here
 // must never fail the product write — the SQL backfill / next edit / the
@@ -20,15 +21,11 @@ async function safeRefreshSearchText(productId) {
 // (800px WebP, defensive sharp fallback) identical.
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
-// Languages the consumer catalogue can be viewed in. 'en' is the base language:
-// no i18n join, response unchanged. Any other known lang LEFT JOINs catalog_i18n
-// for a localized product name (English fallback). Mirrors catalog.controller's
-// resolveLang (owner catalogue) so every consumer path localizes consistently.
-const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
-function resolveLang(raw) {
-  const lang = (raw || '').trim().toLowerCase();
-  return KNOWN_LANGS.has(lang) ? lang : 'en';
-}
+// Which languages the consumer catalogue can be viewed in is the `languages`
+// registry's call (has_catalogue), not a constant in this file — see
+// resolveCatalogueLang. 'en' is the base language: no i18n join, response
+// unchanged. Any catalogue-capable lang LEFT JOINs catalog_i18n for a localized
+// product name (English fallback).
 
 // Columns safe to return in JSON — never the raw image_data BYTEA blob.
 const PRODUCT_PUBLIC_COLS =
@@ -134,7 +131,7 @@ exports.publicCatalog = async (req, res) => {
   // (lang=en) name behaviour is unchanged. `search_text` is added to the SELECT
   // (both paths) so the in-shop client filter can match aliases/romanized/native
   // tokens; it is the normalized all-language blob, not sensitive.
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
   const params = [shopId];
   let sql;

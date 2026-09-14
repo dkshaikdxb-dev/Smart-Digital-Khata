@@ -156,13 +156,21 @@ docker compose exec backend npm run seed
 `npm run migrate` (or `./scripts/migrate.sh`); each is additive and idempotent, so re-running
 is safe.
 
+`npm run migrate` also loads the committed catalogue translations
+(`backend/src/data/catalog-i18n.json`, 4,317 rows across hi/ta/te/kn/ml/ur/bn/gu/mr)
+as its last step. They are real localisation data rather than demo content, the
+load UPSERTs and is safe to repeat, and running it on the one path every
+environment already takes is what stops finished translations from sitting in
+the repo unloaded. `languages.has_catalogue` and `has_search` are derived from
+those rows by a trigger, so they follow the data instead of being set by hand.
+
 **Seeding & catalogue import** (run inside the backend container / directory):
 
 | Script | What it loads |
 | ------ | ------------- |
 | `npm run seed` / `npm run seed:demo` | Base demo shop, customers and transactions |
 | `npm run import:catalog` | 1,615 shared master-catalogue base SKUs |
-| `npm run import:catalog-i18n` | ~1,042 local-language catalogue translations (hi/ta/te/kn/ml/ur) |
+| `npm run import:catalog-i18n` | The catalogue translations again, without touching the schema (`npm run migrate` already loads them) |
 | `npm run seed:commerce` | ~50 bilingual demo products + variants, lists a demo shop, prints a consumer link |
 
 Dev and prod-like stacks use separate Docker project names

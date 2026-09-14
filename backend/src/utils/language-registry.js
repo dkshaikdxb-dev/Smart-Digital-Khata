@@ -66,4 +66,41 @@ async function toStorableLang(raw, opts) {
   return (await isRegisteredLang(code, opts)) ? code : null;
 }
 
-module.exports = { CODE_RE, normalizeLangCode, registeredLangs, isRegisteredLang, toStorableLang };
+/**
+ * Resolve a caller's `?lang=` to the language the CATALOGUE should be READ in.
+ *
+ * 'en' is the base language and always the fallback: it reads the plain English
+ * columns with no i18n join, so an unknown code, a code with no localized
+ * catalogue, or an unreadable registry all degrade to English and the catalogue
+ * still renders. Anything the registry marks has_catalogue = true localizes.
+ *
+ * This replaces the identical hardcoded seven-code Set that had been copied into
+ * product.controller, catalog.controller and discovery.controller. Those copies
+ * were written before Bengali, Gujarati and Marathi had a catalogue and were
+ * never revisited when it arrived, so the query simply never asked for Bengali —
+ * 481 finished Bengali terms could sit in the table and every consumer response
+ * would still come back in English. Reading the capability from the registry,
+ * which migration 0075 derives from the catalogue rows themselves, means the
+ * read path follows the data instead of a developer's memory of it.
+ */
+async function resolveCatalogueLang(raw) {
+  const code = normalizeLangCode(raw);
+  if (!code || code === 'en') return 'en';
+  try {
+    const r = await query('SELECT 1 FROM languages WHERE code = $1 AND has_catalogue = true', [code]);
+    return r.rowCount ? code : 'en';
+  } catch (err) {
+    // The catalogue must always render; an unreadable registry means English,
+    // never a 500 on a public storefront.
+    return 'en';
+  }
+}
+
+module.exports = {
+  CODE_RE,
+  normalizeLangCode,
+  registeredLangs,
+  isRegisteredLang,
+  toStorableLang,
+  resolveCatalogueLang,
+};
