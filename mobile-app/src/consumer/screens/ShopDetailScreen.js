@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, Image, ScrollView, Pressable, StyleSheet,
+  View, Text, ScrollView, Pressable, StyleSheet,
 } from 'react-native';
 import { colors, sizes } from '../theme';
-import { Card, ErrorBanner, Loading, Empty, Button } from '../components';
+import { Card, Loading, Empty, Button } from '../components';
 import ShopCarousel from '../components/ShopCarousel';
+import ProductThumb from '../components/ProductThumb';
 import { money } from '../money';
-import { publicApi, resolveImageUrl } from '../consumerApi';
+import { publicApi } from '../consumerApi';
+import { friendlyError, canRetry } from '../lib/errorText';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
@@ -16,27 +18,6 @@ const WEIGHT_CHIPS = [250, 500, 1000];
 function gramsLabel(g) {
   const n = Number(g) || 0;
   return n % 1000 === 0 ? `${n / 1000} kg` : `${n} g`;
-}
-
-// A square product thumbnail. Renders the resolved image_url when present,
-// otherwise a neutral placeholder tile (no broken image on 2G / missing photo).
-function ProductThumb({ uri }) {
-  const [failed, setFailed] = useState(false);
-  if (uri && !failed) {
-    return (
-      <Image
-        source={{ uri }}
-        style={styles.thumb}
-        resizeMode="cover"
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-  return (
-    <View style={[styles.thumb, styles.thumbPlaceholder]}>
-      <Text style={styles.thumbGlyph}>🛍️</Text>
-    </View>
-  );
 }
 
 // Priority 3 — shop profile + catalog from GET /public/shops/:id (localized by
@@ -51,20 +32,29 @@ export default function ShopDetailScreen({ route, navigation }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [retryable, setRetryable] = useState(false);
+  // Whether a load has ever COMPLETED, so an empty catalogue is only ever
+  // reported once we actually know the catalogue is empty.
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
+    setRetryable(false);
+    setLoading(true);
     try {
       const r = await publicApi.shop(shopId, lang);
       const s = r.shop || r;
       setShop(s);
       setProducts(s.products || r.products || []);
+      setLoaded(true);
     } catch (err) {
-      setError(err.message);
+      // An authored sentence, never the axios/server text.
+      setError(friendlyError(t, err));
+      setRetryable(canRetry(err));
     } finally {
       setLoading(false);
     }
-  }, [shopId, lang]);
+  }, [shopId, lang, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -114,16 +104,24 @@ export default function ShopDetailScreen({ route, navigation }) {
             horizontal padding as the header; nothing renders when empty. */}
         {shop ? <ShopCarousel slides={shop.slides} images={shop.images} alt={name} /> : null}
 
-        <ErrorBanner>{error}</ErrorBanner>
-
-        {loading ? (
+        {/* Failed, loading and empty are three different screens. A catalogue
+            that failed to load used to fall through to "This shop has not added
+            items yet" — telling a shopper a stocked shop is bare. */}
+        {error ? (
+          <View style={styles.errCard}>
+            <Text style={styles.errIcon}>⚠️</Text>
+            <Text style={styles.errTitle}>{t('shopdetail.failedTitle')}</Text>
+            <Text style={styles.errText}>{error}</Text>
+            {retryable ? <Button title={t('common.retry')} onPress={load} style={styles.errBtn} /> : null}
+          </View>
+        ) : loading ? (
           <Loading text={t('shopdetail.loading')} />
-        ) : products.length === 0 ? (
+        ) : loaded && products.length === 0 ? (
           <Empty icon="📦" text={t('shopdetail.noItems')} />
         ) : (
           products.map((p) => {
             const line = inCart(p.id);
-            const thumb = <ProductThumb uri={resolveImageUrl(p.image_url)} />;
+            const thumb = <ProductThumb product={p} size={56} style={styles.thumb} />;
             if (p.sold_by_weight) {
               const activeG = line ? Number(line.weight_grams) : 0;
               return (
@@ -201,7 +199,9 @@ export default function ShopDetailScreen({ route, navigation }) {
             <Text style={styles.cartCount}>{t('shops.itemsCount', { n: cart.count })}</Text>
             <Text style={styles.cartTotal}>{money(cart.subtotal)}</Text>
           </View>
-          <Button title={t('shopdetail.review')} onPress={() => navigation.navigate('Cart')} style={styles.reviewBtn} />
+          {/* The cart is its own tab now, so reviewing an order leaves this
+              stack instead of pushing a Cart screen that only existed here. */}
+          <Button title={t('shopdetail.review')} onPress={() => navigation.navigate('CartTab')} style={styles.reviewBtn} />
         </View>
       ) : null}
     </View>
@@ -242,12 +242,20 @@ const styles = StyleSheet.create({
   addBtnClosed: { backgroundColor: colors.border },
   addTextClosed: { color: colors.text },
   prodRow: { flexDirection: 'row', alignItems: 'center' },
-  thumb: {
-    width: 56, height: 56, borderRadius: 12,
-    backgroundColor: colors.cardAlt, marginRight: 12,
+  thumb: { marginRight: 12 },
+  errCard: {
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    borderColor: colors.danger,
+    borderWidth: 1,
+    borderRadius: sizes.radius,
+    padding: sizes.pad,
+    alignItems: 'center',
+    marginBottom: sizes.gap,
   },
-  thumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  thumbGlyph: { fontSize: 24 },
+  errIcon: { fontSize: 34, marginBottom: 8 },
+  errTitle: { color: colors.text, fontSize: 17, fontWeight: '800', textAlign: 'center' },
+  errText: { color: '#fecaca', fontSize: 15, textAlign: 'center', marginTop: 6 },
+  errBtn: { marginTop: 14, alignSelf: 'stretch' },
   prodInfo: { flex: 1, paddingRight: 12 },
   prodName: { color: colors.text, fontSize: 17, fontWeight: '700' },
   desc: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
@@ -262,9 +270,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addText: { color: colors.onAccent, fontWeight: '800', fontSize: 15 },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  // Changing a quantity changes what the shopper pays, so it gets a real
+  // target: 44px minimum, against the app's own 52px token.
   stepBtn: {
-    width: 40, height: 40, borderRadius: 10, backgroundColor: colors.border,
+    width: 44, height: 44, borderRadius: 12, backgroundColor: colors.border,
     alignItems: 'center', justifyContent: 'center',
   },
   stepText: { color: colors.text, fontSize: 22, fontWeight: '800' },
@@ -272,7 +282,8 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' },
   chip: {
     borderWidth: 1, borderColor: colors.border, borderRadius: 999,
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 18, minHeight: 44,
+    alignItems: 'center', justifyContent: 'center',
   },
   chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { color: colors.text, fontSize: 15, fontWeight: '600' },

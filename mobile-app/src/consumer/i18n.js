@@ -104,6 +104,7 @@ const en = {
   'tab.khata': 'Khata',
   'tab.shops': 'Shops',
   'tab.orders': 'Orders',
+  'tab.cart': 'Cart',
   'tab.account': 'Account',
 
   'login.title': 'Sign in',
@@ -332,6 +333,82 @@ const en = {
   'eta.takingLonger': 'Taking a little longer',
   'eta.takingLongerHelp': 'It was expected by {time}. It should not be much longer.',
   'eta.noPromise': 'No ready time promised',
+
+  // --- BATCH MPARITY: closing the gaps against the web PWA -----------------
+  // en is the source of truth and hi is authored below; every other language
+  // falls back to these English values, the way this file already handles a
+  // missing key. Nothing here is machine-translated. Where a string already
+  // exists word for word in admin-dashboard/src/lib/i18n.js (the consumer PWA)
+  // it is reused verbatim, so a shopper who uses both surfaces reads the same
+  // sentence in each rather than two renderings of the same idea.
+
+  // The cart is being read back off disk at launch. This is NOT the empty
+  // state — saying "your cart is empty" to someone whose cart is still loading
+  // is the exact failure this batch exists to remove.
+  'cart.restoring': 'Getting your cart…',
+
+  // Switching shops. A cart belongs to one shop, and the app used to replace
+  // the whole basket without asking. The confirm sentence is the consumer
+  // PWA's 'c.switchCartConfirm', word for word.
+  'cart.switchShopTitle': 'Cart at another shop',
+  'cart.switchShopConfirm': 'You have an unfinished cart at another shop. Clear it and start a cart here?',
+  'cart.switchShopClear': 'Clear and start here',
+
+  // Cross-shop product search. Mirrors the PWA's /c/products strings.
+  'psearch.title': 'Find an item',
+  'psearch.placeholder': 'Search products across shops',
+  'psearch.searching': 'Searching…',
+  'psearch.start': 'Search for a product to see which shops nearby have it.',
+  'psearch.none': 'No products found. Try another word.',
+  'psearch.failedTitle': 'Search did not finish',
+  'psearch.atShop': 'at {shop}',
+
+  // Quick-browse categories on the shop directory (labels only — the search
+  // term sent to the API stays the English base word).
+  'cat.attaRice': 'Atta & Rice',
+  'cat.dairy': 'Dairy',
+  'cat.snacks': 'Snacks',
+  'cat.household': 'Household',
+  'cat.personalCare': 'Personal Care',
+
+  'shops.heroTitle': 'What do you need today?',
+  'shops.searching': 'Searching…',
+
+  // FAILED is not EMPTY. Each of these titles a card that says a load did not
+  // finish, so "nothing here" is never how a shopper learns their basket,
+  // their orders or a shop's shelves could not be fetched.
+  'shops.failedTitle': 'Could not load shops',
+  'shopdetail.failedTitle': 'Could not load this shop',
+  'orders.failedTitle': 'Could not load your orders',
+
+  // What the shopper is waiting for at each status — the line the web has
+  // always shown under the status chip and the app never did. `ready` splits by
+  // fulfillment: a pickup order is ready for them to collect, a delivery order
+  // is ready and waiting to go out.
+  'ostatus.hint.pending': 'Waiting for the shop to accept',
+  'ostatus.hint.accepted': 'Accepted — preparing soon',
+  'ostatus.hint.preparing': 'Being prepared',
+  'ostatus.hint.ready_pickup': 'Ready for pickup',
+  'ostatus.hint.ready_delivery': 'Ready — awaiting dispatch',
+  'ostatus.hint.out_for_delivery': 'Out for delivery',
+  'ostatus.hint.completed': 'Completed',
+  'ostatus.hint.cancelled': 'Order cancelled',
+
+  // What a shopper reads when a request fails. A shopper must NEVER be shown
+  // the raw text — "Network Error", "timeout of 15000ms exceeded", "Request
+  // failed with status code 500" — which names no cause they can act on and
+  // reads like the app blaming them. Each of these says what happened and, by
+  // implication, what to do; the screens add a Retry only where retrying helps.
+  'err.offline': 'No internet right now. Check your connection and try again.',
+  'err.slow': 'The network is too slow to finish that. Please try again.',
+  'err.server': 'Something went wrong at our end. Please try again in a moment.',
+  'err.notFound': 'That is not available any more.',
+  'err.notAllowed': 'You cannot open this.',
+  'err.signedOut': 'You have been signed out. Please sign in again.',
+  'err.tooMany': 'Too many tries. Please wait a minute and try again.',
+  'err.badRequest': 'Something in that was not right. Please check and try again.',
+  'err.conflict': 'That could not be done just now. Please try again.',
+  'err.generic': 'Something went wrong. Please try again.',
 };
 
 const hi = {
@@ -351,6 +428,7 @@ const hi = {
   'tab.khata': 'खाता',
   'tab.shops': 'दुकानें',
   'tab.orders': 'ऑर्डर',
+  'tab.cart': 'कार्ट',
   'tab.account': 'अकाउंट',
 
   'login.title': 'साइन इन करें',
@@ -549,6 +627,57 @@ const hi = {
   'eta.takingLonger': 'थोड़ा और समय लग रहा है',
   'eta.takingLongerHelp': '{time} बजे तक तैयार होना था। बस थोड़ी ही देर और।',
   'eta.noPromise': 'कोई समय नहीं बताया गया',
+
+  // --- BATCH MPARITY: authored Hindi -------------------------------------
+  // Written to be read aloud by someone who reads slowly: short sentences,
+  // everyday words, no English-in-Devanagari where a common Hindi word exists.
+  // Strings the consumer PWA already carries in Hindi are reused word for word.
+  'cart.restoring': 'आपका कार्ट लाया जा रहा है…',
+
+  'cart.switchShopTitle': 'दूसरी दुकान का कार्ट',
+  'cart.switchShopConfirm': 'दूसरी दुकान पर आपका अधूरा कार्ट है। उसे हटाकर यहाँ नया कार्ट शुरू करें?',
+  'cart.switchShopClear': 'हटाकर यहाँ शुरू करें',
+
+  'psearch.title': 'सामान खोजें',
+  'psearch.placeholder': 'सभी दुकानों में सामान खोजें',
+  'psearch.searching': 'खोज रहे हैं…',
+  'psearch.start': 'कोई सामान खोजें और देखें कि आस-पास किन दुकानों में वह मिलता है।',
+  'psearch.none': 'कुछ नहीं मिला। दूसरा शब्द आज़माएँ।',
+  'psearch.failedTitle': 'खोज पूरी नहीं हो पाई',
+  'psearch.atShop': '{shop} पर',
+
+  'cat.attaRice': 'आटा और चावल',
+  'cat.dairy': 'दूध-दही',
+  'cat.snacks': 'नमकीन',
+  'cat.household': 'घर का सामान',
+  'cat.personalCare': 'साबुन-शैम्पू',
+
+  'shops.heroTitle': 'आज आपको क्या चाहिए?',
+  'shops.searching': 'खोज रहे हैं…',
+
+  'shops.failedTitle': 'दुकानें नहीं आ पाईं',
+  'shopdetail.failedTitle': 'यह दुकान नहीं खुल पाई',
+  'orders.failedTitle': 'आपके ऑर्डर नहीं आ पाए',
+
+  'ostatus.hint.pending': 'दुकान की स्वीकृति की प्रतीक्षा',
+  'ostatus.hint.accepted': 'स्वीकृत — जल्द तैयार होगा',
+  'ostatus.hint.preparing': 'तैयार हो रहा है',
+  'ostatus.hint.ready_pickup': 'पिकअप के लिए तैयार',
+  'ostatus.hint.ready_delivery': 'तैयार — भेजने की प्रतीक्षा',
+  'ostatus.hint.out_for_delivery': 'डिलीवरी पर',
+  'ostatus.hint.completed': 'पूरा',
+  'ostatus.hint.cancelled': 'ऑर्डर रद्द',
+
+  'err.offline': 'अभी इंटरनेट नहीं है। कनेक्शन देखकर फिर कोशिश करें।',
+  'err.slow': 'नेटवर्क बहुत धीमा है, काम पूरा नहीं हुआ। फिर कोशिश करें।',
+  'err.server': 'हमारी तरफ़ कुछ गड़बड़ हुई। थोड़ी देर में फिर कोशिश करें।',
+  'err.notFound': 'यह अब उपलब्ध नहीं है।',
+  'err.notAllowed': 'आप इसे नहीं खोल सकते।',
+  'err.signedOut': 'आप लॉग आउट हो गए हैं। फिर से साइन इन करें।',
+  'err.tooMany': 'बहुत बार कोशिश हुई। एक मिनट रुककर फिर कोशिश करें।',
+  'err.badRequest': 'कुछ सही नहीं था। जाँचकर फिर कोशिश करें।',
+  'err.conflict': 'यह अभी नहीं हो पाया। फिर कोशिश करें।',
+  'err.generic': 'कुछ गड़बड़ हो गई। फिर कोशिश करें।',
 };
 
 const bn = {
