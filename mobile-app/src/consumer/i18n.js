@@ -851,6 +851,19 @@ const bn = {
 };
 
 const ta = {
+  // Transcribed verbatim from the already-authored web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
+  // human-written strings the consumer PWA already ships, so the two
+  // surfaces read identically.
+  'tab.cart': 'கார்ட்',
+  'ostatus.hint.pending': 'கடையின் ஏற்பை எதிர்பார்க்கிறது',
+  'ostatus.hint.accepted': 'ஏற்கப்பட்டது — விரைவில் தயாராகும்',
+  'ostatus.hint.preparing': 'தயாராகிறது',
+  'ostatus.hint.ready_pickup': 'பிக்அப்பிற்குத் தயார்',
+  'ostatus.hint.ready_delivery': 'தயார் — அனுப்ப காத்திருக்கிறது',
+  'ostatus.hint.out_for_delivery': 'டெலிவரிக்கு சென்றது',
+  'ostatus.hint.completed': 'முடிந்தது',
+  'ostatus.hint.cancelled': 'ஆர்டர் ரத்து',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'ஏற்றுகிறது…',
   'common.retry': 'மீண்டும் முயற்சி',
@@ -1021,6 +1034,19 @@ const ta = {
 };
 
 const te = {
+  // Transcribed verbatim from the already-authored web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
+  // human-written strings the consumer PWA already ships, so the two
+  // surfaces read identically.
+  'tab.cart': 'కార్ట్',
+  'ostatus.hint.pending': 'దుకాణం ఆమోదం కోసం వేచి ఉంది',
+  'ostatus.hint.accepted': 'ఆమోదించబడింది — త్వరలో సిద్ధమవుతుంది',
+  'ostatus.hint.preparing': 'సిద్ధమవుతోంది',
+  'ostatus.hint.ready_pickup': 'పికప్‌కు సిద్ధం',
+  'ostatus.hint.ready_delivery': 'సిద్ధం — పంపడానికి వేచి ఉంది',
+  'ostatus.hint.out_for_delivery': 'డెలివరీకి వెళ్లింది',
+  'ostatus.hint.completed': 'పూర్తయింది',
+  'ostatus.hint.cancelled': 'ఆర్డర్ రద్దు',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'లోడ్ అవుతోంది…',
   'common.retry': 'మళ్లీ ప్రయత్నించు',
@@ -1191,6 +1217,19 @@ const te = {
 };
 
 const kn = {
+  // Transcribed verbatim from the already-authored web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
+  // human-written strings the consumer PWA already ships, so the two
+  // surfaces read identically.
+  'tab.cart': 'ಕಾರ್ಟ್',
+  'ostatus.hint.pending': 'ಅಂಗಡಿಯ ಸ್ವೀಕಾರಕ್ಕಾಗಿ ಕಾಯುತ್ತಿದೆ',
+  'ostatus.hint.accepted': 'ಸ್ವೀಕರಿಸಲಾಗಿದೆ — ಶೀಘ್ರದಲ್ಲೇ ಸಿದ್ಧವಾಗುತ್ತದೆ',
+  'ostatus.hint.preparing': 'ಸಿದ್ಧವಾಗುತ್ತಿದೆ',
+  'ostatus.hint.ready_pickup': 'ಪಿಕಪ್‌ಗೆ ಸಿದ್ಧ',
+  'ostatus.hint.ready_delivery': 'ಸಿದ್ಧ — ಕಳುಹಿಸಲು ಕಾಯುತ್ತಿದೆ',
+  'ostatus.hint.out_for_delivery': 'ಡೆಲಿವರಿಗೆ ಹೊರಟಿದೆ',
+  'ostatus.hint.completed': 'ಪೂರ್ಣಗೊಂಡಿದೆ',
+  'ostatus.hint.cancelled': 'ಆರ್ಡರ್ ರದ್ದಾಗಿದೆ',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'ಲೋಡ್ ಆಗುತ್ತಿದೆ…',
   'common.retry': 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
@@ -1361,6 +1400,19 @@ const kn = {
 };
 
 const ml = {
+  // Transcribed verbatim from the already-authored web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
+  // human-written strings the consumer PWA already ships, so the two
+  // surfaces read identically.
+  'tab.cart': 'കാർട്ട്',
+  'ostatus.hint.pending': 'കടയുടെ സ്വീകാരത്തിനായി കാത്തിരിക്കുന്നു',
+  'ostatus.hint.accepted': 'സ്വീകരിച്ചു — ഉടൻ തയ്യാറാകും',
+  'ostatus.hint.preparing': 'തയ്യാറാക്കുന്നു',
+  'ostatus.hint.ready_pickup': 'പിക്കപ്പിന് തയ്യാർ',
+  'ostatus.hint.ready_delivery': 'തയ്യാർ — അയയ്ക്കാൻ കാത്തിരിക്കുന്നു',
+  'ostatus.hint.out_for_delivery': 'ഡെലിവറിക്ക് പോയി',
+  'ostatus.hint.completed': 'പൂർത്തിയായി',
+  'ostatus.hint.cancelled': 'ഓർഡർ റദ്ദാക്കി',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'ലോഡ് ചെയ്യുന്നു…',
   'common.retry': 'വീണ്ടും ശ്രമിക്കുക',
@@ -1871,6 +1923,19 @@ const gu = {
 };
 
 const ur = {
+  // Transcribed verbatim from the already-authored web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
+  // human-written strings the consumer PWA already ships, so the two
+  // surfaces read identically.
+  'tab.cart': 'ٹوکری',
+  'ostatus.hint.pending': 'دکان کی منظوری کا انتظار',
+  'ostatus.hint.accepted': 'قبول شدہ — جلد تیار ہوگا',
+  'ostatus.hint.preparing': 'تیار ہو رہا ہے',
+  'ostatus.hint.ready_pickup': 'پک اپ کے لیے تیار',
+  'ostatus.hint.ready_delivery': 'تیار — بھیجنے کا انتظار',
+  'ostatus.hint.out_for_delivery': 'ترسیل کے لیے روانہ',
+  'ostatus.hint.completed': 'مکمل',
+  'ostatus.hint.cancelled': 'آرڈر منسوخ',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'لوڈ ہو رہا ہے…',
   'common.retry': 'دوبارہ کوشش کریں',
