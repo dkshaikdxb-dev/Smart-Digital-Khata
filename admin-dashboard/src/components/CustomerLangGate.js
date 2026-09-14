@@ -1,4 +1,5 @@
 import { setLang, useActiveLanguages, translate } from '../lib/i18n';
+import { persistLanguage } from '../lib/langSync';
 
 // First-open language chooser for the customer app. Shown full-screen the very
 // first time someone opens any /c page and has not yet picked a language, so a
@@ -12,6 +13,11 @@ export default function CustomerLangGate({ onDone }) {
   const langs = useActiveLanguages();
   function pick(code) {
     setLang(code);
+    // If this shopper is already logged in, the pick is saved server-side too,
+    // so the shop's WhatsApp messages reach them in it. A logged-out visitor
+    // simply keeps the local choice; their next login carries no language, and
+    // the next deliberate pick (or their first order) fills it in.
+    persistLanguage(code);
     onDone();
   }
   return (

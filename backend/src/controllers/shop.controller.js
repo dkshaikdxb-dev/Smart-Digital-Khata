@@ -22,6 +22,9 @@ const {
 } = require('../utils/shopOpen');
 // AI triage of an uploaded storefront photo (batch AI-MOD) — enqueue only, after commit.
 const moderation = require('../services/moderation.service');
+// The owner's language (batch LANG) is validated against the `languages`
+// registry, never against a hardcoded list.
+const { isRegisteredLang, normalizeLangCode } = require('../utils/language-registry');
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
 
@@ -127,6 +130,21 @@ exports.updateMine = async (req, res) => {
     }
     body.open_time = openHm;
     body.close_time = closeHm;
+  }
+
+  // The owner's language (batch LANG). This is the server's durable copy of the
+  // language switch in the console, and the weekly WhatsApp summary is composed
+  // in it — so it has to be a language we actually support. '' / null clears it
+  // back to "never told us", which is a real and different state from 'en'.
+  if (Object.prototype.hasOwnProperty.call(body, 'language')) {
+    const code = normalizeLangCode(body.language);
+    if (code === null) {
+      body.language = null;
+    } else if (await isRegisteredLang(code)) {
+      body.language = code;
+    } else {
+      throw ApiError.badRequest('Invalid language');
+    }
   }
 
   const fields = [];

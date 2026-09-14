@@ -1,9 +1,22 @@
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
+const { isRegisteredLang, normalizeLangCode } = require('../utils/language-registry');
 
-// The 7 supported language codes — must match LANGS in
-// admin-dashboard/src/lib/i18n.js.
-const LANGS = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
+// Which language an override may be written for is the `languages` REGISTRY's
+// call, not a constant in this file.
+//
+// It used to be a hardcoded list of seven that was supposed to "match LANGS in
+// admin-dashboard/src/lib/i18n.js". It stopped matching anything the moment
+// migration 0033 activated Bengali, Gujarati and Marathi: those three are live
+// in the app and carry 852 audited strings each, yet an admin who spotted a
+// wrong Marathi word got "Invalid lang" from the Translations screen and had no
+// way to fix it. A translation tool that cannot edit a shipped language is not
+// a translation tool.
+//
+// So the allowlist is read from the registry — and it is still an allowlist: an
+// unregistered code is refused. STAGED (is_active=false) languages are included
+// on purpose, because pre-translating a language before flipping it on is
+// exactly what the staging rows in 0022_languages are for.
 
 // PUBLIC — no auth. The customer PWA (possibly served from a different origin
 // than the API) fetches this to layer live translation corrections over its
@@ -28,7 +41,12 @@ exports.overrides = async (_req, res) => {
 exports.upsert = async (req, res) => {
   const { lang, key, value } = req.body || {};
 
-  if (!LANGS.includes(lang)) {
+  // Normalise BEFORE the allowlist check, and store the normalised code. A row
+  // written as 'EN' or 'hi-IN' would never be found again by the lookups, which
+  // read plain two-letter codes — a silently dead correction is worse than a
+  // rejected one.
+  const code = normalizeLangCode(lang);
+  if (!code || !(await isRegisteredLang(code))) {
     throw ApiError.badRequest('Invalid lang');
   }
   if (typeof key !== 'string' || key.trim() === '' || key.length > 200) {
@@ -40,7 +58,7 @@ exports.upsert = async (req, res) => {
 
   if (value.trim() === '') {
     // Revert to the built-in translation.
-    await query('DELETE FROM i18n_overrides WHERE lang = $1 AND key = $2', [lang, key]);
+    await query('DELETE FROM i18n_overrides WHERE lang = $1 AND key = $2', [code, key]);
     return res.json({ ok: true });
   }
 
@@ -49,7 +67,7 @@ exports.upsert = async (req, res) => {
      VALUES ($1, $2, $3, NOW())
      ON CONFLICT (lang, key)
      DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
-    [lang, key, value]
+    [code, key, value]
   );
   return res.json({ ok: true });
 };

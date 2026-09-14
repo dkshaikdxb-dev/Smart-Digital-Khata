@@ -3,16 +3,14 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import {
-  LANGS,
   isRtl,
   getAllKeys,
   staticValue,
   getOverrideValue,
   loadOverrides,
+  loadActiveLanguages,
+  useActiveLanguages,
 } from '../../lib/i18n';
-
-// English is the reference; only the 6 regional languages are editable.
-const EDITABLE = LANGS.filter((l) => l.code !== 'en');
 
 export default function AdminI18n() {
   const router = useRouter();
@@ -23,12 +21,19 @@ export default function AdminI18n() {
   // Bumped after every save/revert to re-read the freshly loaded overrides.
   const [rev, setRev] = useState(0);
 
+  // English is the reference and is not edited. Every OTHER language the
+  // registry has switched on is editable — including one whose strings live
+  // only in i18n_overrides (bn/gu/mr), which the old built-in LANGS list left
+  // out entirely, so a wrong Marathi word could not be corrected from here.
+  const EDITABLE = useActiveLanguages().filter((l) => l.code !== 'en');
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') !== 'admin') { router.replace('/'); return; }
-    // Make sure the review UI sees the current live overrides.
-    loadOverrides().finally(() => setReady(true));
+    // Make sure the review UI sees the current live overrides and the current
+    // set of activated languages.
+    Promise.all([loadOverrides(), loadActiveLanguages()]).finally(() => setReady(true));
   }, [router]);
 
   const keys = useMemo(() => getAllKeys(), []);

@@ -3,6 +3,11 @@ const whatsapp = require('./whatsapp.service');
 const settings = require('../config/settings');
 const logger = require('../utils/logger');
 const { netCreditSalesSql } = require('../utils/creditSales');
+// The server's override-backed translator (batch LANG). Every customer-facing
+// line below used to be an English string literal; they are now keys resolved
+// against `i18n_overrides` — the same table the web app and the regional seed
+// use — so a shopper reads their WhatsApp in the language they picked.
+const serverI18n = require('../utils/server-i18n');
 
 /**
  * Notification modes (per shop):
@@ -20,6 +25,32 @@ function fmtRs(paise) {
   return (Number(paise) / 100).toFixed(2);
 }
 
+/**
+ * The language to write to THIS customer in: their own stored choice
+ * (`customers.customer_language`, migration 0074), else English.
+ *
+ * Deliberately NOT the shop's language. The owner's setting says what the
+ * SHOPKEEPER reads; assuming it for every one of their customers would put a
+ * language on someone's phone that they never picked. A customer who has never
+ * used the consumer app has no stored language and keeps getting English,
+ * exactly as before.
+ *
+ * A caller that already loaded the row (SELECT *) passes it through for free;
+ * one that assembled a partial object gets a single extra lookup rather than a
+ * silent fall back to English.
+ */
+async function customerLang(customer) {
+  if (!customer) return null;
+  if (customer.customer_language !== undefined) return customer.customer_language;
+  if (!customer.id) return null;
+  try {
+    const r = await query('SELECT customer_language FROM customers WHERE id = $1', [customer.id]);
+    return r.rowCount ? r.rows[0].customer_language : null;
+  } catch (_e) {
+    return null;
+  }
+}
+
 async function onTransaction(shopId, customer, tx) {
   try {
     if (customer.notifications_enabled === false) return;
@@ -28,18 +59,23 @@ async function onTransaction(shopId, customer, tx) {
     const { name: shopName, notification_mode: mode } = shopRes.rows[0];
 
     if (mode === 'silent') return;
+    // A smart-mode purchase under the threshold is not sent at all — decided
+    // before any translation work so nothing is loaded for a message that will
+    // never go out.
+    if (tx.type === 'purchase' && mode === 'smart' && Number(tx.amount) < SMART_THRESHOLD) return;
 
-    const amount = fmtRs(tx.amount);
-    const balance = fmtRs(customer.balance);
+    const t = await serverI18n.translator(await customerLang(customer));
+    const amount = `₹${fmtRs(tx.amount)}`;
+    const balance = `₹${fmtRs(customer.balance)}`;
+    const who = { name: customer.name, shop: shopName };
 
     let message;
     if (tx.type === 'purchase') {
-      if (mode === 'smart' && Number(tx.amount) < SMART_THRESHOLD) return;
       message =
-        `Hi ${customer.name}, this is ${shopName}.\n` +
-        `Purchase recorded: ₹${amount}.\n` +
-        `Outstanding: ₹${balance}.\n` +
-        (tx.note ? `Note: ${tx.note}\n` : '');
+        `${t('wa.tx.purchase.intro', who)}\n` +
+        `${t('wa.tx.purchase.amount', { amount })}\n` +
+        `${t('wa.tx.outstanding', { amount: balance })}\n` +
+        (tx.note ? `${t('wa.tx.note', { note: tx.note })}\n` : '');
     } else if (tx.type === 'adjustment') {
       // A shop ADJUSTMENT (batch C) lowers the balance like a payment does, but
       // the customer handed over nothing — telling them "we received your
@@ -48,14 +84,14 @@ async function onTransaction(shopId, customer, tx) {
       // this function at all; this branch exists so that any FUTURE caller which
       // does route an adjustment through here cannot send the wrong sentence.
       message =
-        `Hi ${customer.name}, ${shopName} has adjusted your khata by ₹${amount}.\n` +
-        `Outstanding: ₹${balance}.\n` +
-        (tx.note ? `Note: ${tx.note}\n` : '');
+        `${t('wa.tx.adjustment', { ...who, amount })}\n` +
+        `${t('wa.tx.outstanding', { amount: balance })}\n` +
+        (tx.note ? `${t('wa.tx.note', { note: tx.note })}\n` : '');
     } else {
       // payment received — always notify on smart & active
       message =
-        `Hi ${customer.name}, ${shopName} received your payment of ₹${amount}.\n` +
-        `Remaining: ₹${balance}. Thank you!`;
+        `${t('wa.tx.payment', { ...who, amount })}\n` +
+        `${t('wa.tx.remaining', { amount: balance })}`;
     }
 
     await whatsapp.sendText(customer.phone, message);
@@ -106,9 +142,10 @@ async function sendReminder(shopId, customer) {
       return;
     }
 
+    const t = await serverI18n.translator(await customerLang(customer));
     const msg =
-      `Hi ${customer.name}, friendly reminder from ${shopName}.\n` +
-      `Your outstanding amount is ₹${balance}. Please pay at your convenience.`;
+      `${t('wa.reminder.intro', { name: customer.name, shop: shopName })}\n` +
+      `${t('wa.reminder.body', { amount: `₹${balance}` })}`;
     await whatsapp.sendText(customer.phone, msg);
   } catch (err) {
     logger.error({ err: err.message }, 'notification.sendReminder failed');
@@ -174,4 +211,4 @@ async function sendOwnerDigest(shopId) {
   }
 }
 
-module.exports = { onTransaction, sendReminder, sendOwnerDigest };
+module.exports = { onTransaction, sendReminder, sendOwnerDigest, customerLang };

@@ -168,10 +168,28 @@ describe('pure composer (utils/weekly-summary)', () => {
     expect(() => buildWeeklySummary({ dues_count: 'x', collected_paise: null })).not.toThrow();
   });
 
-  it('falls back through owner-lang → hi → en for unknown languages', () => {
-    expect(buildWeeklySummary({ collected_paise: 100 }, 'zz').lang).toBe('hi');
+  it('an owner with NO stored language still gets the historical Hindi default', () => {
+    // Unchanged behaviour: "we have never been told" is its own fact, and Hindi
+    // has always been the answer to it.
+    expect(buildWeeklySummary({ collected_paise: 100 }).lang).toBe('hi');
+    expect(buildWeeklySummary({ collected_paise: 100 }, null).lang).toBe('hi');
+    expect(buildWeeklySummary({ collected_paise: 100 }, '  ').lang).toBe('hi');
+  });
+
+  it('an authored language is used as-is', () => {
     expect(buildWeeklySummary({ collected_paise: 100 }, 'en').lang).toBe('en');
     expect(buildWeeklySummary({ collected_paise: 100 }, 'ur').lang).toBe('ur');
+    expect(buildWeeklySummary({ collected_paise: 100 }, 'hi-IN').lang).toBe('hi');
+  });
+
+  it('a language we have no template for falls back to English, NOT to Hindi', () => {
+    // bn/gu/mr are live in the app but have no native block in this composer
+    // yet. An owner who deliberately chose Bengali did not choose Hindi, so
+    // answering one wrong language with another is not a fallback — it is a
+    // second mistake. Same for a code that is simply garbage.
+    for (const code of ['bn', 'gu', 'mr', 'zz']) {
+      expect(buildWeeklySummary({ collected_paise: 100 }, code).lang).toBe('en');
+    }
   });
 
   it('composes a Tamil (ta) message from the NATIVE template, not the English one', () => {

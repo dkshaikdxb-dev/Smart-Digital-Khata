@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-    "audit:contrast": "node scripts/contrast-audit.mjs"
+    "audit:contrast": "node scripts/contrast-audit.mjs",
+    "test:i18n": "node scripts/i18n-gate-test.mjs"
   },
   "dependencies": {
     "next": "14.2.5",

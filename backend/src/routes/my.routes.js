@@ -54,6 +54,16 @@ const locationSchema = Joi.object({
   'string.pattern.base': 'Pincode must be 4 to 6 digits',
 });
 
+// Consumer language (batch LANG). The shopper's pick on the consumer PWA, kept
+// server-side so the WhatsApp messages this app sends them are in it. Joi checks
+// only the SHAPE; the controller refuses a code that is not in the `languages`
+// registry. '' / null clears it back to "never told us".
+const languageSchema = Joi.object({
+  language: Joi.string().trim().lowercase().pattern(/^[a-z]{2,8}$/).allow('', null).required(),
+}).messages({
+  'string.pattern.base': 'Language must be a short language code, e.g. "mr"',
+});
+
 // Statement range/format. shop_id optional (omitted → all-shops combined).
 const statementQuerySchema = Joi.object({
   shop_id: Joi.string().uuid(),
@@ -67,6 +77,9 @@ router.use(customerAuth());
 
 router.get('/location', asyncHandler(ctrl.getLocation));
 router.put('/location', validate(locationSchema), asyncHandler(ctrl.putLocation));
+
+router.get('/language', asyncHandler(ctrl.getLanguage));
+router.put('/language', validate(languageSchema), asyncHandler(ctrl.putLanguage));
 
 router.get('/khata', asyncHandler(ctrl.khata));
 router.get('/shop-faqs', asyncHandler(ctrl.shopFaqs));

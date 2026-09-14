@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import CustomerShell from '../../components/CustomerShell';
 import { publicFetch, setCustomerToken, getCustomerToken } from '../../lib/customerApi';
-import { useLang } from '../../lib/i18n';
+import { useLang, hasChosenLang, getLang } from '../../lib/i18n';
+import { persistLanguage } from '../../lib/langSync';
 
 // WhatsApp OTP login. Step 1: enter phone → request-otp (dev_code shown in
 // non-production). Step 2: enter the 6-digit code → verify-otp → store token.
@@ -62,6 +63,7 @@ export default function CustomerLogin() {
       });
       if (!r || !r.token) throw new Error(t('c.loginFailed'));
       setCustomerToken(r.token, phone.trim());
+      saveChosenLanguage();
       router.replace(next.startsWith('/c') ? next : '/c/shops');
     } catch (err) {
       setError(err.message);
@@ -81,6 +83,7 @@ export default function CustomerLogin() {
       });
       if (!r || !r.token) throw new Error(t('c.loginFailed'));
       setCustomerToken(r.token, phone.trim());
+      saveChosenLanguage();
       router.replace(next.startsWith('/c') ? next : '/c/shops');
     } catch (err) {
       // The server sends a clear "too many attempts" message when the PIN is
@@ -206,4 +209,17 @@ export default function CustomerLogin() {
       )}
     </CustomerShell>
   );
+}
+
+// The first-open gate (CustomerLangGate) runs BEFORE anyone is logged in, so
+// the language a shopper picked there had nowhere on the server to go. This
+// carries it over the moment they authenticate — without it, their WhatsApp
+// messages would stay English until they happened to touch the switcher again.
+// Only a deliberate choice is sent; a viewer who never picked stays "not set".
+function saveChosenLanguage() {
+  try {
+    if (hasChosenLang()) persistLanguage(getLang());
+  } catch {
+    /* storage blocked — nothing to carry over */
+  }
 }
