@@ -58,6 +58,12 @@ jobs:
       - name: Install
         working-directory: admin-dashboard
         run: npm ci
+      # The language gate decides whether a shopkeeper who picks Bengali,
+      # Gujarati or Marathi actually gets it. It has no jest harness, so this
+      # plain Node suite is the gate; it exits non-zero on a regression.
+      - name: Language gate tests
+        working-directory: admin-dashboard
+        run: npm run test:i18n
       - name: Build
         working-directory: admin-dashboard
         env:

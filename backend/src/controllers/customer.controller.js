@@ -218,7 +218,7 @@ exports.publicKhata = async (req, res) => {
   if (!/^[a-f0-9]{32}$/.test(token)) throw ApiError.notFound('Khata not found');
 
   const r = await query(
-    `SELECT c.id, c.name, c.balance, c.share_token, s.name AS shop_name
+    `SELECT c.id, c.name, c.balance, c.share_token, c.customer_language, s.name AS shop_name
      FROM customers c JOIN shops s ON s.id = c.shop_id
      WHERE c.share_token = $1 AND c.status = 'active'`,
     [token]
@@ -238,6 +238,11 @@ exports.publicKhata = async (req, res) => {
       customer_name: customer.name,
       shop_name: customer.shop_name,
       balance: customer.balance,
+      // The language THIS customer reads (batch LANG), so the page renders in
+      // it even when the link is opened on somebody else's phone — a son's, a
+      // neighbour's — whose browser has a different language stored. null when
+      // they have never told us, and the page then uses the browser's choice.
+      language: customer.customer_language || null,
       transactions: tx.rows,
     },
   });

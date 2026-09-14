@@ -30,6 +30,12 @@ function uploadImageField(req, res, next) {
 
 const updateSchema = Joi.object({
   name: Joi.string().min(2).max(120),
+  // The owner's language (batch LANG). The console's language switch mirrors
+  // the choice here so the server has a durable copy — the weekly WhatsApp
+  // summary is composed in it. Joi only checks the SHAPE; the controller
+  // rejects a code that is not in the `languages` registry. '' / null clears it
+  // back to "never told us".
+  language: Joi.string().trim().lowercase().pattern(/^[a-z]{2,8}$/).allow('', null),
   notification_mode: Joi.string().valid('silent', 'smart', 'active'),
   default_credit_limit: Joi.number().min(0),
   daily_digest: Joi.boolean(),

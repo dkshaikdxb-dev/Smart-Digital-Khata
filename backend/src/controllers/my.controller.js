@@ -30,6 +30,9 @@ const logger = require('../utils/logger');
 // Customer-facing order copy, en + hi authored (batch B), extended by ALERT2
 // with the cancellation lines: the reason, and where a prepaid amount went.
 const orderCustomerCopy = require('../utils/order-customer-copy');
+// The shopper's language (batch LANG) is validated against the `languages`
+// registry, never against a list hardcoded here.
+const { toStorableLang, normalizeLangCode } = require('../utils/language-registry');
 
 // Customer-facing cross-shop khata. Every row is derived from the `customers`
 // table by matching the authenticated customer's phone — a customer can only
@@ -384,29 +387,49 @@ exports.pay = async (req, res) => {
  * so a customer can order from a brand-new shop. Runs inside a transaction.
  */
 async function resolveOrCreateCustomer(client, shopId, phone) {
+  // The consumer's own identity row carries the name AND the language they
+  // picked on the app (batch LANG). Both are copied onto the per-shop khata row
+  // so this shop's WhatsApp messages reach them in their own language — the
+  // notification service reads `customers.customer_language`, and a shopper who
+  // has just started buying from a new shop should not have to pick again.
+  const identity = await client.query(
+    'SELECT name, language FROM customer_users WHERE phone = $1',
+    [phone]
+  );
+  const chosenLang = (identity.rows[0] && identity.rows[0].language) || null;
+
   const existing = await client.query(
     `SELECT id, shop_id, name, phone, credit_limit, balance,
-            family_id, family_sub_limit
+            family_id, family_sub_limit, customer_language
      FROM customers WHERE shop_id = $1 AND phone = $2 FOR UPDATE`,
     [shopId, phone]
   );
-  if (existing.rowCount) return existing.rows[0];
+  if (existing.rowCount) {
+    const row = existing.rows[0];
+    // Refresh it on every order, so a shopper who changes language later does
+    // not keep getting the old one from shops they already buy from. Only write
+    // when it actually differs — an order must not churn rows for nothing.
+    if (chosenLang && chosenLang !== row.customer_language) {
+      await client.query(
+        'UPDATE customers SET customer_language = $1, updated_at = NOW() WHERE id = $2',
+        [chosenLang, row.id]
+      );
+      row.customer_language = chosenLang;
+    }
+    return row;
+  }
 
   // Verify the shop exists before auto-creating (nicer than an FK error).
   const shop = await client.query('SELECT id FROM shops WHERE id = $1', [shopId]);
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
-  const nameRes = await client.query(
-    'SELECT name FROM customer_users WHERE phone = $1',
-    [phone]
-  );
-  const name = (nameRes.rows[0] && nameRes.rows[0].name) || 'Customer';
+  const name = (identity.rows[0] && identity.rows[0].name) || 'Customer';
   const created = await client.query(
-    `INSERT INTO customers (shop_id, name, phone)
-     VALUES ($1, $2, $3)
+    `INSERT INTO customers (shop_id, name, phone, customer_language)
+     VALUES ($1, $2, $3, $4)
      RETURNING id, shop_id, name, phone, credit_limit, balance,
-               family_id, family_sub_limit`,
-    [shopId, name, phone]
+               family_id, family_sub_limit, customer_language`,
+    [shopId, name, phone, chosenLang]
   );
   return created.rows[0];
 }
@@ -1261,4 +1284,56 @@ exports.putLocation = async (req, res) => {
   );
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
   res.json(locShape(r.rows[0]));
+};
+
+/**
+ * GET /my/language — the language this shopper has told us they read.
+ * `null` means they have never said, which is a different fact from 'en'.
+ */
+exports.getLanguage = async (req, res) => {
+  const r = await query('SELECT language FROM customer_users WHERE id = $1', [req.customerUser.id]);
+  res.json({ language: (r.rows[0] && r.rows[0].language) || null });
+};
+
+/**
+ * PUT /my/language { language } — save the shopper's language (batch LANG).
+ *
+ * Until this existed the choice lived only in the phone's localStorage, so
+ * nothing the server sent could honour it: every purchase, payment and dues
+ * reminder went out in English no matter which language the shopper had picked
+ * on the consumer app. This is the durable copy.
+ *
+ * It is written in TWO places, deliberately. `customer_users.language` is the
+ * consumer's own identity row (phone-keyed, one per person). `customers
+ * .customer_language` is the per-shop khata row, and it is what
+ * services/notification.service reads when it composes a message — so one pick
+ * propagates to every shop this phone already has a khata with. '' or null
+ * clears both. A code that is not in the `languages` registry is refused rather
+ * than stored, so nothing downstream has to wonder whether a stored value is
+ * real.
+ */
+exports.putLanguage = async (req, res) => {
+  const raw = req.body.language;
+  const code = await toStorableLang(raw);
+  // Distinguish "clear it" (''/null, which normalises to null) from "a code we
+  // do not support" — the first is a legitimate request, the second is a bug in
+  // whatever sent it and should say so.
+  if (code === null && normalizeLangCode(raw) !== null) {
+    throw ApiError.badRequest('Invalid language');
+  }
+
+  const phone = toE164(req.customerUser.phone);
+  await withTx(async (client) => {
+    const r = await client.query(
+      'UPDATE customer_users SET language = $1 WHERE id = $2 RETURNING language',
+      [code, req.customerUser.id]
+    );
+    if (!r.rowCount) throw ApiError.notFound('Customer not found');
+    await client.query(
+      'UPDATE customers SET customer_language = $1, updated_at = NOW() WHERE phone = $2',
+      [code, phone]
+    );
+  });
+
+  res.json({ language: code });
 };

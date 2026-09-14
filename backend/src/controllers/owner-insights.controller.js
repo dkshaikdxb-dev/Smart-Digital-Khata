@@ -137,13 +137,19 @@ exports.ownerNudges = async (req, res) => {
 // GET /api/insights/owner/weekly — the same shop-scoped weekly summary the WhatsApp
 // job composes, returned as JSON so the app can show "your weekly summary" and so
 // the composition is testable over HTTP. Auth owner/staff, scoped by shopId. The
-// message language honours ?lang= (a known language), defaulting via the owner →
-// hi → en fallback in the composer.
+// message language honours ?lang= (a known language) when the app asks for one;
+// otherwise it uses the shop's own stored language, so the preview the owner
+// reads in the app is the same sentence the WhatsApp job will send them.
 exports.ownerWeekly = async (req, res) => {
   const shopId = req.user.shopId;
   const known = new Set(LANGS);
   const raw = String(req.query.lang || '').trim().toLowerCase();
-  const lang = known.has(raw) ? raw : undefined; // undefined → composer fallback (hi)
+  let lang = known.has(raw) ? raw : undefined; // undefined → composer fallback
+
+  if (!lang && shopId) {
+    const s = await query('SELECT language FROM shops WHERE id = $1', [shopId]);
+    if (s.rowCount && s.rows[0].language) lang = s.rows[0].language;
+  }
 
   if (!shopId) {
     // A staff/owner token without a shop yields a friendly quiet summary rather

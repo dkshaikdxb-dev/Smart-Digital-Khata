@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import SUPPLY from './i18nSupply';
+// Explicit .js extension so this module also loads under plain Node ESM — the
+// language-gate test (scripts/i18n-gate-test.mjs) imports it directly, with no
+// bundler to guess the extension. Webpack/Next resolve it identically.
+import SUPPLY from './i18nSupply.js';
 
 // Lightweight i18n for the owner dashboard + customer PWA. Nav chrome and page
 // bodies (headings, buttons, form labels/placeholders, table headers, status &
-// enum labels, empty states and common inline messages) are covered. Adding a
-// regional language is just another block in DICT (nav keys below) and PAGE
-// (page-body keys further down) plus a row in LANGS; every t() call and the
-// language switch pick it up automatically.
+// enum labels, empty states and common inline messages) are covered. A language
+// can get its strings EITHER as a block in DICT (nav keys below) and PAGE
+// (page-body keys further down), OR entirely from the `i18n_overrides` table
+// served by /api/i18n/overrides — translate() consults the overrides first, so
+// bn/gu/mr are fully translated with no DICT block at all. Which languages are
+// OFFERED is the DB registry's call (getActiveLanguages), with LANGS as the
+// offline fallback; which are ACCEPTED is isKnownLang(), which unions the two.
+// Nothing anywhere gates on DICT membership — that mistake is what made three
+// activated languages unreachable.
 //
 // Note: the ta/te/kn/ml/ur page-body translations are standard UI terms and
 // still want a native-speaker QA pass before a wide regional rollout.
@@ -8451,6 +8459,32 @@ for (const code of Object.keys(ORDEREDIT)) {
   Object.assign(DICT[code], ORDEREDIT[code]);
 }
 
+// --- The two PUBLIC WhatsApp-link pages (batch LANG) ----------------------
+// /khata/[token] and /pay/[orderId] are what a customer opens from a message —
+// no login, often on somebody else's phone — and until now they were the only
+// screens in the product with no translation at all: 100% hardcoded English.
+//
+// Almost all of their copy reuses keys that already exist and are already
+// translated in every language (common.*, stmt.date, type.*, c.payment). Only
+// the sentences that exist nowhere else are new, and they are listed here in
+// ENGLISH ONLY — no machine translation, no guesses. Every other language falls
+// back to this English text through translate() until a human supplies the
+// native wording, which lands as an i18n_overrides row with no code change.
+const PUBLINK_EN = {
+  'pub.khata.linkInvalidTitle': 'Link not valid',
+  'pub.khata.linkInvalid': 'This khata link is invalid or has been replaced by the shop.',
+  'pub.khata.titleOf': '{name}’s khata',
+  'pub.khata.recent': 'Recent entries',
+  'pub.khata.footer': 'Read-only statement, updated live by {shop}. Questions? Contact the shop directly.',
+  'pub.pay.notFound': 'Order not found',
+  'pub.pay.received': 'Payment received',
+  'pub.pay.awaiting': 'Awaiting payment',
+  'pub.pay.paidAt': 'Paid at {when}',
+  'pub.pay.refreshHint': 'If you paid moments ago, please refresh in a few seconds.',
+};
+if (!DICT.en) DICT.en = {};
+Object.assign(DICT.en, PUBLINK_EN);
+
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in
 // the other languages' wording here, so strip it from their strings — English
 // keeps it and receives 's'/'' at call time; every other language ignores the
@@ -8468,6 +8502,10 @@ const KEY = 'skhata_lang';
 const CHOSEN_KEY = 'skhata_lang_set';
 const EVENT = 'skhata-lang';
 const OVERRIDE_EVENT = 'skhata-i18n';
+// Cache of the last active-language list the registry returned, so the gate
+// below knows about a DB-activated language on the very next open — including
+// offline, when the registry fetch cannot answer at all.
+const KNOWN_CACHE_KEY = 'skhata_langs';
 
 // Live translation overrides fetched from the backend at runtime, shaped as
 // { lang: { key: value, ... }, ... }. Layered on top of the static DICT below.
@@ -8544,6 +8582,10 @@ export async function loadActiveLanguages() {
       has_translit: !!l.has_translit,
       has_nmt: !!l.has_nmt,
     }));
+    // Everything the registry says is active is now selectable, whether or not
+    // it has a built-in DICT block (bn/gu/mr have their strings in the overrides
+    // table instead). Cached so the next open — offline included — still knows.
+    rememberKnownCodes(ACTIVE_LANGS.map((l) => l.code));
     if (typeof window !== 'undefined') window.dispatchEvent(new Event(ACTIVE_EVENT));
   } catch {
     /* offline / fetch blocked / not seeded — keep the built-in LANGS */
@@ -8554,6 +8596,67 @@ export async function loadActiveLanguages() {
 // fetch hasn't resolved or failed — so the picker/gate ALWAYS render something.
 export function getActiveLanguages() {
   return ACTIVE_LANGS && ACTIVE_LANGS.length ? ACTIVE_LANGS : LANGS;
+}
+
+// ---- The language GATE: which codes may actually be selected/stored --------
+//
+// This used to test `DICT[code]` — is there a built-in string block? — and that
+// was wrong, badly. A language's strings do not have to live in DICT: they can
+// live in `i18n_overrides`, which translate() consults FIRST (see below). bn, gu
+// and mr are exactly that case: 852 human-audited strings each, served by
+// /api/i18n/overrides, with no DICT block at all. The DICT test meant that a
+// shopkeeper or shopper who picked Bengali, Gujarati or Marathi was silently put
+// back on English — while setLang still recorded that they had chosen, so the
+// first-open prompt never returned and there was no obvious way to try again.
+//
+// So the gate is now the real supported set: the built-in LANGS (the offline
+// fallback) UNIONed with whatever the DB registry says is active. It is still a
+// closed allowlist — a stored code that is a typo, or a language an admin has
+// since removed, still falls back to English rather than being trusted.
+const CODE_RE = /^[a-z]{2,8}$/; // same shape the backend registry validates
+const KNOWN_LANGS = new Set(LANGS.map((l) => l.code));
+
+// Fold the cached registry codes in, once, the first time anyone asks. It has
+// to be lazy: getLang() runs on first paint, long before loadActiveLanguages()
+// can have answered, and never answers at all on a phone with no signal.
+// Without the cache a Bengali shopper would be bounced back to English on every
+// offline open — the very bug this gate exists to stop. Reading it lazily (and
+// only from getLang/setLang, which are called in effects, never during render)
+// keeps SSR and the first client render identical.
+let cacheMerged = false;
+function mergeCachedCodes() {
+  if (cacheMerged) return;
+  if (typeof window === 'undefined') return; // SSR: built-in list only
+  cacheMerged = true;
+  try {
+    const raw = window.localStorage.getItem(KNOWN_CACHE_KEY);
+    if (!raw) return;
+    const codes = JSON.parse(raw);
+    if (!Array.isArray(codes)) return;
+    for (const c of codes) if (typeof c === 'string' && CODE_RE.test(c)) KNOWN_LANGS.add(c);
+  } catch {
+    /* storage blocked or cache corrupt — the built-in list still stands */
+  }
+}
+
+// Remember the registry's answer for the next open (including an offline one).
+function rememberKnownCodes(codes) {
+  for (const c of codes) if (typeof c === 'string' && CODE_RE.test(c)) KNOWN_LANGS.add(c);
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(KNOWN_CACHE_KEY, JSON.stringify(codes));
+  } catch {
+    /* storage blocked — the in-memory set is still updated for this session */
+  }
+}
+
+// Is `code` a language this app will honour? Built-in, or active per the
+// registry (live or cached). Anything else is not.
+export function isKnownLang(code) {
+  if (typeof code !== 'string' || code === '') return false;
+  if (KNOWN_LANGS.has(code)) return true;
+  mergeCachedCodes();
+  return KNOWN_LANGS.has(code);
 }
 
 // Hook returning the active language list, re-rendering when it loads/changes.
@@ -8630,11 +8733,15 @@ export function useLanguageCapability(code) {
   return caps;
 }
 
+// The stored language, or 'en'. SSR always answers 'en' so the server and the
+// first client render agree; the stored choice is applied in an effect after
+// mount (see useLang). The gate is isKnownLang, NOT DICT membership — see the
+// long note above isKnownLang for why that distinction is the whole bug.
 export function getLang() {
   if (typeof window === 'undefined') return 'en';
   try {
     const v = window.localStorage.getItem(KEY);
-    return DICT[v] ? v : 'en';
+    return isKnownLang(v) ? v : 'en';
   } catch {
     return 'en';
   }
@@ -8653,7 +8760,7 @@ export function hasChosenLang() {
 }
 
 export function setLang(code) {
-  const next = DICT[code] ? code : 'en';
+  const next = isKnownLang(code) ? code : 'en';
   try {
     window.localStorage.setItem(KEY, next);
     // Any deliberate selection (gate tap or switcher) counts as a choice, so the
@@ -8699,15 +8806,22 @@ export function useLang() {
     window.addEventListener(EVENT, on);
     window.addEventListener('storage', on);
     window.addEventListener(OVERRIDE_EVENT, onOverride);
+    // The registry resolving can make the STORED language legal for the first
+    // time this session — a first-ever open on a language activated purely in
+    // the DB, with nothing cached yet. Re-read then, so the viewer lands in
+    // their own language a moment later instead of being stuck on English
+    // until they reload.
+    window.addEventListener(ACTIVE_EVENT, on);
     return () => {
       window.removeEventListener(EVENT, on);
       window.removeEventListener('storage', on);
       window.removeEventListener(OVERRIDE_EVENT, onOverride);
+      window.removeEventListener(ACTIVE_EVENT, on);
     };
   }, []);
   const change = (code) => {
     setLang(code);
-    setLangState(DICT[code] ? code : 'en');
+    setLangState(isKnownLang(code) ? code : 'en');
   };
   // `t` MUST be referentially stable across renders — components put it in
   // useEffect dependency arrays (e.g. ReferralCard, the account pages). A fresh
@@ -8716,4 +8830,35 @@ export function useLang() {
   // Memoize on [lang, tick] so `t` changes only when the language or overrides do.
   const t = useCallback((key, vars) => translate(lang, key, vars), [lang, tick]);
   return { lang, setLang: change, t };
+}
+
+/**
+ * Like useLang(), but for a page that has been TOLD which language to use.
+ *
+ * The public khata and payment pages are opened from a WhatsApp link, often on
+ * a phone that is not the reader's own — a son's, a neighbour's, the shop's
+ * counter tablet. The browser's stored choice there says nothing about who is
+ * reading. Both endpoints return the language the CUSTOMER has on file, so when
+ * there is one, it wins; otherwise this behaves exactly like useLang().
+ *
+ * `preferred` is untrusted input from an API response, so it goes through the
+ * same isKnownLang gate as a stored choice. It is re-checked when the registry
+ * resolves, because a link opened cold on a new phone can name a language the
+ * built-in list does not have yet.
+ */
+export function useLangFor(preferred) {
+  const { lang } = useLang();
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setTick((n) => n + 1);
+    window.addEventListener(OVERRIDE_EVENT, bump);
+    window.addEventListener(ACTIVE_EVENT, bump);
+    return () => {
+      window.removeEventListener(OVERRIDE_EVENT, bump);
+      window.removeEventListener(ACTIVE_EVENT, bump);
+    };
+  }, []);
+  const effective = isKnownLang(preferred) ? preferred : lang;
+  const t = useCallback((key, vars) => translate(effective, key, vars), [effective, tick]);
+  return { lang: effective, t };
 }

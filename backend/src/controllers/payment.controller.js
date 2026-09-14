@@ -117,11 +117,17 @@ exports.paymentReturn = async (req, res) => {
 
 /**
  * Public read-only payment status — used by the post-payment redirect.
+ *
+ * `language` is the paying customer's own language (batch LANG), so the "thank
+ * you" page reads correctly even when the payment link was opened on a phone
+ * whose browser has a different language stored. null when they have never
+ * chosen one, and the page then falls back to the browser's choice.
  */
 exports.getOrderPublic = async (req, res) => {
   const r = await query(
     `SELECT po.id, po.amount, po.currency, po.status, po.paid_at,
-            c.name AS customer_name, s.name AS shop_name
+            c.name AS customer_name, c.customer_language AS language,
+            s.name AS shop_name
      FROM payment_orders po
      JOIN customers c ON c.id = po.customer_id
      JOIN shops s ON s.id = po.shop_id

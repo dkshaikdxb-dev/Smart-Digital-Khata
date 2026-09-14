@@ -1,4 +1,5 @@
 import { useLang, useActiveLanguages, translate } from '../lib/i18n';
+import { persistLanguage } from '../lib/langSync';
 
 // Compact language dropdown for the nav chrome. A <select> scales cleanly to
 // many languages (unlike a button row) and shows each language in its own
@@ -15,7 +16,12 @@ export default function LangSwitch({ variant = 'owner' }) {
       className={cls}
       aria-label="Language"
       value={lang}
-      onChange={(e) => setLang(e.target.value)}
+      onChange={(e) => {
+        // Apply locally first (instant), then tell the server, so the WhatsApp
+        // messages this person receives follow the switch they just flipped.
+        setLang(e.target.value);
+        persistLanguage(e.target.value);
+      }}
     >
       {langs.map((l) => (
         <option key={l.code} value={l.code}>

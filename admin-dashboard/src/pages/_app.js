@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import '../styles/globals.css';
 import { useLang, isRtl, hasChosenLang, loadOverrides, loadActiveLanguages } from '../lib/i18n';
+import { backfillLanguageOnce } from '../lib/langSync';
 import CustomerLangGate from '../components/CustomerLangGate';
 import OfflineBanner from '../components/OfflineBanner';
 
@@ -38,6 +39,11 @@ export default function App({ Component, pageProps }) {
   // values apply right after mount (a brief, acceptable swap). Both fetches
   // fail-safe — the app keeps working offline / if the API is down.
   useEffect(() => { loadOverrides(); loadActiveLanguages(); }, []);
+
+  // One-time, best-effort: hand the server the language this device chose back
+  // when localStorage was the only place it could live (see langSync). Silent
+  // and non-blocking either way.
+  useEffect(() => { backfillLanguageOnce(); }, []);
 
   // First-open language prompt, customer app only. SSR renders nothing (so
   // hydration matches); on mount we show the gate if the viewer is on a /c page

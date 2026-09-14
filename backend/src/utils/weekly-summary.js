@@ -13,12 +13,28 @@
 // The message mirrors the frontend own.weekly.* i18n strings; this backend copy
 // is the source of truth for the WhatsApp text (the backend does not load the
 // admin dashboard's i18n.js — the daily digest is composed server-side the same
-// way). All seven languages are authored natively (en + hi + ta/te/kn/ml/ur), so
-// a regional owner receives the weekly WhatsApp in their own language. Urdu (ur)
-// is RTL — the numbers interpolate as data so they stay RTL-safe.
+// way). All seven languages here are authored natively (en + hi + ta/te/kn/ml/
+// ur), so a regional owner receives the weekly WhatsApp in their own language.
+// Urdu (ur) is RTL — the numbers interpolate as data so they stay RTL-safe.
+//
+// bn, gu and mr are ACTIVE in the app and have audited UI strings, but no
+// native block here yet; an owner on one of those gets English (see
+// UNSUPPORTED_FALLBACK). Adding them is one more block below and nothing else.
 
 const LANGS = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
-const FALLBACK_ORDER = Object.freeze(['hi', 'en']); // owner lang → hi → en
+
+// The language an owner who has NEVER picked one gets. Hindi is the long-
+// standing product default for this message and is left alone: "we have not
+// been told" is a different fact from "they chose something else".
+const UNSET_FALLBACK = 'hi';
+
+// The language an owner gets when they HAVE picked one but no native template
+// for it exists here yet (bn/gu/mr are activated in the app and have UI strings
+// in i18n_overrides, but this composer has no block for them — see the honesty
+// convention above). English, not Hindi: an owner who deliberately chose
+// Bengali did not choose Hindi, and answering one wrong language with another
+// wrong language is not a fallback, it is a second mistake.
+const UNSUPPORTED_FALLBACK = 'en';
 
 // Per-language weekday names (dow 0=Sunday..6=Saturday), matching the frontend
 // own.day.* keys so the "best day" reads naturally in the owner's language.
@@ -114,13 +130,20 @@ function num(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
-// Normalise a language code to one we have templates for, honouring the
-// owner → hi → en fallback chain.
+// Normalise a language code to one we have templates for.
+//
+//   nothing stored          → UNSET_FALLBACK ('hi'), the historical default
+//   a code we author        → that language
+//   anything else           → UNSUPPORTED_FALLBACK ('en')
+//
+// A regional tag ('hi-IN') resolves on its primary subtag, matching
+// utils/order-alert-copy and utils/order-customer-copy.
 function resolveLang(lang) {
-  const l = String(lang || '').trim().toLowerCase();
-  if (T[l]) return l;
-  for (const f of FALLBACK_ORDER) if (T[f]) return f;
-  return 'en';
+  const raw = String(lang == null ? '' : lang).trim().toLowerCase();
+  if (raw === '') return T[UNSET_FALLBACK] ? UNSET_FALLBACK : 'en';
+  const two = raw.slice(0, 2);
+  if (T[two]) return two;
+  return T[UNSUPPORTED_FALLBACK] ? UNSUPPORTED_FALLBACK : 'en';
 }
 
 // Integer paise → an Indian-grouped rupee STRING (no ₹ — the template carries the
@@ -196,4 +219,12 @@ function buildWeeklySummary(shopData = {}, lang) {
   };
 }
 
-module.exports = { buildWeeklySummary, resolveLang, fmtINR, LANGS, DAYS };
+module.exports = {
+  buildWeeklySummary,
+  resolveLang,
+  fmtINR,
+  LANGS,
+  DAYS,
+  UNSET_FALLBACK,
+  UNSUPPORTED_FALLBACK,
+};

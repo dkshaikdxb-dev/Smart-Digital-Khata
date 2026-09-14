@@ -22,10 +22,13 @@ const RESEND_MIN_DAYS = 6;
 // Window (days) for the "this week" figures.
 const WEEK_DAYS = 7;
 
-// The owner's language for the WhatsApp message. There is no per-shop language
-// column today, so we fall back through the composer's chain (owner lang → hi →
-// en); passing the shop's `language` field (if a future migration adds one) keeps
-// this forward-compatible without a code change here.
+// The owner's language for the WhatsApp message, read from `shops.language`
+// (migration 0074) — the server's durable copy of the language the owner picked
+// in the console. Before that column existed this could only ever resolve to the
+// composer's default, so every shopkeeper in the country got the same Hindi
+// message however they had set the app up. A shop that has never set one still
+// gets Hindi; one set to a language the composer has no template for gets
+// English rather than a third language nobody chose (see resolveLang).
 function shopLang(shop) {
   return resolveLang(shop && shop.language);
 }
@@ -108,9 +111,17 @@ async function computeWeeklyForShop(shopId, lang) {
 // sendWeeklyForShop(shop) → compute, resolve the owner phone, send the WhatsApp
 // message, stamp weekly_summary_last_sent_at, and log to notification_logs.
 // Fire-and-forget PER SHOP: any error is caught and reported so one bad shop can
-// never abort the whole run. `shop` is a row with { id, owner_id, name }.
+// never abort the whole run. `shop` is a row with { id, owner_id, name,
+// language } — `language` being the owner's own choice (see shopLang). A caller
+// that hands over a row without it is re-read here rather than quietly sending
+// the default language.
 async function sendWeeklyForShop(shop) {
-  const lang = shopLang(shop);
+  let row = shop;
+  if (row && row.language === undefined && row.id) {
+    const r = await query('SELECT language FROM shops WHERE id = $1', [row.id]);
+    row = { ...row, language: r.rows[0] ? r.rows[0].language : null };
+  }
+  const lang = shopLang(row);
   const summary = await computeWeeklyForShop(shop.id, lang);
 
   // Resolve the OWNER's phone (role='owner' user that owns this shop).
@@ -150,7 +161,7 @@ async function sendWeeklyForShop(shop) {
 // touch Redis — safe to call directly in a test.
 async function runWeeklySummaries() {
   const shopsRes = await query(
-    `SELECT id, owner_id, name
+    `SELECT id, owner_id, name, language
        FROM shops
       WHERE status = 'active'
         AND weekly_summary = true
