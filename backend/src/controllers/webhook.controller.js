@@ -4,6 +4,10 @@ const whatsappInbound = require('../services/whatsapp-inbound.service');
 const settings = require('../config/settings');
 const { query, withTx } = require('../config/db');
 const { maybeActivateReferral } = require('../utils/referral');
+// The ONE way money moves back to a customer (utils/orderEdit): debit/credit
+// only, never a refund. A payment that settles against an order the shop has
+// already cancelled goes through exactly the same writer a cancellation does.
+const { postOrderAdjustment, prepaidCreditRemaining } = require('../utils/orderEdit');
 
 async function alreadyProcessed(id, channel) {
   if (!id) return false;
@@ -41,7 +45,11 @@ const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
  * Reconcile a Razorpay PAYMENT event against a local payment_orders row and
  * mark that row paid. Then, depending on what the payment settles:
  *   - payment_orders.order_id SET  → a PREPAID ORDER: mark the order paid (and
- *     advance a still-pending order to 'accepted'). Never touches the khata.
+ *     advance a still-pending order to 'accepted'). Never touches the khata…
+ *     …UNLESS the order has been CANCELLED, in which case the money that just
+ *     arrived would otherwise sit with the shop with nothing in the ledger to
+ *     show for it. It becomes SHOP CREDIT on the customer's khata instead
+ *     (debit/credit only, never a refund — there is no refund pipeline here).
  *   - payment_orders.order_id NULL → a khata settlement (unchanged): insert the
  *     credit transaction and decrement the customer's balance.
  * Idempotent: the paid-transition is an atomic conditional UPDATE, so duplicate
@@ -55,6 +63,10 @@ const PAYMENT_EVENTS = ['payment.captured', 'order.paid', 'payment_link.paid'];
  *   reconciliation is impossible by construction. The platform handler has no
  *   shop, so the argument is optional.
  * @returns {boolean} true if a matching order was found (and reconciled/duplicate).
+ *   FALSE means NO LOCAL ROW MATCHED — a RETRYABLE outcome, not a final one, and
+ *   the caller MUST unmark the dedupe row so the provider's redelivery can land
+ *   (see the per-shop handler). Ignoring this return value is what let a payment
+ *   delivered before our own create call committed be deduped away and lost.
  */
 async function reconcilePayment(event, shopId = null) {
   const p = event.payload.payment?.entity || {};
@@ -120,14 +132,47 @@ async function reconcilePayment(event, shopId = null) {
       // Payment is a PREPAID ORDER settlement — mark the order paid (and move a
       // still-pending order to 'accepted'). The order was never on the khata,
       // so we must NOT insert a credit or touch the customer's balance.
-      await client.query(
+      const ordRes = await client.query(
         `UPDATE orders
            SET payment_status = 'paid',
                status = CASE WHEN status = 'pending' THEN 'accepted' ELSE status END,
                updated_at = NOW()
-         WHERE id = $1`,
+         WHERE id = $1
+         RETURNING *`,
         [order.order_id]
       );
+      const settledOrder = ordRes.rows[0];
+
+      // THE MONEY THAT ARRIVED TOO LATE (C3). Nothing used to cancel the hosted
+      // payment link when an order was cancelled, and the link is created with
+      // provider-side reminders ON, so the customer kept being chased and could
+      // still pay. That payment marked payment_orders 'paid', left the order
+      // 'cancelled' and posted NO ledger row at all: the shop held the money and
+      // the khata showed nothing.
+      //
+      // The house rule is debit/credit only, never a refund — there is no refund
+      // pipeline in this product and none is invented here — so the money becomes
+      // CREDIT AT THIS SHOP: one 'adjustment' with order_id set, balance lowered
+      // by exactly that, through the same writer a cancellation uses.
+      // prepaidCreditRemaining() subtracts anything this order has already
+      // credited, so a cancel that had ALREADY credited the customer (a
+      // pay-then-cancel race) cannot credit the same paise twice.
+      if (settledOrder && settledOrder.status === 'cancelled') {
+        const owed = await prepaidCreditRemaining(client, settledOrder);
+        if (owed > 0) {
+          await postOrderAdjustment(client, {
+            shopId: settledOrder.shop_id,
+            customerId: settledOrder.customer_id,
+            orderId: settledOrder.id,
+            amount: owed,
+            note: `Order ${settledOrder.id} was cancelled — payment received afterwards kept as shop credit`,
+          });
+        }
+        logger.warn(
+          { orderId: settledOrder.id, amount: owed },
+          'Razorpay webhook: payment settled against a CANCELLED order — credited to the khata'
+        );
+      }
     } else {
       // Khata settlement (unchanged): record the payment and reduce the balance.
       await client.query(
@@ -232,15 +277,33 @@ exports.razorpayShop = async (req, res) => {
   }
 
   if (PAYMENT_EVENTS.includes(event.event)) {
+    let matched = false;
     try {
-      await reconcilePayment(event, shopId);
+      matched = await reconcilePayment(event, shopId);
     } catch (err) {
       // A transient reconcile failure must NOT permanently drop the payment:
-      // unmark the event so Razorpay's retry reconciles it. Fix 1 makes the
-      // reconcile idempotent, so a retry after a crash that DID commit is a
-      // safe no-op.
+      // unmark the event so Razorpay's retry reconciles it. The reconcile is
+      // idempotent, so a retry after a crash that DID commit is a safe no-op.
       await unmarkProcessed(event.id, `razorpay:${token}`);
       throw err;
+    }
+    if (!matched) {
+      // NO LOCAL ROW MATCHED (C5). This is RETRYABLE, not final: the local
+      // payment_orders row is very often simply not committed yet (the provider
+      // can deliver the webhook before our own create call has returned), so
+      // leaving the dedupe row in place made the provider's redelivery answer
+      // `{duplicate:true}` and the payment was lost forever.
+      //
+      // Unmark so the redelivery is allowed to land. This is deliberately NOT
+      // done for an event type we do not handle at all (anything outside
+      // PAYMENT_EVENTS never reaches here): a genuinely irrelevant event SHOULD
+      // stay deduped, because no amount of retrying will ever make it match.
+      await unmarkProcessed(event.id, `razorpay:${token}`);
+      logger.warn(
+        { id: event.id, type: event.event, shopId },
+        'Razorpay webhook: unmatched payment left RETRYABLE (dedupe row removed)'
+      );
+      return res.json({ ok: true, matched: false, retryable: true });
     }
   }
 
@@ -329,6 +392,11 @@ exports.whatsappInbound = async (req, res) => {
   res.status(200).json({ ok: true });
   // Process async with dedupe at the message level
   whatsappInbound
-    .handle(payload, { alreadyProcessed: (id) => alreadyProcessed(id, 'whatsapp') })
+    .handle(payload, {
+      alreadyProcessed: (id) => alreadyProcessed(id, 'whatsapp'),
+      // H2: a message whose ledger write FAILED must not stay marked processed,
+      // or the owner's "add 500 Ramesh" is lost the moment a DB blip eats it.
+      unmarkProcessed: (id) => unmarkProcessed(id, 'whatsapp'),
+    })
     .catch((err) => logger.error({ err: err.message }, 'WA inbound failed'));
 };

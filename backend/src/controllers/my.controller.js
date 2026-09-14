@@ -25,7 +25,8 @@ const { assertShopOpenTx } = require('../utils/shopOpen');
 // `creditPrepaidOnCancel` is the ONE money rule for a cancelled PAID PREPAID
 // order (batch ALERT2) — the same helper the owner's reject path uses, so a
 // customer-initiated cancel and an owner rejection cannot drift.
-const { deliveryFeeFor, cancelOrderMoney } = require('../utils/orderEdit');
+const { deliveryFeeFor, cancelOrderMoney, cancelOrderPaymentLinks } = require('../utils/orderEdit');
+const logger = require('../utils/logger');
 // Customer-facing order copy, en + hi authored (batch B), extended by ALERT2
 // with the cancellation lines: the reason, and where a prepaid amount went.
 const orderCustomerCopy = require('../utils/order-customer-copy');
@@ -289,55 +290,84 @@ exports.pay = async (req, res) => {
       throw ApiError.badRequest('This shop has not connected Razorpay yet.');
     }
 
-    const receipt = `c_${customer.id.slice(0, 8)}_${Date.now()}`;
-    const order = await razorpay.createOrderForShop(shop_id, {
-      amount,
-      receipt,
-      notes: { shop_id, customer_id: customer.id, note: 'Customer self-pay' },
-    });
-
+    // NO PROVIDER CALL INSIDE THIS TRANSACTION (C4). The customer row is held
+    // `FOR UPDATE` from the cap check to here, and two Razorpay HTTP calls used
+    // to run between BEGIN and COMMIT holding that lock. Worse than the lock: a
+    // rollback AFTER the link was created left a LIVE, already-SMSed payment
+    // link with no local row at all, so when the customer paid it the webhook
+    // had nothing to match and the money landed nowhere.
+    //
+    // So the local row is committed FIRST, as 'created' with no provider ids,
+    // and the provider calls happen below, outside. A failure after this commit
+    // leaves a local row the webhook CAN match — the recoverable direction.
+    // The row also counts against the advance cap from the instant it commits,
+    // which is what the in-flight sum above reads, so the cap stays honest.
+    const paymentOrderId = `c_${customer.id.slice(0, 8)}_${Date.now()}`;
     const inserted = await client.query(
       `INSERT INTO payment_orders
-         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes)
-       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6)
+         (id, shop_id, customer_id, amount, currency, status, provider, notes)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5)
        RETURNING *`,
-      [order.receipt, shop_id, customer.id, amount, order.id, null]
+      [paymentOrderId, shop_id, customer.id, amount, null]
     );
-    const orderRow = inserted.rows[0];
 
-    let link;
-    try {
-      const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
-        amount: orderRow.amount,
-        description: `Payment to ${customer.shop_name}`,
-        customer: {
-          name: customer.name,
-          contact: toE164(customer.phone),
-        },
-        reference_id: orderRow.id,
-        notes: { shop_id, customer_id: customer.id, order_id: orderRow.id },
-        callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
-      });
-      link = paymentLink.short_url;
-      await client.query(
-        `UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3`,
-        [paymentLink.id, link, orderRow.id]
-      );
-    } catch (err) {
-      // Rolls the tx back: no link => no open payment_orders row is left behind
-      // to count against this customer's advance headroom.
-      throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
-    }
-
-    return { link, orderId: orderRow.id, balance };
+    return {
+      orderRow: inserted.rows[0],
+      balance,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      shopName: customer.shop_name,
+    };
   });
+
+  // --- OUTSIDE THE TRANSACTION, and outside the customer lock ---------------
+  const { orderRow } = result;
+  let link;
+  try {
+    const order = await razorpay.createOrderForShop(shop_id, {
+      amount,
+      receipt: orderRow.id,
+      notes: { shop_id, customer_id: orderRow.customer_id, note: 'Customer self-pay' },
+    });
+    // Persist the provider order id IMMEDIATELY, in its own short write: it is
+    // the id the webhook matches on, so it must be durable before the next
+    // network call can fail.
+    await query('UPDATE payment_orders SET provider_order_id = $1 WHERE id = $2', [order.id, orderRow.id]);
+
+    const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
+      amount: orderRow.amount,
+      description: `Payment to ${result.shopName}`,
+      customer: {
+        name: result.customerName,
+        contact: toE164(result.customerPhone),
+      },
+      reference_id: orderRow.id,
+      notes: { shop_id, customer_id: orderRow.customer_id, order_id: orderRow.id },
+      callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
+    });
+    link = paymentLink.short_url;
+    await query(
+      'UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3',
+      [paymentLink.id, link, orderRow.id]
+    );
+  } catch (err) {
+    // There is no link to pay, so close the local row rather than leave it
+    // counting against this customer's advance headroom forever. It is marked
+    // 'failed', NOT deleted: if the provider actually did create the order
+    // before the failure, the row is still there (with provider_order_id when we
+    // got that far) for the webhook to match, and `reconcilePayment` settles it
+    // regardless of local status.
+    await query(`UPDATE payment_orders SET status = 'failed' WHERE id = $1 AND status = 'created'`, [orderRow.id])
+      .catch(() => {});
+    throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
+  }
 
   // Hint so the client can confirm "you're adding an advance" — true when the paid
   // amount exceeds the current due (the extra pre-loads an advance). Response shape
   // is otherwise unchanged.
   res.status(201).json({
-    link: result.link,
-    order_id: result.orderId,
+    link,
+    order_id: orderRow.id,
     prepay: amount > Math.max(result.balance, 0),
   });
 };
@@ -526,6 +556,116 @@ function alertOwnerNewOrder({ shopId, customerName, itemCount, total, fulfillmen
   })().catch(() => {});
 }
 
+// ===========================================================================
+// ORDER PLACEMENT IS IDEMPOTENT (H1)
+//
+// The owner app and the consumer app are used on 2G. `transactions` has carried
+// a `client_request_id` since migration 0018 and `order_edits` since 0068, both
+// with a partial unique index and both replaying instead of re-applying. Order
+// PLACEMENT — by far the most expensive write in the app, because a credit order
+// posts a `purchase` — had neither: a retried POST /my/orders created a SECOND
+// order and a SECOND khata debit, and the customer was charged twice for one
+// basket of goods.
+//
+// Same column name, same uniqueness approach (partial unique index scoped to the
+// shop — migration 0071), same replay semantics as `transactions`: return the
+// order the key already created and re-apply NOTHING.
+// ===========================================================================
+
+/**
+ * The order this `client_request_id` has already created at this shop, in the
+ * shape POST /my/orders answers with, or null.
+ *
+ * THE KEY IS BOUND TO THE CALLER. The unique index is scoped to the SHOP (an
+ * order does not exist yet when the key is minted, so the shop is the narrowest
+ * scope available), which means two customers at the same shop could in
+ * principle present the same id. Handing the second one the FIRST one's order
+ * would be the same defect the khata idempotency key had — a silent success
+ * returning a stranger's row while your own write is dropped — so a key that
+ * belongs to a different person is a loud 409 instead.
+ *
+ * What is deliberately NOT compared is the basket. A replay returns the order
+ * the key already created and re-applies nothing; that is the whole promise, and
+ * it is what makes a retry safe on a link that drops mid-request.
+ *
+ * @param {function} q  `query`, or a transaction client's `query` bound to it
+ */
+async function replayOrder(q, shopId, clientRequestId, phone) {
+  if (!clientRequestId) return null;
+  const r = await q(
+    `SELECT o.*, (o.subtotal + o.delivery_fee) AS total, c.phone AS customer_phone
+       FROM orders o
+       JOIN customers c ON c.id = o.customer_id
+      WHERE o.shop_id = $1 AND o.client_request_id = $2`,
+    [shopId, clientRequestId]
+  );
+  if (!r.rowCount) return null;
+  const order = r.rows[0];
+  if (phone && order.customer_phone !== phone) {
+    throw ApiError.conflict('client_request_id_conflict', {
+      code: 'client_request_id_conflict',
+      message: 'This client_request_id was already used for a different order. Use a new id.',
+    });
+  }
+  delete order.customer_phone;
+  const items = await q(
+    `SELECT id, product_id, name, unit_price, quantity, line_total, weight_grams
+       FROM order_items WHERE order_id = $1 ORDER BY name ASC`,
+    [order.id]
+  );
+  // A prepaid replay hands back the SAME pay link, never a second one: creating
+  // another provider link for an order that already has one is how a customer
+  // ends up paying twice.
+  const pay = await q(
+    `SELECT provider_link_url FROM payment_orders
+      WHERE order_id = $1 AND provider_link_url IS NOT NULL
+      ORDER BY created_at DESC LIMIT 1`,
+    [order.id]
+  );
+  return {
+    order: { ...order, items: items.rows, total: Number(order.total) },
+    pay_link: (pay.rows[0] && pay.rows[0].provider_link_url) || null,
+  };
+}
+
+/** The 201 body for a replay. Shape-identical to a first-time placement. */
+function replayBody(found) {
+  const body = { order: found.order, replayed: true };
+  if (found.pay_link) body.pay_link = found.pay_link;
+  return body;
+}
+
+/**
+ * INSERT the order row, tolerating the idempotency race. A concurrent retry that
+ * beat us to the unique index raises 23505; the SAVEPOINT keeps that from
+ * poisoning the whole transaction so we can hand back the row that won, exactly
+ * as transaction.controller.create does for `transactions`.
+ *
+ * @returns {{ order?: object, replayed?: object }}
+ */
+async function insertOrderRow(client, o) {
+  await client.query('SAVEPOINT order_insert');
+  try {
+    const r = await client.query(
+      `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode,
+                           payment_status, subtotal, delivery_fee, address, note, client_request_id)
+       VALUES ($1,$2,'pending',$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING *`,
+      [o.shopId, o.customerId, o.fulfillment, o.paymentMode, o.paymentStatus,
+       o.subtotal, o.fee, o.address || null, o.note || null, o.clientRequestId]
+    );
+    await client.query('RELEASE SAVEPOINT order_insert');
+    return { order: r.rows[0] };
+  } catch (err) {
+    if (err && err.code === '23505' && o.clientRequestId) {
+      await client.query('ROLLBACK TO SAVEPOINT order_insert');
+      const dup = await replayOrder(client.query.bind(client), o.shopId, o.clientRequestId, o.phone);
+      if (dup) return { replayed: dup };
+    }
+    throw err;
+  }
+}
+
 /**
  * POST /my/orders — place an order at a shop.
  * credit  → order + items + a khata `purchase` transaction (credit-limit
@@ -540,6 +680,12 @@ function alertOwnerNewOrder({ shopId, customerName, itemCount, total, fulfillmen
 exports.createOrder = async (req, res) => {
   const phone = toE164(req.customerUser.phone);
   const { shop_id, items, fulfillment_type, payment_mode, address, note } = req.body;
+  const clientRequestId = req.body.client_request_id || null;
+
+  // The cheap replay check, before a single product is loaded. The unique index
+  // (0071) and the in-transaction recovery below are the rails behind it.
+  const early = await replayOrder(query, shop_id, clientRequestId, phone);
+  if (early) return res.status(201).json(replayBody(early));
 
   if (!items.length) throw ApiError.unprocessable('Order must have at least one item');
   if (fulfillment_type === 'delivery' && !(address && address.trim())) {
@@ -633,19 +779,25 @@ exports.createOrder = async (req, res) => {
         }
       }
 
-      const ord = await client.query(
-        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
-         VALUES ($1,$2,'pending',$3,'credit','not_required',$4,$5,$6,$7)
-         RETURNING *`,
-        [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
-      );
-      const order = ord.rows[0];
+      const ins = await insertOrderRow(client, {
+        shopId: shop_id, customerId: customer.id, fulfillment: fulfillment_type,
+        paymentMode: 'credit', paymentStatus: 'not_required',
+        subtotal, fee, address, note, clientRequestId, phone,
+      });
+      if (ins.replayed) return { replayed: ins.replayed };
+      const order = ins.order;
       const orderItems = await insertOrderItems(client, order.id, lines);
 
+      // `order_id` is SET on the purchase row. The ledger is the only
+      // append-only record of what this order actually charged, and a
+      // cancellation reverses it by reading exactly this row back (see
+      // utils/orderEdit.originalCreditCharge) rather than re-deriving the charge
+      // from `orders.subtotal`, which an edit is free to rewrite. Before this it
+      // was only discoverable through the free-text note.
       await client.query(
-        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source)
-         VALUES ($1,$2,'purchase',$3,'credit',$4,'api')`,
-        [shop_id, customer.id, total, `Order ${order.id}`]
+        `INSERT INTO transactions (shop_id, customer_id, type, amount, method, note, source, order_id)
+         VALUES ($1,$2,'purchase',$3,'credit',$4,'api',$5)`,
+        [shop_id, customer.id, total, `Order ${order.id}`, order.id]
       );
       await client.query(
         'UPDATE customers SET balance = $1, updated_at = NOW() WHERE id = $2',
@@ -654,6 +806,8 @@ exports.createOrder = async (req, res) => {
 
       return { order: { ...order, items: orderItems, total }, customerName: customer.name };
     });
+
+    if (result.replayed) return res.status(201).json(replayBody(result.replayed));
 
     alertOwnerNewOrder({
       shopId: shop_id,
@@ -677,16 +831,18 @@ exports.createOrder = async (req, res) => {
       await assertShopOpenTx(client, shop_id);
 
       const customer = await resolveOrCreateCustomer(client, shop_id, phone);
-      const ord = await client.query(
-        `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
-         VALUES ($1,$2,'pending',$3,'cash','pending',$4,$5,$6,$7)
-         RETURNING *`,
-        [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
-      );
-      const order = ord.rows[0];
+      const ins = await insertOrderRow(client, {
+        shopId: shop_id, customerId: customer.id, fulfillment: fulfillment_type,
+        paymentMode: 'cash', paymentStatus: 'pending',
+        subtotal, fee, address, note, clientRequestId, phone,
+      });
+      if (ins.replayed) return { replayed: ins.replayed };
+      const order = ins.order;
       const orderItems = await insertOrderItems(client, order.id, lines);
       return { order: { ...order, items: orderItems, total }, customerName: customer.name };
     });
+
+    if (result.replayed) return res.status(201).json(replayBody(result.replayed));
 
     alertOwnerNewOrder({
       shopId: shop_id,
@@ -706,55 +862,99 @@ exports.createOrder = async (req, res) => {
     throw ApiError.badRequest('This shop cannot take online payments yet.');
   }
 
+  // NO PROVIDER CALL INSIDE THIS TRANSACTION (C4). Two Razorpay HTTP calls used
+  // to run between BEGIN and COMMIT with the `customers` row held FOR UPDATE. A
+  // rollback after the link was created left a LIVE, already-SMSed payment link
+  // with no local row, so the customer paid and nothing matched. Everything
+  // local commits FIRST; the provider calls happen after, and the ids are
+  // written back in two short follow-up writes.
   const result = await withTx(async (client) => {
-    // AVAILABILITY GATE (batch A) — before the customer row, before the order,
-    // and crucially before the Razorpay call, so a closed shop never creates an
-    // order, a payment_orders row, or a provider-side order/pay link either.
+    // AVAILABILITY GATE (batch A) — before the customer row and before the
+    // order, so a closed shop never creates an order or a payment_orders row.
     await assertShopOpenTx(client, shop_id);
 
     const customer = await resolveOrCreateCustomer(client, shop_id, phone);
 
-    const ord = await client.query(
-      `INSERT INTO orders (shop_id, customer_id, status, fulfillment_type, payment_mode, payment_status, subtotal, delivery_fee, address, note)
-       VALUES ($1,$2,'pending',$3,'prepaid','pending',$4,$5,$6,$7)
-       RETURNING *`,
-      [shop_id, customer.id, fulfillment_type, subtotal, fee, address || null, note || null]
-    );
-    const order = ord.rows[0];
+    const ins = await insertOrderRow(client, {
+      shopId: shop_id, customerId: customer.id, fulfillment: fulfillment_type,
+      paymentMode: 'prepaid', paymentStatus: 'pending',
+      subtotal, fee, address, note, clientRequestId, phone,
+    });
+    if (ins.replayed) return { replayed: ins.replayed };
+    const order = ins.order;
     const orderItems = await insertOrderItems(client, order.id, lines);
 
-    // The customer pays the ORDER TOTAL (subtotal + delivery fee) online.
-    const receipt = `o_${order.id.slice(0, 8)}_${Date.now()}`;
-    const rzpOrder = await razorpay.createOrderForShop(shop_id, {
-      amount: total,
-      receipt,
-      notes: { shop_id, customer_id: customer.id, order_id: order.id },
-    });
-
+    // The customer pays the ORDER TOTAL (subtotal + delivery fee) online. The
+    // local id IS the provider receipt, generated here rather than read back off
+    // the provider's response, so the row can be committed before we ever call.
+    const paymentOrderId = `o_${order.id.slice(0, 8)}_${Date.now()}`;
     const po = await client.query(
       `INSERT INTO payment_orders
-         (id, shop_id, customer_id, amount, currency, status, provider, provider_order_id, notes, order_id)
-       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6,$7)
+         (id, shop_id, customer_id, amount, currency, status, provider, notes, order_id)
+       VALUES ($1,$2,$3,$4,'INR','created','razorpay',$5,$6)
        RETURNING *`,
-      [rzpOrder.receipt, shop_id, customer.id, total, rzpOrder.id, `Order ${order.id}`, order.id]
+      [paymentOrderId, shop_id, customer.id, total, `Order ${order.id}`, order.id]
     );
-    const orderRow = po.rows[0];
+
+    return {
+      order: { ...order, items: orderItems, total },
+      orderRow: po.rows[0],
+      customerName: customer.name,
+      customerPhone: customer.phone,
+    };
+  });
+
+  if (result.replayed) return res.status(201).json(replayBody(result.replayed));
+
+  // --- OUTSIDE THE TRANSACTION ---------------------------------------------
+  const orderRow = result.orderRow;
+  let payLink;
+  try {
+    const rzpOrder = await razorpay.createOrderForShop(shop_id, {
+      amount: total,
+      receipt: orderRow.id,
+      notes: { shop_id, customer_id: orderRow.customer_id, order_id: result.order.id },
+    });
+    // The provider order id is what the webhook matches on, so it is made
+    // durable in its own short write before the next network call can fail.
+    await query('UPDATE payment_orders SET provider_order_id = $1 WHERE id = $2', [rzpOrder.id, orderRow.id]);
 
     const paymentLink = await razorpay.createPaymentLinkForShop(shop_id, {
       amount: orderRow.amount,
       description: `Order at shop`,
-      customer: { name: customer.name, contact: toE164(customer.phone) },
+      customer: { name: result.customerName, contact: toE164(result.customerPhone) },
       reference_id: orderRow.id,
-      notes: { shop_id, customer_id: customer.id, order_id: order.id },
+      notes: { shop_id, customer_id: orderRow.customer_id, order_id: result.order.id },
       callback_url: `${process.env.APP_URL || ''}/api/payments/orders/${orderRow.id}/return`,
     });
-    await client.query(
-      `UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3`,
-      [paymentLink.id, paymentLink.short_url, orderRow.id]
+    payLink = paymentLink.short_url;
+    await query(
+      'UPDATE payment_orders SET provider_link_id = $1, provider_link_url = $2 WHERE id = $3',
+      [paymentLink.id, payLink, orderRow.id]
     );
-
-    return { order: { ...order, items: orderItems, total }, pay_link: paymentLink.short_url, customerName: customer.name };
-  });
+  } catch (err) {
+    // There is no way to pay this order, so it is CANCELLED rather than left
+    // sitting on the owner's screen as an order nobody can settle. This is a
+    // compensating write, not a rollback: the payment_orders row SURVIVES (with
+    // provider_order_id when we got that far), so if the provider actually did
+    // create something before the failure and the customer pays it, the webhook
+    // matches the local row and credits the money to the customer's khata (see
+    // webhook.controller.reconcilePayment). That is the recoverable direction —
+    // the old rollback left a live link with nothing at all to match.
+    logger.error(
+      { err: err.message, orderId: result.order.id, paymentOrderId: orderRow.id },
+      'Prepaid order: provider call failed after the local commit — order cancelled, payment row kept'
+    );
+    await query(
+      `UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = $1 AND status = 'pending'`,
+      [result.order.id]
+    ).catch(() => {});
+    await query(
+      `UPDATE payment_orders SET status = 'failed' WHERE id = $1 AND status = 'created'`,
+      [orderRow.id]
+    ).catch(() => {});
+    throw ApiError.badRequest('Failed to create payment link', err.error?.description || err.message);
+  }
 
   alertOwnerNewOrder({
     shopId: shop_id,
@@ -766,7 +966,7 @@ exports.createOrder = async (req, res) => {
     address,
     note,
   });
-  return res.status(201).json({ order: result.order, pay_link: result.pay_link });
+  return res.status(201).json({ order: result.order, pay_link: payLink });
 };
 
 /**
@@ -975,6 +1175,11 @@ exports.cancelOrder = async (req, res) => {
       shopName: order.shop_name,
     };
   });
+
+  // THE PROVIDER SIDE OF THE CANCELLATION (C3), after the commit and outside the
+  // row locks — the same call the owner's REJECT path makes, through the same
+  // shared helper, so the two cannot drift.
+  await cancelOrderPaymentLinks(result.order.id, { query, razorpay, logger });
 
   if (result.customer.notifications_enabled !== false) {
     const message = orderCustomerCopy.buildCustomerMessage({

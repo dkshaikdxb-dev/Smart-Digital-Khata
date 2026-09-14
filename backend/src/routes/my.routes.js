@@ -32,6 +32,12 @@ const createOrderSchema = Joi.object({
   payment_mode: Joi.string().valid('credit', 'prepaid', 'cash').required(),
   address: Joi.string().allow('', null),
   note: Joi.string().allow('', null),
+  // Optional client-generated id for idempotent retries from offline/2G clients.
+  // Same shape and the same promise as transactions.client_request_id
+  // (routes/transaction.routes.js) and order_edits.client_request_id
+  // (routes/order.routes.js): send the same id again and you get the SAME order
+  // back, never a second one and never a second khata debit.
+  client_request_id: Joi.string().uuid().optional(),
 });
 
 const orderIdSchema = Joi.object({

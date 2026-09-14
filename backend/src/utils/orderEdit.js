@@ -158,20 +158,35 @@ function planReduction(items, lines) {
 }
 
 /**
- * Does this payment mode carry a khata entry that a reduction has to compensate?
+ * Does this ORDER carry money a reduction has to compensate?
  *
- *   credit  → YES. A `purchase` for the original total already raised the
- *             customer's balance, so the reduction must bring it back down.
- *   prepaid → YES. The customer already paid online and there is NO khata entry,
- *             so the same compensating entry drives the balance NEGATIVE — i.e.
- *             the difference becomes an ADVANCE at this shop, using the advance
- *             mechanism the consumer pre-pay flow already proves. No refund API
- *             is called, and none is invented.
- *   cash    → NO. Nothing was ever posted: cash is collected on hand-over, so
- *             the only thing to change is what the owner will ask for.
+ *   credit         → YES. A `purchase` for the original total already raised the
+ *                    customer's balance, so the reduction must bring it back down.
+ *   prepaid PAID   → YES. The customer already handed money over and there is NO
+ *                    khata entry, so the same compensating entry drives the
+ *                    balance NEGATIVE — i.e. the difference becomes an ADVANCE at
+ *                    this shop, using the advance mechanism the consumer pre-pay
+ *                    flow already proves. No refund API is called, and none is
+ *                    invented.
+ *   prepaid UNPAID → NO. This is the money defect this argument exists for. The
+ *                    predicate used to look at the payment MODE alone, so
+ *                    reducing an order the customer had not paid for MINTED
+ *                    credit out of nothing: ₹500 ordered, never paid, reduced to
+ *                    ₹300, and the khata showed ₹200 of advance for money the
+ *                    shop had never received (and the advance cap was never
+ *                    consulted). An unpaid prepaid reduction moves no money at
+ *                    all; it only changes what is payable.
+ *   cash           → NO. Nothing was ever posted: cash is collected on hand-over,
+ *                    so the only thing to change is what the owner will ask for.
+ *
+ * Takes the ORDER ROW, not a mode string, precisely so `payment_status` can
+ * never be forgotten again — `isPaidPrepaid` below is the one definition of
+ * "prepaid money actually arrived" and both callers now share it.
  */
-function needsLedgerAdjustment(paymentMode) {
-  return paymentMode === 'credit' || paymentMode === 'prepaid';
+function needsLedgerAdjustment(order) {
+  if (!order) return false;
+  if (order.payment_mode === 'credit') return true;
+  return isPaidPrepaid(order);
 }
 
 // ===========================================================================
@@ -229,6 +244,50 @@ async function postOrderAdjustment(client, { shopId, customerId, orderId, amount
 }
 
 /**
+ * What this CREDIT order actually put ON the khata when it was placed, in paise.
+ *
+ * THE DEFECT THIS EXISTS FOR. `editItems` WRITES the reduced totals back to
+ * `orders.subtotal` / `orders.delivery_fee` AND posts an 'adjustment' for the
+ * reduction. Deriving the charge from those columns and then subtracting the
+ * adjustments again removed the reduction TWICE, so a reduce-then-cancel left
+ * the customer owing exactly the reduction on an order that was never supplied:
+ * 500 rupees ordered, reduced to 250 (balance 250), cancelled -> charged read
+ * back as 250, given was 250, amount 0, nothing posted, 250 still owed forever.
+ *
+ * SO WE READ THE LEDGER, NOT THE ORDER ROW. `transactions` is append-only: the
+ * `purchase` rows for this order are what the shop actually charged, and no edit
+ * can rewrite them. `orders.subtotal`/`delivery_fee` are MUTABLE by design — an
+ * edit is supposed to move them — which makes them the wrong source of truth for
+ * "what was originally charged" by construction, not by accident.
+ *
+ * THE FALLBACK, and why it is shaped the way it is. An order whose purchase row
+ * predates `transactions.order_id` being stamped (migration 0071 backfills what
+ * it can from the `Order <id>` note; a hand-fixed or imported row may still have
+ * none) falls back to the order's ORIGINAL columns — `original_subtotal` and
+ * `original_delivery_fee`, both snapshotted once on the FIRST edit (0068, 0071)
+ * — never the current ones. The delivery fee has to be snapshotted separately
+ * because a reduction can RE-ADD a fee: dropping back under `free_delivery_min`
+ * puts the flat fee back, `editItems` correctly posts no adjustment for that (it
+ * would be an increase), but it still writes the larger fee to the order row.
+ * Reversing `original_subtotal` + the CURRENT delivery fee would then hand the
+ * customer money for a fee the shop never charged them.
+ */
+async function originalCreditCharge(client, order) {
+  const res = await client.query(
+    `SELECT COALESCE(SUM(amount), 0)::bigint AS charged
+       FROM transactions
+      WHERE order_id = $1 AND type = 'purchase'`,
+    [order.id]
+  );
+  const fromLedger = Number(res.rows[0].charged) || 0;
+  if (fromLedger > 0) return fromLedger;
+
+  const subtotal = order.original_subtotal == null ? order.subtotal : order.original_subtotal;
+  const fee = order.original_delivery_fee == null ? order.delivery_fee : order.original_delivery_fee;
+  return Number(subtotal || 0) + Number(fee || 0);
+}
+
+/**
  * CANCELLING AN ORDER — the whole money rule, in ONE place.
  *
  * Two paths reach a cancellation: the customer cancelling their own order, and
@@ -238,9 +297,11 @@ async function postOrderAdjustment(client, { shopId, customerId, orderId, amount
  * order left the customer owing for goods that were never supplied.
  *
  *   credit       → reverse the whole amount that was added to the khata when the
- *                  order was placed (subtotal + delivery fee), LESS anything
- *                  already given back by an edit, so a reduce-then-reject can
- *                  never refund the same paise twice.
+ *                  order was placed — read from the LEDGER, not from the order's
+ *                  (mutable, already-reduced) columns; see originalCreditCharge
+ *                  above — LESS anything already given back by an edit, so a
+ *                  reduce-then-reject can neither give the same paise back twice
+ *                  nor leave the reduction owed forever.
  *   prepaid paid → the money already taken becomes shop credit (the house rule:
  *                  debit/credit only, never a refund).
  *   prepaid unpaid, cash → nothing was ever posted, so nothing is posted now.
@@ -259,7 +320,7 @@ async function cancelOrderMoney(client, order, { actorId } = {}) {
   if (!order) return null;
 
   if (order.payment_mode === 'credit') {
-    const charged = Number(order.subtotal || 0) + Number(order.delivery_fee || 0);
+    const charged = await originalCreditCharge(client, order);
     // Anything an edit already took off this order has already left the khata.
     const back = await client.query(
       `SELECT COALESCE(SUM(amount), 0)::bigint AS given
@@ -362,8 +423,74 @@ async function creditPrepaidOnCancel(client, order, { actorId } = {}) {
   });
 }
 
+// ===========================================================================
+// THE PROVIDER SIDE OF A CANCELLATION (C3)
+//
+// Cancelling an order locally used to leave the shop's hosted payment link LIVE,
+// and `createPaymentLinkForShop` asks the provider to keep REMINDING the
+// customer about it. So the customer kept being chased for an order that no
+// longer existed, and a payment that arrived afterwards settled against nothing.
+//
+// This closes the link. It is BEST EFFORT on purpose: the cancellation itself is
+// already committed and must never be reported as failed because the provider
+// was unreachable. The webhook guard in webhook.controller.reconcilePayment is
+// the rail that actually protects the money — if a payment lands anyway it
+// becomes shop credit on the customer's khata rather than vanishing.
+// ===========================================================================
+
+/**
+ * Cancel every still-open hosted payment link for an order, provider-side and
+ * locally. Call AFTER the cancelling transaction has COMMITTED — it makes a
+ * network call and must not be holding a row lock while it does.
+ *
+ * Never throws. Returns the number of local rows moved to 'cancelled'.
+ */
+async function cancelOrderPaymentLinks(orderId, { query, razorpay, logger } = {}) {
+  if (!orderId || !query) return 0;
+  let rows = [];
+  try {
+    const res = await query(
+      `SELECT id, shop_id, provider_link_id FROM payment_orders
+        WHERE order_id = $1 AND status NOT IN ('paid', 'failed', 'cancelled')`,
+      [orderId]
+    );
+    rows = res.rows;
+  } catch (err) {
+    if (logger) logger.warn({ err: err.message, orderId }, 'Could not read payment links to cancel');
+    return 0;
+  }
+
+  let cancelled = 0;
+  for (const row of rows) {
+    if (row.provider_link_id && razorpay && razorpay.cancelPaymentLinkForShop) {
+      try {
+        await razorpay.cancelPaymentLinkForShop(row.shop_id, row.provider_link_id);
+      } catch (err) {
+        // Non-fatal by design. The link may already be paid or cancelled at the
+        // provider, or the provider may simply be down.
+        if (logger) logger.warn({ err: err.message, orderId, link: row.provider_link_id }, 'Payment link cancel failed');
+      }
+    }
+    try {
+      // Only a row that is STILL open is closed: a payment that settled between
+      // the read and here has already marked it 'paid' and must not be undone.
+      const upd = await query(
+        `UPDATE payment_orders SET status = 'cancelled'
+          WHERE id = $1 AND status NOT IN ('paid', 'failed', 'cancelled')`,
+        [row.id]
+      );
+      cancelled += upd.rowCount;
+    } catch (err) {
+      if (logger) logger.warn({ err: err.message, id: row.id }, 'Could not mark payment link cancelled');
+    }
+  }
+  return cancelled;
+}
+
 module.exports = {
   EDITABLE_STATUSES,
+  originalCreditCharge,
+  cancelOrderPaymentLinks,
   isEditableStatus,
   deliveryFeeFor,
   planReduction,

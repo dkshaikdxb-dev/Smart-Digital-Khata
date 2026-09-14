@@ -15,7 +15,7 @@ const { maybeActivateReferral } = require('../utils/referral');
  *   paid 500 Ramesh
  *   upi 120 9876543210 tea & sugar
  */
-async function handle(payload, { alreadyProcessed } = {}) {
+async function handle(payload, { alreadyProcessed, unmarkProcessed } = {}) {
   const entries = payload?.entry || [];
   for (const e of entries) {
     for (const change of e.changes || []) {
@@ -28,12 +28,63 @@ async function handle(payload, { alreadyProcessed } = {}) {
         }
         const from = m.from; // no '+'
         const text = m.text.body.trim();
-        await processMessage(from, text).catch((err) =>
-          logger.warn({ err: err.message, from, text }, 'processMessage failed')
-        );
+        try {
+          await processMessage(from, text);
+        } catch (err) {
+          // THE MESSAGE WAS MARKED PROCESSED BEFORE THE LEDGER WRITE (H2). A
+          // failure used to be logged and dropped, so an `add 500 Ramesh` lost
+          // to a DB blip was lost PERMANENTLY: the dedupe row was already
+          // committed, so a redelivery would be swallowed, and the owner was
+          // never told anything at all. Two things have to happen here.
+          //
+          // 1. UNMARK, so a redelivery of this exact message is allowed to
+          //    reconcile instead of being deduped away.
+          logger.error({ err: err.message, from, text }, 'processMessage failed');
+          if (unmarkProcessed) {
+            try {
+              await unmarkProcessed(m.id);
+            } catch (unmarkErr) {
+              logger.error({ err: unmarkErr.message, id: m.id }, 'Failed to unmark WA message');
+            }
+          }
+          // 2. TELL THE OWNER. Silence reads exactly like success to somebody
+          //    who just sent a ledger entry over WhatsApp. Best effort — if Meta
+          //    is unreachable too there is nothing more we can do here.
+          await whatsapp
+            .sendText(from, COULD_NOT_RECORD)
+            .catch(() => {});
+        }
       }
     }
   }
+}
+
+// What the owner is told when their message could not be written at all.
+const COULD_NOT_RECORD =
+  'Sorry — we could not record that just now. Nothing was saved. Please send it again in a moment.';
+
+// The largest single entry this app will accept, in paise — the SAME ceiling
+// the REST endpoint enforces (routes/transaction.routes.js), so an entry the
+// owner can type into the app and one they can send over WhatsApp are bounded
+// identically. Without it `add 99999999999999999999 Ramesh` parsed happily,
+// multiplied by 100, and overflowed the BIGINT `amount` column — the write blew
+// up and the message was silently dropped.
+const MAX_AMOUNT_PAISE = 1_000_000_000_000;
+
+/**
+ * Why this amount cannot be written, or null when it is fine. Integer paise in.
+ * A non-positive amount is refused rather than written: `add 0 Ramesh` used to
+ * insert a zero-amount row that meant nothing to anybody, and a negative one
+ * cannot be expressed in this grammar at all.
+ */
+function amountError(paise) {
+  if (!Number.isFinite(paise) || paise <= 0) {
+    return 'Amount must be more than ₹0. Example: add 250 9876543210';
+  }
+  if (!Number.isSafeInteger(paise) || paise > MAX_AMOUNT_PAISE) {
+    return `That amount is too large. The most this app can record in one entry is ₹${(MAX_AMOUNT_PAISE / 100).toFixed(2)}.`;
+  }
+  return null;
 }
 
 async function processMessage(fromPhone, text) {
@@ -86,6 +137,14 @@ async function processMessage(fromPhone, text) {
   }
 
   const amountPaise = Math.round(parsed.amount * 100);
+  // Refuse an unwritable amount with a clear reply, BEFORE the write is
+  // attempted (H2). Checked after the customer lookup so the reply the sender
+  // gets names the first thing actually wrong with their message.
+  const badAmount = amountError(amountPaise);
+  if (badAmount) {
+    await whatsapp.sendText(fromPhone, badAmount);
+    return;
+  }
   const delta = parsed.action === 'add' ? amountPaise : -amountPaise;
   const txType = parsed.action === 'add' ? 'purchase' : parsed.action === 'upi' ? 'upi' : 'cash';
 
@@ -235,4 +294,4 @@ async function purchaseLimitError(client, customer, shopId, newBalance) {
   return null;
 }
 
-module.exports = { handle, findCustomer, purchaseLimitError };
+module.exports = { handle, findCustomer, purchaseLimitError, amountError, MAX_AMOUNT_PAISE };
