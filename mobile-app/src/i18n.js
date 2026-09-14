@@ -20,8 +20,11 @@ import * as SecureStore from 'expo-secure-store';
 // the picker until that review lands. All ten are fully selectable in Settings.
 //
 // A key is deliberately ABSENT where the English fallback already renders exactly
-// right (a brand name, "HH:MM", "Razorpay Key ID") or where no idiomatic rendering
-// exists ('fam.membersN' interpolates an English plural "s"). Absent beats wrong.
+// right — a brand name ('txn.upi' is "UPI" in every source that has it), "HH:MM",
+// "Razorpay Key ID". Absent beats a row that changes nothing on screen.
+//
+// Real coverage per language is NOT 100% and is not claimed to be. The repo-root
+// scripts/i18n-coverage.mjs measures it against en and fails CI on a regression.
 
 // Persist key — deliberately separate from the consumer app's 'skhata_consumer_lang'
 // so the two flavors keep independent language choices on the same device.
@@ -751,6 +754,13 @@ const hi = {
 };
 
 const bn = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'fam.membersN': '{n} জন সদস্য{s}',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'আজকের কেনাকাটা',
   'dash.todayCollections': 'আজকের আদায়',
@@ -1072,6 +1082,16 @@ const bn = {
 };
 
 const ta = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'cat.addFromCatalogue': 'பட்டியலிலிருந்து சேர்',
+  'cat.add': 'சேர்',
+  'cat.loadMore': 'மேலும் ஏற்று',
+  'settings.language': 'மொழி',
   'common.save': 'சேமி',
   'common.cancel': 'ரத்து',
   'common.add': 'சேர்',
@@ -1193,6 +1213,16 @@ const ta = {
 };
 
 const te = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'cat.addFromCatalogue': 'కేటలాగ్ నుండి జోడించు',
+  'cat.add': 'జోడించు',
+  'cat.loadMore': 'మరిన్ని లోడ్ చేయి',
+  'settings.language': 'భాష',
   'common.save': 'సేవ్ చేయి',
   'common.cancel': 'రద్దు',
   'common.add': 'జోడించు',
@@ -1314,6 +1344,16 @@ const te = {
 };
 
 const kn = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'cat.addFromCatalogue': 'ಕ್ಯಾಟಲಾಗ್‌ನಿಂದ ಸೇರಿಸಿ',
+  'cat.add': 'ಸೇರಿಸಿ',
+  'cat.loadMore': 'ಇನ್ನಷ್ಟು ಲೋಡ್ ಮಾಡಿ',
+  'settings.language': 'ಭಾಷೆ',
   'common.save': 'ಉಳಿಸಿ',
   'common.cancel': 'ರದ್ದುಮಾಡಿ',
   'common.add': 'ಸೇರಿಸಿ',
@@ -1435,6 +1475,16 @@ const kn = {
 };
 
 const ml = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'cat.addFromCatalogue': 'കാറ്റലോഗിൽ നിന്ന് ചേർക്കുക',
+  'cat.add': 'ചേർക്കുക',
+  'cat.loadMore': 'കൂടുതൽ ലോഡ് ചെയ്യുക',
+  'settings.language': 'ഭാഷ',
   'common.save': 'സേവ് ചെയ്യുക',
   'common.cancel': 'റദ്ദാക്കുക',
   'common.add': 'ചേർക്കുക',
@@ -1556,6 +1606,13 @@ const ml = {
 };
 
 const mr = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'fam.membersN': '{n} सदस्य{s}',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'आजची खरेदी',
   'dash.todayCollections': 'आजची वसुली',
@@ -1877,6 +1934,13 @@ const mr = {
 };
 
 const gu = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'fam.membersN': '{n} સભ્ય{s}',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'આજની ખરીદી',
   'dash.todayCollections': 'આજની વસૂલી',
@@ -2198,6 +2262,16 @@ const gu = {
 };
 
 const ur = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'cat.addFromCatalogue': 'کیٹلاگ سے شامل کریں',
+  'cat.add': 'شامل کریں',
+  'cat.loadMore': 'مزید لوڈ کریں',
+  'settings.language': 'زبان',
   'common.save': 'محفوظ کریں',
   'common.cancel': 'منسوخ کریں',
   'common.add': 'شامل کریں',

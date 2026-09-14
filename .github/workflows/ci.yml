@@ -76,6 +76,23 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:4000
         run: npm run build
 
+  mobile-i18n:
+    name: Mobile translation coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+      # The two native dictionaries fall back to English for any key a language
+      # is missing, which is right at run time and invisible in review: a
+      # language can quietly lose strings and only a shopkeeper finds out. This
+      # ratchet holds each language to the count it had, and also fails on
+      # orphan keys and on {placeholder} drift away from en. No dependencies, so
+      # there is nothing to install.
+      - name: Coverage ratchet
+        run: node scripts/i18n-coverage.mjs
+
   docker:
     name: Docker build sanity
     runs-on: ubuntu-latest

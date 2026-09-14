@@ -4,14 +4,18 @@ import * as SecureStore from 'expo-secure-store';
 
 // Lightweight i18n for the native consumer app. A flat key -> string map per
 // language, a t() with {var} interpolation, and a language setter persisted in
-// expo-secure-store. en + hi are AUTHORED; ta/te/kn/ml/ur are SEEDED from en
-// (so nothing is ever missing — they fall back to readable English) and can be
-// filled in later without touching call sites.
+// expo-secure-store. en is the source of truth; a key absent from the active
+// language falls back to en, so nothing ever renders blank or as a key name.
+//
+// Coverage is PARTIAL and deliberately so: only en is complete. Every other
+// language carries the keys some human has actually written, and falls back for
+// the rest. The repo-root scripts/i18n-coverage.mjs measures the real numbers
+// against en and fails CI if any language loses ground.
 
 const LANG_KEY = 'skhata_consumer_lang';
 
-// The supported languages, in the order shown in the picker. All strings are
-// fully authored (translated) for every language listed here.
+// The supported languages, in the order shown in the picker. Every one of them
+// is fully selectable; none but en is fully translated (see the note above).
 export const LANGUAGES = [
   { code: 'en', label: 'English' },
   { code: 'hi', label: 'हिन्दी' },
@@ -38,9 +42,10 @@ export const LANGUAGES = [
 // `catalogue` = a shop catalogue is served translated in this language.
 // `voice`     = ASR/TTS (BCP-47) is available for this language.
 //
-// All 10 languages above have fully authored UI strings. bn/gu/mr still have NO
-// translated catalogue, so they keep { catalogue: false } and the picker's
-// "(beta)" suffix (still fully selectable) — isBetaLang() is derived from the
+// This map is about CATALOGUE and VOICE only — it says nothing about how much of
+// the UI is translated, which is partial for every language but en. bn/gu/mr
+// still have NO translated catalogue, so they keep { catalogue: false } and the
+// picker's "(beta)" suffix (still fully selectable) — isBetaLang() is derived from the
 // catalogue flag alone. Their `voice` flag flipped to true in batch LANG, when
 // mobile-app/src/lib/useNativeVoice.js started mapping bn-IN / gu-IN / mr-IN;
 // the LIVE gate on the shops screen is that hook's localeSupported(), and this
@@ -412,6 +417,13 @@ const en = {
 };
 
 const hi = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'account.moreOnWeb': 'और',
   'app.name': 'स्मार्ट डिजिटल खाता',
   'common.loading': 'लोड हो रहा है…',
   'common.retry': 'फिर कोशिश करें',
@@ -681,6 +693,19 @@ const hi = {
 };
 
 const bn = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'tab.cart': 'কার্ট',
+  'voice.listening': 'শুনছি…',
+  'cart.belowMin': 'ডেলিভারির জন্য ন্যূনতম অর্ডার {amt}',
+  'account.moreOnWeb': 'আরও',
+  'account.dataSaver': 'ডেটা সেভার',
+  'cart.switchShopConfirm': 'অন্য একটি দোকানে আপনার একটি অসম্পূর্ণ কার্ট আছে। সেটি মুছে এখানে নতুন কার্ট শুরু করবেন?',
+  'ostatus.hint.completed': 'সম্পন্ন',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'লোড হচ্ছে…',
   'common.retry': 'আবার চেষ্টা করুন',
@@ -851,6 +876,28 @@ const bn = {
 };
 
 const ta = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'voice.listening': 'கேட்கிறது…',
+  'cart.belowMin': 'டெலிவரிக்கான குறைந்தபட்ச ஆர்டர் {amt}',
+  'account.moreOnWeb': 'மேலும்',
+  'account.dataSaver': 'டேட்டா சேவர்',
+  'cart.switchShopConfirm': 'வேறு கடையில் உங்கள் முடிக்காத கூடை உள்ளது. அதை நீக்கி இங்கே கூடை தொடங்கவா?',
+  'psearch.placeholder': 'எல்லா கடைகளிலும் பொருட்களைத் தேடு',
+  'psearch.searching': 'தேடுகிறது…',
+  'psearch.start': 'அருகில் எந்தக் கடைகளில் கிடைக்கும் என்பதைக் காண ஒரு பொருளைத் தேடுங்கள்.',
+  'psearch.none': 'பொருட்கள் எதுவும் கிடைக்கவில்லை. வேறு சொல்லை முயற்சிக்கவும்.',
+  'psearch.atShop': '{shop} இல்',
+  'cat.attaRice': 'மாவு & அரிசி',
+  'cat.dairy': 'பால் பொருட்கள்',
+  'cat.snacks': 'தின்பண்டங்கள்',
+  'cat.household': 'வீட்டு உபயோகம்',
+  'cat.personalCare': 'தனிநபர் பராமரிப்பு',
+  'shops.searching': 'தேடுகிறது…',
   // Transcribed verbatim from the already-authored web dictionary
   // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
   // human-written strings the consumer PWA already ships, so the two
@@ -1034,6 +1081,28 @@ const ta = {
 };
 
 const te = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'voice.listening': 'వింటోంది…',
+  'cart.belowMin': 'డెలివరీకి కనీస ఆర్డర్ {amt}',
+  'account.moreOnWeb': 'మరిన్ని',
+  'account.dataSaver': 'డేటా సేవర్',
+  'cart.switchShopConfirm': 'వేరే దుకాణంలో మీ అసంపూర్ణ కార్ట్ ఉంది. దాన్ని తీసివేసి ఇక్కడ కార్ట్ ప్రారంభించాలా?',
+  'psearch.placeholder': 'అన్ని దుకాణాల్లో ఉత్పత్తులను వెతకండి',
+  'psearch.searching': 'వెతుకుతోంది…',
+  'psearch.start': 'సమీపంలో ఏ దుకాణాల్లో దొరుకుతుందో చూడటానికి ఒక ఉత్పత్తిని వెతకండి.',
+  'psearch.none': 'ఉత్పత్తులు ఏవీ కనబడలేదు. మరో పదాన్ని ప్రయత్నించండి.',
+  'psearch.atShop': '{shop} వద్ద',
+  'cat.attaRice': 'పిండి & బియ్యం',
+  'cat.dairy': 'పాల ఉత్పత్తులు',
+  'cat.snacks': 'స్నాక్స్',
+  'cat.household': 'గృహోపకరణాలు',
+  'cat.personalCare': 'వ్యక్తిగత సంరక్షణ',
+  'shops.searching': 'వెతుకుతోంది…',
   // Transcribed verbatim from the already-authored web dictionary
   // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
   // human-written strings the consumer PWA already ships, so the two
@@ -1217,6 +1286,28 @@ const te = {
 };
 
 const kn = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'voice.listening': 'ಕೇಳುತ್ತಿದೆ…',
+  'cart.belowMin': 'ಡೆಲಿವರಿಗೆ ಕನಿಷ್ಠ ಆರ್ಡರ್ {amt}',
+  'account.moreOnWeb': 'ಇನ್ನಷ್ಟು',
+  'account.dataSaver': 'ಡೇಟಾ ಸೇವರ್',
+  'cart.switchShopConfirm': 'ಬೇರೆ ಅಂಗಡಿಯಲ್ಲಿ ನಿಮ್ಮ ಅಪೂರ್ಣ ಕಾರ್ಟ್ ಇದೆ. ಅದನ್ನು ತೆಗೆದು ಇಲ್ಲಿ ಕಾರ್ಟ್ ಆರಂಭಿಸಬೇಕೇ?',
+  'psearch.placeholder': 'ಎಲ್ಲಾ ಅಂಗಡಿಗಳಲ್ಲಿ ಉತ್ಪನ್ನಗಳನ್ನು ಹುಡುಕಿ',
+  'psearch.searching': 'ಹುಡುಕುತ್ತಿದೆ…',
+  'psearch.start': 'ಹತ್ತಿರದ ಯಾವ ಅಂಗಡಿಗಳಲ್ಲಿ ಸಿಗುತ್ತದೆ ಎಂದು ನೋಡಲು ಒಂದು ಉತ್ಪನ್ನವನ್ನು ಹುಡುಕಿ.',
+  'psearch.none': 'ಯಾವುದೇ ಉತ್ಪನ್ನ ಸಿಗಲಿಲ್ಲ. ಬೇರೆ ಪದವನ್ನು ಪ್ರಯತ್ನಿಸಿ.',
+  'psearch.atShop': '{shop} ನಲ್ಲಿ',
+  'cat.attaRice': 'ಹಿಟ್ಟು & ಅಕ್ಕಿ',
+  'cat.dairy': 'ಹೈನು ಉತ್ಪನ್ನಗಳು',
+  'cat.snacks': 'ತಿಂಡಿಗಳು',
+  'cat.household': 'ಮನೆಬಳಕೆ',
+  'cat.personalCare': 'ವೈಯಕ್ತಿಕ ಆರೈಕೆ',
+  'shops.searching': 'ಹುಡುಕುತ್ತಿದೆ…',
   // Transcribed verbatim from the already-authored web dictionary
   // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
   // human-written strings the consumer PWA already ships, so the two
@@ -1400,6 +1491,28 @@ const kn = {
 };
 
 const ml = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'voice.listening': 'കേൾക്കുന്നു…',
+  'cart.belowMin': 'ഡെലിവറിക്ക് കുറഞ്ഞ ഓർഡർ {amt}',
+  'account.moreOnWeb': 'കൂടുതൽ',
+  'account.dataSaver': 'ഡാറ്റാ സേവർ',
+  'cart.switchShopConfirm': 'മറ്റൊരു കടയിൽ നിങ്ങളുടെ പൂർത്തിയാകാത്ത കാർട്ട് ഉണ്ട്. അത് നീക്കി ഇവിടെ കാർട്ട് തുടങ്ങണോ?',
+  'psearch.placeholder': 'എല്ലാ കടകളിലും ഉൽപ്പന്നങ്ങൾ തിരയുക',
+  'psearch.searching': 'തിരയുന്നു…',
+  'psearch.start': 'അടുത്തുള്ള ഏതൊക്കെ കടകളിൽ ലഭ്യമാണെന്ന് കാണാൻ ഒരു ഉൽപ്പന്നം തിരയുക.',
+  'psearch.none': 'ഉൽപ്പന്നങ്ങളൊന്നും കണ്ടെത്തിയില്ല. മറ്റൊരു വാക്ക് ശ്രമിക്കുക.',
+  'psearch.atShop': '{shop} ൽ',
+  'cat.attaRice': 'മാവ് & അരി',
+  'cat.dairy': 'പാൽ ഉൽപ്പന്നങ്ങൾ',
+  'cat.snacks': 'ലഘുഭക്ഷണങ്ങൾ',
+  'cat.household': 'വീട്ടുപകരണങ്ങൾ',
+  'cat.personalCare': 'വ്യക്തിഗത പരിചരണം',
+  'shops.searching': 'തിരയുന്നു…',
   // Transcribed verbatim from the already-authored web dictionary
   // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
   // human-written strings the consumer PWA already ships, so the two
@@ -1583,6 +1696,19 @@ const ml = {
 };
 
 const mr = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'tab.cart': 'कार्ट',
+  'voice.listening': 'ऐकत आहे…',
+  'cart.belowMin': 'डिलिव्हरीसाठी किमान ऑर्डर {amt} आहे',
+  'account.moreOnWeb': 'अधिक',
+  'account.dataSaver': 'डेटा सेव्हर',
+  'cart.switchShopConfirm': 'दुसऱ्या दुकानात तुमची अपूर्ण कार्ट आहे. ती साफ करून इथे नवीन कार्ट सुरू करायची?',
+  'ostatus.hint.completed': 'पूर्ण',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'लोड होत आहे…',
   'common.retry': 'पुन्हा प्रयत्न करा',
@@ -1753,6 +1879,19 @@ const mr = {
 };
 
 const gu = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'tab.cart': 'કાર્ટ',
+  'voice.listening': 'સાંભળું છું…',
+  'cart.belowMin': 'ડિલિવરી માટે ન્યૂનતમ ઑર્ડર {amt} છે',
+  'account.moreOnWeb': 'વધુ',
+  'account.dataSaver': 'ડેટા સેવર',
+  'cart.switchShopConfirm': 'બીજી દુકાનમાં તમારી અધૂરી કાર્ટ છે. તેને સાફ કરી અહીં નવી કાર્ટ શરૂ કરવી?',
+  'ostatus.hint.completed': 'પૂર્ણ',
   'app.name': 'Smart Digital Khata',
   'common.loading': 'લોડ થઈ રહ્યું છે…',
   'common.retry': 'ફરી પ્રયાસ કરો',
@@ -1923,6 +2062,28 @@ const gu = {
 };
 
 const ur = {
+  // Transcribed verbatim from translations a human already authored in this
+  // repository: the regional seed that populates i18n_overrides
+  // (backend/src/data/regional-i18n.json) and the web dictionary
+  // (admin-dashboard/src/lib/i18n.js). Not new translation — every value below
+  // was copied byte-for-byte from a source whose own English is identical to
+  // this app's English for the same key, so the app and the web read alike.
+  'voice.listening': 'سن رہے ہیں…',
+  'cart.belowMin': 'ڈیلیوری کے لیے کم از کم آرڈر {amt} ہے',
+  'account.moreOnWeb': 'مزید',
+  'account.dataSaver': 'ڈیٹا سیور',
+  'cart.switchShopConfirm': 'کسی اور دکان پر آپ کا نامکمل کارٹ موجود ہے۔ اسے ہٹا کر یہاں کارٹ شروع کریں؟',
+  'psearch.placeholder': 'تمام دکانوں میں مصنوعات تلاش کریں',
+  'psearch.searching': 'تلاش جاری ہے…',
+  'psearch.start': 'یہ دیکھنے کے لیے کوئی مصنوعہ تلاش کریں کہ قریب کن دکانوں میں دستیاب ہے۔',
+  'psearch.none': 'کوئی مصنوعہ نہیں ملی۔ دوسرا لفظ آزمائیں۔',
+  'psearch.atShop': '{shop} پر',
+  'cat.attaRice': 'آٹا اور چاول',
+  'cat.dairy': 'ڈیری',
+  'cat.snacks': 'اسنیکس',
+  'cat.household': 'گھریلو سامان',
+  'cat.personalCare': 'ذاتی نگہداشت',
+  'shops.searching': 'تلاش جاری ہے…',
   // Transcribed verbatim from the already-authored web dictionary
   // (admin-dashboard/src/lib/i18n.js). Not new translation — the same
   // human-written strings the consumer PWA already ships, so the two
