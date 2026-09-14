@@ -11,7 +11,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 //                           onResult(bestTranscript) on a real result
 //   stop()                — stop the current recognition session
 //   speak(text, lang)     — read text aloud in `lang` (falls back to the hook
-//                           language)
+//                           language). Replaces anything already being spoken
+//                           rather than queueing behind it.
+//   stopSpeaking()        — cut off the current utterance immediately
+//   speaking              — boolean, true while the device is reading aloud
 //   listening             — boolean, true while a recognition session is live
 //   lastError             — null | 'permission' | 'no-match' | 'network' | 'unavailable'
 //   supported             — module present AND recognition available on device
@@ -22,6 +25,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // is not linked (Expo Go, or a JS reload before the one required EAS rebuild),
 // so the require is wrapped in try/catch and the hook simply degrades to
 // `supported:false` — call sites hide their mic and nothing throws.
+
+// WHY THERE IS NO PAUSE. expo-speech exposes pause()/resume(), but both are
+// documented as unavailable on Android, and Android is effectively the whole
+// audience here. A Pause button that silently does nothing on the phones our
+// shopkeepers actually hold would be worse than no button, so the control is
+// Stop, which works on every device. It ends the utterance outright rather
+// than holding it, which is also what someone jabbing at a talking phone in a
+// busy shop actually wants.
 
 // --- Guarded module loading (never throws) --------------------------------
 let SpeechRecognition = null;
@@ -302,22 +313,77 @@ export function useNativeVoice(lang = 'en') {
     [lang, cleanupListeners, clearWatchdog, finish],
   );
 
+  // True while the device is actually reading aloud. Driven by expo-speech's own
+  // lifecycle callbacks rather than by polling isSpeakingAsync(), so the flag
+  // cannot drift out of step with the utterance. A ref shadows the state because
+  // the unmount cleanup below runs after the last render and cannot read state.
+  const [speaking, setSpeaking] = useState(false);
+  const speakingRef = useRef(false);
+  const markSpeaking = useCallback((v) => {
+    speakingRef.current = v;
+    setSpeaking(v);
+  }, []);
+
+  // Cut the current utterance off. Safe to call when nothing is speaking, and
+  // safe on a device with no TTS module at all.
+  const stopSpeaking = useCallback(() => {
+    markSpeaking(false);
+    if (!Speech) return;
+    try {
+      // Interrupts what is speaking AND clears anything queued behind it.
+      Speech.stop();
+    } catch (e) {
+      /* best-effort; never throw */
+    }
+  }, [markSpeaking]);
+
   const speak = useCallback(
     (text, l) => {
       if (!Speech || !text) return;
       try {
-        Speech.speak(String(text), { language: toBcp47(l || lang) || 'en-IN' });
+        // Replace, do not queue. Without this, tapping a read-aloud control
+        // twice lines up two utterances and the second plays after the first
+        // has finished — which reads as the app ignoring the second tap and
+        // then talking over itself a minute later.
+        try { Speech.stop(); } catch (e) { /* nothing was speaking */ }
+        markSpeaking(true);
+        Speech.speak(String(text), {
+          language: toBcp47(l || lang) || 'en-IN',
+          // Every terminal path clears the flag, including the ones that are
+          // easy to forget: stopped by us, and failed on a device with no voice
+          // for this language. Missing one of these would leave a Stop button
+          // on screen with nothing left to stop.
+          onDone: () => markSpeaking(false),
+          onStopped: () => markSpeaking(false),
+          onError: () => markSpeaking(false),
+        });
       } catch (e) {
-        /* TTS is best-effort; never throw */
+        markSpeaking(false);
       }
     },
-    [lang],
+    [lang, markSpeaking],
   );
+
+  // Leaving the screen must not leave the phone talking. Without this, opening
+  // Ask, hearing the answer start and immediately going back left the reply
+  // playing to an empty screen with no way to stop it.
+  useEffect(() => {
+    return () => {
+      if (!speakingRef.current || !Speech) return;
+      try {
+        Speech.stop();
+      } catch (e) {
+        /* ignore */
+      }
+    };
+  }, []);
 
   return {
     listen,
     stop,
     speak,
+    stopSpeaking,
+    speaking,
     listening,
     lastError,
     supported,

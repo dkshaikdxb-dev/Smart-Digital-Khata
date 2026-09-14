@@ -58,7 +58,7 @@ export function snoozeMinsLeft(o, now) {
 
 export function useOrderAlerts({ enabled = true } = {}) {
   const { t, lang } = useT();
-  const { speak, supported, localeSupported } = useNativeVoice(lang);
+  const { speak, stopSpeaking, speaking, supported, localeSupported } = useNativeVoice(lang);
 
   const [items, setItems] = useState([]);
   const [settings, setSettings] = useState({
@@ -248,6 +248,12 @@ export function useOrderAlerts({ enabled = true } = {}) {
     settings,
     muted,
     canSpeak,
+    // Whether the alert is being read aloud right now, and the way to cut it
+    // off. Muting silences FUTURE repeats but was powerless over the sentence
+    // already playing, which is the one the owner is standing there listening
+    // to. These two let the banner offer the obvious thing.
+    speaking,
+    stopSpeaking,
     busyId,
     ack,
     accept,

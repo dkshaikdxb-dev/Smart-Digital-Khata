@@ -46,7 +46,7 @@ export default function OrderAlertBanner({ enabled = true }) {
   const navigation = useNavigation();
   const {
     oldest, items, waiting, quietMinsLeft, snoozeMinutes, now,
-    muted, busyId, ack, accept, reject, mute,
+    muted, busyId, ack, accept, reject, mute, speaking, stopSpeaking,
   } = useOrderAlerts({ enabled });
 
   // Which panel is open: null | 'accept' | 'reject', plus the typed reason.
@@ -114,6 +114,21 @@ export default function OrderAlertBanner({ enabled = true }) {
           <Text style={s.title}>{t('oalert.title')}</Text>
           {waiting.length > 1 ? (
             <Text style={s.more}>{t('oalert.more', { n: waiting.length - 1 })}</Text>
+          ) : null}
+          {/* Only while it is actually talking. Muting stops the NEXT repeat;
+              this stops the sentence playing right now, which is the one the
+              owner is standing there listening to. It deliberately does not
+              mute or acknowledge anything — silencing a phone is not the same
+              as answering a customer, and the alert must still be decided. */}
+          {speaking ? (
+            <Pressable
+              onPress={stopSpeaking}
+              style={s.hushBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.stop')}
+            >
+              <Text style={s.hushText}>⏹ {t('common.stop')}</Text>
+            </Pressable>
           ) : null}
         </View>
         <Text style={s.facts} numberOfLines={2}>
@@ -257,6 +272,19 @@ const s = StyleSheet.create({
     borderBottomColor: '#fecaca',
   },
   headRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Pushed to the far end of the head row so it never crowds the title, and
+  // given a real tap target: this gets jabbed at in a hurry, often one-handed,
+  // by someone who wants the phone to shut up now.
+  hushBtn: {
+    marginLeft: 'auto',
+    backgroundColor: '#475569',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  hushText: { color: '#f8fafc', fontWeight: '700', fontSize: 14 },
   title: { color: '#fff', fontSize: 16, fontWeight: '800', flexShrink: 1 },
   more: {
     color: '#fff', fontSize: 12, fontWeight: '700',

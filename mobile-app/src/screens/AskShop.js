@@ -189,6 +189,9 @@ function fmtRupees(paise) {
 const STRINGS = {
   en: {
     button: 'Ask',
+    // Transcribed, not translated: this is the 'own.stop' string already
+    // written by a human and shipped in admin-dashboard/src/lib/i18n.js.
+    stop: 'Stop',
     prompt: 'Tap and ask about your shop',
     listening: 'Listening…',
     tryAgain: 'Sorry, I did not catch that. Please try again.',
@@ -211,6 +214,7 @@ const STRINGS = {
   },
   hi: {
     button: 'पूछें',
+    stop: 'रोकें',
     prompt: 'दबाएँ और अपनी दुकान के बारे में पूछें',
     listening: 'सुन रहे हैं…',
     tryAgain: 'माफ़ करें, समझ नहीं आया। फिर से बोलें।',
@@ -430,16 +434,33 @@ export default function AskShop() {
 
   return (
     <View style={s.card}>
-      <Pressable
-        onPress={startAsk}
-        disabled={voice.listening}
-        style={({ pressed }) => [s.askBtn, (pressed || voice.listening) && s.askBtnActive]}
-        accessibilityRole="button"
-        accessibilityLabel={tr('button')}
-      >
-        <Text style={s.askIcon}>🎤</Text>
-        <Text style={s.askText}>{tr('button')}</Text>
-      </Pressable>
+      {/* While the reply is being read out, the same spot becomes Stop. One
+          control, not two: a second button sitting dead most of the time is
+          noise on a small screen, and the only thing worth doing mid-answer is
+          silencing it. It is styled as a plain neutral button rather than the
+          accent green, because green here means go. */}
+      {voice.speaking ? (
+        <Pressable
+          onPress={voice.stopSpeaking}
+          style={({ pressed }) => [s.askBtn, s.stopBtn, pressed && s.askBtnActive]}
+          accessibilityRole="button"
+          accessibilityLabel={tr('stop')}
+        >
+          <Text style={s.askIcon}>⏹</Text>
+          <Text style={s.stopText}>{tr('stop')}</Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={startAsk}
+          disabled={voice.listening}
+          style={({ pressed }) => [s.askBtn, (pressed || voice.listening) && s.askBtnActive]}
+          accessibilityRole="button"
+          accessibilityLabel={tr('button')}
+        >
+          <Text style={s.askIcon}>🎤</Text>
+          <Text style={s.askText}>{tr('button')}</Text>
+        </Pressable>
+      )}
       <Text style={s.answer} numberOfLines={3}>
         {voice.listening ? tr('listening') : (answer || tr('prompt'))}
       </Text>
@@ -467,6 +488,11 @@ const s = StyleSheet.create({
     borderRadius: 999,
   },
   askBtnActive: { opacity: 0.7 },
+  // Neutral slate, not the accent: this button stops something rather than
+  // starting it. Near-white label so it stays readable outdoors, which the dark
+  // on-accent ink would not be on this fill.
+  stopBtn: { backgroundColor: '#475569' },
+  stopText: { color: '#f8fafc', fontWeight: '700', fontSize: 16 },
   askIcon: { fontSize: 18 },
   askText: { color: '#000', fontWeight: '700', fontSize: 16 },
   answer: { flex: 1, color: '#e2e8f0', fontSize: 14 },

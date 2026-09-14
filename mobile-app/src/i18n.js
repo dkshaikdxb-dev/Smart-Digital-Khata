@@ -53,6 +53,10 @@ export function isBetaLang(code) {
 }
 
 const en = {
+  // Stop reading aloud. Transcribed, not translated: this is the 'own.stop'
+  // string a human already wrote, shipped on the web and in the regional
+  // dictionary. Reused verbatim so one word means stop across the product.
+  'common.stop': 'Stop',
   'app.name': 'Smart Digital Khata',
   'app.shortName': 'Smart Khata',
   'common.save': 'Save',
@@ -416,6 +420,7 @@ const en = {
 };
 
 const hi = {
+  'common.stop': 'रोकें',
   'app.name': 'Smart Digital Khata',
   'app.shortName': 'Smart Khata',
   'common.save': 'सेव करें',
@@ -751,6 +756,7 @@ const hi = {
 };
 
 const bn = {
+  'common.stop': 'থামুন',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'আজকের কেনাকাটা',
   'dash.todayCollections': 'আজকের আদায়',
@@ -1072,6 +1078,7 @@ const bn = {
 };
 
 const ta = {
+  'common.stop': 'நிறுத்து',
   'common.save': 'சேமி',
   'common.cancel': 'ரத்து',
   'common.add': 'சேர்',
@@ -1193,6 +1200,7 @@ const ta = {
 };
 
 const te = {
+  'common.stop': 'ఆపు',
   'common.save': 'సేవ్ చేయి',
   'common.cancel': 'రద్దు',
   'common.add': 'జోడించు',
@@ -1314,6 +1322,7 @@ const te = {
 };
 
 const kn = {
+  'common.stop': 'ನಿಲ್ಲಿಸಿ',
   'common.save': 'ಉಳಿಸಿ',
   'common.cancel': 'ರದ್ದುಮಾಡಿ',
   'common.add': 'ಸೇರಿಸಿ',
@@ -1435,6 +1444,7 @@ const kn = {
 };
 
 const ml = {
+  'common.stop': 'നിർത്തുക',
   'common.save': 'സേവ് ചെയ്യുക',
   'common.cancel': 'റദ്ദാക്കുക',
   'common.add': 'ചേർക്കുക',
@@ -1556,6 +1566,7 @@ const ml = {
 };
 
 const mr = {
+  'common.stop': 'थांबा',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'आजची खरेदी',
   'dash.todayCollections': 'आजची वसुली',
@@ -1877,6 +1888,7 @@ const mr = {
 };
 
 const gu = {
+  'common.stop': 'રોકો',
   // MONEY — balances, amounts, the ledger and the insight numbers.
   'dash.todayPurchases': 'આજની ખરીદી',
   'dash.todayCollections': 'આજની વસૂલી',
@@ -2198,6 +2210,7 @@ const gu = {
 };
 
 const ur = {
+  'common.stop': 'روکیں',
   'common.save': 'محفوظ کریں',
   'common.cancel': 'منسوخ کریں',
   'common.add': 'شامل کریں',
