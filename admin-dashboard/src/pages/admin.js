@@ -82,7 +82,7 @@ export default function PlatformAdmin() {
     { key: 'phone', label: 'Phone' },
     { key: 'role', label: 'Role', render: (u) => <span className="badge">{u.role}</span> },
     { key: 'status', label: t('mod.usersStatusCol'), render: (u) => (
-      <span className="badge" style={u.status === 'blocked' ? { background: 'var(--danger)', color: '#fff' } : undefined}>
+      <span className="badge" style={u.status === 'blocked' ? { background: 'var(--danger)', color: 'var(--on-danger)' } : undefined}>
         {u.status === 'blocked' ? t('mod.statusBlocked') : t('mod.statusActive')}
       </span>
     ) },
@@ -102,7 +102,7 @@ export default function PlatformAdmin() {
   ];
   if (canModerateUsers) {
     userColumns.push({ key: 'actions', label: t('mod.colActions'), render: (u) => (
-      <button className="secondary" style={u.status === 'blocked' ? undefined : { background: 'var(--danger)', color: '#fff' }}
+      <button className="secondary" style={u.status === 'blocked' ? undefined : { background: 'var(--danger)', color: 'var(--on-danger)' }}
         onClick={(e) => { e.stopPropagation(); toggleBlock(u); }}>
         {u.status === 'blocked' ? t('mod.unblock') : t('mod.block')}
       </button>
@@ -134,7 +134,7 @@ export default function PlatformAdmin() {
               { key: 'name', label: 'Shop', render: (s) => <strong>{s.name}</strong> },
               { key: 'plan', label: 'Plan', render: (s) => <span className="badge">{s.plan}</span> },
               { key: 'status', label: 'Status', render: (s) => (
-                <span className="badge" style={s.status === 'suspended' ? { background: 'var(--danger)', color: '#fff' } : undefined}>{s.status || 'active'}</span>
+                <span className="badge" style={s.status === 'suspended' ? { background: 'var(--danger)', color: 'var(--on-danger)' } : undefined}>{s.status || 'active'}</span>
               ) },
               { key: 'customers_count', label: 'Customers', align: 'right' },
               { key: 'created_at', label: 'Created', render: (s) => new Date(s.created_at).toLocaleDateString() },

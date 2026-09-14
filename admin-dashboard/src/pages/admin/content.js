@@ -33,7 +33,7 @@ const FORWARD = ['idea', 'drafting', 'draft', 'localized', 'in_review', 'approve
 const TIER_COLOR = { 0: '#166534', 1: '#92400e', 2: '#991b1b' };
 const TIER_BG = { 0: '#dcfce7', 1: '#fef3c7', 2: '#fee2e2' };
 
-const cell = { padding: '8px 10px', verticalAlign: 'top', borderTop: '1px solid var(--border, #eee)' };
+const cell = { padding: '8px 10px', verticalAlign: 'top', borderTop: '1px solid var(--border)' };
 
 // The next forward status for the "advance" action; draft/localized jump to
 // in_review, earlier states step one rank. Null once at in_review or beyond.
@@ -224,7 +224,7 @@ export default function AdminContent() {
       <h1>{t('content.title')}</h1>
       <p className="muted">{t('content.subtitle')}</p>
 
-      <div className="card" style={{ background: 'var(--warn-bg, #fffbe6)', borderInlineStart: '4px solid #f59e0b' }}>
+      <div className="card" style={{ background: 'var(--warn-bg)', color: 'var(--warn-ink)', borderInlineStart: '4px solid var(--warn)' }}>
         {t('content.outboxNote')}
       </div>
 
@@ -253,7 +253,7 @@ export default function AdminContent() {
             return (
               <div key={ch} style={{
                 display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap',
-                padding: '10px 12px', border: '1px solid var(--border, #eee)', borderRadius: 8,
+                padding: '10px 12px', border: '1px solid var(--border)', borderRadius: 8,
               }}>
                 <div style={{ fontWeight: 700, minWidth: 110 }}>{t(`content.channel.${ch}`)}</div>
                 <span style={{

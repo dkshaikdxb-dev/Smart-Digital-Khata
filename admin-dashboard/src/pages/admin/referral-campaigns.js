@@ -84,7 +84,7 @@ function derivedState(c, t) {
   return { label: t('rc.stateLive'), cls: 'live' };
 }
 
-const cell = { padding: '8px 10px', verticalAlign: 'top', borderBottom: '1px solid var(--border, #e5e7eb)' };
+const cell = { padding: '8px 10px', verticalAlign: 'top', borderBottom: '1px solid var(--border)' };
 
 // A compact spend-vs-budget bar.
 function SpendBar({ spent, budget }) {
@@ -93,8 +93,8 @@ function SpendBar({ spent, budget }) {
   const pctNum = Math.round((s / b) * 100);
   return (
     <div style={{ minWidth: 140 }}>
-      <div style={{ background: 'var(--border, #eee)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
-        <div style={{ width: `${pctNum}%`, minWidth: s > 0 ? 2 : 0, background: pctNum >= 100 ? 'var(--danger, #dc2626)' : 'var(--accent)', height: 10 }} />
+      <div style={{ background: 'var(--border)', borderRadius: 4, height: 10, overflow: 'hidden' }}>
+        <div style={{ width: `${pctNum}%`, minWidth: s > 0 ? 2 : 0, background: pctNum >= 100 ? 'var(--danger)' : 'var(--accent)', height: 10 }} />
       </div>
       <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
         {rupees(spent)} / {rupees(budget)} ({pctNum}%)

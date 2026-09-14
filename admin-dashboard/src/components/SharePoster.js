@@ -405,7 +405,7 @@ export default function SharePoster() {
 
       <div
         style={{
-          border: '1px solid var(--border, #e5e7eb)',
+          border: '1px solid var(--border)',
           borderRadius: 8,
           overflow: 'hidden',
           maxWidth: 320,

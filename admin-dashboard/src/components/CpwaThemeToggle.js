@@ -3,16 +3,21 @@ import { useLang } from '../lib/i18n';
 
 const THEME_KEY = 'skhata-theme';
 const LAYOUT_KEY = 'skhata-layout';
-const THEME_OPTIONS = ['light', 'dark', 'warm'];
+const THEME_OPTIONS = ['light', 'dark'];
 const LAYOUT_OPTIONS = ['standard', 'gaon'];
 
-// theme-color meta value per resolved appearance. Warm and the classic system
-// default resolve their light/dark half by the device preference.
+// Colour values that are no longer offered. Anyone who had picked one is migrated
+// ONCE, on their next load, to 'system' (follow the device) — see
+// readSelectedTheme and the no-flash script in _document.js. 'gaon' here is the
+// legacy name the withdrawn warm palette shipped under; it is unrelated to the
+// LAYOUT option of the same name, which is a separate key and stays.
+const RETIRED_THEMES = ['warm', 'gaon'];
+
+// theme-color meta value per resolved appearance. The 'system' default resolves
+// its light/dark half by the device preference.
 const THEME_COLORS = {
   light: '#f6f8fa',
   dark: '#0f172a',
-  warmLight: '#FBF6EB',
-  warmDark: '#171410',
 };
 
 function prefersDark() {
@@ -23,16 +28,28 @@ function prefersDark() {
   }
 }
 
-// The stored colour selection: one of 'light' | 'dark' | 'warm', or 'system' when
-// nothing (or an unknown value) is stored. A legacy 'gaon' value (the old name of
-// the warm palette) is read as 'warm'. SSR-guarded so it is safe on the server,
-// where it returns the stable 'system' default.
+// The stored colour selection: 'light' | 'dark', or 'system' when nothing (or an
+// unknown value) is stored. SSR-guarded so it is safe on the server, where it
+// returns the stable 'system' default.
+//
+// MIGRATION: the warm palette is withdrawn. Somebody who chose 'warm' (or its
+// legacy name 'gaon') was choosing a paper-and-ink skin whose dark half followed
+// their phone, so forcing them to LIGHT would dump them into a white screen they
+// never asked for -- at night, outdoors, on a cheap panel. They are moved to
+// 'system' instead: the device decides, which is the closest honest answer.
+// The stored value is DELETED so the migration happens exactly once and is not
+// re-evaluated on every load forever; from then on they are an ordinary
+// no-preference user who can pick Light or Dark whenever they like.
 function readSelectedTheme() {
   if (typeof window === 'undefined') return 'system';
   try {
-    let stored = window.localStorage.getItem(THEME_KEY);
-    if (stored === 'gaon') stored = 'warm';
-    if (stored === 'light' || stored === 'dark' || stored === 'warm') return stored;
+    const stored = window.localStorage.getItem(THEME_KEY);
+    if (RETIRED_THEMES.indexOf(stored) !== -1) {
+      window.localStorage.removeItem(THEME_KEY);
+      if (typeof document !== 'undefined') document.documentElement.removeAttribute('data-theme');
+      return 'system';
+    }
+    if (stored === 'light' || stored === 'dark') return stored;
   } catch (e) {
     /* storage blocked — fall through to system */
   }
@@ -55,18 +72,17 @@ function readSelectedLayout() {
 // 'system' resolves to classic light/dark by the device so the live theme is
 // highlighted.
 function activeTheme(selected) {
-  if (selected === 'warm' || selected === 'light' || selected === 'dark') return selected;
+  if (selected === 'light' || selected === 'dark') return selected;
   return prefersDark() ? 'dark' : 'light';
 }
 
 // Keep the mobile browser chrome (address bar / status area) in step with the
-// live colour theme. Warm and the system default pick their light/dark half by
-// the device preference; forced light/dark are literal.
+// live colour theme. The system default picks its light/dark half by the device
+// preference; forced light/dark are literal.
 function applyThemeColor(selected) {
   if (typeof document === 'undefined') return;
   let color;
-  if (selected === 'warm') color = prefersDark() ? THEME_COLORS.warmDark : THEME_COLORS.warmLight;
-  else if (selected === 'dark') color = THEME_COLORS.dark;
+  if (selected === 'dark') color = THEME_COLORS.dark;
   else if (selected === 'light') color = THEME_COLORS.light;
   else color = prefersDark() ? THEME_COLORS.dark : THEME_COLORS.light; // system → classic
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', color));
@@ -86,25 +102,25 @@ function PaletteIcon() {
   );
 }
 
-// Tiny appearance-menu preview swatches. Kept in step with the retuned per-theme
-// accents in globals.css (deep emerald in light, brighter green in dark, forest
-// green on warm paper) so the preview is truthful.
+// Tiny appearance-menu preview swatches. Kept in step with the per-theme accents
+// in globals.css (deep emerald in light, brighter green in dark) so the preview
+// is truthful.
 const SWATCHES = {
   light: { '--sw-bg': '#f6f8fa', '--sw-accent': '#15803d' },
   dark: { '--sw-bg': '#0f172a', '--sw-accent': '#2dd36a' },
-  warm: { '--sw-bg': '#FBF6EB', '--sw-accent': '#157A3A' },
 };
 
 // Appearance picker for the consumer PWA topbar. A trigger button opens a small
-// popover with two independent, labelled radio groups: Theme (Light / Dark /
-// Warm — a colour axis) and Layout (Standard / Gaon Bazaar — a structural axis).
+// popover with two independent, labelled radio groups: Theme (Light / Dark — a
+// colour axis) and Layout (Standard / Gaon Bazaar — a structural axis).
 // The two are orthogonal: any theme combines with any layout. The live selection
 // in each group is marked. Renders a stable trigger on the server + first client
 // render (menu closed, static icon) to avoid a hydration mismatch, then reads the
 // effective preferences in a mount effect. The no-flash script in _document.js
 // has already applied any STORED preferences to <html> before paint; this keeps
 // them in sync and lets the user switch. Persists to localStorage 'skhata-theme'
-// (light|dark|warm) and 'skhata-layout' (standard|gaon).
+// (light|dark) and 'skhata-layout' (standard|gaon). With nothing stored the app
+// follows the device, and the option matching the device is the one marked.
 export default function CpwaThemeToggle() {
   const { t } = useLang();
   const [theme, setTheme] = useState('system');
@@ -125,7 +141,7 @@ export default function CpwaThemeToggle() {
 
   const chooseTheme = useCallback((value) => {
     if (typeof document !== 'undefined') {
-      // 'light' | 'dark' | 'warm' are all forced via data-theme.
+      // 'light' and 'dark' are both forced via data-theme.
       document.documentElement.setAttribute('data-theme', value);
     }
     try {
@@ -216,7 +232,7 @@ export default function CpwaThemeToggle() {
 
   const markedTheme = mounted ? activeTheme(theme) : null;
   const markedLayout = mounted ? layout : null;
-  const themeLabels = { light: t('c.theme.light'), dark: t('c.theme.dark'), warm: t('c.theme.warm') };
+  const themeLabels = { light: t('c.theme.light'), dark: t('c.theme.dark') };
   const layoutLabels = { standard: t('c.layout.standard'), gaon: t('c.layout.gaon') };
 
   return (

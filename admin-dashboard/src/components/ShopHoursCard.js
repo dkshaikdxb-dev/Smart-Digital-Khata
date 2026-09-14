@@ -142,7 +142,7 @@ export default function ShopHoursCard() {
         </button>
       </div>
 
-      <hr style={{ margin: '18px 0', border: 0, borderTop: '1px solid var(--border, #e5e7eb)' }} />
+      <hr style={{ margin: '18px 0', border: 0, borderTop: '1px solid var(--border)' }} />
 
       <h3 style={{ marginBottom: 4 }}>{t('open.closuresTitle')}</h3>
       <p className="muted" style={{ marginTop: 0 }}>{t('open.closuresHelp')}</p>
@@ -177,7 +177,7 @@ export default function ShopHoursCard() {
               key={c.id}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 0', borderBottom: '1px solid var(--border, #e5e7eb)',
+                padding: '8px 0', borderBottom: '1px solid var(--border)',
               }}
             >
               <strong>{c.on_date}</strong>

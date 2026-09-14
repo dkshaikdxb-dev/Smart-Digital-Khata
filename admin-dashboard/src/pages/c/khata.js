@@ -103,7 +103,7 @@ export default function Khata() {
       {!loading && !error && (
         <div className="card cpwa-hero">
           <div className="muted">{t('common.totalOutstanding')}</div>
-          <div className="kpi" style={{ color: total > 0 ? 'var(--danger)' : 'var(--accent)' }}>{inr(total)}</div>
+          <div className="kpi" style={{ color: total > 0 ? 'var(--c-danger-ink)' : 'var(--c-accent-ink)' }}>{inr(total)}</div>
         </div>
       )}
 
@@ -129,7 +129,7 @@ export default function Khata() {
             <div className="cpwa-row-between">
               <div>
                 <div className="cpwa-shopcard-name">{s.shop_name}</div>
-                <div className="muted" style={inAdvance ? { color: 'var(--accent)' } : undefined}>
+                <div className="muted" style={inAdvance ? { color: 'var(--c-accent-ink)' } : undefined}>
                   {balanceLine}
                   {s.credit_limit != null && Number(s.credit_limit) > 0 ? t('c.limitSuffix', { amt: inr(s.credit_limit) }) : ''}
                 </div>

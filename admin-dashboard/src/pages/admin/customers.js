@@ -88,11 +88,11 @@ export default function AdminCustomers() {
               <tr><td style={cell} colSpan={canModerate ? 5 : 4} className="muted">{t('mod.consumersEmpty')}</td></tr>
             )}
             {rows.map((c) => (
-              <tr key={c.id} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+              <tr key={c.id} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={cell}><code>{c.phone}</code></td>
                 <td style={cell}>{c.name || '—'}</td>
                 <td style={cell}>
-                  <span className="badge" style={c.status === 'blocked' ? { background: 'var(--danger)', color: '#fff' } : undefined}>
+                  <span className="badge" style={c.status === 'blocked' ? { background: 'var(--danger)', color: 'var(--on-danger)' } : undefined}>
                     {c.status === 'blocked' ? t('mod.statusBlocked') : t('mod.statusActive')}
                   </span>
                 </td>
@@ -100,7 +100,7 @@ export default function AdminCustomers() {
                 {canModerate && (
                   <td style={cell}>
                     <button className="secondary" disabled={busy === c.id}
-                      style={c.status === 'blocked' ? undefined : { background: 'var(--danger)', color: '#fff' }}
+                      style={c.status === 'blocked' ? undefined : { background: 'var(--danger)', color: 'var(--on-danger)' }}
                       onClick={() => toggleBlock(c)}>
                       {c.status === 'blocked' ? t('mod.unblock') : t('mod.block')}
                     </button>

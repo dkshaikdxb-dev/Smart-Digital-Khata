@@ -128,9 +128,9 @@ export default function CreditsCard() {
                   {ledger.slice(0, 10).map((row, idx) => {
                     const credit = row.direction === 'credit';
                     return (
-                      <tr key={idx} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                      <tr key={idx} style={{ borderTop: '1px solid var(--border)' }}>
                         <td style={{ padding: '6px 8px' }}>{kindLabel(t, row.kind)}</td>
-                        <td style={{ padding: '6px 8px', textAlign: 'end', whiteSpace: 'nowrap', color: credit ? 'var(--accent)' : 'var(--muted, #888)' }}>
+                        <td style={{ padding: '6px 8px', textAlign: 'end', whiteSpace: 'nowrap', color: credit ? 'var(--accent)' : 'var(--muted)' }}>
                           {credit ? '+' : '−'}{rupees(row.amount_paise)}
                         </td>
                         <td style={{ padding: '6px 8px', textAlign: 'end', whiteSpace: 'nowrap' }} className="muted">{fmtDate(row.created_at)}</td>

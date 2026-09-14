@@ -289,8 +289,9 @@ export default function ShopCatalog() {
               <span style={{ fontWeight: 600 }}>{shop.name}</span>
               <span
                 style={{
-                  background: shop.brand_accent || 'var(--accent, #0a7e4f)',
-                  color: '#fff', borderRadius: 999, padding: '2px 10px',
+                  background: shop.brand_accent || 'var(--c-accent)',
+                  color: shop.brand_accent ? '#fff' : 'var(--c-on-accent)',
+                  borderRadius: 999, padding: '2px 10px',
                   fontSize: 12, fontWeight: 700, letterSpacing: 0.2,
                 }}
               >
@@ -299,7 +300,7 @@ export default function ShopCatalog() {
             </div>
           )}
           {shop.is_branded && shop.brand_tagline && (
-            <div style={{ color: shop.brand_accent || 'var(--accent, #0a7e4f)', fontWeight: 500, marginBottom: 8 }}>
+            <div style={{ color: shop.brand_accent || 'var(--c-accent-ink)', fontWeight: 500, marginBottom: 8 }}>
               {shop.brand_tagline}
             </div>
           )}

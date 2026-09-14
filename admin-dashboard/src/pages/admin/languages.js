@@ -68,7 +68,7 @@ export default function AdminLanguages() {
           </thead>
           <tbody>
             {rows.map((l) => (
-              <tr key={l.code} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+              <tr key={l.code} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={cell}>
                   <strong dir={l.rtl ? 'rtl' : 'ltr'}>{l.label}</strong>{' '}
                   <code style={{ fontSize: 12 }}>{l.code}</code>
