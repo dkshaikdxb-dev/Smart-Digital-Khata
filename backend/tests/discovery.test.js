@@ -94,6 +94,14 @@ beforeAll(async () => {
   await withToken(request(app).patch(`/api/products/${inactive.body.product.id}`), tokenA)
     .send({ is_active: false });
 
+  // Shop B needs a catalogue of its own: since batch DATA D1 the public
+  // directory does not surface a listed shop with ZERO active products (that was
+  // the reported "0 items" store), so a fixture meant to APPEAR in the directory
+  // must have something to sell. B's own tests (distance ordering, the delivery
+  // filter) are about a shop that is listed and real, not an empty one.
+  await withToken(request(app).post('/api/products'), tokenB)
+    .send({ name: 'Dal', price: 6000, unit: 'kg' });
+
   // Category-localization fixture: a separate LISTED shop (kept out of CITY so
   // the browse/distance tests are unaffected) with ONE product linked to a base
   // catalog_item that carries a run-unique category, plus a hi translation of
@@ -393,11 +401,16 @@ describe('GET /public/shops/:shopId', () => {
     // shop's village/pincode never leak from this endpoint.
     // `availability` (batch A) rides along here too, so the storefront and the
     // directory can never disagree about whether the shop is taking orders.
+    // `catalogue_empty` + `catalogue_notice_code` (batch DATA D1) ride along on
+    // every storefront: false/null here, since this shop has a catalogue.
     expect(Object.keys(res.body.shop).sort()).toEqual([
-      'area', 'availability', 'brand_accent', 'brand_tagline', 'city', 'delivery_fee', 'delivery_hours',
+      'area', 'availability', 'brand_accent', 'brand_tagline', 'catalogue_empty',
+      'catalogue_notice_code', 'city', 'delivery_fee', 'delivery_hours',
       'delivery_min_order', 'delivery_radius_km', 'free_delivery_min', 'id', 'image_url',
       'images', 'is_branded', 'name', 'offers_delivery', 'offers_pickup', 'products', 'slides',
     ]);
+    expect(res.body.shop.catalogue_empty).toBe(false);
+    expect(res.body.shop.catalogue_notice_code).toBeNull();
     expect(res.body.shop.availability).toEqual({ open: true, reason: null, reopens_at: null });
     // No photos and no legacy cover on this shop → images is an empty array.
     expect(res.body.shop.images).toEqual([]);

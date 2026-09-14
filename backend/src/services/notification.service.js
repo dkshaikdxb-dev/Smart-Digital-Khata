@@ -2,6 +2,7 @@ const { query } = require('../config/db');
 const whatsapp = require('./whatsapp.service');
 const settings = require('../config/settings');
 const logger = require('../utils/logger');
+const { netCreditSalesSql } = require('../utils/creditSales');
 
 /**
  * Notification modes (per shop):
@@ -132,12 +133,18 @@ async function sendOwnerDigest(shopId) {
 
     const [today, outstanding] = await Promise.all([
       query(
+        // "Sales on credit" is NET of the compensating adjustments a cancelled or
+        // reduced order leaves in the append-only ledger (batch DATA D4) — the
+        // same definition /summaries/today and /analytics/overview use, so the
+        // nightly message and the app cannot disagree. Without it a rejected
+        // order was still reported as sold, AND "sales − collected" no longer
+        // reconciled with the outstanding figure two lines below it.
         `SELECT
-           COALESCE(SUM(CASE WHEN type='purchase' THEN amount END),0) AS purchases,
-           COALESCE(SUM(CASE WHEN type IN ('cash','upi') THEN amount END),0) AS collections,
+           ${netCreditSalesSql('t')} AS purchases,
+           COALESCE(SUM(CASE WHEN t.type IN ('cash','upi') THEN t.amount END),0) AS collections,
            COUNT(*) AS tx_count
-         FROM transactions
-         WHERE shop_id = $1 AND created_at >= date_trunc('day', NOW())`,
+         FROM transactions t
+         WHERE t.shop_id = $1 AND t.created_at >= date_trunc('day', NOW())`,
         [shopId]
       ),
       query(

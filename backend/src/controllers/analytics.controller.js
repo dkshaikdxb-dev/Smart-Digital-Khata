@@ -1,4 +1,8 @@
 const { query } = require('../config/db');
+// "Sold on credit", net of the compensating adjustments a cancelled or reduced
+// order leaves behind (batch DATA D4). Shared with summaries, the digest, the
+// weekly summary and the platform dashboards so no two screens disagree.
+const { netCreditSalesSql } = require('../utils/creditSales');
 
 // GET /analytics/overview?days=30 — trailing-window KPIs for the shop.
 // `days` is clamped to 1..365 (default 30). All amounts are paise, counts ints.
@@ -8,11 +12,11 @@ exports.overview = async (req, res) => {
 
   const sums = await query(
     `SELECT
-       COALESCE(SUM(CASE WHEN type = 'purchase' THEN amount END), 0) AS purchases,
-       COALESCE(SUM(CASE WHEN type IN ('cash', 'upi') THEN amount END), 0) AS collections
-     FROM transactions
-     WHERE shop_id = $1
-       AND created_at >= NOW() - make_interval(days => $2::int)`,
+       ${netCreditSalesSql('t')} AS purchases,
+       COALESCE(SUM(CASE WHEN t.type IN ('cash', 'upi') THEN t.amount END), 0) AS collections
+     FROM transactions t
+     WHERE t.shop_id = $1
+       AND t.created_at >= NOW() - make_interval(days => $2::int)`,
     [req.user.shopId, days]
   );
 

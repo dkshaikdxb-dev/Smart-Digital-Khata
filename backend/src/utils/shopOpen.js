@@ -316,6 +316,60 @@ function openPredicateSql(shopAlias = 's', joinAlias = 'sc', tzParam = '$1') {
 
 // ---- The order-time gate --------------------------------------------------
 
+// ===========================================================================
+// SUSPENSION (batch DATA D2) — the platform's own "this shop is not trading".
+//
+// `shops.status = 'suspended'` used to be read by two admin counters and by
+// NOTHING else: an admin suspended a shop for fraud, got a 200 and an audit row,
+// and the shop kept trading — still in the public directory, still accepting
+// credit and prepaid orders, still generating payment links.
+//
+// It belongs HERE rather than in a new check scattered through the controllers,
+// beside the availability rule, because it answers the same question ("may this
+// shop take an order right now?") and every order path already asks this file.
+//
+// IT IS NOT AN AVAILABILITY REASON. `availability` describes what the SHOPKEEPER
+// chose — closed, paused, holiday, outside hours — and is rendered to shoppers as
+// "opens at 9 AM". A suspension is the platform's decision about the shop, not
+// the shop's about its day, so it is a separate 403 with its own code rather than
+// a fifth `reason` value: no consumer surface should ever invite a shopper to
+// come back later to a shop that has been stopped.
+//
+// AND IT IS NOT SUBJECT TO THE HOURS KILL-SWITCH. `assertShopOpenTx` returns
+// early when the platform disables shop hours; the suspension check runs BEFORE
+// that, so turning hours off can never quietly re-open a suspended shop.
+//
+// WHAT A SUSPENDED SHOP'S EXISTING CUSTOMERS CAN STILL DO. Everything that is
+// READING their own money: GET /my/khata, their statements, their past orders and
+// their outstanding balance. A suspension stops the shop TRADING; it must not
+// confiscate the record of what a customer already owes or already paid, which
+// they may well need precisely because the shop was suspended. Only writes that
+// commit the shop to new business are refused: placing an order (any payment
+// mode) and raising a payment link. Owner sign-in is already refused upstream
+// (auth.controller), so the owner's own screens are moot.
+// ===========================================================================
+
+// Throws 403 `shop_suspended` when this shop has been stopped by the platform.
+// Runs on the CALLER's client, so inside an order transaction it sees the same
+// snapshot as the rest of that transaction.
+async function assertShopNotSuspendedTx(client, shopId) {
+  const r = await client.query('SELECT status FROM shops WHERE id = $1', [shopId]);
+  if (!r.rowCount) throw ApiError.notFound('Shop not found');
+  if (r.rows[0].status === 'suspended') {
+    throw new ApiError(403, 'shop_suspended', {
+      code: 'shop_suspended',
+      message: 'This shop is not accepting orders at the moment.',
+    });
+  }
+}
+
+// The same refusal for a caller that is not already inside a transaction (the
+// owner-initiated payment link). Same code, same message, one rule.
+async function assertShopNotSuspended(shopId) {
+  // The pool itself satisfies the tiny { query } contract the Tx form uses.
+  return assertShopNotSuspendedTx({ query }, shopId);
+}
+
 /**
  * The HARD guarantee. Called INSIDE the order transaction, BEFORE any insert,
  * on the transaction's own client — so a shop that is closed produces no order,
@@ -327,6 +381,11 @@ function openPredicateSql(shopAlias = 's', joinAlias = 'sc', tzParam = '$1') {
  * when the shop is open.
  */
 async function assertShopOpenTx(client, shopId, now) {
+  // Suspension FIRST, and deliberately above the hours kill-switch: a platform
+  // suspension is not an opening-hours question and must hold even when shop
+  // hours are disabled platform-wide.
+  await assertShopNotSuspendedTx(client, shopId);
+
   const cfg = await getShopHoursConfig();
   if (!cfg.enabled) return { open: true, reason: null, reopens_at: null };
 
@@ -393,6 +452,8 @@ module.exports = {
   openPredicateSql,
   // gates + pause
   assertShopOpenTx,
+  assertShopNotSuspendedTx,
+  assertShopNotSuspended,
   resolvePauseUntil,
   CONFIG_DEFAULTS,
   DEFAULT_TZ,
