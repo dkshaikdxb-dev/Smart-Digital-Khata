@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { signInError } from '../lib/errorText';
 
 export default function Login() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function Login() {
         : (r.user.role === 'distributor' ? '/distributor' : '/dashboard');
       router.push(dest);
     } catch (err) {
-      setError(err.message);
+      setError(signInError(t, err));
     } finally {
       setLoading(false);
     }

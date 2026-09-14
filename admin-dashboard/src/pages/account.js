@@ -7,6 +7,7 @@ import CreditsCard from '../components/CreditsCard';
 import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { uiError } from '../lib/errorText';
 
 const GENDERS = ['male', 'female', 'other', 'prefer_not_to_say'];
 
@@ -37,7 +38,7 @@ export default function Account() {
           date_of_birth: r.profile.date_of_birth ? String(r.profile.date_of_birth).slice(0, 10) : '',
         });
       })
-      .catch((e) => setError(e.message || t('acc.loadError')));
+      .catch((e) => setError(uiError(t, e)));
   }, [router, t]);
 
   async function save(e) {
@@ -54,7 +55,7 @@ export default function Account() {
       const r = await apiFetch('/api/me/profile', { method: 'PATCH', body: JSON.stringify(body) });
       setProfile(r.profile);
       setMsg(t('acc.saved'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   if (!profile || !form) {

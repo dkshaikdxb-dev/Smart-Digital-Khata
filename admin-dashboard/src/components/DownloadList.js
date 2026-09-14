@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLang } from '../lib/i18n';
+import { uiError } from '../lib/errorText';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -36,7 +37,12 @@ export default function DownloadList({ title, subtitle, items = [], tokenKey = '
       setBusy(item.key);
       const token = window.localStorage.getItem(tokenKey);
       const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        // Carry the status so the shared mapper can tell a 500 from "no signal".
+        const e = new Error(`HTTP ${res.status}`);
+        e.status = res.status;
+        throw e;
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -44,7 +50,7 @@ export default function DownloadList({ title, subtitle, items = [], tokenKey = '
       document.body.appendChild(a); a.click(); a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      setError(e.message);
+      setError(uiError(t, e));
     } finally {
       setBusy('');
     }

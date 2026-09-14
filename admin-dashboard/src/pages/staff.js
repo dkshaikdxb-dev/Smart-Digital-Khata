@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
 import { useLang } from '../lib/i18n';
 
 export default function Staff() {
@@ -12,21 +15,25 @@ export default function Staff() {
   const [form, setForm] = useState({ name: '', phone: '', password: '', email: '' });
   const [error, setError] = useState('');
 
-  async function load() {
-    const r = await apiFetch('/api/staff');
-    setItems(r.items || []);
-  }
-
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     const role = window.localStorage.getItem('skhata_role');
     if (role === 'admin') { router.replace('/admin'); return; }
     if (role === 'distributor') { router.replace('/distributor'); return; }
     // Owner-only: staff (and any non-owner) cannot manage staff.
     if (role !== 'owner') { router.replace('/dashboard'); return; }
-    load().catch((e) => setError(e.message));
+    const r = await get('/api/staff');
+    setItems(r.items || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const load = list.reload;
+
+  function showFailure(err) {
+    logForSupport(err, 'staff');
+    setError(friendlyError(t, err));
+  }
 
   async function create(e) {
     e.preventDefault();
@@ -38,7 +45,7 @@ export default function Staff() {
       await apiFetch('/api/staff', { method: 'POST', body: JSON.stringify(body) });
       setForm({ name: '', phone: '', password: '', email: '' });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   async function resetPassword(s) {
@@ -49,7 +56,7 @@ export default function Staff() {
     try {
       await apiFetch(`/api/staff/${s.id}`, { method: 'PATCH', body: JSON.stringify({ password: pw }) });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   async function toggleActive(s) {
@@ -57,7 +64,7 @@ export default function Staff() {
     try {
       await apiFetch(`/api/staff/${s.id}`, { method: 'PATCH', body: JSON.stringify({ is_active: !s.is_active }) });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   async function remove(s) {
@@ -66,7 +73,7 @@ export default function Staff() {
     try {
       await apiFetch(`/api/staff/${s.id}`, { method: 'DELETE' });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   const columns = [
@@ -113,7 +120,9 @@ export default function Staff() {
 
         <div className="card">
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={items} empty={t('staff.empty')} />
+          <ListState state={list}>
+            <DataTable columns={columns} rows={items} empty={t('staff.empty')} />
+          </ListState>
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { money as fmt } from '../../lib/money';
+import { friendlyError, logForSupport } from '../../lib/errorText';
 import { useLangFor, isRtl } from '../../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -13,7 +15,11 @@ export default function PayLanding() {
   const router = useRouter();
   const { orderId } = router.query;
   const [order, setOrder] = useState(null);
-  const [failed, setFailed] = useState(false);
+  // The failure is held as the error OBJECT, not as a sentence: the language
+  // this page renders in arrives in the response we are still waiting for, so a
+  // sentence built here would be pinned to the wrong language. It becomes copy
+  // at render, with the language-aware t().
+  const [err, setErr] = useState(null);
   const { lang, t } = useLangFor(order && order.language);
 
   useEffect(() => {
@@ -21,24 +27,27 @@ export default function PayLanding() {
     fetch(`${API}/api/payments/orders/${orderId}/public`)
       .then((r) => r.json())
       .then((d) => {
-        if (!d || !d.order) throw new Error('no order');
+        if (!d || !d.order) {
+          const missing = new Error('order not found');
+          missing.messageKey = 'pub.pay.notFound';
+          throw missing;
+        }
         setOrder(d.order);
       })
-      .catch(() => setFailed(true));
+      .catch((e) => { logForSupport(e, 'public payment landing'); setErr(e); });
   }, [orderId]);
 
   const dir = isRtl(lang) ? 'rtl' : 'ltr';
 
-  if (failed) {
+  if (err) {
     return (
       <Center>
-        <div className="card" dir={dir}><h2>{t('pub.pay.notFound')}</h2></div>
+        <div className="card" dir={dir}><h2>{friendlyError(t, err)}</h2></div>
       </Center>
     );
   }
   if (!order) return <Center><div className="card">{t('common.loading')}</div></Center>;
 
-  const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
   const paid = order.status === 'paid';
 
   return (

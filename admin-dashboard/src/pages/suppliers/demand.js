@@ -5,6 +5,7 @@ import Nav from '../../components/Nav';
 import SupplierTabs from '../../components/SupplierTabs';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 // A single blank demand line. qty is an integer COUNT — never money, no ₹ here.
 const blankLine = () => ({ name: '', brand: '', unit: '', qty: 1 });
@@ -36,7 +37,7 @@ export default function OwnerDemandBoard() {
       const r = await apiFetch('/api/demand-posts');
       setPosts(r.demand_posts || []);
     } catch (e) {
-      setError(e.message);
+      setError(uiError(t, e));
     } finally {
       setLoading(false);
     }
@@ -85,7 +86,7 @@ export default function OwnerDemandBoard() {
       setNote('');
       await load();
     } catch (err) {
-      setFormErr(err.message);
+      setFormErr(uiError(t, err));
     } finally {
       setPosting(false);
     }
@@ -98,7 +99,7 @@ export default function OwnerDemandBoard() {
       await apiFetch(`/api/demand-posts/${id}/cancel`, { method: 'POST' });
       await load();
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     }
   }
 

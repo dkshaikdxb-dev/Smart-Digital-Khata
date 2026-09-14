@@ -9,6 +9,7 @@ import DownloadList from '../../components/DownloadList';
 import { customerFetch, clearCustomerToken, swapCustomerToken, CUSTOMER_TOKEN_KEY } from '../../lib/customerApi';
 import { clearApiCache } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const GENDERS = ['male', 'female', 'other', 'prefer_not_to_say'];
@@ -70,7 +71,7 @@ export default function CAccount() {
           gender: cu.gender || '',
           date_of_birth: cu.date_of_birth ? String(cu.date_of_birth).slice(0, 10) : '',
         });
-      } catch (err) { setError(err.message || t('acc.loadError')); }
+      } catch (err) { setError(uiError(t, err)); }
       try {
         const k = await customerFetch('/api/my/khata');
         setShops(k.shops || []);
@@ -101,7 +102,7 @@ export default function CAccount() {
         date_of_birth: cu.date_of_birth ? String(cu.date_of_birth).slice(0, 10) : '',
       });
       setMsg(t('acc.saved'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   // --- Number change (OTP-gated on the NEW number) -------------------------
@@ -114,7 +115,7 @@ export default function CAccount() {
       });
       setNumDevCode(r && r.dev_code ? String(r.dev_code) : '');
       setNumStep('code');
-    } catch (err) { setNumErr(err.message); } finally { setNumBusy(false); }
+    } catch (err) { setNumErr(uiError(t, err)); } finally { setNumBusy(false); }
   }
 
   async function confirmNumberChange(e) {
@@ -130,7 +131,7 @@ export default function CAccount() {
       setPhone(r.customer_user?.phone || newPhone.trim());
       setNumStep('idle'); setNewPhone(''); setNumCode(''); setNumDevCode('');
       setNumMsg(t('num.changed'));
-    } catch (err) { setNumErr(err.message); } finally { setNumBusy(false); }
+    } catch (err) { setNumErr(uiError(t, err)); } finally { setNumBusy(false); }
   }
 
   function cancelNumberChange() {
@@ -149,7 +150,7 @@ export default function CAccount() {
       await customerFetch('/api/customer-auth/pin/set', { method: 'POST', body: JSON.stringify(body) });
       setHasPin(true); setPinOpen(false); setPinForm({ pin: '', current_pin: '' });
       setPinMsg(t('pin.saved'));
-    } catch (err) { setPinErr(err.message); } finally { setPinBusy(false); }
+    } catch (err) { setPinErr(uiError(t, err)); } finally { setPinBusy(false); }
   }
 
   async function removePin() {
@@ -158,7 +159,7 @@ export default function CAccount() {
       await customerFetch('/api/customer-auth/pin/clear', { method: 'POST', body: JSON.stringify({}) });
       setHasPin(false); setPinOpen(false); setPinForm({ pin: '', current_pin: '' });
       setPinMsg(t('pin.removed'));
-    } catch (err) { setPinErr(err.message); } finally { setPinBusy(false); }
+    } catch (err) { setPinErr(uiError(t, err)); } finally { setPinBusy(false); }
   }
 
   function stmtQuery(csv) {
@@ -177,7 +178,7 @@ export default function CAccount() {
       const r = await customerFetch(`/api/my/statement?${stmtQuery(false)}`);
       if (pick) setStmt({ single: r.shop });
       else setStmt({ shops: r.shops || [], combined: r.combined });
-    } catch (err) { setStmtMsg(err.message || t('stmt.loadError')); }
+    } catch (err) { setStmtMsg(uiError(t, err)); }
   }
 
   async function downloadCsv() {
@@ -186,14 +187,19 @@ export default function CAccount() {
     try {
       const token = window.localStorage.getItem(CUSTOMER_TOKEN_KEY);
       const res = await fetch(`${API}/api/my/statement?${stmtQuery(true)}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        // Carry the status so the shared mapper can tell a 500 from "no signal".
+        const e = new Error(`HTTP ${res.status}`);
+        e.status = res.status;
+        throw e;
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `statement-${range.from}-to-${range.to}.csv`;
       document.body.appendChild(a); a.click(); a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) { setStmtMsg(err.message); }
+    } catch (err) { setStmtMsg(uiError(t, err)); }
   }
 
   async function printStatement() {

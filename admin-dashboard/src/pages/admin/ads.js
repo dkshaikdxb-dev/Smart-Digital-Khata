@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { usePermissions } from '../../lib/adminPerms';
+import { money } from '../../lib/money';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -1040,7 +1041,7 @@ function PendingRow({ p, busy, onModerate }) {
   const [note, setNote] = useState('');
   const [rejecting, setRejecting] = useState(false);
   const isFree = !!p.is_free || (Number(p.credits_spent_paise) || 0) === 0;
-  const paid = `₹${((Number(p.credits_spent_paise) || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const paid = money(p.credits_spent_paise);
   const win = (v) => (v ? new Date(v).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
   const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined, isFree);
   const startReject = () => { setNote(aiReason(p)); setRejecting(true); };

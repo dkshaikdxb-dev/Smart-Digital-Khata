@@ -4,6 +4,7 @@ import CustomerShell from '../../components/CustomerShell';
 import { publicFetch, setCustomerToken, getCustomerToken } from '../../lib/customerApi';
 import { useLang, hasChosenLang, getLang } from '../../lib/i18n';
 import { persistLanguage } from '../../lib/langSync';
+import { signInError, logForSupport } from '../../lib/errorText';
 
 // WhatsApp OTP login. Step 1: enter phone → request-otp (dev_code shown in
 // non-production). Step 2: enter the 6-digit code → verify-otp → store token.
@@ -44,7 +45,7 @@ export default function CustomerLogin() {
       setDevCode(r && r.dev_code ? String(r.dev_code) : '');
       setStep('code');
     } catch (err) {
-      setError(err.message);
+      setError(signInError(t, err));
     } finally {
       setLoading(false);
     }
@@ -61,12 +62,16 @@ export default function CustomerLogin() {
         method: 'POST',
         body: JSON.stringify(body),
       });
-      if (!r || !r.token) throw new Error(t('c.loginFailed'));
+      if (!r || !r.token) {
+        const bad = new Error('verify-otp returned no token');
+        bad.userMessage = t('c.loginFailed');
+        throw bad;
+      }
       setCustomerToken(r.token, phone.trim());
       saveChosenLanguage();
       router.replace(next.startsWith('/c') ? next : '/c/shops');
     } catch (err) {
-      setError(err.message);
+      setError(signInError(t, err));
     } finally {
       setLoading(false);
     }
@@ -81,16 +86,21 @@ export default function CustomerLogin() {
         method: 'POST',
         body: JSON.stringify({ phone: phone.trim(), pin: pin.trim() }),
       });
-      if (!r || !r.token) throw new Error(t('c.loginFailed'));
+      if (!r || !r.token) {
+        const bad = new Error('pin login returned no token');
+        bad.userMessage = t('auth.pinFailed');
+        throw bad;
+      }
       setCustomerToken(r.token, phone.trim());
       saveChosenLanguage();
       router.replace(next.startsWith('/c') ? next : '/c/shops');
     } catch (err) {
-      // The server sends a clear "too many attempts" message when the PIN is
-      // locked — map it to the localized locked-out copy; otherwise show the
-      // uniform invalid-credentials message (never reveals if the phone exists).
-      const locked = /too many/i.test(err.message || '');
-      setError(locked ? t('auth.locked') : t('auth.pinFailed'));
+      // A locked PIN is a STATUS (429), not a phrase. The old check matched the
+      // server's English "too many attempts" text, so it stopped recognising a
+      // lockout the moment that sentence was read in any other language.
+      logForSupport(err, 'pin login');
+      if (err.userMessage) { setError(err.userMessage); }
+      else setError(Number(err.status) === 429 ? t('auth.locked') : t('auth.pinFailed'));
     } finally {
       setLoading(false);
     }

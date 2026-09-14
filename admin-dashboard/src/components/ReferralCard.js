@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLang } from '../lib/i18n';
+import { money } from '../lib/money';
+import { uiError } from '../lib/errorText';
 
 // "Invite & earn" card (Phase D). Shows the caller's own referral code, a
 // copy-able share link built from the current origin, how many people they have
@@ -7,7 +9,7 @@ import { useLang } from '../lib/i18n';
 // account page and the consumer account page — the only difference is the
 // `fetcher` passed in (apiFetch vs customerFetch), so the same UI serves both.
 // paise → ₹ with Indian grouping; tolerant of absent/zero (older payloads).
-const rupees = (paise) => `₹${(Number(paise || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const rupees = money;
 
 export default function ReferralCard({ fetcher, endpoint = '/api/me/referral' }) {
   const { t } = useLang();
@@ -19,7 +21,7 @@ export default function ReferralCard({ fetcher, endpoint = '/api/me/referral' })
     let alive = true;
     fetcher(endpoint)
       .then((r) => { if (alive) setData(r); })
-      .catch((e) => { if (alive) setError(e.message || t('ref.loadError')); });
+      .catch((e) => { if (alive) setError(uiError(t, e)); });
     return () => { alive = false; };
   }, [fetcher, endpoint, t]);
 

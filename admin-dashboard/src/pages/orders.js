@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { money } from '../lib/money';
 import { useLang } from '../lib/i18n';
 import { nextStatus } from '../lib/orderStatus';
 import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../lib/orderEta';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 const STATUSES = ['pending', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed', 'cancelled'];
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -48,33 +50,46 @@ export default function Orders() {
   const [openReject, setOpenReject] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  async function load(s) {
-    const st = s === undefined ? status : s;
+  // The status filter is applied by tapping a chip, so it is read through a ref
+  // and the reload is triggered explicitly rather than by a dependency change.
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
+  const list = useListLoad(async ({ load }) => {
+    if (typeof window === 'undefined') return;
+    if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
+    const st = statusRef.current;
     const parts = [];
     if (st && st !== 'all') parts.push(`status=${encodeURIComponent(st)}`);
     if (localized) parts.push(`lang=${encodeURIComponent(lang)}`);
     const qs = parts.length ? `?${parts.join('&')}` : '';
-    const r = await apiFetch(`/api/orders${qs}`);
+    const r = await load(`/api/orders${qs}`);
     setItems(r.items || r.orders || []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang, localized]);
+
+  const load = () => list.reload();
+
+  function showFailure(err) {
+    logForSupport(err, 'orders');
+    setError(friendlyError(t, err));
   }
 
   useEffect(() => {
-    if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
-    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
-    if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load(status).catch((e) => setError(e.message));
     // Live ready-time chips. A failure here is not worth an error banner: the
     // built-in defaults are perfectly usable, so accepting keeps working.
     apiFetch('/api/orders/eta-config')
       .then((r) => { if (Array.isArray(r.chips) && r.chips.length) setChips(r.chips); })
       .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
+  }, []);
 
   function pick(s) {
     setStatus(s);
     setError('');
-    load(s).catch((e) => setError(e.message));
+    statusRef.current = s;
+    list.reload();
   }
 
   const open = (o) => router.push(`/orders/${o.id}`);
@@ -90,7 +105,7 @@ export default function Orders() {
     try {
       await apiFetch(`/api/orders/${o.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: next }) });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
     finally { setBusyId(null); }
   }
 
@@ -106,7 +121,7 @@ export default function Orders() {
       await apiFetch(`/api/orders/${o.id}/status`, { method: 'PATCH', body: JSON.stringify(body) });
       setOpenAccept(null);
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
     finally { setBusyId(null); }
   }
 
@@ -126,7 +141,7 @@ export default function Orders() {
       setOpenReject(null);
       setRejectReason('');
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
     finally { setBusyId(null); }
   }
 
@@ -140,7 +155,7 @@ export default function Orders() {
       <><span className="badge">{enumLabel('pmode', o.payment_mode)}</span>{' '}
         <span className="badge" style={{ color: payColor(o.payment_status) }}>{enumLabel('pstatus', o.payment_status)}</span></>
     ) },
-    { key: 'subtotal', label: t('common.total'), align: 'right', render: (o) => fmt(o.subtotal) },
+    { key: 'subtotal', label: t('common.total'), align: 'right', render: (o) => money(o.subtotal) },
     { key: 'status', label: t('common.status'), render: (o) => {
       // The promise the owner made, right next to the status it belongs to. A
       // passed promise is flagged for the OWNER (they can still fix it with
@@ -264,7 +279,9 @@ export default function Orders() {
         </div>
 
         <div className="card">
-          <DataTable columns={columns} rows={items} onRowClick={open} empty={t('ord.empty')} />
+          <ListState state={list}>
+            <DataTable columns={columns} rows={items} onRowClick={open} empty={t('ord.empty')} />
+          </ListState>
         </div>
       </div>
     </div>

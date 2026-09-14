@@ -1080,3 +1080,28 @@ th { color: var(--muted); font-weight: 600; }
   .oalert-minor { flex-basis: 100%; }
   .oalert-chip { flex: 1 1 auto; }
 }
+
+/* ---------------------------------------------------------------------------
+   List states. A list that could not load must not look like a list with
+   nothing in it, and money read off this phone's own cache must say so.
+   Both reuse tokens the contrast audit already measures — --danger on --card
+   (4.5:1) for the failure, --warn-ink on --warn-bg (4.5:1) for the stale
+   notice — so no new colour enters the palette here.
+   --------------------------------------------------------------------------- */
+.list-error {
+  padding: 14px 16px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  background: transparent;
+}
+.list-error-text { margin: 0 0 12px; color: var(--danger); font-weight: 600; line-height: 1.45; }
+.list-error-detail { margin-top: 10px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.list-stale {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  margin-bottom: 12px; padding: 10px 14px;
+  border: 1px solid var(--warn); border-radius: 10px;
+  background: var(--warn-bg); color: var(--warn-ink);
+}
+.list-stale-when { margin-top: 2px; font-size: 13px; line-height: 1.4; }

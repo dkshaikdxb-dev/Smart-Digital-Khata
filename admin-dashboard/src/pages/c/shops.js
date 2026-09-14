@@ -8,6 +8,7 @@ import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { useVoiceSearch } from '../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../components/VoiceSearchHint';
+import { uiError } from '../../lib/errorText';
 
 // Flipkart-style quick-browse categories. The label is localized; the search
 // term is the English base word so the endpoint's name-ILIKE matches whatever
@@ -63,7 +64,7 @@ export default function DiscoverShops() {
       const r = await publicFetch(`/api/public/shops?${q.toString()}`);
       setShops(r.shops || r.items || []);
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
       setShops([]);
     } finally {
       setLoading(false);
@@ -116,7 +117,7 @@ export default function DiscoverShops() {
       },
       (err) => {
         setLocating(false);
-        setError(err.message || t('c.locationError'));
+        setError(uiError(t, err));
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
     );

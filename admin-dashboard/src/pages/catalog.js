@@ -2,15 +2,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ListState from '../components/ListState';
 import ProductThumb from '../components/ProductThumb';
 import ImageStudio from '../components/ImageStudio';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { rupeesInput } from '../lib/money';
 import { useLang, LANGS } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 // Paise → a plain rupee string for editable inputs (e.g. 4550 → "45.5").
-const rupeeStr = (p) => String(Number(p || 0) / 100);
+const rupeeStr = rupeesInput;
 const CATALOG_PAGE = 30;
 const emptyCustom = { product: '', brand: '', pack: '', category: '', subcategory: '', unit: '', price: '', sold_by_weight: false };
 
@@ -50,18 +54,22 @@ export default function Catalog() {
   const [customForm, setCustomForm] = useState(emptyCustom);
   const [customBusy, setCustomBusy] = useState(false);
 
-  async function load() {
-    const r = await apiFetch('/api/products');
-    setItems(r.items || r.products || []);
-  }
-
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load().catch((e) => setError(e.message));
+    const r = await get('/api/products');
+    setItems(r.items || r.products || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const load = list.reload;
+
+  function showFailure(err) {
+    logForSupport(err, 'catalog');
+    setError(friendlyError(t, err));
+  }
 
   // (Re)load the category tree in the owner's language. Localized labels are
   // shown in the filter dropdowns, but the English key is still sent as the
@@ -103,7 +111,7 @@ export default function Catalog() {
       setCatItems((prev) => (reset ? next : [...prev, ...next]));
       setCatCursor(r.next_cursor || null);
     } catch (err) {
-      setError(err.message);
+      showFailure(err);
     } finally {
       setCatLoading(false);
     }
@@ -120,7 +128,7 @@ export default function Catalog() {
       });
       await load();
       setMsg(t('cat.priceSaved'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   // Toggle is_active — this is the "list / deselect" control for a range item.
@@ -132,7 +140,7 @@ export default function Catalog() {
         body: JSON.stringify({ is_active: !(p.is_active !== false) }),
       });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   async function remove(p) {
@@ -141,7 +149,7 @@ export default function Catalog() {
     try {
       await apiFetch(`/api/products/${p.id}`, { method: 'DELETE' });
       await load();
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   // Replace one product in local state from a server response (new image_url).
@@ -174,7 +182,7 @@ export default function Catalog() {
       applyProduct(body.product || body);
       setPhotoPending((s) => { const n = { ...s }; delete n[p.id]; return n; });
     } catch (err) {
-      setPhotoErr((e) => ({ ...e, [p.id]: err.message }));
+      setPhotoErr((e) => ({ ...e, [p.id]: uiError(t, err) }));
     } finally {
       setPhotoBusy(null);
     }
@@ -188,7 +196,7 @@ export default function Catalog() {
       const r = await apiFetch(`/api/products/${p.id}/image`, { method: 'DELETE' });
       applyProduct(r.product || r);
     } catch (err) {
-      setPhotoErr((e) => ({ ...e, [p.id]: err.message }));
+      setPhotoErr((e) => ({ ...e, [p.id]: uiError(t, err) }));
     } finally {
       setPhotoBusy(null);
     }
@@ -225,7 +233,7 @@ export default function Catalog() {
       await load();
       setMsg(t('cat.addedToRange'));
     } catch (err) {
-      setError(err.message);
+      showFailure(err);
     } finally {
       setBulkBusy(null);
     }
@@ -251,7 +259,7 @@ export default function Catalog() {
       setTab('range');
       setMsg(t('cat.customAdded'));
     } catch (err) {
-      setError(err.message);
+      showFailure(err);
     } finally {
       setCustomBusy(false);
     }
@@ -380,11 +388,15 @@ export default function Catalog() {
             <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
               <input placeholder={t('cat.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} style={{ flex: 1, minWidth: 180 }} />
             </div>
-            {items.length === 0 ? (
-              <p className="muted" style={{ padding: '8px 2px' }}>{t('cat.rangeEmpty')}</p>
-            ) : (
-              <DataTable columns={columns} rows={filtered} empty={t('cat.noResults')} />
-            )}
+            {/* "You have not listed anything yet" is only true once the range
+                has actually come back. */}
+            <ListState state={list}>
+              {items.length === 0 ? (
+                <p className="muted" style={{ padding: '8px 2px' }}>{t('cat.rangeEmpty')}</p>
+              ) : (
+                <DataTable columns={columns} rows={filtered} empty={t('cat.noResults')} />
+              )}
+            </ListState>
           </div>
         )}
 

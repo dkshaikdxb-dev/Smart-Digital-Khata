@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { money as fmt } from '../../lib/money';
+import { friendlyError, logForSupport } from '../../lib/errorText';
 import { useLangFor, isRtl } from '../../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 // Public, read-only customer khata. No login — access via unguessable link.
 //
@@ -17,32 +18,42 @@ export default function PublicKhata() {
   const router = useRouter();
   const { token } = router.query;
   const [khata, setKhata] = useState(null);
-  // The error is kept as a KEY, not as an English sentence: the fetch happens
-  // before we know the reader's language, and storing prose here would have
-  // pinned the message to whatever language it was written in.
-  const [errorKey, setErrorKey] = useState('');
+  // The FAILURE is kept as the error OBJECT, not as a sentence. The fetch
+  // happens before we know the reader's language — the language comes back in
+  // the response we are still waiting for — so rendering the sentence here
+  // would pin it to whatever language was current at fetch time. It is turned
+  // into copy at render, below, with the language-aware t().
+  const [err, setErr] = useState(null);
   const { lang, t } = useLangFor(khata && khata.language);
 
   useEffect(() => {
     if (!token) return;
     fetch(`${API}/api/public/khata/${token}`)
       .then((r) => {
-        if (!r.ok) throw new Error('bad link');
+        if (!r.ok) {
+          // A dead link is its own answer and says more than any status-based
+          // sentence would. It is carried as a translation KEY rather than as
+          // English prose, so it resolves in the reader's language like every
+          // other string on this page.
+          const dead = new Error('khata link invalid');
+          dead.messageKey = 'pub.khata.linkInvalid';
+          throw dead;
+        }
         return r.json();
       })
       .then((d) => setKhata(d.khata))
-      .catch(() => setErrorKey('pub.khata.linkInvalid'));
+      .catch((e) => { logForSupport(e, 'public khata'); setErr(e); });
   }, [token]);
 
   const dir = isRtl(lang) ? 'rtl' : 'ltr';
 
-  if (errorKey) {
+  if (err) {
     return (
       <Center>
         <div className="card" dir={dir} style={{ maxWidth: 380, textAlign: 'center' }}>
           <div style={{ fontSize: 36 }}>🔗</div>
           <h3>{t('pub.khata.linkInvalidTitle')}</h3>
-          <p className="muted">{t(errorKey)}</p>
+          <p className="muted">{friendlyError(t, err)}</p>
         </div>
       </Center>
     );

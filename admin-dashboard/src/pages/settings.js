@@ -6,6 +6,8 @@ import DataSaverToggle from '../components/DataSaverToggle';
 import ImageStudio from '../components/ImageStudio';
 import { apiFetch, apiPost } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
+import { uiError, friendlyError, canRetry, logForSupport } from '../lib/errorText';
+import { money as fmt } from '../lib/money';
 
 // The multipart cover upload needs the raw API base (apiFetch is JSON-only and
 // would clobber the multipart boundary). Same base + token key as lib/api.js.
@@ -15,11 +17,9 @@ const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${A
 // Display name for a language code (native script), for the shop-name-i18n panel.
 const langName = (code) => (LANGS.find((l) => l.code === code)?.name || code);
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
+// The Khata-Credits card shows the same rupee as every other screen.
+const rupees = fmt;
 
-// Indian-grouped rupees for the Khata-Credits card (mirrors promote.js).
-const nf = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const rupees = (paise) => `₹${nf.format((Number(paise) || 0) / 100)}`;
 function fmtDate(v) {
   if (!v) return '';
   const d = new Date(v);
@@ -49,7 +49,11 @@ const rsToPaise = (v) => {
   const n = Number(v);
   return Number.isFinite(n) && v !== '' ? Math.round(n * 100) : 0;
 };
-function fulFromShop(s) {
+function fulFromShop(s0) {
+  // A 200 that carries no shop used to throw here, inside a promise chain whose
+  // .catch swallowed it — leaving the page on "Loading…" for good. Treat a
+  // missing shop as empty settings; the loader itself decides it is an error.
+  const s = s0 || {};
   return {
     offers_pickup: !!s.offers_pickup,
     offers_delivery: !!s.offers_delivery,
@@ -65,6 +69,10 @@ export default function Settings() {
   const router = useRouter();
   const { t } = useLang();
   const [shop, setShop] = useState(null);
+  // The load either succeeded, is still running, or FAILED. Without this third
+  // case a failed load sat on "Loading…" forever: no message, no retry, and no
+  // way for a shopkeeper on 2G to tell a slow request from a dead one.
+  const [loadErr, setLoadErr] = useState(null);
   const [msg, setMsg] = useState('');
   // Storefront photos (batch LITE): the shop's up-to-3 gallery photos, plus a
   // compressed WebP Blob awaiting upload. Extends the old single-cover uploader
@@ -91,7 +99,7 @@ export default function Settings() {
         setPhotos(list);
         setPhotosFull(list.length >= MAX_PHOTOS);
       })
-      .catch(console.error);
+      .catch((e) => logForSupport(e, 'settings'));
   }
   // "Remove sponsored slide" buy-out (batch STOREFRONT-FULL): live config +
   // balance + the current ad-free window from the owner-only endpoint. Stays
@@ -133,7 +141,7 @@ export default function Settings() {
       const edits = {};
       for (const row of r.names || []) edits[row.lang] = row.name;
       setNameEdits(edits);
-    }).catch(console.error);
+    }).catch((e) => logForSupport(e, 'settings'));
   }
 
   // Delivery & pickup (per-shop fulfillment). Edited in rupees; saved in paise.
@@ -152,7 +160,7 @@ export default function Settings() {
   const [copyMsg, setCopyMsg] = useState('');
 
   function loadFaqs() {
-    apiFetch('/api/shops/faqs').then((r) => setFaqs(r.items || [])).catch(console.error);
+    apiFetch('/api/shops/faqs').then((r) => setFaqs(r.items || [])).catch((e) => logForSupport(e, 'settings'));
   }
 
   function loadPayment() {
@@ -160,16 +168,34 @@ export default function Settings() {
       const p = r.payment || r;
       setPay(p);
       setPayForm({ razorpay_key_id: p.key_id || '', razorpay_key_secret: '', razorpay_webhook_secret: '' });
-    }).catch(console.error);
+    }).catch((e) => logForSupport(e, 'settings'));
   }
 
   useEffect(() => {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    apiFetch('/api/shops/me').then((r) => { setShop(r.shop); setFul(fulFromShop(r.shop)); }).catch(console.error);
-    apiFetch('/api/subscriptions/plans').then((r) => setPlans(r.plans)).catch(console.error);
-    apiFetch('/api/subscriptions/me').then((r) => setSub(r.subscription)).catch(console.error);
+    setLoadErr(null);
+    apiFetch('/api/shops/me')
+      .then((r) => {
+        if (!r || !r.shop) {
+          const e = new Error('shops/me returned no shop');
+          e.status = 500;
+          throw e;
+        }
+        setShop(r.shop);
+        setFul(fulFromShop(r.shop));
+      })
+      .catch((e) => { logForSupport(e, 'settings: shop'); setLoadErr(e); });
+    // These two only fill cards further down, so they log but never blank the
+    // page. `|| []` matters: setPlans(undefined) used to crash the whole render
+    // on plans.map, which is the same blank screen by a different route.
+    apiFetch('/api/subscriptions/plans')
+      .then((r) => setPlans((r && r.plans) || []))
+      .catch((e) => logForSupport(e, 'settings: plans'));
+    apiFetch('/api/subscriptions/me')
+      .then((r) => setSub((r && r.subscription) || null))
+      .catch((e) => logForSupport(e, 'settings: subscription'));
     loadPayment();
     loadFaqs();
     loadNameI18n();
@@ -211,10 +237,28 @@ export default function Settings() {
       }
       setCopyMsg(t('set.linkCopied'));
     } catch (e) {
-      setCopyMsg(e.message);
+      setCopyMsg(uiError(t, e));
     }
   }
 
+  // Three states, not two. A failed load says what happened and offers the one
+  // thing worth offering — try it again — instead of pretending to still be
+  // loading. Retry is only offered where retrying is honest (canRetry).
+  if (loadErr) {
+    return (
+      <div>
+        <Nav />
+        <div className="container">
+          <div className="card" style={{ maxWidth: 520 }}>
+            <p style={{ color: 'var(--danger)' }}>{friendlyError(t, loadErr)}</p>
+            {canRetry(loadErr) && (
+              <button className="btn" onClick={() => router.reload()}>{t('common.retry')}</button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!shop) return (<div><Nav /><div className="container">{t('common.loading')}</div></div>);
 
   async function save() {
@@ -231,7 +275,7 @@ export default function Settings() {
       });
       setShop(r.shop);
       setMsg(t('common.saved'));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
   }
 
   // Repeating new-order alert (batch ORDERALERT): save the three shop-level
@@ -252,7 +296,7 @@ export default function Settings() {
       const clamped = Number(r.shop.order_alert_repeat_minutes) !== wanted.order_alert_repeat_minutes
         || Number(r.shop.order_alert_max_repeats) !== wanted.order_alert_max_repeats;
       setAlertMsg(clamped ? t('oalert.setClamped') : t('common.saved'));
-    } catch (e) { setAlertMsg(e.message); }
+    } catch (e) { setAlertMsg(uiError(t, e)); }
     finally { setAlertBusy(false); }
   }
 
@@ -265,7 +309,7 @@ export default function Settings() {
       const r = await apiFetch('/api/orders/alerts/mute', { method: 'POST', body: JSON.stringify({ minutes }) });
       setShop((s) => ({ ...s, order_alert_muted_until: r.muted_until }));
       setAlertMsg(t('common.saved'));
-    } catch (e) { setAlertMsg(e.message); }
+    } catch (e) { setAlertMsg(uiError(t, e)); }
     finally { setAlertBusy(false); }
   }
 
@@ -299,7 +343,7 @@ export default function Settings() {
       setPhotoMsg(body.status === 'pending_review' ? t('set.photoUploadedPending') : t('common.saved'));
       loadPhotos();
     } catch (e) {
-      setPhotoMsg(e.message);
+      setPhotoMsg(uiError(t, e));
     } finally {
       setPhotoBusy(false);
     }
@@ -312,7 +356,7 @@ export default function Settings() {
       setPhotosFull(false);
       loadPhotos();
     } catch (e) {
-      setPhotoMsg(e.message);
+      setPhotoMsg(uiError(t, e));
     }
   }
 
@@ -336,7 +380,7 @@ export default function Settings() {
       loadAdFree();
     } catch (err) {
       if (err && err.status === 402) setAdFreeErr(t('adfree.lowBalance'));
-      else setAdFreeErr(err.message || t('adfree.errGeneric'));
+      else setAdFreeErr(uiError(t, err));
     } finally {
       setAdFreeBusy(false);
     }
@@ -357,7 +401,7 @@ export default function Settings() {
       }
       const [s, m] = await Promise.all([apiFetch('/api/shops/me'), apiFetch('/api/subscriptions/me')]);
       setShop(s.shop); setSub(m.subscription);
-    } catch (e) { setBillingMsg(e.message); }
+    } catch (e) { setBillingMsg(uiError(t, e)); }
   }
 
   async function savePayment() {
@@ -370,7 +414,7 @@ export default function Settings() {
       setPayForm((f) => ({ ...f, razorpay_key_secret: '', razorpay_webhook_secret: '' }));
       loadPayment();
       setPayMsg(t('set.paymentSaved'));
-    } catch (e) { setPayMsg(e.message); }
+    } catch (e) { setPayMsg(uiError(t, e)); }
   }
 
   async function testPayment() {
@@ -378,7 +422,7 @@ export default function Settings() {
     try {
       const r = await apiFetch('/api/shops/me/payment/test', { method: 'POST' });
       setPayMsg(r.ok === false ? t('set.connFailed', { err: r.error || t('set.connFailedKeys') }) : t('set.connOk'));
-    } catch (e) { setPayMsg(t('set.connFailed', { err: e.message })); }
+    } catch (e) { setPayMsg(t('set.connFailed', { err: uiError(t, e) })); }
   }
 
   async function saveDiscovery() {
@@ -398,7 +442,7 @@ export default function Settings() {
       });
       setShop(r.shop);
       setDiscoveryMsg(t('common.saved'));
-    } catch (e) { setDiscoveryMsg(e.message); }
+    } catch (e) { setDiscoveryMsg(uiError(t, e)); }
   }
 
   async function saveNameI18n(lang) {
@@ -412,7 +456,7 @@ export default function Settings() {
       });
       loadNameI18n();
       setNameI18nMsg(t('common.saved'));
-    } catch (e) { setNameI18nMsg(e.message); }
+    } catch (e) { setNameI18nMsg(uiError(t, e)); }
   }
 
   async function saveFulfillment() {
@@ -433,7 +477,7 @@ export default function Settings() {
       setShop(r.shop);
       setFul(fulFromShop(r.shop));
       setFulMsg(t('common.saved'));
-    } catch (e) { setFulMsg(e.message); }
+    } catch (e) { setFulMsg(uiError(t, e)); }
   }
 
   async function addFaq() {
@@ -448,7 +492,7 @@ export default function Settings() {
       setFaqForm({ question: '', answer: '', sort_order: '' });
       loadFaqs();
       setFaqMsg(t('common.saved'));
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   async function saveFaq(f) {
@@ -465,7 +509,7 @@ export default function Settings() {
       });
       loadFaqs();
       setFaqMsg(t('common.saved'));
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   async function deleteFaq(id) {
@@ -473,7 +517,7 @@ export default function Settings() {
     try {
       await apiFetch(`/api/shops/faqs/${id}`, { method: 'DELETE' });
       loadFaqs();
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   return (

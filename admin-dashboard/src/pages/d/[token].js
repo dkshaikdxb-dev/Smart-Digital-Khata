@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLang } from '../../lib/i18n';
+import { money as fmt } from '../../lib/money';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 // PUBLIC, no-login Delivery Champion page. The unguessable 32-hex token in the
 // URL IS the credential — it only ever shows/mutates THIS champion's own

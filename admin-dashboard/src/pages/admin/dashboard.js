@@ -5,6 +5,7 @@ import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { usePermissions } from '../../lib/adminPerms';
 import { exportCsv, exportPptx, exportChartPngs } from '../../lib/analyticsExport';
+import { moneyRounded } from '../../lib/money';
 
 // Admin "Khata Control Room" (Phase E, Batch L). One page that fetches the
 // aggregated, permission-filtered /api/admin/dashboard payload and lays it out
@@ -18,7 +19,7 @@ import { exportCsv, exportPptx, exportChartPngs } from '../../lib/analyticsExpor
 // sparklines/donuts + CSS bars. No chart library.
 
 // Money helpers: server sends integer paise; the UI shows grouped rupees.
-const rupees = (paise) => `₹${Math.round(Number(paise || 0) / 100).toLocaleString('en-IN')}`;
+const rupees = moneyRounded;
 const num = (n) => Number(n || 0).toLocaleString('en-IN');
 const pct = (v) => (v == null ? '—' : `${v}%`);
 

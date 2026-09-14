@@ -6,14 +6,15 @@ import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { nextStatus, stepsForOrder, currentStepIndex } from '../../lib/orderStatus';
 import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../../lib/orderEta';
+import { money as fmt } from '../../lib/money';
 // EDIT THE ORDER WHILE ACCEPTING (batch C). The draft/running-total helpers are
 // shared with the consumer PWA's rendering of the same audit rows.
 import {
   isEditable, draftFrom, decrement, removeLine, restoreLine, lineTotalFor,
   summarize, linesPayload, newRequestId, editLineText,
 } from '../../lib/orderEdit';
+import { uiError } from '../../lib/errorText';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 
 const statusColor = (s) => {
@@ -74,7 +75,7 @@ export default function OrderDetail() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    if (id) load().catch((e) => setError(e.message));
+    if (id) load().catch((e) => setError(uiError(t, e)));
     // Live ready-time chips. A failure is not worth an error banner — the
     // built-in defaults are perfectly usable and accepting keeps working.
     apiFetch('/api/orders/eta-config')
@@ -91,7 +92,7 @@ export default function OrderDetail() {
       await apiFetch(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
       await load();
       setMsg(t('ord.marked', { s: enumLabel('status', status) }));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
     finally { setBusy(false); }
   }
 
@@ -111,7 +112,7 @@ export default function OrderDetail() {
       setRejectReason('');
       await load();
       setMsg(t('orej.done'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
     finally { setBusy(false); }
   }
 
@@ -124,7 +125,7 @@ export default function OrderDetail() {
       await apiFetch(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify(body) });
       await load();
       setMsg(t('ord.marked', { s: enumLabel('status', 'accepted') }));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
     finally { setBusy(false); }
   }
 
@@ -161,7 +162,7 @@ export default function OrderDetail() {
       // pending order the accept chips below are exactly where the owner's eye
       // already is, and this line says so out loud.
       setJustEdited(true);
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
     finally { setBusy(false); }
   }
 
@@ -174,7 +175,7 @@ export default function OrderDetail() {
       setNeedMore(false);
       await load();
       setMsg(t('eta.sent'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
     finally { setBusy(false); }
   }
 

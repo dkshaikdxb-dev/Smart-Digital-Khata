@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
 import { useLang, canReadAloud, useLanguageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
+import { rupeesNumber } from '../lib/money';
 
 // Owner Help "lane A" (Phase F): the "Today at your shop" nudge cards on the
 // owner home. Reads the shop-scoped GET /api/insights/owner payload and renders
@@ -27,12 +28,7 @@ const TONE_COLOR = {
 
 // Integer paise → an Indian-grouped rupee number STRING (no ₹ — the template
 // carries the symbol). Whole rupees have no decimals; otherwise two places.
-function fmtRupees(paise) {
-  const r = Number(paise || 0) / 100;
-  return Number.isInteger(r)
-    ? r.toLocaleString('en-IN')
-    : r.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+const fmtRupees = rupeesNumber;
 
 export default function OwnerNudges() {
   const router = useRouter();

@@ -4,14 +4,13 @@ import DataSaverToggle from '../../components/DataSaverToggle';
 import { customerFetch } from '../../lib/customerApi';
 import { useLang } from '../../lib/i18n';
 import { useSpeech } from '../../lib/useSpeech';
+import { moneyAuto, spokenRupees } from '../../lib/money';
+import { uiError } from '../../lib/errorText';
 
-// Indian-grouped rupee from integer paise (spec: Intl.NumberFormat('en-IN')).
-// A whole-rupee advance/due reads without paise; otherwise 2 decimals.
-const INR = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
-function inr(paise) {
-  const rs = Number(paise || 0) / 100;
-  return `₹${INR.format(rs)}`;
-}
+// Indian-grouped rupee from integer paise. A whole-rupee advance/due reads
+// without paise; otherwise two decimals. This page had the CORRECT grouping
+// before the rest of the app did — moneyAuto is that behaviour, shared.
+const inr = moneyAuto;
 
 // My khata: cross-shop balances with a per-shop pay control. Positive balance =
 // the customer owes the shop; NEGATIVE = the shop owes the customer = an ADVANCE
@@ -24,9 +23,8 @@ export default function Khata() {
   const { ttsSupported, speak } = useSpeech();
 
   function sayBalance(s) {
-    const rs = Number(s.balance) / 100;
-    const amount = Number.isInteger(rs) ? String(rs) : rs.toFixed(2);
-    speak(t('voice.balanceSay', { name: s.shop_name, amount, rupees: t('voice.rupees') }));
+    // Spoken, so ungrouped: a voice reads "1,23,456" as a list of numbers.
+    speak(t('voice.balanceSay', { name: s.shop_name, amount: spokenRupees(s.balance), rupees: t('voice.rupees') }));
   }
   const [total, setTotal] = useState(0);
   const [shops, setShops] = useState([]);
@@ -45,7 +43,7 @@ export default function Khata() {
         setShops(r.shops || []);
         if (r.prepay) setPrepay({ enabled: !!r.prepay.enabled, max_advance_paise: Number(r.prepay.max_advance_paise || 0) });
       } catch (err) {
-        setError(err.message);
+        setError(uiError(t, err));
       } finally {
         setLoading(false);
       }
@@ -86,9 +84,13 @@ export default function Khata() {
         window.location.href = link;
         return;
       }
-      throw new Error(t('c.payStartFailed'));
+      // An authored sentence for this exact case; marked so the mapper hands
+      // it through instead of reading it as a transport failure.
+      const failed = new Error('payment start returned no link');
+      failed.userMessage = t('c.payStartFailed');
+      throw failed;
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
       setPaying('');
     }
   }

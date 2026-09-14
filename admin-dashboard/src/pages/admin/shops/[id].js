@@ -4,8 +4,8 @@ import Nav from '../../../components/Nav';
 import { apiFetch } from '../../../lib/api';
 import { useLang } from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/adminPerms';
+import { money as fmt } from '../../../lib/money';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function AdminShopDetail() {
   const router = useRouter();

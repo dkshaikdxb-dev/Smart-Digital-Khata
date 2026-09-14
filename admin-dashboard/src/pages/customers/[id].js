@@ -1,15 +1,18 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import DataTable from '../../components/DataTable';
 import StatementView from '../../components/StatementView';
 import Balance from '../../components/Balance';
+import ListState, { StaleNotice } from '../../components/ListState';
+import { useListLoad } from '../../lib/useListLoad';
 import { apiFetch } from '../../lib/api';
 import { enqueue, newClientRequestId } from '../../lib/outbox';
 import { useLang } from '../../lib/i18n';
 import { useSpeech, extractFirstNumber } from '../../lib/useSpeech';
+import { money as fmt, spokenRupees } from '../../lib/money';
+import { uiError } from '../../lib/errorText';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // Default statement range: last 90 days (YYYY-MM-DD).
@@ -36,27 +39,29 @@ export default function CustomerDetail() {
   const [stmtMsg, setStmtMsg] = useState('');
   const [newNum, setNewNum] = useState('');
 
-  const load = useCallback(async () => {
+  // This is the screen a shopkeeper opens to find out what one person owes. It
+  // is also served from the phone's own cache when the network is poor, so it
+  // has to be able to say that the figure on it is not live.
+  const list = useListLoad(async ({ load: get }) => {
+    if (typeof window === 'undefined') return;
+    if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
+    if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
+    if (!id) return;
     const qs = localized ? `?lang=${encodeURIComponent(lang)}` : '';
-    const r = await apiFetch(`/api/customers/${id}/ledger${qs}`);
+    const r = await get(`/api/customers/${id}/ledger${qs}`);
     setData(r);
     setEdit({
       name: r.customer.name,
       phone: r.customer.phone,
       credit_limit: (Number(r.customer.credit_limit) / 100).toString(),
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, lang, localized]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
-    if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
-    if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    if (id) load().catch((e) => setError(e.message));
-  }, [id, load, router]);
+  const load = list.reload;
 
-  if (error) return <Shell><div className="card" style={{ color: 'var(--danger)' }}>{error}</div></Shell>;
-  if (!data) return <Shell><div className="card">{t('common.loading')}</div></Shell>;
+  if (list.status !== 'ok' || !data) return <Shell><ListState state={list} /></Shell>;
 
   const c = data.customer;
 
@@ -83,7 +88,7 @@ export default function CustomerDetail() {
       // only offline/network failures — a real 4xx (e.g. credit limit) is shown.
       const offline = typeof err.status !== 'number'
         || (typeof navigator !== 'undefined' && navigator.onLine === false);
-      if (!offline) { setError(err.message); return; }
+      if (!offline) { setError(uiError(t, err)); return; }
       try {
         await enqueue({ url: '/api/transactions', method: 'POST', body, kind: 'transaction', label: c.name });
         // Optimistically reflect the entry so the ledger updates immediately.
@@ -102,7 +107,7 @@ export default function CustomerDetail() {
         } : d));
         setTx({ type: 'purchase', amount: '', note: '' });
         setMsg(t('off.savedWillSync'));
-      } catch (qerr) { setError(qerr.message); }
+      } catch (qerr) { setError(uiError(t, qerr)); }
     }
   }
 
@@ -119,7 +124,7 @@ export default function CustomerDetail() {
       });
       await load();
       setMsg(t('cust.updated'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   // Merge-aware number change. On a 409 (another customer here already has the
@@ -146,7 +151,7 @@ export default function CustomerDetail() {
         if (window.confirm(t('ocn.mergePrompt'))) { await changeNumber(true); }
         return;
       }
-      setError(err.message);
+      setError(uiError(t, err));
     }
   }
 
@@ -155,7 +160,7 @@ export default function CustomerDetail() {
     try {
       await apiFetch(`/api/notifications/remind/${id}`, { method: 'POST' });
       setMsg(t('cust.reminderSent'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   async function share() {
@@ -163,7 +168,7 @@ export default function CustomerDetail() {
     try {
       const r = await apiFetch(`/api/customers/${id}/share-link`, { method: 'POST', body: JSON.stringify({ send: true }) });
       window.prompt(r.sent ? t('customers.khataLinkSent') : t('customers.khataLinkShort'), r.link);
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   async function downloadStatement() {
@@ -171,14 +176,19 @@ export default function CustomerDetail() {
     try {
       const token = window.localStorage.getItem('skhata_token');
       const res = await fetch(`${API}/api/reports/customer/${id}/statement.csv`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        // Carry the status so the shared mapper can tell a 500 from "no signal".
+        const e = new Error(`HTTP ${res.status}`);
+        e.status = res.status;
+        throw e;
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `statement-${id}.csv`;
       document.body.appendChild(a); a.click(); a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   async function viewStatement() {
@@ -187,7 +197,7 @@ export default function CustomerDetail() {
     try {
       const r = await apiFetch(`/api/customers/${id}/statement?from=${stmtRange.from}&to=${stmtRange.to}`);
       setStmt(r.statement);
-    } catch (err) { setStmtMsg(err.message || t('stmt.loadError')); }
+    } catch (err) { setStmtMsg(uiError(t, err)); }
   }
 
   async function downloadStatementCsv() {
@@ -196,14 +206,19 @@ export default function CustomerDetail() {
     try {
       const token = window.localStorage.getItem('skhata_token');
       const res = await fetch(`${API}/api/customers/${id}/statement?from=${stmtRange.from}&to=${stmtRange.to}&format=csv`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        // Carry the status so the shared mapper can tell a 500 from "no signal".
+        const e = new Error(`HTTP ${res.status}`);
+        e.status = res.status;
+        throw e;
+      }
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `statement-${id}-${stmtRange.from}-to-${stmtRange.to}.csv`;
       document.body.appendChild(a); a.click(); a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) { setStmtMsg(err.message); }
+    } catch (err) { setStmtMsg(uiError(t, err)); }
   }
 
   async function printStatement() {
@@ -216,12 +231,16 @@ export default function CustomerDetail() {
     try {
       await apiFetch(`/api/customers/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'archived' }) });
       router.push('/customers');
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   return (
     <Shell>
       <button className="secondary" onClick={() => router.push('/customers')} style={{ marginBottom: 12 }}>← {t('nav.customers')}</button>
+
+      {/* The balance below may have come off this phone rather than the shop's
+          books. If it did, say so, and say when — and offer to go and ask. */}
+      {list.fromCache && <StaleNotice cachedAt={list.cachedAt} onRefresh={list.refresh} />}
 
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -239,9 +258,8 @@ export default function CustomerDetail() {
                 className="secondary"
                 style={{ marginTop: 8 }}
                 onClick={() => {
-                  const rs = Number(c.balance) / 100;
-                  const amount = Number.isInteger(rs) ? String(rs) : rs.toFixed(2);
-                  speak(t('voice.balanceSay', { name: c.name, amount, rupees: t('voice.rupees') }));
+                  // Spoken, so ungrouped: a voice reads the commas aloud.
+                  speak(t('voice.balanceSay', { name: c.name, amount: spokenRupees(c.balance), rupees: t('voice.rupees') }));
                 }}
                 aria-label={t('voice.speak')}
                 title={t('voice.speak')}

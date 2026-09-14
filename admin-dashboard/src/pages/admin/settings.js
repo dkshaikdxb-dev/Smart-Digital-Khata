@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import ConfirmTyped, { CONFIRM_PHRASE } from '../../components/ConfirmTyped';
 import { apiFetch } from '../../lib/api';
+import { moneyAuto } from '../../lib/money';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -10,9 +11,11 @@ const API = process.env.NEXT_PUBLIC_API_URL || '';
 // The session's runtime features live in platform_settings and are edited here.
 // Money is integer paise under the hood: amounts show/edit as ₹ and are ×100 on
 // save. Booleans are the plain feature switches; percents are the referral split.
-const INR = new Intl.NumberFormat('en-IN');
 const toRupees = (paise) => (Math.round(Number(paise) || 0)) / 100;
 const toPaise = (rupees) => Math.round((Number(rupees) || 0) * 100);
+// The RUPEE_KEYS live in this form's state as RUPEES (toRupees on load), so the
+// summary line converts back to paise before the shared formatter renders it.
+const rs = (rupees) => moneyAuto(toPaise(rupees));
 
 // Plain feature switches (default ON except where noted).
 const TOGGLE_KEYS = [
@@ -726,8 +729,8 @@ export default function AdminSettings() {
                   {rupeeInput('delivery_champion_fee_paise', 'Delivery champion fee')}
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>
-                  Promo {`₹${INR.format(feat.shop_promo_credits_per_day_paise)}`}/day · branded {`₹${INR.format(feat.branded_store_credits_per_day_paise)}`}/day · ad-free {`₹${INR.format(feat.storefront_ad_free_credits_per_day_paise)}`}/day ·
-                  prepay cap {`₹${INR.format(feat.consumer_prepay_max_advance_paise)}`} · delivery {`₹${INR.format(feat.delivery_champion_fee_paise)}`}
+                  Promo {rs(feat.shop_promo_credits_per_day_paise)}/day · branded {rs(feat.branded_store_credits_per_day_paise)}/day · ad-free {rs(feat.storefront_ad_free_credits_per_day_paise)}/day ·
+                  prepay cap {rs(feat.consumer_prepay_max_advance_paise)} · delivery {rs(feat.delivery_champion_fee_paise)}
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={savePricing}>Save pricing</button>

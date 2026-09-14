@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import DistNav from '../../components/DistNav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 // Guard: distributors only. Owners/staff go to /dashboard, admins to /admin.
 function guard(router) {
@@ -29,7 +30,7 @@ export default function DistributorDemandBoard() {
       const r = await apiFetch('/api/demand-board');
       setPosts(r.demand_posts || []);
     } catch (e) {
-      setError(e.message);
+      setError(uiError(t, e));
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ export default function DistributorDemandBoard() {
       }
       await load();
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
       await load(); // a 409 means someone else claimed it — refresh the board
     } finally {
       setClaiming('');

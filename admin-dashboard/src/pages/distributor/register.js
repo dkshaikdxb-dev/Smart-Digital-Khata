@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { FRESH_CATEGORY } from '../../lib/supplyConstants';
+import { signInError } from '../../lib/errorText';
 
 const toList = (str) => String(str || '').split(',').map((s) => s.trim()).filter(Boolean);
 
@@ -49,7 +50,7 @@ export default function DistributorRegister() {
       window.localStorage.setItem('skhata_role', 'distributor');
       router.push('/distributor');
     } catch (err) {
-      setError(err.message);
+      setError(signInError(t, err));
     } finally {
       setLoading(false);
     }

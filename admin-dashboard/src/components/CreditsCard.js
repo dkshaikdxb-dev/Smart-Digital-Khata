@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { money } from '../lib/money';
+import { uiError } from '../lib/errorText';
 
 // Khata Credits card (Batch R4) — the shopkeeper-facing view of the shop's
 // closed-loop loyalty/discount credit (NEVER cash, never withdrawable). Shows the
@@ -14,8 +16,7 @@ import { useLang } from '../lib/i18n';
 // effect), non-fatal on error (a failed fetch shows a small note; the referral
 // card next to it still shows the code/link), and degrades to an empty state
 // (all balances 0 until enrolment is enabled).
-const nf = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const rupees = (paise) => `₹${nf.format((Number(paise) || 0) / 100)}`;
+const rupees = money;
 
 // The by_role roles worth surfacing to the shopkeeper, in display order.
 const SOURCE_ROLES = ['referrer', 'chain_l1', 'chain_l2', 'referee', 'mitra', 'influencer'];
@@ -60,7 +61,7 @@ export default function CreditsCard() {
         if (w.status === 'fulfilled') setWallet(w.value);
         if (e.status === 'fulfilled') setEarnings(e.value);
         if (w.status !== 'fulfilled' && e.status !== 'fulfilled') {
-          setError((w.reason && w.reason.message) || t('credits.loadError'));
+          setError(uiError(t, w.reason, 'credits card'));
         }
         setLoading(false);
       });

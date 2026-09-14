@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { uiError } from '../lib/errorText';
 
 // Shop availability (batch A) — the SETTINGS half: the daily opening window and
 // the festival closures. The right-now switch and the pause chips live on Home
@@ -56,7 +57,7 @@ export default function ShopHoursCard() {
       setOpenTime(hm(r.shop.open_time));
       setCloseTime(hm(r.shop.close_time));
       setMsg(t('common.saved'));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 
@@ -72,7 +73,7 @@ export default function ShopHoursCard() {
       });
       setShop(r.shop);
       setMsg(t('common.saved'));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 
@@ -89,7 +90,7 @@ export default function ShopHoursCard() {
       setDate('');
       setReason('');
       setMsg(t('common.saved'));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 
@@ -99,7 +100,7 @@ export default function ShopHoursCard() {
     try {
       const r = await apiFetch(`/api/shops/me/closures/${id}`, { method: 'DELETE' });
       setClosures(r.closures || []);
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 

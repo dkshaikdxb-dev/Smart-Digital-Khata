@@ -4,6 +4,7 @@ import DistNav from '../../components/DistNav';
 import Balance from '../../components/Balance';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 const METHODS = ['cash', 'upi', 'bank', 'other'];
 
@@ -39,7 +40,7 @@ export default function DistributorShops() {
       const r = await apiFetch('/api/distributor/shops');
       setShops(r.shops || []);
     } catch (e) {
-      setError(e.message);
+      setError(uiError(t, e));
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export default function DistributorShops() {
       setTarget(null);
       await load();
     } catch (err) {
-      setModalErr(err.message);
+      setModalErr(uiError(t, err));
     } finally {
       setSaving(false);
     }

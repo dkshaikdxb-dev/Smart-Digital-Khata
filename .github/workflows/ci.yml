@@ -64,6 +64,12 @@ jobs:
       - name: Language gate tests
         working-directory: admin-dashboard
         run: npm run test:i18n
+      # The dashboard now has a jest suite. `next build` proves pages compile
+      # and server-render; it runs no effect, so it cannot tell a failed load
+      # from an empty one. These tests can, which is the whole point of them.
+      - name: Dashboard tests
+        working-directory: admin-dashboard
+        run: npm test
       - name: Build
         working-directory: admin-dashboard
         env:

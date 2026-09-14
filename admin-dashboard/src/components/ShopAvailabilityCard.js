@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { availabilityLine, isOpen } from '../lib/shopOpen';
+import { uiError } from '../lib/errorText';
 
 // Shop availability (batch A) — the owner's HOME control, not a settings page.
 //
@@ -54,7 +55,7 @@ export default function ShopAvailabilityCard() {
         body: JSON.stringify({ is_open: next }),
       });
       setShop(r.shop);
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 
@@ -69,7 +70,7 @@ export default function ShopAvailabilityCard() {
         body: JSON.stringify({ minutes }),
       });
       setShop((s) => ({ ...s, paused_until: r.paused_until, availability: r.availability }));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
     finally { setBusy(false); }
   }
 

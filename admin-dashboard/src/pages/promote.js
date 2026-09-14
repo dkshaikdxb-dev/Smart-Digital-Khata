@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import { apiFetch, apiPost } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { money } from '../lib/money';
+import { uiError } from '../lib/errorText';
 
 // The default storefront accent the colour picker seeds when the owner has not set
 // one yet (a calm brand green). Any #RRGGBB the owner saves overrides it.
@@ -19,8 +21,7 @@ const DEFAULT_ACCENT = '#0a7e4f';
 // (never cash). SSR-safe (fetch only in the effect), non-fatal on error, with
 // loading + empty states. The Submit is disabled when the feature is off or the
 // balance is short.
-const nf = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const rupees = (paise) => `₹${nf.format((Number(paise) || 0) / 100)}`;
+const rupees = money;
 
 function fmtDate(v) {
   if (!v) return '';
@@ -110,7 +111,7 @@ export default function Promote() {
     const role = window.localStorage.getItem('skhata_role');
     if (role === 'admin') { router.replace('/admin'); return; }
     if (role === 'distributor') { router.replace('/distributor'); return; }
-    load().catch((e) => setError(e.message)).finally(() => setLoading(false));
+    load().catch((e) => setError(uiError(t, e))).finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -136,7 +137,7 @@ export default function Promote() {
       await load();
     } catch (err) {
       if (err && err.status === 402) setError(t('promo.lowBalance'));
-      else setError(err.message || t('promo.errGeneric'));
+      else setError(uiError(t, err));
     } finally {
       setBusy(false);
     }
@@ -167,7 +168,7 @@ export default function Promote() {
     } catch (err) {
       if (err && err.status === 409) setFreeError(t('promo.freeLimit'));
       else if (err && err.status === 403) setFreeError(t('promo.freeDisabledNote'));
-      else setFreeError(err.message || t('promo.errGeneric'));
+      else setFreeError(uiError(t, err));
     } finally {
       setFreeBusy(false);
     }
@@ -192,7 +193,7 @@ export default function Promote() {
       await load();
     } catch (err) {
       if (err && err.status === 402) setBError(t('brand.lowBalance'));
-      else setBError(err.message || t('brand.errGeneric'));
+      else setBError(uiError(t, err));
     } finally {
       setBBusy(false);
     }
@@ -210,7 +211,7 @@ export default function Promote() {
       setBMsg(t('brand.saved'));
       await load();
     } catch (err) {
-      setBError(err.message || t('brand.errGeneric'));
+      setBError(uiError(t, err));
     } finally {
       setSavingTheme(false);
     }

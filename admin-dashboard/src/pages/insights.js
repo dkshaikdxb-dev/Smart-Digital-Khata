@@ -3,9 +3,10 @@ import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { money as fmt } from '../lib/money';
+import { uiError } from '../lib/errorText';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const pct = (f) => `${(Number(f || 0) * 100).toFixed(1)}%`;
 
 const AGING = [
@@ -20,7 +21,12 @@ const AGING = [
 async function downloadCsv(path, filename) {
   const token = window.localStorage.getItem('skhata_token');
   const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    // Carry the status so the shared mapper can tell a 500 from "no signal".
+    const e = new Error(`HTTP ${res.status}`);
+    e.status = res.status;
+    throw e;
+  }
   const blob = await res.blob();
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -53,14 +59,14 @@ export default function Insights() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load(days).catch((e) => setError(e.message));
+    load(days).catch((e) => setError(uiError(t, e)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function changeDays(d) {
     setDays(d);
     setError('');
-    load(d).catch((e) => setError(e.message));
+    load(d).catch((e) => setError(uiError(t, e)));
   }
 
   async function download(path, filename) {
@@ -68,7 +74,7 @@ export default function Insights() {
     try {
       await downloadCsv(path, filename);
       setMsg(t('ins.downloaded', { file: filename }));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   const agingTotal = aging ? Number(aging.total || 0) : 0;
