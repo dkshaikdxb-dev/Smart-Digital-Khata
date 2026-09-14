@@ -10,6 +10,7 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'testsecret';
 
 const app = require('../src/app');
 const { pool } = require('../src/config/db');
+const { restoreShippedTerms } = require('./helpers/catalogue-seed');
 const { refreshProductSearchText } = require('../src/utils/refresh-search-text');
 
 const withToken = (req, token) => req.set('Authorization', `Bearer ${token}`);
@@ -81,6 +82,9 @@ afterAll(async () => {
   if (listed) await pool.query('DELETE FROM shops WHERE id = $1', [listed.id]);
   if (catalogItemId) await pool.query('DELETE FROM catalog_items WHERE id = $1', [catalogItemId]);
   await pool.query("DELETE FROM catalog_i18n WHERE term_en = 'Salt' AND lang = 'hi'");
+  // 'Salt' is a real master term with shipped translations; restore the
+  // committed row this suite overwrote and then deleted.
+  await restoreShippedTerms(['Salt']);
   await pool.end();
 });
 

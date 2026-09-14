@@ -19,6 +19,7 @@ const app = require('../src/app');
 const { pool } = require('../src/config/db');
 const { refreshProductSearchText } = require('../src/utils/refresh-search-text');
 const { CATALOG, QUERIES, CATEGORIES } = require('./fixtures/search-eval-set');
+const { restoreShippedTerms } = require('./helpers/catalogue-seed');
 
 // key -> seeded products.id, filled during seeding; the eval matches recall by
 // this stable product id (never by display name, which localization can change).
@@ -93,6 +94,11 @@ afterAll(async () => {
   for (const item of CATALOG) {
     await pool.query("DELETE FROM catalog_i18n WHERE term_type = 'product' AND term_en = $1", [item.term_en]);
   }
+  // Four of the eval terms (Salt, Tea, Sugar, Toor Dal) are real master terms
+  // that ship with translations, which the staging above overwrote and the
+  // delete above removed. Put the committed rows back so later suites see the
+  // catalogue the migrate path loaded.
+  await restoreShippedTerms(CATALOG.map((i) => i.term_en));
   await pool.end();
 });
 

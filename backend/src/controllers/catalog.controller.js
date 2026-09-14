@@ -2,25 +2,21 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { refreshProductSearchText } = require('../utils/refresh-search-text');
+const { resolveCatalogueLang } = require('../utils/language-registry');
 
 // Display name shown to owners/customers, assembled from the base item's parts.
 function displayName({ brand, product, pack }) {
   return [brand, product, pack].filter(Boolean).join(' ');
 }
 
-// Languages the owner catalogue can be browsed/searched in. 'en' is the base
-// language: it uses the plain English catalog_items with NO i18n join, so the
-// response shape and behaviour are exactly as before. Any other known lang
-// LEFT JOINs catalog_i18n for localized display + search (English fallback).
-const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
-
-// Resolve ?lang= to a known language, defaulting to 'en'. Unknown values fall
-// back to 'en' (base behaviour) rather than erroring — the catalogue must always
-// render.
-function resolveLang(raw) {
-  const lang = (raw || '').trim().toLowerCase();
-  return KNOWN_LANGS.has(lang) ? lang : 'en';
-}
+// Which languages the owner catalogue can be browsed/searched in is the
+// `languages` registry's call (has_catalogue), not a constant in this file — see
+// resolveCatalogueLang, which also defines the fallback: anything unknown or
+// without a localized catalogue resolves to 'en' rather than erroring, because
+// the catalogue must always render. 'en' is the base language: plain English
+// catalog_items with NO i18n join, so its behaviour is exactly as before; any
+// catalogue-capable lang LEFT JOINs catalog_i18n for localized display + search
+// (English fallback).
 
 // Visibility rule (applied inline in each query): a shop sees global items OR
 // its own custom items. Custom items default is_global=true, so in practice
@@ -64,7 +60,7 @@ exports.list = async (req, res) => {
   const search = (req.query.search || '').trim();
   const category = (req.query.category || '').trim();
   const subcategory = (req.query.subcategory || '').trim();
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
 
   let limit = parseInt(req.query.limit, 10);
@@ -182,7 +178,7 @@ exports.list = async (req, res) => {
  */
 exports.categories = async (req, res) => {
   const shopId = req.user.shopId;
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
 
   // When localizing, LEFT JOIN catalog_i18n for both the category and subcategory

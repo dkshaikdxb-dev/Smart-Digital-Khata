@@ -24,12 +24,18 @@ const selectBulkSchema = Joi.object({
 });
 
 // Query validation for the browse endpoints. Everything is optional so the
-// default (no query) behaves exactly as before; `lang` is validated against the
-// 7 known languages (default handled in the controller = 'en' = base behaviour).
-// unknown(true) keeps any other query keys untouched.
-const KNOWN_LANGS = ['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur'];
+// default (no query) behaves exactly as before.
+//
+// `lang` is deliberately NOT constrained to a list here. It used to be a copy of
+// the same seven codes the controllers hardcoded, which turned an owner asking
+// for the Bengali catalogue into a 400 — a validation error for a language the
+// app ships, activates and has 481 translated terms for. Which languages have a
+// localized catalogue is a fact about the data, it lives in the `languages`
+// registry, and the controller reads it there (resolveCatalogueLang), falling
+// back to 'en' for anything else. Mirrors public.routes, which already lets the
+// controller decide. unknown(true) keeps any other query keys untouched.
 const listQuerySchema = Joi.object({
-  lang: Joi.string().valid(...KNOWN_LANGS),
+  lang: Joi.string().max(8),
   search: Joi.string().allow(''),
   category: Joi.string().allow(''),
   subcategory: Joi.string().allow(''),
@@ -38,7 +44,7 @@ const listQuerySchema = Joi.object({
 }).unknown(true);
 
 const categoriesQuerySchema = Joi.object({
-  lang: Joi.string().valid(...KNOWN_LANGS),
+  lang: Joi.string().max(8),
 }).unknown(true);
 
 const customSchema = Joi.object({

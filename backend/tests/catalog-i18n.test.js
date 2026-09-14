@@ -147,9 +147,18 @@ describe('GET /api/catalog — en regression (shape unchanged)', () => {
     }
   });
 
-  it('rejects an unknown lang (400)', async () => {
+  it('degrades an unknown lang to the English base instead of rejecting it', async () => {
+    // This used to be a 400 from a Joi list of seven codes in catalog.routes.
+    // That list was a third copy of the frozen language set and it refused
+    // ?lang=bn — a language the app ships and has a full catalogue for. Which
+    // languages have a localized catalogue is now read from the registry, and
+    // anything else (a typo, a staged code, a language with no catalogue yet)
+    // falls back to English, exactly as every public catalogue path already did.
     const res = await withToken(request(app).get('/api/catalog?lang=zz'), tokenA);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    const rice = res.body.items.find((i) => i.id === riceItem.id);
+    expect(rice.display_name).toBe(`India Gate ${tag} Sona Masuri Rice 1 kg`);
+    expect(rice).not.toHaveProperty('display_name_local');
   });
 });
 

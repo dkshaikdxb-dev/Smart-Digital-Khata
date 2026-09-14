@@ -1,6 +1,7 @@
 const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { normalizeQuery } = require('../utils/search-normalize');
+const { resolveCatalogueLang } = require('../utils/language-registry');
 const { pickStorefrontCampaign } = require('./promos.controller');
 // Shop availability (batch A) — the ONE definition every surface derives from.
 // Nothing in this file re-implements "is the shop open"; it only joins, reads
@@ -25,12 +26,11 @@ const {
 // user input), so it is safe as a numeric literal in the SET statement.
 const WORD_SIM_THRESHOLD = 0.5;
 
-// Languages the consumer catalogue can be viewed in. 'en' is the base language:
-// it uses the plain English products.name with NO i18n join, so the response
-// shape and behaviour are exactly as before. Any other known lang LEFT JOINs
-// catalog_i18n for a localized product name (English fallback). Mirrors
-// catalog.controller's resolveLang (owner catalogue) so both paths agree.
-const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
+// Which languages the consumer catalogue can be viewed in is the `languages`
+// registry's call (has_catalogue), not a constant in this file — see
+// resolveCatalogueLang, which every catalogue path shares so none of them can
+// drift from the others again. 'en' is the base language: plain English
+// products.name with NO i18n join, so its behaviour is exactly as before.
 
 // Cap on owner photo slides composed into a storefront (mirrors the upload cap
 // in shop.controller MAX_SHOP_IMAGES; a defensive LIMIT on the public read).
@@ -71,14 +71,6 @@ const PUBLISHABLE_SHOP_SQL = (s = 's') =>
 // (see getShop). This is the storefront half of the rule above.
 const NOT_SUSPENDED_SQL = (s = 's') => `${s}.status <> 'suspended'`;
 
-// Resolve ?lang= to a known language, defaulting to 'en'. Unknown/absent values
-// fall back to 'en' (base behaviour) rather than erroring — the public
-// catalogue must always render.
-function resolveLang(raw) {
-  const lang = (raw || '').trim().toLowerCase();
-  return KNOWN_LANGS.has(lang) ? lang : 'en';
-}
-
 // Great-circle distance (km) between the query point and a shop's coords, via
 // the haversine formula (Earth radius 6371 km). Returns NULL when the shop has
 // no latitude/longitude (arithmetic with NULL yields NULL), so unlocated shops
@@ -100,7 +92,7 @@ exports.listShops = async (req, res) => {
   const { search, city, lat, lng, fulfillment } = req.query;
   const useDistance = lat !== undefined && lng !== undefined;
   const limit = Math.min(100, Math.max(1, req.query.limit || 50));
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
 
   // Availability (batch A). The live platform config is read ONCE here and
@@ -241,7 +233,7 @@ exports.searchProducts = async (req, res) => {
   const { q, city, lat, lng } = req.query;
   const useDistance = lat !== undefined && lng !== undefined;
   const limit = Math.min(50, Math.max(1, req.query.limit || 30));
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
 
   // Availability (batch A): a product row carries its shop, and that nested
@@ -414,7 +406,7 @@ exports.getShop = async (req, res) => {
 
   // Resolve the display language up front: it now governs the SHOP name too
   // (batch SHOPNAME), not just the per-product localization further down.
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveCatalogueLang(req.query.lang);
   const localized = lang !== 'en';
 
   // Localized SHOP name (batch SHOPNAME): for a non-'en' lang, LEFT JOIN

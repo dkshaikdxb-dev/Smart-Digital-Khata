@@ -1,11 +1,19 @@
 // Integration tests for the per-dimension language capability registry
-// (migration 0039). Verifies the public languages endpoint exposes the has_*
-// flags and that they reflect REAL coverage: bn/gu/mr are active (shown) but
-// have no localized catalogue and no real voice, so their catalogue/voice flags
-// come back false, while hi/ta (which do) come back true.
+// (migrations 0039 + 0075). Verifies the public languages endpoint exposes the
+// has_* flags and that they reflect REAL coverage — which is now derived from
+// the catalogue rows themselves rather than asserted here, so these tests state
+// the rule ("catalogue-capable exactly where the catalogue has rows") instead of
+// a list of codes that goes stale the next time a language is translated.
+//
+// This file used to seed two catalog_i18n rows of its own and re-run 0039's
+// UPDATE by hand, because the flags were a one-shot derivation and a fresh test
+// database had nothing to derive from. `npm run migrate` now loads the shipped
+// catalogue and the trigger keeps the flags in step, so there is nothing to
+// stage and nothing to clean up.
 //
 // Requires a real Postgres (DATABASE_URL) with migrations applied (incl.
-// 0022_languages, 0019_catalog_i18n and 0039_language_capabilities).
+// 0022_languages, 0019_catalog_i18n, 0039_language_capabilities and
+// 0075_catalogue_capability_is_derived).
 const request = require('supertest');
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret_test_secret_test_secret_abc';
@@ -13,32 +21,7 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret_test_secret_test
 const app = require('../src/app');
 const { pool } = require('../src/config/db');
 
-// The has_catalogue seed is data-driven off catalog_i18n. On a fresh test DB
-// that table is empty at migration time, so seed a couple of rows for hi/ta and
-// re-run the (idempotent, true-only) catalogue seed so hi/ta gain has_catalogue
-// while bn/gu/mr — which have zero catalog_i18n rows — correctly stay false.
-beforeAll(async () => {
-  await pool.query(
-    `INSERT INTO catalog_i18n (term_type, term_en, lang, name)
-     VALUES ('product', 'Rice', 'hi', 'चावल'),
-            ('product', 'Rice', 'ta', 'அரிசி')
-     ON CONFLICT (term_type, term_en, lang) DO NOTHING`
-  );
-  // Mirror the migration's true-only catalogue + search seeds so the flags
-  // reflect the rows just inserted (the migration ran before these rows existed).
-  await pool.query(
-    `UPDATE languages SET has_catalogue = true
-      WHERE code IN (SELECT DISTINCT lang FROM catalog_i18n) OR code = 'en'`
-  );
-  await pool.query(
-    `UPDATE languages SET has_search = true WHERE has_catalogue = true OR code = 'en'`
-  );
-});
-
 afterAll(async () => {
-  await pool.query(
-    `DELETE FROM catalog_i18n WHERE term_type='product' AND term_en='Rice' AND lang IN ('hi','ta')`
-  );
   await pool.end();
 });
 
@@ -69,19 +52,34 @@ describe('public GET /api/public/languages — capability flags', () => {
     }
   });
 
-  it('reports has_catalogue true where the catalogue has rows (hi/ta), false for bn/gu/mr', async () => {
+  it('reports has_catalogue exactly where the catalogue has rows', async () => {
     const res = await request(app).get('/api/public/languages');
     const by = Object.fromEntries(res.body.languages.map((l) => [l.code, l]));
 
+    // en is the English base — capable by definition, it needs no translations.
     expect(by.en.has_catalogue).toBe(true);
-    expect(by.hi.has_catalogue).toBe(true);
-    expect(by.ta.has_catalogue).toBe(true);
+
+    // For every other language shown, the flag must agree with the table. Stated
+    // as a rule rather than a list: the previous version of this test asserted
+    // bn/gu/mr were catalogue-less, which was true when it was written and
+    // quietly wrong from the day their 481 terms each landed.
+    const rows = await pool.query(
+      'SELECT DISTINCT lang FROM catalog_i18n WHERE lang <> $1',
+      ['en']
+    );
+    const withRows = new Set(rows.rows.map((r) => r.lang));
+    for (const l of res.body.languages) {
+      if (l.code === 'en') continue;
+      expect(l.has_catalogue).toBe(withRows.has(l.code));
+    }
+
+    // And the three whose translations this batch unlocked are among them.
     for (const c of ['bn', 'gu', 'mr']) {
-      expect(by[c].has_catalogue).toBe(false);
+      expect(by[c].has_catalogue).toBe(true);
     }
   });
 
-  it('keeps bn/gu/mr shown (active) despite lacking catalogue/voice', async () => {
+  it('keeps bn/gu/mr shown (active) despite lacking voice', async () => {
     const res = await request(app).get('/api/public/languages');
     const codes = res.body.languages.map((l) => l.code);
     for (const c of ['bn', 'gu', 'mr']) {

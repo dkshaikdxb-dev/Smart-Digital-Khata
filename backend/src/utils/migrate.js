@@ -3,6 +3,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { pool } = require('../config/db');
+const { importCatalogI18n } = require('./import-catalog-i18n');
 
 async function run() {
   const dir = path.join(__dirname, '..', '..', 'migrations');
@@ -35,6 +36,34 @@ async function run() {
     }
   }
   console.log('migrations complete');
+
+  // The shipped catalogue TRANSLATIONS are part of bringing a database up to
+  // date with the repo, not optional demo content, so they load here on the one
+  // path every environment already runs.
+  //
+  // They used to load only from `npm run import:catalog-i18n`, a manual script
+  // that scripts/deploy.sh never called, so a deployed database could hold the
+  // schema for localized catalogue names and none of the 4,000-odd rows that
+  // make it mean anything — and did, for the three languages whose translations
+  // landed after the last hand-run import. A one-off SQL migration would have
+  // repeated the mistake in a new place: it runs once, and the next language's
+  // translations would sit in the repo unloaded all over again.
+  //
+  // The importer UPSERTs by (term_type, term_en, lang) inside one transaction,
+  // so running it on every migrate is idempotent — on an up-to-date database it
+  // rewrites each row with its own value and changes nothing — and it is also
+  // how newly authored translations reach an existing deployment: add them to
+  // the seed, deploy, done.
+  console.log('-> loading catalogue translations (src/data/catalog-i18n.json)');
+  try {
+    const { upserted } = await importCatalogI18n();
+    console.log(`catalogue translations complete: ${upserted} rows upserted`);
+  } catch (err) {
+    console.error('x failed loading catalogue translations:', err.message);
+    await pool.end().catch(() => {});
+    process.exit(1);
+  }
+
   await pool.end();
 }
 

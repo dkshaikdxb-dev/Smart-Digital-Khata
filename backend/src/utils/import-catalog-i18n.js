@@ -3,7 +3,12 @@
  * Catalog i18n importer — loads the committed translation seed
  * (src/data/catalog-i18n.json) into `catalog_i18n`.
  *
+ * It runs as the last step of `npm run migrate` (see migrate.js), which is the
+ * path every environment already takes, and stays available on its own as
+ *
  *   npm run import:catalog-i18n
+ *
+ * for reloading the seed without touching the schema.
  *
  * This is REAL localisation data, not demo data, so it is allowed to run in
  * production WITHOUT FORCE_DEMO. It is idempotent and safe to re-run: each
@@ -53,30 +58,14 @@ async function importCatalogI18n({ rows, client } = {}) {
       }
     }
 
-    // Keep the language capability flags honest: a language HAS a localized
-    // catalogue exactly when it actually has catalog_i18n rows. Data-driven off
-    // the table we just wrote, so newly-loaded languages (e.g. bn/gu/mr) flip
-    // has_catalogue/has_search true automatically once their rows land — the
-    // one-time migration 0039 could not, having run before any such rows
-    // existed. True-only / additive (mirrors 0039's one-directional intent): we
-    // never delete catalogue rows, so a flag is never flipped back off. This
-    // deliberately does NOT touch is_active or audit_status — activation stays a
+    // Nothing here refreshes languages.has_catalogue / has_search. Those flags
+    // are derived from these very rows by the trigger migration 0075 installs on
+    // catalog_i18n, so they follow the writes above by construction — for this
+    // importer and equally for an admin tool, a migration or a hand-typed
+    // INSERT. Repeating the derivation here would give the same fact two owners
+    // that could disagree, which is how it went stale in the first place.
+    // Neither path touches is_active or audit_status: activation stays a
     // separate admin decision made after a native-speaker audit.
-    try {
-      await c.query(
-        `UPDATE languages SET has_catalogue = true, has_search = true, updated_at = NOW()
-           WHERE code = 'en' OR code IN (SELECT DISTINCT lang FROM catalog_i18n)`
-      );
-    } catch (err) {
-      // Tolerate only a missing languages table (shouldn't happen post-migrate);
-      // let any real SQL error surface so tests and callers see it.
-      if (err && err.code === '42P01') {
-        // 42P01 = undefined_table: languages registry not present; skip the flag
-        // refresh but keep the translation upserts.
-      } else {
-        throw err;
-      }
-    }
 
     return { upserted };
   };
