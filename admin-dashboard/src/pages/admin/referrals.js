@@ -4,6 +4,7 @@ import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { usePermissions } from '../../lib/adminPerms';
+import { money, moneyRounded } from '../../lib/money';
 
 // Platform-admin referrals analytics (Phase D): onboarding-source mix, signups
 // by type, top referrers, totals + accrued reward total, an offline
@@ -13,9 +14,9 @@ import { usePermissions } from '../../lib/adminPerms';
 // REF-MVP layer: an activation funnel (captured → activated), a reward rule
 // extended to three ₹ amounts (referrer / referee / Mitra bounty), and a Khata
 // Mitra section — create a shareable Mitra code and a leaderboard of Mitras.
-const rupees = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
+const rupees = money;
 // Compact ₹ with Indian grouping, used in the funnel/leaderboard bounty cells.
-const rupeesIn = (paise) => `₹${Math.round(Number(paise || 0) / 100).toLocaleString('en-IN')}`;
+const rupeesIn = moneyRounded;
 const pct = (num, den) => {
   const d = Number(den) || 0;
   if (d <= 0) return '0%';

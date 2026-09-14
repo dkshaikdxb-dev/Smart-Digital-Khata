@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import DistNav from '../../components/DistNav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 // Paise → editable rupee string; comma-joined string ⇄ trimmed array.
 const rupeeStr = (p) => String(Number(p || 0) / 100);
@@ -44,7 +45,7 @@ export default function DistributorAccount() {
           is_farmer: d.is_farmer === true || d.kind === 'farmer',
         });
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(uiError(t, e)));
   }, [router]);
 
   async function save(e) {
@@ -80,7 +81,7 @@ export default function DistributorAccount() {
       });
       setMsg(t('common.saved'));
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     } finally {
       setSaving(false);
     }

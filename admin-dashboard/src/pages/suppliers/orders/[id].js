@@ -5,8 +5,9 @@ import DataTable from '../../../components/DataTable';
 import { apiFetch } from '../../../lib/api';
 import { useLang } from '../../../lib/i18n';
 import { PO_PIPELINE, PO_TERMINAL, poStepIndex, poCanCancel } from '../../../lib/orderStatus';
+import { money as fmt } from '../../../lib/money';
+import { uiError } from '../../../lib/errorText';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function SupplierOrderDetail() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function SupplierOrderDetail() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    if (id) load().catch((e) => setError(e.message));
+    if (id) load().catch((e) => setError(uiError(t, e)));
   }, [id, load, router]);
 
   async function cancel() {
@@ -37,7 +38,7 @@ export default function SupplierOrderDetail() {
       await apiFetch(`/api/purchase-orders/${id}/cancel`, { method: 'POST' });
       await load();
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     } finally {
       setBusy(false);
     }

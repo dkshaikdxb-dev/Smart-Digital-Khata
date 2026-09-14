@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
 import { enqueue, newClientRequestId } from '../lib/outbox';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { money } from '../lib/money';
 import { useLang } from '../lib/i18n';
 
 export default function Transactions() {
@@ -19,25 +23,34 @@ export default function Transactions() {
   const [info, setInfo] = useState('');
   const [savedMsg, setSavedMsg] = useState('');
 
-  async function load() {
-    const qs = new URLSearchParams();
-    if (filter.customer_id) qs.set('customer_id', filter.customer_id);
-    if (filter.type) qs.set('type', filter.type);
-    const [tx, c] = await Promise.all([
-      apiFetch(`/api/transactions?${qs.toString()}`),
-      apiFetch('/api/customers'),
-    ]);
-    setItems(tx.items);
-    setCustomers(c.items);
-  }
+  // The filter selects are applied on "Apply", not on change, so they are read
+  // through a ref rather than being hook dependencies.
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
 
-  useEffect(() => {
+  const list = useListLoad(async ({ load }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load().catch((e) => setError(e.message));
+    const qs = new URLSearchParams();
+    if (filterRef.current.customer_id) qs.set('customer_id', filterRef.current.customer_id);
+    if (filterRef.current.type) qs.set('type', filterRef.current.type);
+    const [tx, c] = await Promise.all([
+      load(`/api/transactions?${qs.toString()}`),
+      load('/api/customers'),
+    ]);
+    setItems(tx.items || []);
+    setCustomers(c.items || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const load = list.reload;
+
+  function showFailure(err) {
+    logForSupport(err, 'transactions');
+    setError(friendlyError(t, err));
+  }
 
   async function create(e) {
     e.preventDefault();
@@ -60,7 +73,7 @@ export default function Transactions() {
       // Queue only offline/network failures; a real HTTP error (4xx) is shown.
       const offline = typeof err.status !== 'number'
         || (typeof navigator !== 'undefined' && navigator.onLine === false);
-      if (!offline) { setError(err.message); return; }
+      if (!offline) { showFailure(err); return; }
       try {
         await enqueue({ url: '/api/transactions', method: 'POST', body, kind: 'transaction' });
         // Optimistically prepend the entry to the visible history.
@@ -75,7 +88,7 @@ export default function Transactions() {
         }, ...prev]);
         setForm({ customer_id: form.customer_id, type: 'purchase', amount: '', note: '' });
         setSavedMsg(t('off.savedWillSync'));
-      } catch (qerr) { setError(qerr.message); }
+      } catch (qerr) { showFailure(qerr); }
     }
   }
 
@@ -95,11 +108,9 @@ export default function Transactions() {
       setInfo(t('tx.paymentLinkSent', { link: shared.link }));
       setRequest({ customer_id: request.customer_id, amount: '', note: '' });
     } catch (err) {
-      setError(err.message);
+      showFailure(err);
     }
   }
-
-  const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
   return (
     <div>
@@ -163,21 +174,23 @@ export default function Transactions() {
             </select>
             <button className="secondary" onClick={() => load()}>{t('common.apply')}</button>
           </div>
-          <DataTable
-            empty={t('tx.historyEmpty')}
-            columns={[
-              { key: 'created_at', label: t('common.when'), render: (row) => new Date(row.created_at).toLocaleString() },
-              { key: 'type', label: t('common.type'), render: (row) => <span className="badge">{txnLabel(row.type)}</span> },
-              { key: 'method', label: t('common.method'), render: (row) => txnLabel(row.method) },
-              { key: 'amount', label: t('common.amount'), align: 'right', render: (row) => (
-                <span style={{ color: row.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
-                  {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
-                </span>
-              ) },
-              { key: 'note', label: t('common.note'), render: (row) => row.note || '' },
-            ]}
-            rows={items}
-          />
+          <ListState state={list}>
+            <DataTable
+              empty={t('tx.historyEmpty')}
+              columns={[
+                { key: 'created_at', label: t('common.when'), render: (row) => new Date(row.created_at).toLocaleString() },
+                { key: 'type', label: t('common.type'), render: (row) => <span className="badge">{txnLabel(row.type)}</span> },
+                { key: 'method', label: t('common.method'), render: (row) => txnLabel(row.method) },
+                { key: 'amount', label: t('common.amount'), align: 'right', render: (row) => (
+                  <span style={{ color: row.type === 'purchase' ? 'var(--danger)' : 'var(--accent)' }}>
+                    {row.type === 'purchase' ? '+' : '−'}{money(row.amount)}
+                  </span>
+                ) },
+                { key: 'note', label: t('common.note'), render: (row) => row.note || '' },
+              ]}
+              rows={items}
+            />
+          </ListState>
         </div>
       </div>
     </div>

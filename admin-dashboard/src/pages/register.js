@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { track, getAttribution } from '../lib/analytics';
+import { signInError } from '../lib/errorText';
 
 export default function Register() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function Register() {
       window.localStorage.setItem('skhata_role', r.user.role);
       router.push('/dashboard');
     } catch (err) {
-      setError(err.message);
+      setError(signInError(t, err));
     }
   }
 

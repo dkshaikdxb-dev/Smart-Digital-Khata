@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { money as fmt } from '../../lib/money';
+import { uiError } from '../../lib/errorText';
+import { useLang } from '../../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function PayLanding() {
   const router = useRouter();
+  // This page has no chrome and no language switch, but the shopper's stored
+  // choice still applies — so the one sentence they may be shown is in it.
+  const { t } = useLang();
   const { orderId } = router.query;
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
@@ -14,13 +20,12 @@ export default function PayLanding() {
     fetch(`${API}/api/payments/orders/${orderId}/public`)
       .then((r) => r.json())
       .then((d) => setOrder(d.order))
-      .catch((e) => setError(e.message));
-  }, [orderId]);
+      .catch((e) => setError(uiError(t, e)));
+  }, [orderId, t]);
 
   if (error) return <Center><div className="card"><h2>Order not found</h2><p className="muted">{error}</p></div></Center>;
   if (!order) return <Center><div className="card">Loading…</div></Center>;
 
-  const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
   const paid = order.status === 'paid';
 
   return (

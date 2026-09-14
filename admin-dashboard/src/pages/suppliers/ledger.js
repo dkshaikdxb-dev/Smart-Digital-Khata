@@ -1,33 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import SupplierTabs from '../../components/SupplierTabs';
 import Balance from '../../components/Balance';
+import ListState from '../../components/ListState';
 import { apiFetch } from '../../lib/api';
+import { useListLoad } from '../../lib/useListLoad';
+import { friendlyError, logForSupport } from '../../lib/errorText';
+import { money } from '../../lib/money';
 import { useLang } from '../../lib/i18n';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function SupplierLedger() {
   const router = useRouter();
   const { t } = useLang();
   const [suppliers, setSuppliers] = useState([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState(null); // distributor_id whose entries are shown
   const [entries, setEntries] = useState([]);
   const [entriesBusy, setEntriesBusy] = useState(false);
 
-  useEffect(() => {
+  const list = useListLoad(async ({ load }) => {
     if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    apiFetch('/api/suppliers/ledger')
-      .then((r) => setSuppliers(r.suppliers || []))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [router]);
+    const r = await load('/api/suppliers/ledger');
+    setSuppliers(r.suppliers || []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function toggleEntries(distributorId) {
     if (openId === distributorId) { setOpenId(null); setEntries([]); return; }
@@ -38,7 +38,8 @@ export default function SupplierLedger() {
       const r = await apiFetch(`/api/suppliers/ledger?distributor_id=${encodeURIComponent(distributorId)}`);
       setEntries(r.entries || []);
     } catch (e) {
-      setError(e.message);
+      logForSupport(e, 'supplier ledger entries');
+      setError(friendlyError(t, e));
     } finally {
       setEntriesBusy(false);
     }
@@ -54,9 +55,10 @@ export default function SupplierLedger() {
 
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
 
-        {loading ? (
-          <div className="card">{t('common.loading')}</div>
-        ) : suppliers.length === 0 ? (
+        {/* "You don't owe any supplier right now" is a statement about money.
+            It must not be what a shopkeeper reads when the request failed. */}
+        <ListState state={list}>
+        {suppliers.length === 0 ? (
           <div className="card">{t('sup.ledgerEmpty')}</div>
         ) : (
           suppliers.map((s) => (
@@ -96,7 +98,7 @@ export default function SupplierLedger() {
                               {e.po_id ? <span className="muted"> · {t('sup.poRef')}</span> : null}
                             </td>
                             <td style={{ textAlign: 'right', color: e.type === 'supply' ? 'var(--danger)' : 'var(--accent)' }}>
-                              {e.type === 'supply' ? '+' : '−'}{fmt(e.amount_paise)}
+                              {e.type === 'supply' ? '+' : '−'}{money(e.amount_paise)}
                             </td>
                           </tr>
                         ))}
@@ -108,6 +110,7 @@ export default function SupplierLedger() {
             </div>
           ))
         )}
+        </ListState>
       </div>
     </div>
   );

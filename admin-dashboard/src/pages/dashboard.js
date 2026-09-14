@@ -9,6 +9,8 @@ import Balance from '../components/Balance';
 import ShopAvailabilityCard from '../components/ShopAvailabilityCard';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
+import { money as fmt } from '../lib/money';
+import { uiError } from '../lib/errorText';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -32,10 +34,9 @@ export default function Dashboard() {
     }
     Promise.all([apiFetch('/api/summaries/today'), apiFetch('/api/summaries/outstanding')])
       .then(([s, o]) => { setSummary(s); setOutstanding(o); })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(uiError(t, e)));
   }, [router]);
 
-  const fmt = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
 
   return (
     <div>

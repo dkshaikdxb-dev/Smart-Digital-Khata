@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useLang, canUseVoice, canReadAloud, useLanguageCapability } from '../lib/i18n';
 import { useSpeech } from '../lib/useSpeech';
+import { rupeesNumber } from '../lib/money';
 
 // Owner Help "lane C" (Batch J): a voice "Ask" on the owner home. The owner taps
 // the mic, SPEAKS a question and HEARS a one-line localized answer — built ONLY on
@@ -147,12 +148,7 @@ function resolveCustomer(transcript, customers) {
 
 // Integer paise → Indian-grouped rupee STRING (no ₹ — the answer template carries
 // the symbol). Whole rupees have no decimals; otherwise two places.
-function fmtRupees(paise) {
-  const r = Number(paise || 0) / 100;
-  return Number.isInteger(r)
-    ? r.toLocaleString('en-IN')
-    : r.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+const fmtRupees = rupeesNumber;
 
 export default function AskShop() {
   const { t, lang } = useLang();

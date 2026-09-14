@@ -8,6 +8,7 @@ import { useLang, canUseVoice, useLanguageCapability } from '../../lib/i18n';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { useVoiceSearch } from '../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../components/VoiceSearchHint';
+import { uiError } from '../../lib/errorText';
 
 // Cross-shop product search (Flipkart-style). Backed by the public endpoint
 // GET /api/public/products/search — active products in listed shops whose
@@ -58,7 +59,7 @@ export default function ProductSearch() {
       setProducts(r.products || []);
     } catch (err) {
       if (reqId !== reqIdRef.current) return;
-      setError(err.message);
+      setError(uiError(t, err));
       setProducts([]);
     } finally {
       if (reqId === reqIdRef.current) setLoading(false);

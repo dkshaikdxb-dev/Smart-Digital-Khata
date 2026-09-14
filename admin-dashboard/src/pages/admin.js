@@ -6,8 +6,8 @@ import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions } from '../lib/adminPerms';
+import { money as fmt } from '../lib/money';
 
-const fmt = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
 const ADMIN_ROLES = ['super', 'support', 'finance', 'moderation'];
 
 export default function PlatformAdmin() {

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import SupplierTabs from '../../components/SupplierTabs';
-import { apiFetch } from '../../lib/api';
+import ListState from '../../components/ListState';
+import { useListLoad } from '../../lib/useListLoad';
 import { useLang } from '../../lib/i18n';
 
 const PO_STATUSES = ['placed', 'confirmed', 'dispatched', 'delivered', 'cancelled'];
@@ -18,36 +19,25 @@ export default function SupplierOrders() {
   const { t } = useLang();
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('all');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
 
-  async function load(s) {
-    const st = s === undefined ? status : s;
-    setLoading(true);
-    setError('');
-    try {
-      const qs = st && st !== 'all' ? `?status=${encodeURIComponent(st)}` : '';
-      const r = await apiFetch(`/api/purchase-orders${qs}`);
-      setOrders(r.purchase_orders || []);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const statusRef = useRef('all');
 
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
     if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load('all');
+    const st = statusRef.current;
+    const qs = st && st !== 'all' ? `?status=${encodeURIComponent(st)}` : '';
+    const r = await get(`/api/purchase-orders${qs}`);
+    setOrders(r.purchase_orders || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function pick(s) {
     setStatus(s);
-    load(s);
+    statusRef.current = s;
+    list.reload();
   }
 
   return (
@@ -65,12 +55,13 @@ export default function SupplierOrders() {
               <button key={s} className={status === s ? '' : 'secondary'} onClick={() => pick(s)}>{t(`postatus.${s}`)}</button>
             ))}
           </div>
-          {error && <div style={{ color: 'var(--danger)', marginTop: 12 }}>{error}</div>}
         </div>
 
-        {loading ? (
-          <div className="card">{t('common.loading')}</div>
-        ) : orders.length === 0 ? (
+        {/* Loading, failed and empty used to overlap here: a rejected fetch
+            cleared the flag and left an empty list, so "No purchase orders yet"
+            sat under the error line. */}
+        <ListState state={list}>
+        {orders.length === 0 ? (
           <div className="card">{t('sup.ordersEmpty')}</div>
         ) : (
           orders.map((o) => (
@@ -93,6 +84,7 @@ export default function SupplierOrders() {
             </div>
           ))
         )}
+        </ListState>
       </div>
 
       <style jsx>{`

@@ -4,8 +4,9 @@ import DistNav from '../../../components/DistNav';
 import { apiFetch } from '../../../lib/api';
 import { useLang } from '../../../lib/i18n';
 import { PO_PIPELINE, PO_TERMINAL, poStepIndex, poNextStatus, poCanCancel } from '../../../lib/orderStatus';
+import { money as fmt } from '../../../lib/money';
+import { uiError } from '../../../lib/errorText';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 // Paise → an editable rupee string (0 renders as empty so the field starts blank).
 const rupeeStr = (p) => (Number(p) > 0 ? String(Number(p) / 100) : '');
 // A rupee string → integer paise.
@@ -41,7 +42,7 @@ export default function DistributorOrderDetail() {
 
   useEffect(() => {
     if (!guard(router)) return;
-    if (id) load().catch((e) => setError(e.message));
+    if (id) load().catch((e) => setError(uiError(t, e)));
   }, [id, load, router]);
 
   const items = (order && order.items) || [];
@@ -83,7 +84,7 @@ export default function DistributorOrderDetail() {
       await load();
       if (successMsg) setMsg(successMsg);
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     } finally {
       setBusy(false);
     }

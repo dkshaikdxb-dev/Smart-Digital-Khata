@@ -7,12 +7,10 @@ import CpwaThemeToggle from './CpwaThemeToggle';
 import CpwaLocationPicker from './CpwaLocationPicker';
 import { getCustomerToken } from '../lib/customerApi';
 
-const fmtRs = (paise) => `₹${(Number(paise || 0) / 100).toFixed(2)}`;
-
-// Money formatter shared across the customer pages. Money is paise everywhere.
-export function money(paise) {
-  return fmtRs(paise);
-}
+// Money formatter shared across the customer pages. Money is paise everywhere,
+// and the formatting itself lives in lib/money.js — this is only the name the
+// /c pages already import.
+export { money } from '../lib/money';
 
 // Guard hook: on gated pages, redirect to /c/login (preserving where the
 // customer wanted to go) when no customer token is present. Returns `true`

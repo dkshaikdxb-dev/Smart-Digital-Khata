@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
 import Balance from '../components/Balance';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { money } from '../lib/money';
 import { useLang } from '../lib/i18n';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Customers() {
   const router = useRouter();
@@ -20,19 +22,28 @@ export default function Customers() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
-  async function load() {
-    const qs = `?search=${encodeURIComponent(search)}${localized ? `&lang=${encodeURIComponent(lang)}` : ''}`;
-    const r = await apiFetch(`/api/customers${qs}`);
-    setItems(r.items);
-  }
+  // The search box is read at load time but must not re-run the query on every
+  // keystroke, so it is held in a ref rather than being a hook dependency.
+  const searchRef = useRef(search);
+  searchRef.current = search;
 
-  useEffect(() => {
+  const list = useListLoad(async ({ load }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load().catch((e) => setError(e.message));
+    const qs = `?search=${encodeURIComponent(searchRef.current)}${localized ? `&lang=${encodeURIComponent(lang)}` : ''}`;
+    const r = await load(`/api/customers${qs}`);
+    setItems(r.items || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
+  }, [lang, localized]);
+
+  // Write paths keep their own inline banner — a failed "add customer" must not
+  // blank the list that loaded fine — but the copy is authored, never err.message.
+  function showFailure(err) {
+    logForSupport(err, 'customers');
+    setError(friendlyError(t, err));
+  }
 
   async function create(e) {
     e.preventDefault();
@@ -43,8 +54,8 @@ export default function Customers() {
         body: JSON.stringify({ ...form, credit_limit: Math.round(Number(form.credit_limit) * 100) }),
       });
       setForm({ name: '', phone: '', credit_limit: 0 });
-      await load();
-    } catch (err) { setError(err.message); }
+      await list.reload();
+    } catch (err) { showFailure(err); }
   }
 
   async function toggleNotifications(c) {
@@ -54,8 +65,8 @@ export default function Customers() {
         method: 'PATCH',
         body: JSON.stringify({ notifications_enabled: !(c.notifications_enabled !== false) }),
       });
-      await load();
-    } catch (err) { setError(err.message); }
+      await list.reload();
+    } catch (err) { showFailure(err); }
   }
 
   async function shareKhata(c) {
@@ -63,7 +74,7 @@ export default function Customers() {
     try {
       const r = await apiFetch(`/api/customers/${c.id}/share-link`, { method: 'POST', body: JSON.stringify({ send: true }) });
       window.prompt(r.sent ? t('customers.khataLinkSent') : t('customers.khataLinkCopy'), r.link);
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   async function remindAll() {
@@ -72,7 +83,7 @@ export default function Customers() {
     try {
       const r = await apiFetch('/api/notifications/broadcast', { method: 'POST', body: JSON.stringify({ mode: 'outstanding' }) });
       setMsg(t('customers.remindersSent', { n: r.sent, s: r.sent === 1 ? '' : 's' }));
-    } catch (err) { setError(err.message); }
+    } catch (err) { showFailure(err); }
   }
 
   const open = (c) => router.push(`/customers/${c.id}`);
@@ -80,7 +91,7 @@ export default function Customers() {
   const columns = [
     { key: 'name', label: t('common.name'), render: (c) => <strong>{c.name_local || c.name}</strong> },
     { key: 'phone', label: t('common.phone') },
-    { key: 'credit_limit', label: t('common.creditLimit'), render: (c) => (Number(c.credit_limit) > 0 ? fmt(c.credit_limit) : '—') },
+    { key: 'credit_limit', label: t('common.creditLimit'), render: (c) => (Number(c.credit_limit) > 0 ? money(c.credit_limit) : '—') },
     { key: 'balance', label: t('common.balance'), render: (c) => <Balance paise={c.balance} /> },
     {
       key: 'alerts', label: t('customers.alerts'), render: (c) => (
@@ -119,13 +130,17 @@ export default function Customers() {
         <div className="card">
           <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
             <input placeholder={t('customers.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') load(); }} style={{ flex: 1, minWidth: 180 }} />
-            <button className="secondary" onClick={() => load()}>{t('common.search')}</button>
+              onKeyDown={(e) => { if (e.key === 'Enter') list.reload(); }} style={{ flex: 1, minWidth: 180 }} />
+            <button className="secondary" onClick={() => list.reload()}>{t('common.search')}</button>
             <button onClick={remindAll} title={t('customers.remindAllTitle')}>{t('customers.remindAll')}</button>
           </div>
           {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={items} onRowClick={open} empty={t('customers.empty')} />
+          {/* Loading, failed and genuinely-empty are three different answers.
+              Only the third of them may say "No customers yet". */}
+          <ListState state={list}>
+            <DataTable columns={columns} rows={items} onRowClick={open} empty={t('customers.empty')} />
+          </ListState>
         </div>
       </div>
     </div>

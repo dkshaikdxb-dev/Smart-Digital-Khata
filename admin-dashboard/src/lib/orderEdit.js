@@ -15,11 +15,18 @@
 // above the quantity the order already has. `restoreLine` only ever puts a line
 // back to what it started at.
 
-/** Integer paise as rupees. Matches the backend's order-customer-copy.rupees(). */
+import { formatPaise } from './money';
+
+/**
+ * Integer paise as rupees. Matches the backend's order-customer-copy.rupees().
+ * The formatting is the shared helper; the only thing kept here is this
+ * module's contract that a non-numeric input renders as nothing at all rather
+ * than as ₹0.00 — an order line with no price must not claim to be free.
+ */
 export function money(paise) {
   const n = Number(paise);
   if (!Number.isFinite(n)) return '';
-  return `₹${(n / 100).toFixed(2)}`;
+  return formatPaise(n);
 }
 
 /** The statuses at which an order may still be reduced — mirrors the API's 409. */

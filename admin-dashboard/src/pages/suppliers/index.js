@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import SupplierTabs from '../../components/SupplierTabs';
+import ListState from '../../components/ListState';
 import { apiFetch } from '../../lib/api';
+import { useListLoad } from '../../lib/useListLoad';
+import { friendlyError, logForSupport } from '../../lib/errorText';
+import { money } from '../../lib/money';
 import { useLang } from '../../lib/i18n';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 // A single blank PO line. catalog_item_id is intentionally never sent from the
 // owner side — the picker only prefills the free-text fields — so the backend
@@ -20,8 +22,6 @@ export default function Suppliers() {
   const [category, setCategory] = useState('');
   const [brand, setBrand] = useState('');
   const [kind, setKind] = useState(''); // '' | 'farmer'
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
 
   // Reorder modal state
   const [target, setTarget] = useState(null); // the supplier being ordered from
@@ -35,32 +35,30 @@ export default function Suppliers() {
   const [products, setProducts] = useState([]);
   const [pickSearch, setPickSearch] = useState('');
 
-  async function load(cat, br, kd) {
-    setLoading(true);
-    setError('');
-    try {
-      const params = new URLSearchParams();
-      if (cat) params.set('category', cat);
-      if (br) params.set('brand', br);
-      if (kd) params.set('kind', kd);
-      const qs = params.toString();
-      const r = await apiFetch(`/api/suppliers${qs ? `?${qs}` : ''}`);
-      setSuppliers(r.suppliers || []);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // The chips set the filters and then ask for a reload, so the current values
+  // are read through a ref rather than being hook dependencies.
+  const filtersRef = useRef({ cat: '', br: '', kd: '' });
 
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
     if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load('', '', '');
+    const { cat, br, kd } = filtersRef.current;
+    const params = new URLSearchParams();
+    if (cat) params.set('category', cat);
+    if (br) params.set('brand', br);
+    if (kd) params.set('kind', kd);
+    const qs = params.toString();
+    const r = await get(`/api/suppliers${qs ? `?${qs}` : ''}`);
+    setSuppliers(r.suppliers || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function load(cat, br, kd) {
+    filtersRef.current = { cat, br, kd };
+    return list.reload();
+  }
 
   // The set of category/brand chips comes from whatever suppliers the shop's
   // city returned — no separate taxonomy call needed.
@@ -155,7 +153,7 @@ export default function Suppliers() {
       setSent(t('sup.sent', { name: target.business_name }));
       setTarget(null);
     } catch (err) {
-      setModalErr(err.message);
+      logForSupport(err, 'supplier PO'); setModalErr(friendlyError(t, err));
     } finally {
       setSending(false);
     }
@@ -176,7 +174,7 @@ export default function Suppliers() {
         <SupplierTabs active="discover" />
 
         {sent && <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>{sent}</div>}
-        {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
+
 
         <div className="card">
           <div style={{ marginBottom: (allCategories.length > 0 || allBrands.length > 0) ? 12 : 0 }}>
@@ -215,9 +213,12 @@ export default function Suppliers() {
           )}
         </div>
 
-        {loading ? (
-          <div className="card">{t('common.loading')}</div>
-        ) : suppliers.length === 0 ? (
+        {/* This screen already had a loading flag, but the failure path fell
+            THROUGH it: a rejected fetch left suppliers empty, so the error line
+            and "No suppliers found for your city yet" appeared together. Only
+            one of the three can be on screen now. */}
+        <ListState state={list}>
+        {suppliers.length === 0 ? (
           <div className="card">
             <p style={{ margin: 0 }}>{category || brand || kind ? t('sup.filterEmpty') : t('sup.empty')}</p>
             {!(category || brand || kind) && <p className="muted" style={{ marginBottom: 0 }}>{t('sup.emptyHint')}</p>}
@@ -245,7 +246,7 @@ export default function Suppliers() {
                   </div>
                 )}
                 <div className="muted" style={{ marginTop: 8 }}>
-                  {t('sup.minOrder')}: {Number(s.min_order_paise) > 0 ? fmt(s.min_order_paise) : t('sup.noMinOrder')}
+                  {t('sup.minOrder')}: {Number(s.min_order_paise) > 0 ? money(s.min_order_paise) : t('sup.noMinOrder')}
                 </div>
                 <div style={{ marginTop: 12 }}>
                   <button onClick={() => openReorder(s)}>{t('sup.reorder')}</button>
@@ -254,6 +255,7 @@ export default function Suppliers() {
             ))}
           </div>
         )}
+        </ListState>
       </div>
 
       {target && (

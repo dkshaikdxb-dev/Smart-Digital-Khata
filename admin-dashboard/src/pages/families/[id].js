@@ -5,8 +5,9 @@ import DataTable from '../../components/DataTable';
 import Balance from '../../components/Balance';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { money as fmt } from '../../lib/money';
+import { uiError } from '../../lib/errorText';
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function FamilyDetail() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function FamilyDetail() {
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    if (id) load().catch((e) => setError(e.message));
+    if (id) load().catch((e) => setError(uiError(t, e)));
   }, [id, load, router]);
 
   if (error && !data) return <Shell><div className="card" style={{ color: 'var(--danger)' }}>{error}</div></Shell>;
@@ -62,7 +63,7 @@ export default function FamilyDetail() {
       setPick('');
       await load();
       setMsg(t('fam.memberAdded'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   async function removeMember(m) {
@@ -72,7 +73,7 @@ export default function FamilyDetail() {
       await apiFetch(`/api/families/${id}/members/${m.id}`, { method: 'DELETE' });
       await load();
       setMsg(t('fam.memberRemoved'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   async function remind() {
@@ -82,7 +83,7 @@ export default function FamilyDetail() {
       setMsg(r.sent
         ? t('fam.remindSent', { amt: fmt(r.combined_outstanding) })
         : t('fam.remindNotSent', { amt: fmt(r.combined_outstanding) }));
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(uiError(t, err)); }
   }
 
   return (

@@ -6,6 +6,7 @@ import { useLang } from '../lib/i18n';
 // The ONE-TAP ACCEPT chips (batch B), reused here so accepting from the banner
 // makes the ready-time promise in the same tap it answers the customer with.
 import { chipLabel, DEFAULT_CHIPS } from '../lib/orderEta';
+import { money, spokenRupees } from '../lib/money';
 
 // Repeating new-order alert, OWNER WEB CONSOLE (batch ORDERALERT). This is the
 // channel that ships on the next deploy with no app rebuild at all.
@@ -66,7 +67,7 @@ const BCP47 = {
 };
 
 function rupeesLabel(paise) {
-  return `₹${(Number(paise || 0) / 100).toFixed(2)}`;
+  return money(paise);
 }
 
 /**
@@ -252,7 +253,7 @@ export default function OrderAlert() {
       t('oalert.spoken', {
         name,
         n: Number(oldest.item_count) || 0,
-        amount: (Number(oldest.total || 0) / 100).toFixed(0),
+        amount: spokenRupees(oldest.total),
       }),
       lang
     );

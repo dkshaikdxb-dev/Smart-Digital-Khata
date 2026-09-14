@@ -8,6 +8,7 @@ import { etaState, formatClock } from '../../../lib/orderEta';
 // The shop's reduction, rendered from the SAME audit rows the owner sees
 // (batch C) — the customer must never just find a smaller number.
 import { editLineText } from '../../../lib/orderEdit';
+import { uiError } from '../../../lib/errorText';
 
 const LABELS = {
   pending: 'Pending',
@@ -46,7 +47,7 @@ export default function OrderDetail() {
       const r = await customerFetch(`/api/my/orders/${id}`);
       setOrder(r.order || r);
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ export default function OrderDetail() {
       const r = await customerFetch(`/api/my/orders/${id}/cancel`, { method: 'POST' });
       setOrder(r.order || r);
     } catch (err) {
-      setError(err.message);
+      setError(uiError(t, err));
     } finally {
       setCancelling(false);
     }

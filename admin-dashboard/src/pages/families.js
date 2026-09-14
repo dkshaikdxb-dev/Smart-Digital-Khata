@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { money } from '../lib/money';
 import { useLang } from '../lib/i18n';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 export default function Families() {
   const router = useRouter();
@@ -16,18 +18,17 @@ export default function Families() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
 
-  async function load() {
-    const r = await apiFetch('/api/families');
-    setItems(r.items || r.families || []);
-  }
-
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     if (window.localStorage.getItem('skhata_role') === 'admin') { router.replace('/admin'); return; }
     if (window.localStorage.getItem('skhata_role') === 'distributor') { router.replace('/distributor'); return; }
-    load().catch((e) => setError(e.message));
+    const r = await get('/api/families');
+    setItems(r.items || r.families || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const load = list.reload;
 
   async function create(e) {
     e.preventDefault();
@@ -43,7 +44,7 @@ export default function Families() {
       setForm({ name: '', credit_limit: '' });
       await load();
       setMsg(t('fam.created'));
-    } catch (err) { setError(err.message); }
+    } catch (err) { logForSupport(err, 'families'); setError(friendlyError(t, err)); }
   }
 
   const open = (f) => router.push(`/families/${f.id}`);
@@ -55,9 +56,9 @@ export default function Families() {
     { key: 'name', label: t('fam.family'), render: (f) => <strong>{f.name}</strong> },
     { key: 'member_count', label: t('common.members'), render: (f) => Number(f.member_count || 0) },
     { key: 'combined_balance', label: t('fam.combinedOutstanding'), render: (f) => (
-      <span style={{ color: Number(f.combined_balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{fmt(f.combined_balance)}</span>
+      <span style={{ color: Number(f.combined_balance) > 0 ? 'var(--danger)' : 'var(--muted)' }}>{money(f.combined_balance)}</span>
     ) },
-    { key: 'credit_limit', label: t('common.limit'), render: (f) => (Number(f.credit_limit) > 0 ? fmt(f.credit_limit) : '—') },
+    { key: 'credit_limit', label: t('common.limit'), render: (f) => (Number(f.credit_limit) > 0 ? money(f.credit_limit) : '—') },
     { key: 'actions', label: t('common.actions'), align: 'right', render: (f) => (
       <span className="row-actions">
         <button className="secondary" onClick={(e) => { e.stopPropagation(); open(f); }}>{t('common.open')}</button>
@@ -87,7 +88,9 @@ export default function Families() {
           </div>
           {msg && <div className="muted" style={{ marginBottom: 10 }}>{msg}</div>}
           {error && <div style={{ color: 'var(--danger)', marginBottom: 10 }}>{error}</div>}
-          <DataTable columns={columns} rows={filtered} onRowClick={open} empty={t('fam.empty')} />
+          <ListState state={list}>
+            <DataTable columns={columns} rows={filtered} onRowClick={open} empty={t('fam.empty')} />
+          </ListState>
         </div>
       </div>
     </div>

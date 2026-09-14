@@ -26,10 +26,20 @@ export default function App({ Component, pageProps }) {
     el.setAttribute('dir', isRtl(lang) ? 'rtl' : 'ltr');
   }, [lang]);
 
+  // Register the service worker at a URL carrying THIS build's id. Next mints a
+  // fresh build id per `next build` and exposes it on __NEXT_DATA__, so the
+  // registration URL changes on every deploy: the browser sees a worker it has
+  // not installed before, and the new worker names its caches after the same id
+  // and sweeps the previous build's on activate. Nothing to remember to bump —
+  // which is exactly how the old hand-typed 'skhata-v2' went stale and started
+  // serving weeks-old balances.
   useEffect(() => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
+    if (!('serviceWorker' in navigator) || process.env.NODE_ENV !== 'production') return;
+    let buildId = 'dev';
+    try {
+      buildId = (window.__NEXT_DATA__ && window.__NEXT_DATA__.buildId) || 'dev';
+    } catch (e) { /* keep the fallback */ }
+    navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(buildId)}`).catch(() => {});
   }, []);
 
   // Load live translation overrides + the active language registry once on the

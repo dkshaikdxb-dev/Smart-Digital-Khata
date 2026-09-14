@@ -328,6 +328,10 @@ const PAGE = {
     'common.create': 'Create',
     'common.archive': 'Archive',
     'common.loading': 'Loading…',
+    'common.retry': 'Try again',
+    // Transcribed from 'content.refresh' further down this file, so the word on
+    // the stale-data notice is the word the platform pages already use.
+    'common.refresh': 'Refresh',
     'common.saved': 'Saved.',
     'common.none': 'none',
     'common.name': 'Name',
@@ -949,6 +953,11 @@ const PAGE = {
     'common.create': 'बनाएं',
     'common.archive': 'संग्रह करें',
     'common.loading': 'लोड हो रहा है…',
+    // TRANSCRIBED, not translated: 'common.retry' is copied verbatim from
+    // mobile-app/src/consumer/i18n.js, where a human wrote it for the native
+    // consumer app. 'common.refresh' is copied from 'content.refresh' below.
+    'common.retry': 'फिर कोशिश करें',
+    'common.refresh': 'रिफ़्रेश',
     'common.saved': 'सेव हो गया।',
     'common.none': 'कोई नहीं',
     'common.name': 'नाम',
@@ -8449,6 +8458,62 @@ const ORDEREDIT = {
 for (const code of Object.keys(ORDEREDIT)) {
   if (!DICT[code]) DICT[code] = {};
   Object.assign(DICT[code], ORDEREDIT[code]);
+}
+
+// WHAT A FAILURE SAYS (batch ROBUST) — the copy lib/errorText.js resolves, plus
+// the notice a screen shows when the figures on it came off this phone's own
+// cache rather than the network.
+//
+// Before this block the dashboard printed err.message: "Failed to fetch",
+// "HTTP 500", "jwt expired", "shop_suspended". The cases are deliberately kept
+// apart, because each one asks the shopkeeper to do something different.
+//
+// en is authored here. hi for the err.* keys is TRANSCRIBED, not translated:
+// every one of those sentences was written by a human for the native consumer
+// app and lives verbatim in mobile-app/src/consumer/i18n.js, so the same person
+// reads the same words on the phone app and the web. Three keys have NO Hindi
+// yet and fall through to English by design — 'err.suspended', 'stale.title'
+// and 'stale.line' are new sentences nobody has written in Hindi, and this is
+// money-adjacent copy; guessing at it is worse than the English fallback.
+// Every other language falls back to English here as it does elsewhere.
+const ERRTXT = {
+  en: {
+    'err.offline': 'No internet right now. Check your connection and try again.',
+    'err.slow': 'The network is too slow to finish that. Please try again.',
+    'err.server': 'Something went wrong at our end. Please try again in a moment.',
+    'err.signedOut': 'You have been signed out. Please sign in again.',
+    'err.suspended': 'This shop has been stopped by Smart Digital Khata. Please contact support.',
+    // The sign-in screen's own reading of 401 and 403 — see lib/errorText.js.
+    'err.signInRejected': 'That number, email or password is not right. Please check and try again.',
+    'err.accountStopped': 'This account has been stopped. Please contact support.',
+    'err.notAllowed': 'You cannot open this.',
+    'err.notFound': 'That is not available any more.',
+    'err.tooMany': 'Too many tries. Please wait a minute and try again.',
+    'err.badRequest': 'Something in that was not right. Please check and try again.',
+    'err.conflict': 'That could not be done just now. Please try again.',
+    'err.generic': 'Something went wrong. Please try again.',
+
+    // Money off the phone's own cache. Offline reads are a real feature here, so
+    // the answer is to LABEL the figure, never to hide it.
+    'stale.title': 'Shown from this phone',
+    'stale.line': 'These figures were last updated {when}. They may have changed since.',
+  },
+  hi: {
+    'err.offline': 'अभी इंटरनेट नहीं है। कनेक्शन देखकर फिर कोशिश करें।',
+    'err.slow': 'नेटवर्क बहुत धीमा है, काम पूरा नहीं हुआ। फिर कोशिश करें।',
+    'err.server': 'हमारी तरफ़ कुछ गड़बड़ हुई। थोड़ी देर में फिर कोशिश करें।',
+    'err.signedOut': 'आप लॉग आउट हो गए हैं। फिर से साइन इन करें।',
+    'err.notAllowed': 'आप इसे नहीं खोल सकते।',
+    'err.notFound': 'यह अब उपलब्ध नहीं है।',
+    'err.tooMany': 'बहुत बार कोशिश हुई। एक मिनट रुककर फिर कोशिश करें।',
+    'err.badRequest': 'कुछ सही नहीं था। जाँचकर फिर कोशिश करें।',
+    'err.conflict': 'यह अभी नहीं हो पाया। फिर कोशिश करें।',
+    'err.generic': 'कुछ गड़बड़ हो गई। फिर कोशिश करें।',
+  },
+};
+for (const code of Object.keys(ERRTXT)) {
+  if (!DICT[code]) DICT[code] = {};
+  Object.assign(DICT[code], ERRTXT[code]);
 }
 
 // The English plural suffix token {s} (e.g. "{n} item{s}") has no equivalent in

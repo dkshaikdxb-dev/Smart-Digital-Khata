@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import DistNav from '../../components/DistNav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
+import { uiError } from '../../lib/errorText';
 
 const PO_STATUSES = ['placed', 'confirmed', 'dispatched', 'delivered', 'cancelled'];
 
@@ -39,7 +40,7 @@ export default function DistributorHome() {
       const r = await apiFetch(`/api/distributor/orders${qs}`);
       setOrders(r.orders || []);
     } catch (e) {
-      setError(e.message);
+      setError(uiError(t, e));
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { customerFetch, getCustomerToken, publicFetch } from '../../lib/customer
 import { loadCart, saveCart, clearCart, cartTotals, getActiveShopId, lineTotalPaise } from '../../lib/customerCart';
 import { useLang } from '../../lib/i18n';
 import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen';
+import { uiError } from '../../lib/errorText';
 
 // Human label for a weight in grams: "250 g" or "1 kg".
 function gramsLabel(g) {
@@ -170,9 +171,9 @@ export default function Cart() {
     } catch (err) {
       // A 409 `shop_closed` is a normal answer, not a crash: say WHY the shop is
       // shut and when it reopens instead of dumping the raw error code. Anything
-      // else surfaces the server's own message (e.g. a rejected minimum order).
+      // else goes through the shared mapper, which also lands on a sentence.
       const closed = shopClosedMessage(t, err, lang);
-      setError(closed || err.message);
+      setError(closed || uiError(t, err));
       // Re-fetch the storefront so the banner/disabled button match the refusal.
       if (closed && activeShopId) {
         publicFetch(`/api/public/shops/${activeShopId}`)

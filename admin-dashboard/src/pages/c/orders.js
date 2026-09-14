@@ -5,6 +5,7 @@ import { customerFetch } from '../../lib/customerApi';
 import { useLang } from '../../lib/i18n';
 import { waitingHintKey } from '../../lib/orderStatus';
 import { etaState, formatClock } from '../../lib/orderEta';
+import { uiError } from '../../lib/errorText';
 
 const STATUS_LABELS = {
   pending: 'Pending',
@@ -38,7 +39,7 @@ export default function Orders() {
         const r = await customerFetch('/api/my/orders');
         setItems(r.items || r.orders || []);
       } catch (err) {
-        setError(err.message);
+        setError(uiError(t, err));
       } finally {
         setLoading(false);
       }

@@ -4,6 +4,7 @@ import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { useLang } from '../../lib/i18n';
 import { usePermissions } from '../../lib/adminPerms';
+import { moneyAuto } from '../../lib/money';
 
 // Seasonal + geo referral campaigns desk (batch CAMP1). A campaign OVERRIDES the
 // default referral reward for a window + place + audience, hard-capped by a
@@ -18,8 +19,7 @@ const STATUSES = ['draft', 'active', 'paused', 'ended'];
 const REWARD_TYPES = ['multiplier', 'flat_override'];
 
 // ₹ with Indian grouping from integer paise.
-const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
-const rupees = (paise) => `₹${inr.format((Number(paise) || 0) / 100)}`;
+const rupees = moneyAuto;
 
 function toDateInput(iso) {
   if (!iso) return '';

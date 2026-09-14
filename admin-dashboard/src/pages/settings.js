@@ -6,6 +6,8 @@ import DataSaverToggle from '../components/DataSaverToggle';
 import ImageStudio from '../components/ImageStudio';
 import { apiFetch, apiPost } from '../lib/api';
 import { useLang, LANGS } from '../lib/i18n';
+import { uiError } from '../lib/errorText';
+import { money as fmt } from '../lib/money';
 
 // The multipart cover upload needs the raw API base (apiFetch is JSON-only and
 // would clobber the multipart boundary). Same base + token key as lib/api.js.
@@ -15,11 +17,9 @@ const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${A
 // Display name for a language code (native script), for the shop-name-i18n panel.
 const langName = (code) => (LANGS.find((l) => l.code === code)?.name || code);
 
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
+// The Khata-Credits card shows the same rupee as every other screen.
+const rupees = fmt;
 
-// Indian-grouped rupees for the Khata-Credits card (mirrors promote.js).
-const nf = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const rupees = (paise) => `₹${nf.format((Number(paise) || 0) / 100)}`;
 function fmtDate(v) {
   if (!v) return '';
   const d = new Date(v);
@@ -211,7 +211,7 @@ export default function Settings() {
       }
       setCopyMsg(t('set.linkCopied'));
     } catch (e) {
-      setCopyMsg(e.message);
+      setCopyMsg(uiError(t, e));
     }
   }
 
@@ -231,7 +231,7 @@ export default function Settings() {
       });
       setShop(r.shop);
       setMsg(t('common.saved'));
-    } catch (e) { setMsg(e.message); }
+    } catch (e) { setMsg(uiError(t, e)); }
   }
 
   // Repeating new-order alert (batch ORDERALERT): save the three shop-level
@@ -252,7 +252,7 @@ export default function Settings() {
       const clamped = Number(r.shop.order_alert_repeat_minutes) !== wanted.order_alert_repeat_minutes
         || Number(r.shop.order_alert_max_repeats) !== wanted.order_alert_max_repeats;
       setAlertMsg(clamped ? t('oalert.setClamped') : t('common.saved'));
-    } catch (e) { setAlertMsg(e.message); }
+    } catch (e) { setAlertMsg(uiError(t, e)); }
     finally { setAlertBusy(false); }
   }
 
@@ -265,7 +265,7 @@ export default function Settings() {
       const r = await apiFetch('/api/orders/alerts/mute', { method: 'POST', body: JSON.stringify({ minutes }) });
       setShop((s) => ({ ...s, order_alert_muted_until: r.muted_until }));
       setAlertMsg(t('common.saved'));
-    } catch (e) { setAlertMsg(e.message); }
+    } catch (e) { setAlertMsg(uiError(t, e)); }
     finally { setAlertBusy(false); }
   }
 
@@ -299,7 +299,7 @@ export default function Settings() {
       setPhotoMsg(body.status === 'pending_review' ? t('set.photoUploadedPending') : t('common.saved'));
       loadPhotos();
     } catch (e) {
-      setPhotoMsg(e.message);
+      setPhotoMsg(uiError(t, e));
     } finally {
       setPhotoBusy(false);
     }
@@ -312,7 +312,7 @@ export default function Settings() {
       setPhotosFull(false);
       loadPhotos();
     } catch (e) {
-      setPhotoMsg(e.message);
+      setPhotoMsg(uiError(t, e));
     }
   }
 
@@ -336,7 +336,7 @@ export default function Settings() {
       loadAdFree();
     } catch (err) {
       if (err && err.status === 402) setAdFreeErr(t('adfree.lowBalance'));
-      else setAdFreeErr(err.message || t('adfree.errGeneric'));
+      else setAdFreeErr(uiError(t, err));
     } finally {
       setAdFreeBusy(false);
     }
@@ -357,7 +357,7 @@ export default function Settings() {
       }
       const [s, m] = await Promise.all([apiFetch('/api/shops/me'), apiFetch('/api/subscriptions/me')]);
       setShop(s.shop); setSub(m.subscription);
-    } catch (e) { setBillingMsg(e.message); }
+    } catch (e) { setBillingMsg(uiError(t, e)); }
   }
 
   async function savePayment() {
@@ -370,7 +370,7 @@ export default function Settings() {
       setPayForm((f) => ({ ...f, razorpay_key_secret: '', razorpay_webhook_secret: '' }));
       loadPayment();
       setPayMsg(t('set.paymentSaved'));
-    } catch (e) { setPayMsg(e.message); }
+    } catch (e) { setPayMsg(uiError(t, e)); }
   }
 
   async function testPayment() {
@@ -378,7 +378,7 @@ export default function Settings() {
     try {
       const r = await apiFetch('/api/shops/me/payment/test', { method: 'POST' });
       setPayMsg(r.ok === false ? t('set.connFailed', { err: r.error || t('set.connFailedKeys') }) : t('set.connOk'));
-    } catch (e) { setPayMsg(t('set.connFailed', { err: e.message })); }
+    } catch (e) { setPayMsg(t('set.connFailed', { err: uiError(t, e) })); }
   }
 
   async function saveDiscovery() {
@@ -398,7 +398,7 @@ export default function Settings() {
       });
       setShop(r.shop);
       setDiscoveryMsg(t('common.saved'));
-    } catch (e) { setDiscoveryMsg(e.message); }
+    } catch (e) { setDiscoveryMsg(uiError(t, e)); }
   }
 
   async function saveNameI18n(lang) {
@@ -412,7 +412,7 @@ export default function Settings() {
       });
       loadNameI18n();
       setNameI18nMsg(t('common.saved'));
-    } catch (e) { setNameI18nMsg(e.message); }
+    } catch (e) { setNameI18nMsg(uiError(t, e)); }
   }
 
   async function saveFulfillment() {
@@ -433,7 +433,7 @@ export default function Settings() {
       setShop(r.shop);
       setFul(fulFromShop(r.shop));
       setFulMsg(t('common.saved'));
-    } catch (e) { setFulMsg(e.message); }
+    } catch (e) { setFulMsg(uiError(t, e)); }
   }
 
   async function addFaq() {
@@ -448,7 +448,7 @@ export default function Settings() {
       setFaqForm({ question: '', answer: '', sort_order: '' });
       loadFaqs();
       setFaqMsg(t('common.saved'));
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   async function saveFaq(f) {
@@ -465,7 +465,7 @@ export default function Settings() {
       });
       loadFaqs();
       setFaqMsg(t('common.saved'));
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   async function deleteFaq(id) {
@@ -473,7 +473,7 @@ export default function Settings() {
     try {
       await apiFetch(`/api/shops/faqs/${id}`, { method: 'DELETE' });
       loadFaqs();
-    } catch (e) { setFaqMsg(e.message); }
+    } catch (e) { setFaqMsg(uiError(t, e)); }
   }
 
   return (

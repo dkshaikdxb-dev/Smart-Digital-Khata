@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { money as fmt } from '../../lib/money';
+import { uiError } from '../../lib/errorText';
+import { useLang } from '../../lib/i18n';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 // Public, read-only customer khata. No login — access via unguessable link.
 export default function PublicKhata() {
   const router = useRouter();
+  // No chrome here either, but the reader's stored language still applies.
+  const { t } = useLang();
   const { token } = router.query;
   const [khata, setKhata] = useState(null);
   const [error, setError] = useState('');
@@ -15,12 +19,19 @@ export default function PublicKhata() {
     if (!token) return;
     fetch(`${API}/api/public/khata/${token}`)
       .then((r) => {
-        if (!r.ok) throw new Error('This khata link is invalid or has been replaced by the shop.');
+        if (!r.ok) {
+          // A dead link is its own answer, and this sentence says more than any
+          // of the status-based ones would. It is kept, and marked so the
+          // mapper hands it straight through.
+          const dead = new Error('This khata link is invalid or has been replaced by the shop.');
+          dead.userMessage = dead.message;
+          throw dead;
+        }
         return r.json();
       })
       .then((d) => setKhata(d.khata))
-      .catch((e) => setError(e.message));
-  }, [token]);
+      .catch((e) => setError(uiError(t, e)));
+  }, [token, t]);
 
   if (error) {
     return (

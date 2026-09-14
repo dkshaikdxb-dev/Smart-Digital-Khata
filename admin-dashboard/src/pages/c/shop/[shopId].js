@@ -10,6 +10,7 @@ import { availabilityLine, isOpen } from '../../../lib/shopOpen';
 import { useVoiceSearch } from '../../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../../components/VoiceSearchHint';
 import ShopCarousel from '../../../components/ShopCarousel';
+import { uiError } from '../../../lib/errorText';
 
 // Quick-pick weight chips (grams) offered for loose/weighed items.
 const WEIGHT_CHIPS = [250, 500, 1000];
@@ -61,7 +62,7 @@ export default function ShopCatalog() {
         setProducts(s.products || r.products || []);
         setCart(loadCart(shopId) || { shop_id: shopId, shop_name: s.name, items: {} });
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) setError(uiError(t, err));
       } finally {
         if (!cancelled) setLoading(false);
       }

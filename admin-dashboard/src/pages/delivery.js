@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
+import ListState from '../components/ListState';
 import { apiFetch } from '../lib/api';
+import { useListLoad } from '../lib/useListLoad';
+import { friendlyError, logForSupport } from '../lib/errorText';
+import { money } from '../lib/money';
 import { useLang } from '../lib/i18n';
-
-const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
 // Build the champion's no-login link from THIS origin so a copied link always
 // points at the /d/[token] page the shopkeeper is looking at (the backend also
@@ -32,24 +34,28 @@ export default function Delivery() {
   const [assign, setAssign] = useState({}); // orderId -> { champion_id, fee }
   const [error, setError] = useState('');
 
-  async function load() {
-    const [c, o] = await Promise.all([
-      apiFetch('/api/delivery/champions'),
-      apiFetch('/api/delivery/orders'),
-    ]);
-    setChampions(c.items || []);
-    setOrders(o.items || []);
-  }
-
-  useEffect(() => {
+  const list = useListLoad(async ({ load: get }) => {
+    if (typeof window === 'undefined') return;
     if (!window.localStorage.getItem('skhata_token')) { router.replace('/login'); return; }
     const role = window.localStorage.getItem('skhata_role');
     if (role === 'admin') { router.replace('/admin'); return; }
     if (role === 'distributor') { router.replace('/distributor'); return; }
     if (role === 'staff') { router.replace('/orders'); return; } // owner-only page
-    load().catch((e) => setError(e.message));
+    const [c, o] = await Promise.all([
+      get('/api/delivery/champions'),
+      get('/api/delivery/orders'),
+    ]);
+    setChampions(c.items || []);
+    setOrders(o.items || []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const load = list.reload;
+
+  function showFailure(err) {
+    logForSupport(err, 'delivery');
+    setError(friendlyError(t, err));
+  }
 
   async function addChampion(e) {
     e.preventDefault();
@@ -67,7 +73,7 @@ export default function Delivery() {
       });
       setForm({ name: '', phone: '', area: '' });
       await load();
-    } catch (err) { setError(err.message || t('dlv.errGeneric')); }
+    } catch (err) { showFailure(err); }
     finally { setAdding(false); }
   }
 
@@ -80,7 +86,7 @@ export default function Delivery() {
         body: JSON.stringify({ is_active: !c.is_active }),
       });
       await load();
-    } catch (err) { setError(err.message || t('dlv.errGeneric')); }
+    } catch (err) { showFailure(err); }
     finally { setBusy(null); }
   }
 
@@ -107,7 +113,7 @@ export default function Delivery() {
       if (a.fee !== undefined && a.fee !== '') body.fee_paise = Math.round(Number(a.fee) * 100);
       await apiFetch('/api/delivery/assign', { method: 'POST', body: JSON.stringify(body) });
       await load();
-    } catch (err) { setError(err.message || t('dlv.errGeneric')); }
+    } catch (err) { showFailure(err); }
     finally { setBusy(null); }
   }
 
@@ -152,7 +158,10 @@ export default function Delivery() {
         {/* Champions list */}
         <div className="card">
           <h3 style={{ marginTop: 0 }}>{t('dlv.champions')}</h3>
-          {champions.length === 0 ? (
+          {/* Both lists come from the one load, so the loading and failure copy
+              lives here once and the orders card below stays quiet. */}
+          <ListState state={list}>
+            {champions.length === 0 ? (
             <div className="muted">{t('dlv.noChampions')}</div>
           ) : (
             <div className="grid">
@@ -183,11 +192,13 @@ export default function Delivery() {
               ))}
             </div>
           )}
+          </ListState>
         </div>
 
         {/* Delivery orders */}
         <div className="card">
           <h3 style={{ marginTop: 0 }}>{t('dlv.orders')}</h3>
+          <ListState state={list} silent>
           {orders.length === 0 ? (
             <div className="muted">{t('dlv.noOrders')}</div>
           ) : (
@@ -198,7 +209,7 @@ export default function Delivery() {
                   <div key={o.order_id} className="card" style={{ margin: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                       <strong>{o.customer_name || '—'}</strong>
-                      <span>{fmt(o.total)}</span>
+                      <span>{money(o.total)}</span>
                     </div>
                     {o.customer_phone && <div className="muted">{o.customer_phone}</div>}
                     {o.address && <div className="muted">{o.address}</div>}
@@ -243,6 +254,7 @@ export default function Delivery() {
               })}
             </div>
           )}
+          </ListState>
         </div>
       </div>
     </div>
