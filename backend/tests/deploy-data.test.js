@@ -157,20 +157,25 @@ describe('npm run migrate loads the shipped product data', () => {
   // is run by every environment including production — it may never invent a
   // shop, an owner or a money row.
   it('does not create demo users, shops or transactions', async () => {
-    const before = await pool.query(
-      `SELECT (SELECT COUNT(*)::int FROM users) AS users,
-              (SELECT COUNT(*)::int FROM shops) AS shops,
-              (SELECT COUNT(*)::int FROM transactions) AS tx`
-    );
+    // Everything here is measured as a DELTA across the migrate, never as an
+    // absolute count. The claim is "migrate adds no demo data", and that has to
+    // hold on a database that legitimately already HAS demo data — which is
+    // exactly the state an owner is in after setting SEED_DEMO_DATA=true. An
+    // absolute `=== 0` reads as this control only because the database it
+    // usually meets happens to be empty, so it passes for the wrong reason and
+    // fails for the wrong reason, which is how a control stops being trusted.
+    const counts = () =>
+      pool.query(
+        `SELECT (SELECT COUNT(*)::int FROM users) AS users,
+                (SELECT COUNT(*)::int FROM shops) AS shops,
+                (SELECT COUNT(*)::int FROM transactions) AS tx,
+                (SELECT COUNT(*)::int FROM users
+                  WHERE email LIKE 'store%@demo.local') AS demo_owners`
+      );
+    const before = await counts();
     runNode(MIGRATE_JS);
-    const after = await pool.query(
-      `SELECT (SELECT COUNT(*)::int FROM users) AS users,
-              (SELECT COUNT(*)::int FROM shops) AS shops,
-              (SELECT COUNT(*)::int FROM transactions) AS tx`
-    );
+    const after = await counts();
     expect(after.rows[0]).toEqual(before.rows[0]);
-    const demo = await pool.query("SELECT COUNT(*)::int AS n FROM users WHERE email LIKE 'store%@demo.local'");
-    expect(demo.rows[0].n).toBe(0);
   }, 300000);
 });
 
