@@ -88,6 +88,17 @@ function normalizeError(error) {
   // those survive the normalization. The message is unchanged.
   e.code = (data && data.error) || null;
   e.details = (data && data.details) || null;
+  // Keep the TRANSPORT part of the failure too. A request that never reached
+  // the server carries no status and no code, so without this tag a screen
+  // cannot tell "you have no signal" from "the shop's server is slow" from "we
+  // cancelled this ourselves because you kept typing" — and it ends up showing
+  // the raw axios text ("Network Error", "timeout of 15000ms exceeded") to a
+  // shopper. lib/errorText.js maps this to an authored sentence.
+  if (axios.isCancel && axios.isCancel(error)) e.transport = 'cancelled';
+  else if (error.code === 'ERR_CANCELED') e.transport = 'cancelled';
+  else if (error.code === 'ECONNABORTED' || /timeout/i.test(String(error.message))) e.transport = 'timeout';
+  else if (!error.response) e.transport = 'offline';
+  else e.transport = null;
   return e;
 }
 
@@ -146,6 +157,20 @@ export const publicApi = {
   shop: (shopId, lang) => {
     const q = lang ? `?lang=${encodeURIComponent(String(lang))}` : '';
     return api.get(`/api/public/shops/${shopId}${q}`).then((r) => r.data);
+  },
+  // GET /api/public/products/search?q=&lang=&limit= -> { products:[{...,shop:{...}}] }
+  // Cross-shop product search — the SAME endpoint the web PWA's /c/products
+  // page uses, so both surfaces rank and localize identically. `signal` lets a
+  // caller abort a superseded request instead of paying for it on 2G; the
+  // rejection then carries transport 'cancelled' and is silently dropped.
+  searchProducts: ({ q, lang, limit, signal } = {}) => {
+    const params = new URLSearchParams();
+    params.set('q', String(q == null ? '' : q).trim());
+    if (lang) params.set('lang', String(lang));
+    params.set('limit', String(limit || 30));
+    return api
+      .get(`/api/public/products/search?${params.toString()}`, signal ? { signal } : undefined)
+      .then((r) => r.data);
   },
 };
 

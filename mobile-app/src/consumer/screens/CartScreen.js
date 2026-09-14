@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, Image, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform,
+  View, Text, ScrollView, Pressable, StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { colors, sizes } from '../theme';
-import { Card, Field, Button, ErrorBanner, Empty } from '../components';
+import { Card, Field, Button, ErrorBanner, Empty, Loading } from '../components';
+import ProductThumb from '../components/ProductThumb';
 import { money } from '../money';
-import { publicApi, my, resolveImageUrl } from '../consumerApi';
+import { publicApi, my } from '../consumerApi';
+import { friendlyError } from '../lib/errorText';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen';
@@ -13,19 +15,6 @@ import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen'
 function gramsLabel(g) {
   const n = Number(g) || 0;
   return n % 1000 === 0 ? `${n / 1000} kg` : `${n} g`;
-}
-
-// Small line thumbnail; neutral placeholder when the item has no image.
-function LineThumb({ uri }) {
-  const [failed, setFailed] = useState(false);
-  if (uri && !failed) {
-    return <Image source={{ uri }} style={styles.lineThumb} resizeMode="cover" onError={() => setFailed(true)} />;
-  }
-  return (
-    <View style={[styles.lineThumb, styles.lineThumbPlaceholder]}>
-      <Text style={styles.lineThumbGlyph}>🛍️</Text>
-    </View>
-  );
 }
 
 // Priority 4 — review the in-memory cart and place the order via POST /my/orders.
@@ -94,11 +83,23 @@ export default function CartScreen({ navigation }) {
   const shopOpen = isOpen(shop && shop.availability);
   const closedLine = shopOpen ? '' : availabilityLine(t, shop.availability, lang);
 
+  // The saved basket is still being read off disk. Showing the empty-basket
+  // illustration here would tell a shopper with ten items that they have none —
+  // which, until the cart was persisted at all, is exactly what happened every
+  // time Android reclaimed the app.
+  if (cart.restoring) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Loading text={t('cart.restoring')} />
+      </ScrollView>
+    );
+  }
+
   if (!cart.cart || cart.count === 0) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Empty icon="🛒" text={t('cart.empty')}>
-          <Button title={t('cart.browse')} onPress={() => navigation.navigate('ShopsList')} />
+          <Button title={t('cart.browse')} onPress={() => navigation.navigate('ShopsTab', { screen: 'ShopsList' })} />
         </Empty>
       </ScrollView>
     );
@@ -142,10 +143,13 @@ export default function CartScreen({ navigation }) {
       }
     } catch (err) {
       // A 409 `shop_closed` is a normal answer, not a crash: say WHY the shop is
-      // shut and when it reopens instead of dumping a raw error code. Anything
-      // else surfaces the server's own message unchanged.
+      // shut and when it reopens instead of dumping a raw error code.
       const closed = shopClosedMessage(t, err, lang);
-      setError(closed || err.message);
+      // shopClosedMessage is the one refusal stated in words the shopper needs
+      // verbatim (why it is shut, when it reopens). Everything else becomes an
+      // authored sentence — never the server's own text, which on this screen
+      // was the last thing standing between a shopper and a raw stack message.
+      setError(closed || friendlyError(t, err));
       // Re-fetch the storefront so the banner and the disabled button below
       // match the refusal the server just gave.
       if (closed && activeShopId) {
@@ -185,7 +189,7 @@ export default function CartScreen({ navigation }) {
         <Card>
           {cart.lines.map((l) => (
             <View key={l.product_id} style={styles.line}>
-              <LineThumb uri={resolveImageUrl(l.image_url)} />
+              <ProductThumb product={l} size={48} style={styles.lineThumb} />
               <View style={styles.lineInfo}>
                 <Text style={styles.lineName}>{l.name}</Text>
                 <Text style={styles.lineSub}>
@@ -290,21 +294,22 @@ const styles = StyleSheet.create({
   shopName: { color: colors.text, fontSize: 18, fontWeight: '800' },
   line: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 8,
+    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border, gap: 8,
   },
-  lineThumb: { width: 44, height: 44, borderRadius: 10, backgroundColor: colors.cardAlt },
-  lineThumbPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  lineThumbGlyph: { fontSize: 20 },
+  lineThumb: { marginRight: 2 },
   lineInfo: { flex: 1 },
   lineName: { color: colors.text, fontSize: 15, fontWeight: '600' },
   lineSub: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
   lineTotal: { color: colors.text, fontSize: 15, fontWeight: '700', minWidth: 70, textAlign: 'right' },
-  removeBtn: { width: 36, height: 36, borderRadius: 8, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  removeText: { color: colors.text, fontSize: 16 },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  stepBtn: { width: 34, height: 34, borderRadius: 8, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  stepText: { color: colors.text, fontSize: 20, fontWeight: '800' },
-  qty: { color: colors.text, fontSize: 16, fontWeight: '800', minWidth: 26, textAlign: 'center' },
+  // EVERY control on this row changes what the shopper pays, and every one of
+  // them was under the 44px floor (34px steppers, a 36px remove). The app's own
+  // token is 52; 44 is the minimum these get.
+  removeBtn: { width: 44, height: 44, borderRadius: 10, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  removeText: { color: colors.text, fontSize: 18 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  stepBtn: { width: 44, height: 44, borderRadius: 10, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  stepText: { color: colors.text, fontSize: 22, fontWeight: '800' },
+  qty: { color: colors.text, fontSize: 17, fontWeight: '800', minWidth: 28, textAlign: 'center' },
   totRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
   totLabel: { color: colors.textMuted, fontSize: 15 },
   totVal: { color: colors.text, fontSize: 15, fontWeight: '600' },
@@ -314,7 +319,7 @@ const styles = StyleSheet.create({
   label: { color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 10 },
   segRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   seg: {
-    flexGrow: 1, minHeight: 48, borderRadius: sizes.radius, borderWidth: 1, borderColor: colors.border,
+    flexGrow: 1, minHeight: sizes.tap, borderRadius: sizes.radius, borderWidth: 1, borderColor: colors.border,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14,
   },
   segActive: { backgroundColor: colors.accent, borderColor: colors.accent },

@@ -77,7 +77,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   barText: { color: colors.textMuted, fontSize: 13, flex: 1 },
-  doneBtn: { paddingHorizontal: 20, minHeight: 40 },
+  // This sits on the payment screen and is how a shopper leaves it, so it is
+  // as money-related as a control gets: 44px minimum, not 40.
+  doneBtn: { paddingHorizontal: 20, minHeight: 44 },
   web: { flex: 1, backgroundColor: '#ffffff' },
   overlay: {
     position: 'absolute',

@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { colors } from './theme';
 import { LanguageProvider, useT } from './i18n';
-import { CartProvider } from './CartContext';
+import { CartProvider, useCart } from './CartContext';
 import { ConsumerAuthContext } from './ConsumerAuthContext';
 import { getToken, setToken, clearToken, setUnauthorizedHandler } from './consumerApi';
 
@@ -19,6 +19,7 @@ import PayWebView from './screens/PayWebView';
 import ShopsScreen from './screens/ShopsScreen';
 import ShopDetailScreen from './screens/ShopDetailScreen';
 import CartScreen from './screens/CartScreen';
+import ProductSearchScreen from './screens/ProductSearchScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 import AccountScreen from './screens/AccountScreen';
@@ -28,6 +29,7 @@ const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const KhataStack = createNativeStackNavigator();
 const ShopsStack = createNativeStackNavigator();
+const CartStack = createNativeStackNavigator();
 const OrdersStack = createNativeStackNavigator();
 const AccountStack = createNativeStackNavigator();
 
@@ -54,10 +56,27 @@ function ShopsStackScreen() {
   return (
     <ShopsStack.Navigator screenOptions={stackScreenOptions}>
       <ShopsStack.Screen name="ShopsList" component={ShopsScreen} options={{ title: t('shops.title') }} />
+      {/* Cross-shop product search (P4), reached from the directory's product
+          bar and its category chips — the same entry points the web has. */}
+      <ShopsStack.Screen name="ProductSearch" component={ProductSearchScreen} options={{ title: t('psearch.title') }} />
       <ShopsStack.Screen name="ShopDetail" component={ShopDetailScreen} options={{ title: t('tab.shops') }} />
-      <ShopsStack.Screen name="Cart" component={CartScreen} options={{ title: t('cart.title') }} />
       <ShopsStack.Screen name="PayWebView" component={PayWebView} options={{ title: t('pay.title') }} />
     </ShopsStack.Navigator>
+  );
+}
+
+// The cart is a TAB now, not a screen buried in the Shops stack. It used to be
+// registered only there, reachable solely from the floating bar on the one
+// storefront it was built at: a shopper who added items and then tapped Khata
+// or Orders had no way back to their basket short of remembering which shop it
+// was and re-opening that storefront. That is an order lost to navigation.
+function CartStackScreen() {
+  const { t } = useT();
+  return (
+    <CartStack.Navigator screenOptions={stackScreenOptions}>
+      <CartStack.Screen name="CartHome" component={CartScreen} options={{ title: t('cart.title') }} />
+      <CartStack.Screen name="PayWebView" component={PayWebView} options={{ title: t('pay.title') }} />
+    </CartStack.Navigator>
   );
 }
 
@@ -87,22 +106,61 @@ function AccountStackScreen() {
 
 const tabIcon = (glyph) => ({ color }) => <Text style={{ fontSize: 20, color }}>{glyph}</Text>;
 
+// react-navigation renders a string label with numberOfLines={1}, which on a
+// 320dp phone truncates the longer Indic tab words to an ellipsis once there
+// are five tabs instead of four — and a truncated tab label is unreadable for
+// exactly the shoppers who most need the word. So the label is rendered here
+// instead: two lines allowed, a tighter line height, and a slightly smaller
+// face. The web's tab bar needed the same explicit wrapping help in CSS at six
+// tabs; this is the native equivalent.
+const tabLabel = (text) => ({ color }) => (
+  <Text
+    numberOfLines={2}
+    ellipsizeMode="tail"
+    style={{ fontSize: 11, lineHeight: 14, fontWeight: '600', color, textAlign: 'center', paddingHorizontal: 2 }}
+  >
+    {text}
+  </Text>
+);
+
 function SignedInTabs() {
   const { t } = useT();
+  const cart = useCart();
+  // The badge mirrors the web's: the live item count, capped at 99+. It is the
+  // only thing on screen that says "you still have a basket" once the shopper
+  // has navigated away from the shop they built it at.
+  const cartCount = cart && cart.count > 0 ? cart.count : 0;
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border, height: 62, paddingBottom: 8, paddingTop: 6 },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        // Taller than before: five tabs mean narrower columns, and a two-line
+        // Indic label needs the vertical room the fourth tab never asked for.
+        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border, height: 72, paddingBottom: 8, paddingTop: 6 },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
+        tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.onAccent, fontWeight: '800' },
       }}
     >
-      <Tab.Screen name="KhataTab" component={KhataStackScreen} options={{ title: t('tab.khata'), tabBarIcon: tabIcon('📒') }} />
-      <Tab.Screen name="ShopsTab" component={ShopsStackScreen} options={{ title: t('tab.shops'), tabBarIcon: tabIcon('🏪') }} />
-      <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: t('tab.orders'), tabBarIcon: tabIcon('📦') }} />
-      <Tab.Screen name="AccountTab" component={AccountStackScreen} options={{ title: t('tab.account'), tabBarIcon: tabIcon('👤') }} />
+      <Tab.Screen name="KhataTab" component={KhataStackScreen} options={{ title: t('tab.khata'), tabBarLabel: tabLabel(t('tab.khata')), tabBarIcon: tabIcon('📒') }} />
+      <Tab.Screen name="ShopsTab" component={ShopsStackScreen} options={{ title: t('tab.shops'), tabBarLabel: tabLabel(t('tab.shops')), tabBarIcon: tabIcon('🏪') }} />
+      <Tab.Screen
+        name="CartTab"
+        component={CartStackScreen}
+        options={{
+          title: t('tab.cart'),
+          tabBarLabel: tabLabel(t('tab.cart')),
+          tabBarIcon: tabIcon('🛒'),
+          tabBarBadge: cartCount > 0 ? (cartCount > 99 ? '99+' : cartCount) : undefined,
+          // The badge is a visual count; a screen reader gets it in words.
+          tabBarAccessibilityLabel: cartCount > 0
+            ? `${t('tab.cart')}, ${t('shops.itemsCount', { n: cartCount })}`
+            : t('tab.cart'),
+        }}
+      />
+      <Tab.Screen name="OrdersTab" component={OrdersStackScreen} options={{ title: t('tab.orders'), tabBarLabel: tabLabel(t('tab.orders')), tabBarIcon: tabIcon('📦') }} />
+      <Tab.Screen name="AccountTab" component={AccountStackScreen} options={{ title: t('tab.account'), tabBarLabel: tabLabel(t('tab.account')), tabBarIcon: tabIcon('👤') }} />
     </Tab.Navigator>
   );
 }
