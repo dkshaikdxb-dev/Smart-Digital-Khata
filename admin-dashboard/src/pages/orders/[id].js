@@ -357,7 +357,7 @@ export default function OrderDetail() {
                   style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     gap: 12, flexWrap: 'wrap', padding: '10px 0',
-                    borderBottom: '1px solid var(--border, #2a3446)', opacity: gone ? 0.55 : 1,
+                    borderBottom: '1px solid var(--border)', opacity: gone ? 0.55 : 1,
                   }}
                 >
                   <div style={{ flex: '1 1 160px' }}>
@@ -450,7 +450,7 @@ export default function OrderDetail() {
         <div className="card">
           <h3>{t('oedit.historyTitle')}</h3>
           {edits.map((e) => (
-            <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border, #2a3446)' }}>
+            <div key={e.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
               <div>{editLineText(t, e)}</div>
               <div className="muted">
                 {t('oedit.historyBy', {

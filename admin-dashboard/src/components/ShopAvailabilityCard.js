@@ -74,13 +74,16 @@ export default function ShopAvailabilityCard() {
   }
 
   return (
-    <div className="card" style={{ borderLeft: `6px solid ${open ? 'var(--success, #16a34a)' : 'var(--danger, #dc2626)'}` }}>
+    <div className="card" style={{ borderLeft: `6px solid ${open ? 'var(--success)' : 'var(--danger)'}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <h3 style={{ margin: 0, flex: 1 }}>{t('open.title')}</h3>
         <span
           style={{
-            background: open ? 'var(--success, #16a34a)' : 'var(--danger, #dc2626)',
-            color: '#fff', borderRadius: 999, padding: '4px 14px', fontWeight: 700, fontSize: 14,
+            // --success / --danger are real tokens now. The fallbacks used to be
+            // taken every time, which put white on #16a34a at 3.30:1.
+            background: open ? 'var(--success)' : 'var(--danger)',
+            color: open ? 'var(--on-success)' : 'var(--on-danger)',
+            borderRadius: 999, padding: '4px 14px', fontWeight: 700, fontSize: 14,
           }}
         >
           {open ? t('open.open') : t('open.closed')}

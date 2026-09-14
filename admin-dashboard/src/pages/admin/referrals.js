@@ -30,7 +30,7 @@ function Bars({ items, labelKey, valueKey }) {
       {items.map((it, idx) => (
         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 130, textAlign: 'end' }} className="muted">{it[labelKey]}</div>
-          <div style={{ flex: 1, background: 'var(--border, #eee)', borderRadius: 4 }}>
+          <div style={{ flex: 1, background: 'var(--border)', borderRadius: 4 }}>
             <div style={{ width: `${(Number(it[valueKey]) / max) * 100}%`, minWidth: 2, background: 'var(--accent)', height: 16, borderRadius: 4 }} />
           </div>
           <div style={{ width: 40 }}>{it[valueKey]}</div>
@@ -264,7 +264,8 @@ export default function AdminReferrals() {
               className="badge"
               style={{
                 background: eco.zero_burn_ok ? 'var(--accent)' : 'var(--danger)',
-                color: '#fff', padding: '2px 10px', borderRadius: 999, fontWeight: 700,
+                color: eco.zero_burn_ok ? 'var(--on-accent)' : 'var(--on-danger)',
+                padding: '2px 10px', borderRadius: 999, fontWeight: 700,
               }}
             >
               {eco.zero_burn_ok ? t('credits.zeroBurnOk') : t('credits.zeroBurnBad')}
@@ -325,7 +326,7 @@ export default function AdminReferrals() {
             </tr></thead>
             <tbody>
               {ov.top_referrers.map((r) => (
-                <tr key={r.code} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                <tr key={r.code} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={cell}><code>{r.code}</code></td>
                   <td style={cell}>{r.label || '—'}</td>
                   <td style={cell}><span className="badge">{r.owner_type}</span></td>
@@ -382,7 +383,7 @@ export default function AdminReferrals() {
             </tr></thead>
             <tbody>
               {mitra.map((m) => (
-                <tr key={m.code} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                <tr key={m.code} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={cell}><code>{m.code}</code></td>
                   <td style={cell}>{m.label || '—'}</td>
                   <td style={cell}>{Number(m.onboarded) || 0}</td>
@@ -426,7 +427,7 @@ export default function AdminReferrals() {
           )}
 
           {cfgTarget && cfgTarget.id && (
-            <div id="code-config" style={{ marginTop: 14, borderTop: '1px solid var(--border, #eee)', paddingTop: 12 }}>
+            <div id="code-config" style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
               <h4 style={{ margin: '0 0 4px' }}>{t('credits.cfgTitle')}</h4>
               <p className="muted" style={{ marginTop: 0 }}>{t('credits.cfgForCode')} <code>{cfgTarget.code}</code> — {t('credits.cfgSubtitle')}</p>
               <form onSubmit={saveCodeConfig} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>

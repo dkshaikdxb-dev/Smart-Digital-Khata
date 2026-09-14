@@ -9,13 +9,19 @@ export default function Document() {
             independent axes, each in its own try/catch so a failure in one cannot
             starve the other. With no stored pref, neither attribute is set and the
             consumer PWA follows the device via prefers-color-scheme in the standard
-            layout. A legacy 'gaon' colour theme (the old warm palette name) is read
-            as 'warm'. The owner dashboard ignores the .cpwa tokens and its bare
-            :root stays dark regardless. */}
+            layout. The owner dashboard ignores the .cpwa tokens and its bare :root
+            stays dark regardless.
+
+            The withdrawn 'warm' theme (and its legacy name 'gaon') is migrated to
+            "follow the device" HERE, before paint, rather than being forced to
+            light: the stored value is deleted and no data-theme is set, so the
+            user lands on whichever half their phone is already in. Deleting it
+            makes the migration a one-time event. The LAYOUT axis below is a
+            separate setting and its own 'gaon' value is untouched. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='gaon'){t='warm';try{localStorage.setItem('skhata-theme','warm');}catch(e){}}if(t==='light'||t==='dark'||t==='warm'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}try{var l=localStorage.getItem('skhata-layout');if(l==='gaon'){document.documentElement.setAttribute('data-cpwa-layout','gaon');}}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='warm'||t==='gaon'){try{localStorage.removeItem('skhata-theme');}catch(e){}t=null;}if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.removeAttribute('data-theme');}}catch(e){}try{var l=localStorage.getItem('skhata-layout');if(l==='gaon'){document.documentElement.setAttribute('data-cpwa-layout','gaon');}}catch(e){}})();",
           }}
         />
         <meta name="application-name" content="Smart Digital Khata" />

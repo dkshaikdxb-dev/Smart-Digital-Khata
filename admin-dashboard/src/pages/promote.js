@@ -235,7 +235,7 @@ export default function Promote() {
 
             {/* Branded Store — a credit-unlocked premium storefront theme (STORE1). */}
             {brand && (
-              <div className="card" style={{ display: 'grid', gap: 14, borderLeft: `4px solid ${isBranded ? accent : 'var(--border, #e5e7eb)'}` }}>
+              <div className="card" style={{ display: 'grid', gap: 14, borderLeft: `4px solid ${isBranded ? accent : 'var(--border)'}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <strong style={{ fontSize: 17 }}>✨ {t('brand.title')}</strong>
                   {isBranded ? (
@@ -285,7 +285,7 @@ export default function Promote() {
                 )}
 
                 {/* Accent + tagline are editable anytime (shown on the storefront only while premium). */}
-                <form onSubmit={saveTheme} style={{ display: 'grid', gap: 10, borderTop: '1px solid var(--border, #e5e7eb)', paddingTop: 12 }}>
+                <form onSubmit={saveTheme} style={{ display: 'grid', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
                   <strong style={{ fontSize: 14 }}>{t('brand.themeTitle')}</strong>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

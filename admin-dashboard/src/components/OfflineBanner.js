@@ -28,7 +28,7 @@ export default function OfflineBanner() {
         fontSize: 13,
         fontWeight: 600,
         textAlign: 'center',
-        color: online ? '#000' : '#fff',
+        color: online ? '#000' : 'var(--on-danger)',
         background: online ? 'var(--accent)' : 'var(--danger)',
       }}
     >

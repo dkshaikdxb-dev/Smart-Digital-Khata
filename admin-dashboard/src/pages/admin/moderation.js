@@ -60,7 +60,7 @@ export default function AdminModeration() {
               <tr><td style={cell} colSpan={5} className="muted">{t('mod.logEmpty')}</td></tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+              <tr key={r.id} style={{ borderTop: '1px solid var(--border)' }}>
                 <td style={cell} className="muted">{new Date(r.created_at).toLocaleString()}</td>
                 <td style={cell}><code>{r.action}</code></td>
                 <td style={cell}>

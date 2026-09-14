@@ -1,18 +1,51 @@
+/* OWNER CONSOLE TOKENS — dark-first, on the bare :root.
+   NOTE: these are inherited by the consumer PWA too (it only overrides the
+   --c-* set), so any token here that the consumer also paints with must stay
+   safe on a LIGHT surface, or be overridden under .cpwa further down.
+
+   Colour-pair notes (all measured against --card #1e293b unless stated):
+   - --danger is the ink used for the "owed" balance, statement debits and every
+     error line. #ef4444 only reached 3.78:1 on the card, so it is one step
+     LIGHTER now (#f87171 -> 5.12:1). Darkening was not an option on a dark card.
+   - --on-danger / --on-accent / --on-success are the inks that sit ON those
+     fills, replacing the hard-coded #fff that failed on every one of them.
+   - --border / --border-strong exist so that the 20-odd border call sites stop
+     falling through to a near-white hairline (their old #eee / #e5e7eb
+     fallbacks measured 12.6:1 and 11.8:1 against the dark card, which reads as
+     a glaring white rule, not a divider). --border is the quiet divider;
+     --border-strong is the visible outline used for fields (3.45:1 on the card,
+     4.53:1 on the field fill).
+   - --success and --warn-bg were REFERENCED but never defined anywhere in the
+     repo, so every call site silently took its fallback: white on #16a34a for
+     the shop OPEN pill (3.30:1) and a near-white #fffbe6 panel carrying the
+     near-white --text on the platform-admin content page (~1.2:1). */
 :root {
   --bg: #0f172a;
   --card: #1e293b;
   --text: #e2e8f0;
   --muted: #94a3b8;
   --accent: #22c55e;
-  --danger: #ef4444;
+  --on-accent: #04220f;
+  --danger: #f87171;
+  --on-danger: #450a0a;
+  --success: #22c55e;
+  --on-success: #04220f;
+  --warn: #eab308;
+  --warn-bg: #3a2f0b;
+  --warn-ink: #fde68a;
+  --border: #334155;
+  --border-strong: #6d7f97;
 }
 * { box-sizing: border-box; }
-html, body, #__next { margin: 0; padding: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; -webkit-text-size-adjust: 100%; }
+/* No -webkit-text-size-adjust here: pinning it to 100% switched OFF Android's
+   accessibility text-scaling slider, which is the single most effective
+   accommodation this audience has. The default (auto) lets the system scale. */
+html, body, #__next { margin: 0; padding: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 a { color: var(--accent); text-decoration: none; }
 button { cursor: pointer; padding: 8px 14px; border-radius: 8px; border: none; background: var(--accent); color: #000; font-weight: 600; }
 button.secondary { background: #334155; color: var(--text); }
-input, select { padding: 10px 12px; border-radius: 8px; border: 1px solid #334155; background: #0b1220; color: var(--text); width: 100%; font-size: 16px; }
-.card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+input, select { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: #0b1220; color: var(--text); width: 100%; font-size: 16px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
 .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .kpi { font-size: 28px; font-weight: 700; }
@@ -21,7 +54,7 @@ input, select { padding: 10px 12px; border-radius: 8px; border: 1px solid #33415
 /* Tables scroll horizontally inside their card instead of clipping the page */
 table { width: 100%; border-collapse: collapse; }
 .card { overflow-x: auto; }
-th, td { padding: 10px 12px; border-bottom: 1px solid #334155; text-align: left; font-size: 14px; white-space: nowrap; }
+th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 14px; white-space: nowrap; }
 th { color: var(--muted); font-weight: 600; }
 
 /* Sticky, wrapping app bar with safe-area padding for standalone PWA */
@@ -74,82 +107,100 @@ th { color: var(--muted); font-weight: 600; }
    Customer PWA (F3) — mobile-first, scoped under .cpwa so it never touches the
    owner dashboard.
 
-   Theming: the consumer app is light by default and follows the device
-   preference, with a manual toggle (see CpwaThemeToggle). All theme-aware
-   tokens are scoped to .cpwa (as a descendant of :root[data-theme] /
-   prefers-color-scheme) so the owner dashboard's bare :root tokens are NEVER
-   touched and stay dark. Four blocks: light default, dark-when-device-prefers-
-   dark-and-not-forced-light, dark-forced, light-forced.
+   Theming: the consumer app offers LIGHT and DARK only. It is light by default
+   and follows the device preference, with a manual toggle (see CpwaThemeToggle).
+   All theme-aware tokens are scoped to .cpwa (as a descendant of
+   :root[data-theme] / prefers-color-scheme) so the owner dashboard's bare :root
+   tokens are NEVER touched and stay dark. Four blocks: light default,
+   dark-when-device-prefers-dark-and-not-forced-light, dark-forced, light-forced.
    ========================================================================== */
 /* LIGHT = default.
    The accent is a deep, confident emerald (NOT the old neon #22c55e) reserved for
    CTAs; white sits on it (~5:1). --c-accent-ink is the darker green used for accent
    TEXT on light surfaces (~5.8:1 on --c-bg). --c-accent-soft / --c-accent-soft-border
    are the tinted-green surface + hairline used for banners, pills and success badges
-   so large areas are never flooded with raw accent. */
+   so large areas are never flooded with raw accent.
+
+   The danger family mirrors the accent family, for the same reason:
+   --c-danger is the FILL (white/on-danger text sits on it), --c-danger-ink is the
+   danger colour for TEXT on a surface, and --c-danger-bg is the tinted panel.
+   Before this split, danger text reused the fill colour and failed (4.53:1 on the
+   page in light, 3.78:1 on the card in dark).
+   --c-field-border is the input/select outline. It is deliberately stronger than
+   --c-border-strong (which doubles as a FILL for secondary buttons and chips, and
+   so cannot be darkened without breaking those labels): a field outline has to
+   clear 3:1 against both the card behind it and its own fill, because it is what
+   tells a shopkeeper where to type an amount. */
 .cpwa {
   color-scheme: light;
   --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e6ebf1; --c-border-strong:#cbd5e1;
+  --c-field-border:#64748b;
   --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#15803d; --c-on-accent:#ffffff; --c-accent-ink:#0f7233;
   --c-accent-soft:#e6f4ec; --c-accent-soft-border:#bfe3ce;
-  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
+  --c-danger:#dc2626; --c-on-danger:#ffffff; --c-danger-ink:#b91c1c; --c-danger-bg:#fef2f2;
+  --c-warn-ink:#854d0e; --c-warn-bg:rgba(234,179,8,0.2);
+  --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
 }
 /* DARK when the device prefers dark AND the user hasn't forced light.
    The accent brightens to a clean (not fluorescent) green with dark on-accent text
    (~8:1); accent-ink is the vivid green used for accent text on the navy surfaces
-   (~9:1); accent-soft is a deep green-tinted panel for banners/badges. */
+   (~9:1); accent-soft is a deep green-tinted panel for banners/badges. The danger
+   ink brightens for the same reason the accent does — on a dark card you cannot
+   darken your way to contrast. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .cpwa {
     color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#2b3a52;
-    --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
+    --c-border-strong:#415167; --c-field-border:#6d7f97;
+    --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
     --c-accent-ink:#4ade80; --c-accent-soft:#16351f; --c-accent-soft-border:#2c6b3f;
-    --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
-    --c-overlay:rgba(0,0,0,.55);
+    --c-danger:#ef4444; --c-on-danger:#2b0606; --c-danger-ink:#f87171; --c-danger-bg:rgba(239,68,68,.12);
+    --c-warn-ink:#eab308; --c-warn-bg:rgba(234,179,8,0.2);
+    --c-shadow:none; --c-overlay:rgba(0,0,0,.55);
   }
 }
 /* DARK forced by the toggle */
 :root[data-theme="dark"] .cpwa {
   color-scheme:dark; --c-bg:#0f172a; --c-surface:#1e293b; --c-surface-2:#0b1220; --c-border:#2b3a52;
-  --c-border-strong:#415167; --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
+  --c-border-strong:#415167; --c-field-border:#6d7f97;
+  --c-text:#f1f5f9; --c-muted:#9fb0c3; --c-accent:#2dd36a; --c-on-accent:#04220f;
   --c-accent-ink:#4ade80; --c-accent-soft:#16351f; --c-accent-soft-border:#2c6b3f;
-  --c-danger:#ef4444; --c-danger-bg:rgba(239,68,68,.12); --c-shadow:none;
-  --c-overlay:rgba(0,0,0,.55);
+  --c-danger:#ef4444; --c-on-danger:#2b0606; --c-danger-ink:#f87171; --c-danger-bg:rgba(239,68,68,.12);
+  --c-warn-ink:#eab308; --c-warn-bg:rgba(234,179,8,0.2);
+  --c-shadow:none; --c-overlay:rgba(0,0,0,.55);
 }
 /* LIGHT forced by the toggle (redundant with base but wins over the media block) */
 :root[data-theme="light"] .cpwa {
   color-scheme:light; --c-bg:#f6f8fa; --c-surface:#ffffff; --c-surface-2:#f1f5f9; --c-border:#e6ebf1; --c-border-strong:#cbd5e1;
+  --c-field-border:#64748b;
   --c-text:#0f172a; --c-muted:#5c6a7a; --c-accent:#15803d; --c-on-accent:#ffffff; --c-accent-ink:#0f7233;
   --c-accent-soft:#e6f4ec; --c-accent-soft-border:#bfe3ce;
-  --c-danger:#dc2626; --c-danger-bg:#fef2f2; --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
+  --c-danger:#dc2626; --c-on-danger:#ffffff; --c-danger-ink:#b91c1c; --c-danger-bg:#fef2f2;
+  --c-warn-ink:#854d0e; --c-warn-bg:rgba(234,179,8,0.2);
+  --c-shadow:0 1px 2px rgba(16,24,40,.06),0 2px 8px rgba(16,24,40,.05); --c-overlay:rgba(15,23,42,.45);
 }
 
-/* WARM — a warm paper + kirana-green colour skin selected by data-theme="warm".
-   Palette-only reskin through the SAME --c-* token names, so every .cpwa
-   component reskins automatically. It has its own warm LIGHT (base, applied when
-   the device is not in dark mode) and warm DARK (media block). Scoped to
-   :root[data-theme="warm"] .cpwa ONLY — the owner dashboard's bare :root has no
-   warm entry and is untouched. */
-/* WARM LIGHT — default for the warm theme (and when the device prefers light).
-   A forest green that harmonizes with warm paper (deliberately NOT an amber);
-   accent-soft is a warm-tinted green wash for banners/pills. */
-:root[data-theme="warm"] .cpwa {
-  color-scheme:light; --c-bg:#FBF6EB; --c-surface:#FFFFFF; --c-surface-2:#F3EBDC; --c-border:#EADFC9; --c-border-strong:#D8C9AB;
-  --c-text:#241F17; --c-muted:#736A58; --c-accent:#157A3A; --c-on-accent:#FFFFFF; --c-accent-ink:#136A33;
-  --c-accent-soft:#E7F1DC; --c-accent-soft-border:#C6DCB0;
-  --c-danger:#B23A2E; --c-danger-bg:rgba(178,58,46,.12); --c-shadow:0 1px 2px rgba(33,30,23,.06),0 8px 22px rgba(33,30,23,.06); --c-overlay:rgba(36,31,23,.45);
-}
-/* WARM DARK — used for the warm theme when the device prefers dark.
-   Fix for the muddy look: the accent-ink is now a WARM GREEN (not the old amber
-   #EDB24A that fought the green accent), and the accent itself is a livelier green
-   with dark on-accent text (~7.5:1). Surfaces are cleaned up slightly and a
-   green-tinted accent-soft panel carries banners/badges. */
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="warm"] .cpwa {
-    color-scheme:dark; --c-bg:#171410; --c-surface:#231F16; --c-surface-2:#2C271B; --c-border:#3A3222; --c-border-strong:#4C4231;
-    --c-text:#F4ECDC; --c-muted:#B9AE97; --c-accent:#3DBE69; --c-on-accent:#08160c; --c-accent-ink:#58CF82;
-    --c-accent-soft:#1F3524; --c-accent-soft-border:#3A5A41;
-    --c-danger:#E67A66; --c-danger-bg:rgba(230,122,102,.16); --c-shadow:none; --c-overlay:rgba(0,0,0,.6);
-  }
+/* THE THREE LEAKED OWNER RULES (audit B1). The owner console's dark-first tokens
+   sit on the bare :root, and .cpwa never overrode these three, so the consumer
+   app inherited owner values that are catastrophic on a light background:
+     a       -> --accent #22c55e ......... 2.28:1 on white, and three consumer
+                screens render a WHOLE CARD as an anchor, so every shop name,
+                product price and order subtotal inherited it.
+     .muted  -> --muted  #94a3b8 ......... 2.56:1 on card / 2.41:1 on page,
+                across 79 occurrences in 11 files, two of them money figures.
+     .badge  -> hard-coded #334155 ....... 1.72:1 against the light --c-text; the
+                worst case is the Unpaid payment pill, which falls through to the
+                bare badge precisely because it is unpaid.
+   The link rule is written as :where(.cpwa) a so it keeps (0,0,1) specificity:
+   it beats the bare `a` rule but still loses to every component rule that paints
+   its own link (.cpwa-tabbar a, .cpwa-cartbar-btn). Whole-card anchors therefore
+   read as body text, which is what they are. */
+:where(.cpwa) a { color: var(--c-text); }
+.cpwa .muted { color: var(--c-muted); }
+/* :where(.cpwa) keeps this at (0,1,0) so the status/closed pill variants below
+   still win on background and colour, and only inherit the shape + border. */
+:where(.cpwa) .badge {
+  background: var(--c-surface-2); color: var(--c-text);
+  border: 1px solid var(--c-border-strong); font-size: 13px;
 }
 
 /* Comfortable line-height across the consumer app — Indic (Telugu/Hindi/Tamil/…)
@@ -164,7 +215,7 @@ th { color: var(--muted); font-weight: 600; }
    :where() list excludes the known NON-primary variants (secondary, chips,
    danger) WITHOUT adding specificity — :where() counts as (0,0,0) — so this rule
    stays at (0,1,1) and no longer out-specifies the (0,1,0) .cpwa-chip label. The
-   accent background is a .cpwa token so it reskins per theme (e.g. warm green),
+   accent background is a .cpwa token so it reskins per theme (light/dark),
    instead of leaking the owner's fixed --accent. */
 .cpwa button:not(:where(.secondary, .cpwa-chip, .cpwa-btn-danger, .cpwa-theme-opt)) { background: var(--c-accent); color: var(--c-on-accent); }
 .cpwa button.secondary { background: var(--c-border-strong); color: var(--c-text); }
@@ -187,7 +238,7 @@ th { color: var(--muted); font-weight: 600; }
   cursor: not-allowed;
   box-shadow: none;
 }
-.cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-border-strong); color: var(--c-text); }
+.cpwa input, .cpwa select, .cpwa textarea { background: var(--c-surface-2); border-color: var(--c-field-border); color: var(--c-text); }
 .cpwa-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 /* Top bar: a title/back "lead" area and a controls "tools" cluster (location,
    appearance, language). The bar can wrap so that on a page WITH a long title the
@@ -209,7 +260,9 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-topbar .cpwa-lang { max-width: 8rem; }
 .cpwa-main { flex: 1; padding: 16px; padding-bottom: 24px; }
 .cpwa-main.has-tabs { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
-.cpwa .card { margin-bottom: 12px; background: var(--c-surface); box-shadow: var(--c-shadow); }
+/* A card used to be separated from the page by fill alone (1.13:1 in light,
+   1.25:1 in dark, where --c-shadow is none). It now carries a hairline too. */
+.cpwa .card { margin-bottom: 12px; background: var(--c-surface); border-color: var(--c-border-strong); box-shadow: var(--c-shadow); }
 
 /* Small theme picker button in the consumer topbar (colors from tokens). */
 .cpwa-theme-btn {
@@ -258,12 +311,12 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-theme-menu-title-2 { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--c-border); }
 
 /* Consumer location picker (LOC1): a chip trigger + a small popover sheet, all
-   from theme tokens so it works in Light/Dark/Warm and standard/gaon, and
+   from theme tokens so it works in Light/Dark and standard/gaon, and
    RTL-safe for Urdu (logical properties + flex). */
 .cpwa-loc-picker { position: relative; flex: 0 1 auto; min-width: 0; }
 .cpwa-loc-chip {
   display: inline-flex; align-items: center; gap: 6px; max-width: 116px;
-  height: 34px; padding: 0 10px; border-radius: 999px;
+  min-height: 34px; padding: 4px 10px; border-radius: 999px;
   background: var(--c-surface); color: var(--c-text);
   border: 1px solid var(--c-border-strong); font-size: 13px; font-weight: 600;
 }
@@ -282,7 +335,7 @@ th { color: var(--muted); font-weight: 600; }
 }
 .cpwa-loc-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .cpwa-loc-field span { font-size: 12px; font-weight: 600; color: var(--c-muted); }
-.cpwa-loc-field input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--c-border-strong); }
+.cpwa-loc-field input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--c-field-border); }
 .cpwa-loc-detect { width: 100%; margin-bottom: 10px; font-size: 13px; }
 .cpwa-loc-detect:disabled { opacity: .6; }
 .cpwa-loc-actions { display: flex; gap: 8px; }
@@ -309,7 +362,7 @@ th { color: var(--muted); font-weight: 600; }
    CONSUMER PROMO BAND (batch ADS5) — the sponsored slider on the home screen,
    between search and categories. A horizontal scroll-snap track (peek of the
    next slide) with a dots row. Every colour is a --c-* token so it reskins in
-   Light/Dark/Warm and both layouts; layout uses logical properties so it mirrors
+   Light/Dark and both layouts; layout uses logical properties so it mirrors
    correctly in RTL (Urdu). Emoji glyphs + optional lazy image — no new assets.
    ========================================================================== */
 .cpwa-promo { margin-bottom: 12px; }
@@ -475,9 +528,9 @@ th { color: var(--muted); font-weight: 600; }
    GAON BAZAAR LAYOUT — a switchable, colour-theme-agnostic skin for the
    DISCOVERY screens (shops list + product views), selected by
    data-cpwa-layout="gaon" on <html>. Independent of the colour theme: every
-   colour here comes from a --c-* token, so it renders correctly in the light,
-   dark AND warm themes. Scoped to :root[data-cpwa-layout="gaon"] .cpwa so the
-   owner dashboard is never touched. Warm, rounded, picture-led, price-forward.
+   colour here comes from a --c-* token, so it renders correctly in BOTH the
+   light and dark themes. Scoped to :root[data-cpwa-layout="gaon"] .cpwa so the
+   owner dashboard is never touched. Rounded, picture-led, price-forward.
    ========================================================================== */
 /* Category chips become column tiles: big emoji stacked over a small label. Only
    the category group carries .cpwa-cats — the fulfillment/variant chip groups
@@ -485,7 +538,9 @@ th { color: var(--muted); font-weight: 600; }
 :root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats { gap: 12px; }
 :root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats .cpwa-chip {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  width: 64px; min-width: 64px; height: 64px; padding: 8px 4px; border-radius: 14px;
+  /* min-height, not height: a two-line Indic label already overflowed a fixed
+     64px box, and system text scaling makes that worse. */
+  width: 64px; min-width: 64px; min-height: 64px; padding: 8px 4px; border-radius: 14px;
   background: var(--c-surface-2); border: 1px solid var(--c-border); white-space: normal;
 }
 :root[data-cpwa-layout="gaon"] .cpwa .cpwa-cats .cpwa-chip-ico { font-size: 30px; line-height: 1; }
@@ -539,14 +594,14 @@ th { color: var(--muted); font-weight: 600; }
 
 /* Forms & feedback */
 .cpwa-label { display: block; font-size: 13px; color: var(--c-muted); font-weight: 600; margin-bottom: 6px; }
-.cpwa-error { color: var(--c-danger); font-size: 14px; margin-top: 10px; }
+.cpwa-error { color: var(--c-danger-ink); font-size: 14px; margin-top: 10px; }
 .cpwa-devhint {
   margin-top: 10px; padding: 8px 12px; border-radius: 8px;
   background: var(--c-surface-2); border: 1px dashed var(--c-border-strong); font-size: 13px; color: var(--c-muted);
 }
 .cpwa-textarea {
   width: 100%; min-height: 72px; padding: 10px 12px; border-radius: 8px;
-  border: 1px solid var(--c-border-strong); background: var(--c-surface-2); color: var(--c-text); font-size: 16px; font-family: inherit;
+  border: 1px solid var(--c-field-border); background: var(--c-surface-2); color: var(--c-text); font-size: 16px; font-family: inherit;
 }
 .cpwa-row { display: flex; gap: 10px; align-items: center; }
 .cpwa-row-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -574,7 +629,7 @@ th { color: var(--muted); font-weight: 600; }
 /* Shop availability (batch A). A closed shop STAYS in the directory and stays
    openable — it just wears a pill and a one-line reopen hint, so a shopper sees
    "Closed · opens at 9:00 AM" instead of a shop that appears to have vanished. */
-.cpwa-closed-pill { background: #b91c1c; color: #fff; }
+.cpwa-closed-pill { background: #b91c1c; color: #fff; border-color: #b91c1c; }
 .cpwa-closed-hint { margin-top: 6px; font-size: 13px; }
 .cpwa-closed-banner {
   border-left: 5px solid #b91c1c;
@@ -613,16 +668,23 @@ th { color: var(--muted); font-weight: 600; }
   background: var(--c-accent); color: var(--c-on-accent); font-weight: 700; border: none;
   padding: 12px 18px; border-radius: 10px; font-size: 15px;
 }
-.cpwa-btn-danger { width: 100%; background: var(--c-danger); color: #fff; }
+.cpwa-btn-danger { width: 100%; background: var(--c-danger); color: var(--c-on-danger); }
 
 /* Status badges & timeline */
 .cpwa-badge-ok { background: var(--c-accent-soft); color: var(--c-accent-ink); border: 1px solid var(--c-accent-soft-border); }
-/* Warn pill: darker amber text on the light theme (AA on the translucent tint),
-   bright amber on dark. Scoped like the other cpwa theme blocks. */
-.cpwa-badge-warn { background: rgba(234,179,8,0.2); color: #a16207; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cpwa-badge-warn { color: #eab308; } }
-:root[data-theme="dark"] .cpwa-badge-warn { color: #eab308; }
-.cpwa-badge-danger { background: rgba(239,68,68,0.2); color: var(--c-danger); }
+/* Status pills carry the single most important word on the screen (Pending /
+   Ready / Cancelled / Completed), so they get BOTH a size and a colour fix:
+   14px/700 instead of 12px/400 — still under the 18.66px-bold large-text
+   threshold, so they are held to the full 4.5:1 — and inks that actually reach
+   it. The in-progress amber went from #a16207 (4.32:1 on its tint) to #854d0e;
+   the cancelled pill now sits on the --c-danger-bg panel rather than a 20%
+   flood, which is what let the red ink clear 4.5:1 in dark. Each pill outlines
+   itself in its own ink so it does not inherit the neutral grey ring. */
+.cpwa-badge-ok, .cpwa-badge-warn, .cpwa-badge-danger {
+  font-size: 14px; font-weight: 700; padding: 3px 10px; border-color: currentColor;
+}
+.cpwa-badge-warn { background: var(--c-warn-bg); color: var(--c-warn-ink); }
+.cpwa-badge-danger { background: var(--c-danger-bg); color: var(--c-danger-ink); }
 .cpwa-timeline { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
 .cpwa-tl-step { display: flex; align-items: center; gap: 12px; padding: 6px 0; color: var(--c-muted); }
 .cpwa-tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c-border-strong); flex: none; }
@@ -630,7 +692,7 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tl-step.done .cpwa-tl-dot { background: var(--c-accent); }
 .cpwa-tl-step.current { font-weight: 700; font-size: 16px; }
 .cpwa-tl-step.current .cpwa-tl-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-accent) 30%, transparent); }
-.cpwa-tl-step.cancelled { color: var(--c-danger); font-weight: 700; }
+.cpwa-tl-step.cancelled { color: var(--c-danger-ink); font-weight: 700; }
 .cpwa-tl-step.cancelled .cpwa-tl-dot { background: var(--c-danger); }
 /* The one thing the customer is waiting for, on the orders list. */
 .cpwa-order-next { margin-top: 4px; font-weight: 600; color: var(--c-accent-ink); }
@@ -646,9 +708,11 @@ th { color: var(--muted); font-weight: 600; }
 /* Owner order-detail stepper — a compact horizontal progress row. Reached
    stages are filled by rank; the current one is highlighted. */
 .ord-stepper { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.ord-stepper-node { padding: 4px 10px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border, #334155); color: var(--muted); background: transparent; }
+.ord-stepper-node { padding: 4px 10px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border); color: var(--muted); background: transparent; }
 .ord-stepper-node.done { color: var(--text); border-color: var(--accent); }
-.ord-stepper-node.current { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+/* The stage the owner actually has to read was #ffffff on #22c55e = 2.28:1.
+   Dark ink on the accent fill instead (7.43:1); every other node already passed. */
+.ord-stepper-node.current { color: var(--on-accent); background: var(--accent); border-color: var(--accent); font-weight: 700; }
 
 /* Language switch (navigation chrome i18n) — a compact dropdown used in the
    owner nav (.langswitch) and the customer PWA topbar (.cpwa-lang). A <select>
@@ -656,7 +720,7 @@ th { color: var(--muted); font-weight: 600; }
 .langswitch, .cpwa-lang {
   appearance: none; -webkit-appearance: none;
   background: var(--card); color: var(--text);
-  border: 1px solid #334155; border-radius: 8px;
+  border: 1px solid var(--border-strong); border-radius: 8px;
   padding: 6px 26px 6px 10px; font-size: 13px; font-weight: 600; line-height: 1.2;
   cursor: pointer; max-width: 9.5rem;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
@@ -664,7 +728,7 @@ th { color: var(--muted); font-weight: 600; }
 }
 .langswitch:focus, .cpwa-lang:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .langswitch option, .cpwa-lang option { color: #000; }
-.cpwa-lang { padding: 5px 24px 5px 9px; font-size: 12px; background-color: var(--c-surface); color: var(--c-text); border-color: var(--c-border-strong); }
+.cpwa-lang { padding: 5px 24px 5px 9px; font-size: 12px; background-color: var(--c-surface); color: var(--c-text); border-color: var(--c-field-border); }
 
 /* Product thumbnails (customer) + cart tab badge. Added for the image + cart
    work; the 5th tab widens the customer tab bar from 4 to 5 columns. */
@@ -684,9 +748,9 @@ th { color: var(--muted); font-weight: 600; }
 .cpwa-tab-badgewrap { position: relative; display: inline-flex; }
 .cpwa-tab-badge {
   position: absolute; top: -6px; left: 100%; transform: translateX(-55%);
-  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
+  min-width: 16px; min-height: 16px; padding: 1px 4px; border-radius: 999px;
   background: var(--c-accent); color: var(--c-on-accent); font-size: 10px; font-weight: 800;
-  line-height: 16px; text-align: center; box-sizing: border-box;
+  line-height: 1.4; text-align: center; box-sizing: border-box;
 }
 
 /* Owner catalog photo cell */

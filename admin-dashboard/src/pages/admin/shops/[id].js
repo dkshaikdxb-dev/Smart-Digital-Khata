@@ -67,7 +67,7 @@ export default function AdminShopDetail() {
             <h2 style={{ margin: '0 0 2px' }}>{shop.name}</h2>
             <div className="muted">Owner: {shop.owner.name} · {shop.owner.email} · {shop.owner.phone}</div>
           </div>
-          <span className="badge" style={suspended ? { background: 'var(--danger)', color: '#fff' } : { background: 'var(--accent)', color: '#000' }}>
+          <span className="badge" style={suspended ? { background: 'var(--danger)', color: 'var(--on-danger)' } : { background: 'var(--accent)', color: '#000' }}>
             {shop.status}
           </span>
         </div>
@@ -107,7 +107,7 @@ export default function AdminShopDetail() {
           ) : (
             <>
               <p className="muted">Suspending blocks the owner from signing in. Data is kept and can be restored anytime.</p>
-              <button style={{ background: 'var(--danger)', color: '#fff' }}
+              <button style={{ background: 'var(--danger)', color: 'var(--on-danger)' }}
                 onClick={() => changeStatus('suspended')}>
                 Suspend shop
               </button>
