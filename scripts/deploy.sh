@@ -55,13 +55,14 @@ for _ in $(seq 1 30); do
   sleep 2
 done
 
-log "Running migrations..."
-$DC exec -T backend npm run migrate
-
-if [ "${SEED_ADMIN:-false}" = "true" ]; then
-  log "Seeding admin user..."
-  $DC exec -T backend npm run seed || true
-fi
+# --- data ----------------------------------------------------------------
+# Migrations, the shipped product data (always) and the demo data (only when
+# SEED_DEMO_DATA=true), then a report of what the database now holds. It lives
+# in its own script because the data phase of a deploy is the part that has
+# repeatedly loaded the wrong things, and because a stub runner can then test it
+# — see scripts/deploy-data.sh and backend/tests/deploy-data.test.js.
+log "Loading data..."
+DC_EXEC="$DC exec -T" "$ROOT_DIR/scripts/deploy-data.sh"
 
 # --- post-deploy smoke check ------------------------------------------------
 # Migrations running and containers starting is NOT the same as the app serving

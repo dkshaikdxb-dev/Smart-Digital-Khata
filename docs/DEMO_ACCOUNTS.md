@@ -5,11 +5,18 @@ fake demo data** — demo shops, demo customers, demo transactions. The password
 are intentionally simple, demo-only credentials (not real users); treat them as
 shareable for demos, not as secrets.
 
-Seed / re-seed the data any time with the **Seed demo commerce** GitHub Action
-(Actions → *Seed demo commerce* → Run workflow). It runs `seed:demo` (10 shops,
-100 customers, transactions) + `seed:commerce` (a 50-product catalogue + orders)
-on the server and is idempotent — existing demo rows are skipped, never
-duplicated, and it never touches real shops.
+Demo data is **opt-in on deploy**. Set `SEED_DEMO_DATA=true` in `.env` on the
+server and every deploy loads (and refreshes) everything below; leave it unset
+and no deploy writes a single demo row. The deploy log says which of the two it
+did, and `docker compose exec backend npm run data:status` says what is there
+now — including how many demo shops have a catalogue, since the public directory
+hides a listed shop with nothing to sell.
+
+You can also seed / re-seed at any time without deploying, with the **Seed demo
+commerce** GitHub Action (Actions → *Seed demo commerce* → Run workflow), or
+`docker compose exec -e FORCE_DEMO=true backend npm run data:demo` on the
+server. All of it is idempotent — existing demo rows are skipped or refreshed in
+place, never duplicated, and none of it touches real shops.
 
 Live site: <https://khata.dadashaik.com>
 

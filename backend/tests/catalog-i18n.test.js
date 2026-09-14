@@ -116,7 +116,13 @@ describe('GET /api/catalog?lang=hi — localized display', () => {
 
 describe('GET /api/catalog?lang=hi — multilingual search', () => {
   it('finds the item searching in Hindi', async () => {
-    const res = await withToken(request(app).get(`/api/catalog?lang=hi&search=${encodeURIComponent('चावल')}`), tokenA);
+    // Search the full seeded Hindi name, not the bare word "चावल": the base
+    // catalogue (1,615 SKUs and their translations) is loaded by `npm run
+    // migrate` on every database now, so a generic Hindi term matches dozens of
+    // real rice rows and this suite's own item falls off the first page. The
+    // tag discipline the rest of the file follows — search something only these
+    // rows can match — is what makes the assertion mean anything.
+    const res = await withToken(request(app).get(`/api/catalog?lang=hi&search=${encodeURIComponent(RICE_HI)}`), tokenA);
     expect(res.status).toBe(200);
     expect(res.body.items.map((i) => i.id)).toContain(riceItem.id);
   });
@@ -154,7 +160,9 @@ describe('GET /api/catalog — en regression (shape unchanged)', () => {
     // languages have a localized catalogue is now read from the registry, and
     // anything else (a typo, a staged code, a language with no catalogue yet)
     // falls back to English, exactly as every public catalogue path already did.
-    const res = await withToken(request(app).get('/api/catalog?lang=zz'), tokenA);
+    // Scoped to this suite's rows: an unfiltered /api/catalog returns the first
+    // page of the real base catalogue, which every database now carries.
+    const res = await withToken(request(app).get(`/api/catalog?lang=zz&search=${tag} Sona`), tokenA);
     expect(res.status).toBe(200);
     const rice = res.body.items.find((i) => i.id === riceItem.id);
     expect(rice.display_name).toBe(`India Gate ${tag} Sona Masuri Rice 1 kg`);

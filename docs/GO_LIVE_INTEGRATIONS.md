@@ -205,14 +205,18 @@ refuses to run against production data unless you explicitly force it. Full
 details in [`SAMPLE_DATA_AND_TESTING.md`](./SAMPLE_DATA_AND_TESTING.md).
 
 ```bash
-# on the VPS, inside the backend container
-docker compose exec -e FORCE_DEMO=true backend npm run seed:demo      # creates store01..store10 demo shops (skips existing)
-docker compose exec -e FORCE_DEMO=true backend npm run seed:commerce  # products + orders for store01's shop
+# the deploy-time way: set SEED_DEMO_DATA=true in .env, then
+./scripts/deploy.sh
+
+# or, on the VPS, without deploying
+docker compose exec -e FORCE_DEMO=true backend npm run data:demo   # all ten shops, store01's catalogue, house promos
 ```
 
 Real shops start with an empty catalog by design and add their own products —
-the `FORCE_DEMO=true` guard exists precisely so demo data never lands in a
-database that holds real shops by accident.
+`SEED_DEMO_DATA` defaults to off and the `FORCE_DEMO=true` guard sits underneath
+it, precisely so demo data never lands in a database that holds real shops by
+accident. The base catalogue and the UI translations are a different thing: they
+are real product data and every deploy loads them with no flag at all.
 
 ---
 
