@@ -802,10 +802,16 @@ describe('utils/orderEdit (pure)', () => {
     expect(orderEdit.deliveryFeeFor({ fulfillmentType: 'delivery', subtotal: 999999, shop: { delivery_fee: 4000, free_delivery_min: null } })).toBe(4000);
   });
 
-  it('knows which payment modes carry a khata entry to compensate', () => {
-    expect(orderEdit.needsLedgerAdjustment('credit')).toBe(true);
-    expect(orderEdit.needsLedgerAdjustment('prepaid')).toBe(true);
-    expect(orderEdit.needsLedgerAdjustment('cash')).toBe(false);
+  // The predicate takes the ORDER, not a mode string. It used to take the mode
+  // alone and answer true for ANY prepaid order — so reducing one the customer
+  // had never paid for minted credit out of nothing (batch MONEYFIX, C2).
+  it('knows which ORDERS carry money a reduction has to compensate', () => {
+    expect(orderEdit.needsLedgerAdjustment({ payment_mode: 'credit', payment_status: 'not_required' })).toBe(true);
+    expect(orderEdit.needsLedgerAdjustment({ payment_mode: 'prepaid', payment_status: 'paid' })).toBe(true);
+    // The customer has handed nothing over yet: there is nothing to give back.
+    expect(orderEdit.needsLedgerAdjustment({ payment_mode: 'prepaid', payment_status: 'pending' })).toBe(false);
+    expect(orderEdit.needsLedgerAdjustment({ payment_mode: 'cash', payment_status: 'pending' })).toBe(false);
+    expect(orderEdit.needsLedgerAdjustment(null)).toBe(false);
   });
 });
 

@@ -4,6 +4,43 @@ const notifier = require('../services/notification.service');
 const { maybeActivateReferral } = require('../utils/referral');
 
 /**
+ * THE IDEMPOTENCY KEY IS BOUND TO THE ENTRY IT REPLAYS (M1).
+ *
+ * A replay used to be resolved on `shop_id + client_request_id` ALONE, with no
+ * check that the stored row was the write being retried. A client that reused a
+ * key — a buggy id generator, a "retry" button that kept the previous id, a
+ * device whose clock-seeded uuid collided — got back ANOTHER customer's
+ * transaction as a 201 success, and its own entry was silently never written.
+ * The money for the second entry simply disappeared, and the response pointed at
+ * a stranger's ledger row.
+ *
+ * So a replay must MATCH. Customer, type and amount are the identity of the
+ * intended write; anything else about it (note, method) is cosmetic and a client
+ * that varies only those is still plainly replaying the same entry. A mismatch
+ * is a client bug and is answered LOUDLY — 409, nothing written, the stored row
+ * NOT returned — because a silent success is what made this lose money.
+ *
+ * `method` and `note` are deliberately NOT compared: a retry that reworded the
+ * note is still the same entry, and refusing it would strand an offline client
+ * with an entry it can never get through.
+ */
+function assertReplayMatches(stored, { customer_id, type, amount }) {
+  const same =
+    String(stored.customer_id) === String(customer_id) &&
+    stored.type === type &&
+    Number(stored.amount) === Number(amount);
+  if (same) return;
+  throw ApiError.conflict('client_request_id_conflict', {
+    code: 'client_request_id_conflict',
+    message:
+      'This client_request_id was already used for a different entry. Use a new id for a new entry.',
+    // What the key is already bound to. The stored row's own id is enough for
+    // the client to reconcile; the OTHER customer's id is not echoed back.
+    existing_transaction_id: stored.id,
+  });
+}
+
+/**
  * Create a ledger entry.
  *  - type=purchase → customer owes more → balance +=
  *  - type=cash|upi → payment received → balance -=
@@ -30,6 +67,7 @@ exports.create = async (req, res) => {
         [req.user.shopId, client_request_id]
       );
       if (dup.rowCount) {
+        assertReplayMatches(dup.rows[0], { customer_id, type, amount });
         return { transaction: dup.rows[0], customer, replayed: true };
       }
     }
@@ -99,6 +137,10 @@ exports.create = async (req, res) => {
           [req.user.shopId, client_request_id]
         );
         if (dup.rowCount) {
+          // The concurrent winner must satisfy the SAME binding check as the
+          // pre-read above, or two racing requests could smuggle a mismatched
+          // replay through the one path the pre-read did not cover.
+          assertReplayMatches(dup.rows[0], { customer_id, type, amount });
           return { transaction: dup.rows[0], customer, replayed: true };
         }
       }

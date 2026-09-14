@@ -18,8 +18,10 @@ const customerCopy = require('../utils/order-customer-copy');
 // (used by a rejection), so the two can never drift (batch ALERT2).
 const {
   isEditableStatus, deliveryFeeFor, planReduction, needsLedgerAdjustment,
-  postOrderAdjustment, cancelOrderMoney,
+  postOrderAdjustment, cancelOrderMoney, cancelOrderPaymentLinks,
 } = require('../utils/orderEdit');
+const razorpay = require('../services/razorpay.service');
+const logger = require('../utils/logger');
 
 // Owner/staff order management, scoped to req.user.shopId. A shop only ever
 // sees and mutates its OWN orders.
@@ -319,6 +321,13 @@ exports.updateStatus = async (req, res) => {
     };
   });
 
+  // THE PROVIDER SIDE OF THE CANCELLATION (C3). AFTER the commit, never inside
+  // it: this is a network call and the cancellation must not be reported as
+  // failed (or hold a row lock) because the provider is slow or down.
+  if (result.order.status === 'cancelled') {
+    await cancelOrderPaymentLinks(result.order.id, { query, razorpay, logger });
+  }
+
   notifyCustomer({
     customer: result.customer,
     shopName: result.shopName,
@@ -597,24 +606,34 @@ exports.editItems = async (req, res) => {
 
     // `original_subtotal` is snapshotted on the FIRST edit only (COALESCE), so
     // "was X, now Y" keeps meaning the ORIGINAL X after a second reduction.
+    // `original_delivery_fee` rides along for exactly the same reason, and it is
+    // NOT redundant with the subtotal snapshot: a reduction can RE-ADD a fee
+    // (the order drops back under `free_delivery_min`), so the fee on the row
+    // after an edit can be LARGER than the one the customer was charged. A
+    // cancellation that reversed `original_subtotal` + the current fee would
+    // hand back money the shop never took. See utils/orderEdit
+    // .originalCreditCharge.
     await client.query(
       `UPDATE orders
           SET subtotal = $2,
               delivery_fee = $3,
               original_subtotal = COALESCE(original_subtotal, $4),
+              original_delivery_fee = COALESCE(original_delivery_fee, $6),
               edited_at = NOW(),
               edited_by = (SELECT u.id FROM users u WHERE u.id = $5),
               updated_at = NOW()
         WHERE id = $1`,
-      [order.id, newSubtotal, newFee, oldSubtotal, actorId(req)]
+      [order.id, newSubtotal, newFee, oldSubtotal, actorId(req), oldFee]
     );
 
     // THE MONEY, per payment mode (see utils/orderEdit.needsLedgerAdjustment):
     //   credit  — one compensating 'adjustment' brings the balance DOWN by
     //             exactly `reduction`; the original purchase row is untouched.
-    //   prepaid — the same entry, which drives the balance NEGATIVE: the
+    //   prepaid PAID   — the same entry, which drives the balance NEGATIVE: the
     //             difference becomes an ADVANCE at this shop. No refund API is
     //             called and no payment_orders row is touched.
+    //   prepaid UNPAID — NOTHING. The customer has handed nothing over, so there
+    //             is nothing to give back; only what is payable changes.
     //   cash    — nothing was ever posted, so nothing is posted now.
     //
     // `reduction > 0` is the guard that keeps rule 1 true end to end. It can be
@@ -625,8 +644,10 @@ exports.editItems = async (req, res) => {
     // ONE writer, shared with the prepaid CANCEL path (utils/orderEdit
     // .postOrderAdjustment), so a reduction and a rejection can never end up
     // moving the same money in two different shapes.
+    // The predicate takes the ORDER, not the mode: an UNPAID prepaid order has
+    // no money to give back, and posting one anyway MINTED credit from nothing.
     let adjustment = null;
-    if (needsLedgerAdjustment(order.payment_mode) && reduction > 0) {
+    if (needsLedgerAdjustment(order) && reduction > 0) {
       adjustment = await postOrderAdjustment(client, {
         shopId: req.user.shopId,
         customerId: order.cust_id,

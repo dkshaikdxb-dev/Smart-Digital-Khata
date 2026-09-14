@@ -159,6 +159,20 @@ async function createPaymentLinkForShop(shopId, { amount, description, customer,
   });
 }
 
+/**
+ * Cancel a shop's hosted payment link (C3). A link is created with
+ * `reminder_enable: true`, so the provider keeps chasing the customer until the
+ * link is settled or cancelled — which is exactly what must NOT happen once the
+ * order behind it has been cancelled.
+ *
+ * The caller treats a failure here as non-fatal: the cancellation is already
+ * committed, and the webhook credits any payment that still arrives.
+ */
+async function cancelPaymentLinkForShop(shopId, linkId) {
+  const client = await clientForShop(shopId);
+  return client.paymentLink.cancel(linkId);
+}
+
 /** "Test connection" for a shop's own keys. */
 async function testConnectionForShop(shopId) {
   const client = await clientForShop(shopId);
@@ -190,6 +204,7 @@ module.exports = {
   keyIdForShop,
   createOrderForShop,
   createPaymentLinkForShop,
+  cancelPaymentLinkForShop,
   testConnectionForShop,
   verifyShopWebhook,
 };

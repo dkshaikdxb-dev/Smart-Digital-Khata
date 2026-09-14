@@ -44,8 +44,22 @@ exports.list = async (req, res) => {
   res.json({ items, limit, offset });
 };
 
+// EVERY WRITE PATH NORMALISES THE PHONE (H6). `customers.phone` is the join key
+// between a shop's ledger row and the person holding it: every consumer lookup
+// (/my/khata, /my/orders, the consumer statement) matches on `toE164(...)` of
+// the signed-in number. An owner typing `9876543210` therefore created a row the
+// customer could NEVER find — they signed in as `+919876543210`, got a 404 on
+// their own khata, and placing an order silently created a SECOND customer row
+// at the same shop, splitting one person's money across two ledgers.
+//
+// Only `changePhone` used to normalise. Now create and update do too, so the
+// stored form is E.164 whichever door the number came through. Migration 0072
+// deals with the rows written before this.
+const DUPLICATE_PHONE = 'A customer with that phone number already exists in this shop';
+
 exports.create = async (req, res) => {
-  const { name, phone, credit_limit = 0, notes = null } = req.body;
+  const { name, credit_limit = 0, notes = null } = req.body;
+  const phone = toE164(req.body.phone);
   try {
     const r = await query(
       `INSERT INTO customers (shop_id, name, phone, credit_limit, notes)
@@ -56,7 +70,7 @@ exports.create = async (req, res) => {
     res.status(201).json({ customer: r.rows[0] });
   } catch (err) {
     if (err.code === '23505') {
-      throw ApiError.conflict('A customer with that phone number already exists in this shop');
+      throw ApiError.conflict(DUPLICATE_PHONE, { code: 'duplicate_phone' });
     }
     throw err;
   }
@@ -78,16 +92,29 @@ exports.update = async (req, res) => {
   let i = 1;
   for (const [k, v] of Object.entries(req.body)) {
     fields.push(`${k} = $${i++}`);
-    values.push(v);
+    // Same normalisation as create and changePhone — see DUPLICATE_PHONE above.
+    values.push(k === 'phone' ? toE164(v) : v);
   }
   if (!fields.length) return res.json({ ok: true });
   values.push(req.params.id, req.user.shopId);
-  const r = await query(
-    `UPDATE customers SET ${fields.join(', ')}, updated_at = NOW()
-     WHERE id = $${i++} AND shop_id = $${i}
-     RETURNING *`,
-    values
-  );
+  let r;
+  try {
+    r = await query(
+      `UPDATE customers SET ${fields.join(', ')}, updated_at = NOW()
+       WHERE id = $${i++} AND shop_id = $${i}
+       RETURNING *`,
+      values
+    );
+  } catch (err) {
+    // H7: `create` already answered 409 for a duplicate number; `update` did
+    // not, so the raw Postgres constraint text ("duplicate key value violates
+    // unique constraint customers_shop_id_phone_key") reached the client as a
+    // 500. Same refusal, same code, on both paths.
+    if (err.code === '23505') {
+      throw ApiError.conflict(DUPLICATE_PHONE, { code: 'duplicate_phone' });
+    }
+    throw err;
+  }
   if (!r.rowCount) throw ApiError.notFound('Customer not found');
   res.json({ customer: r.rows[0] });
 };
