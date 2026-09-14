@@ -52,16 +52,31 @@ export const LANGUAGES = [
 // map is the forward-looking mirror of it. A mapped language is still only
 // spoken/heard if the handset has the language pack, which no static map can
 // know — the hook reports that honestly at run time as `unavailable`.
+// `catalogue` says the product CATALOGUE is localized; `beta` is the warning we
+// show the user beside the language name, and the two stopped meaning the same
+// thing once bn/gu/mr got their catalogue.
+//
+// They now have all 481 catalogue names, so `catalogue` is true and the app is
+// right to expect localized product names. They are still the least complete
+// three, and deriving the beta marker from `catalogue` alone would have dropped
+// the warning silently the moment the catalogue landed. They keep it, for
+// reasons that are specific and checkable: the shipped catalogue carries
+// DESCRIPTIONS in six languages and these three are not among them, so a name
+// reads in Bengali above an English sentence; their consumer UI sits at 162 of
+// 237 strings against 180 for the others; and the owner app's own bn/gu/mr were
+// authored in-repo and have not yet been read by a native speaker.
+//
+// Drop `beta` for a language when those close, not when this file is edited.
 export const LANG_CAPS = {
   en: { catalogue: true, voice: true },
   hi: { catalogue: true, voice: true },
-  bn: { catalogue: false, voice: true },
+  bn: { catalogue: true, voice: true, beta: true },
   ta: { catalogue: true, voice: true },
   te: { catalogue: true, voice: true },
   kn: { catalogue: true, voice: true },
   ml: { catalogue: true, voice: true },
-  mr: { catalogue: false, voice: true },
-  gu: { catalogue: false, voice: true },
+  mr: { catalogue: true, voice: true, beta: true },
+  gu: { catalogue: true, voice: true, beta: true },
   ur: { catalogue: true, voice: true },
 };
 
@@ -80,10 +95,13 @@ export function langHasVoice(code) {
   return !!(caps && caps.voice);
 }
 
-// Beta marker derived from catalogue coverage: a language with no translated
-// catalogue is "beta" (UI-only). Pickers append a localized "(beta)" suffix to
-// these labels but keep them fully selectable.
+// Beta marker. An explicit `beta` flag when one is set, otherwise the old rule:
+// a language with no translated catalogue is beta. Pickers append a localized
+// "(beta)" suffix to these labels but keep them fully selectable — the warning
+// is about completeness, never about whether the language works.
 export function isBetaLang(code) {
+  const caps = LANG_CAPS[code];
+  if (caps && typeof caps.beta === 'boolean') return caps.beta;
   return !langHasCatalogue(code);
 }
 
