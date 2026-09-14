@@ -87,17 +87,80 @@ function amountError(paise) {
   return null;
 }
 
-async function processMessage(fromPhone, text) {
-  // Look up the user by phone → get their shop
-  const userRes = await query(
-    `SELECT u.id, u.shop_id FROM users u WHERE u.phone = $1 OR u.phone = $2`,
+/**
+ * Which SHOP is this inbound number writing for? (batch DATA D8.)
+ *
+ * THE DEFECT THIS EXISTS FOR. `users.phone` is indexed but NOT unique, and staff
+ * share the table with owners. The lookup was
+ *
+ *   SELECT u.id, u.shop_id FROM users u WHERE u.phone = $1 OR u.phone = $2
+ *
+ * with no ORDER BY, no LIMIT, and `rows[0]` taken as the answer. A person who is
+ * an owner at one shop and staff at another — or a family running two shops off
+ * one handset — had their ledger entry written to whichever row Postgres happened
+ * to return first, which can change between two identical messages after a
+ * VACUUM, an update, or a plan change. Money landed on a stranger's khata.
+ *
+ * THE RULE, and it is the rule this file already applies to CUSTOMERS one screen
+ * down (findCustomer): resolve deterministically, and when the answer is
+ * genuinely ambiguous DO NOT GUESS — say so and ask.
+ *
+ *   one shop    -> use it (deterministic even if several user rows point at it:
+ *                  ORDER BY makes the picked row stable, and every one of those
+ *                  rows means the same shop, so the entry lands identically)
+ *   many shops  -> ambiguous; refuse and ask, rather than pick
+ *   none        -> not registered
+ *
+ * Disabled accounts (`users.status <> 'active'`) are excluded: a deactivated
+ * staff member must not be able to write to the shop's khata over WhatsApp, and
+ * excluding them also resolves the commonest ambiguity — an old staff row left
+ * behind at a previous shop — without asking the sender anything.
+ *
+ * @returns {{ shopId: string|null, userId: string|null, shopCount: number,
+ *             shopNames: string[] }}
+ */
+async function resolveSenderShop(fromPhone) {
+  const r = await query(
+    `SELECT u.id, u.shop_id, s.name AS shop_name
+       FROM users u
+       JOIN shops s ON s.id = u.shop_id
+      WHERE (u.phone = $1 OR u.phone = $2)
+        AND u.status = 'active'
+        AND u.shop_id IS NOT NULL
+      ORDER BY u.shop_id ASC, (u.role = 'owner') DESC, u.created_at ASC, u.id ASC`,
     [fromPhone, `+${fromPhone}`]
   );
-  if (!userRes.rowCount) {
+  const shopIds = [...new Set(r.rows.map((row) => String(row.shop_id)))];
+  if (shopIds.length !== 1) {
+    return {
+      shopId: null,
+      userId: null,
+      shopCount: shopIds.length,
+      shopNames: [...new Set(r.rows.map((row) => row.shop_name))],
+    };
+  }
+  return { shopId: shopIds[0], userId: r.rows[0].id, shopCount: 1, shopNames: [r.rows[0].shop_name] };
+}
+
+async function processMessage(fromPhone, text) {
+  // Look up the sender's shop — deterministically, and without guessing when the
+  // number maps to more than one shop (batch DATA D8).
+  const sender = await resolveSenderShop(fromPhone);
+  if (sender.shopCount > 1) {
+    // Do NOT guess which shop's khata to write to. Mirrors the ambiguous-customer
+    // refusal below: name the shops so the sender can answer, and write nothing.
+    await whatsapp.sendText(
+      fromPhone,
+      `This number is registered with more than one shop (${sender.shopNames.join(', ')}). ` +
+        'Nothing was saved. Please use the app to record this entry, so it goes to the right shop.'
+    );
+    return;
+  }
+  if (!sender.shopId) {
     await whatsapp.sendText(fromPhone, 'Number not registered with Smart Digital Khata. Please sign up first.');
     return;
   }
-  const { shop_id } = userRes.rows[0];
+  const shop_id = sender.shopId;
 
   const parsed = parseCommand(text);
   if (!parsed) {
@@ -294,4 +357,11 @@ async function purchaseLimitError(client, customer, shopId, newBalance) {
   return null;
 }
 
-module.exports = { handle, findCustomer, purchaseLimitError, amountError, MAX_AMOUNT_PAISE };
+module.exports = {
+  handle,
+  findCustomer,
+  resolveSenderShop,
+  purchaseLimitError,
+  amountError,
+  MAX_AMOUNT_PAISE,
+};

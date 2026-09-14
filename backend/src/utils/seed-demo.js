@@ -40,11 +40,42 @@ function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + m
 // re-insert) instead of piling up rows.
 const RECENT_COLLECTION_NOTE = 'demo recent collection';
 
+// ===========================================================================
+// A STARTER CATALOGUE FOR EVERY DEMO SHOP (batch DATA D1b).
+//
+// This seeder LISTS ten shops and used to insert NO products at all. The only
+// script that inserts products is seed-commerce, and it hard-targets the single
+// owner store01@demo.local — so after the documented setup ("npm run seed:demo"
+// then "npm run seed:commerce") NINE of the ten listed shops had an empty
+// catalogue. That is the other half of the "0 items" the product owner reported
+// from the directory: even with the D1a filter in place, a demo environment
+// where nine shops are invisible is not a demo of anything.
+//
+// So every shop this seeder lists gets something to sell. Names are clean
+// English base names chosen to match `catalog_i18n` product terms, exactly like
+// seed-commerce's, so they localize on the consumer catalogue's ?lang= join.
+// Prices are paise. Store01 keeps its richer 50-product catalogue: seed-commerce
+// clears and reseeds that shop whichever order the two scripts are run in, and
+// the guard below skips any shop that already has an active product.
+// ===========================================================================
+const STARTER_CATALOGUE = [
+  ['Whole Wheat Atta', 'Stone-ground whole wheat flour', 28500, 'bag'],
+  ['Basmati Rice', 'Long-grain aromatic rice', 14000, 'kg'],
+  ['Toor Dal', 'Split pigeon peas (arhar)', 16000, 'kg'],
+  ['Sunflower Oil', 'Refined sunflower cooking oil', 16500, 'litre'],
+  ['Sugar', 'Fine grain sugar', 4800, 'kg'],
+  ['Salt', 'Iodized table salt', 2800, 'kg'],
+  ['Tea', 'Everyday black tea', 14500, 'pack'],
+  ['Bath Soap', 'Everyday bath soap bar', 3500, 'unit'],
+];
+
 /**
  * Post-loop polish for the demo dataset. Idempotent and safe to re-run on top of
  * already-seeded (skipped) shops:
  *   1. LIST all 10 demo shops (is_listed = true) with a placeholder city/area
- *      when blank, so GET /api/public/shops surfaces every demo store.
+ *      when blank, so GET /api/public/shops surfaces every demo store, and give
+ *      each one a starter CATALOGUE if it has none — the directory no longer
+ *      surfaces a listed shop with zero active products (batch DATA D1).
  *   2. Seed a few cash/upi COLLECTION transactions dated in the last 7 days for
  *      each demo shop, so owner Insights shows non-zero Collections + a non-zero
  *      collection rate (and a referred shop can "activate"). Money in paise.
@@ -80,6 +111,26 @@ async function finalizeDemoShops() {
           WHERE id = $1`,
         [shopId]
       );
+
+      // 1b. Give the shop a catalogue if it has none (batch DATA D1b). A LISTED
+      //     shop with zero active products is no longer surfaced by the public
+      //     directory at all, so a demo shop without one is a demo shop nobody
+      //     can find. Skipped entirely for a shop that already sells something
+      //     (store01 after seed-commerce, or any hand-added catalogue), which is
+      //     what makes a re-run converge instead of duplicating rows.
+      const hasProducts = await client.query(
+        'SELECT 1 FROM products WHERE shop_id = $1 AND is_active = true LIMIT 1',
+        [shopId]
+      );
+      if (!hasProducts.rowCount) {
+        for (const [name, description, price, unit] of STARTER_CATALOGUE) {
+          await client.query(
+            `INSERT INTO products (shop_id, name, description, price, unit, is_active)
+             VALUES ($1,$2,$3,$4,$5,true)`,
+            [shopId, name, description, price, unit]
+          );
+        }
+      }
 
       // 2. Refresh this shop's recent demo collections (idempotent via marker).
       const cust = await client.query(

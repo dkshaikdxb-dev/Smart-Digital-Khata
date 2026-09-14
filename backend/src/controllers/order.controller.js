@@ -256,6 +256,33 @@ exports.updateStatus = async (req, res) => {
     const cfg = etaRequested ? await getEtaConfig() : null;
     const etaMinutes = etaRequested ? clampEta(req.body.eta_minutes, cfg) : null;
 
+    // A PREPAID ORDER CANNOT BE COMPLETED UNTIL IT IS PAID (batch DATA D7).
+    //
+    // `payment_status` is flipped to 'paid' here only for CASH (settled on
+    // hand-over); a prepaid order's payment_status is owned by the provider
+    // webhook. Nothing, though, stopped a prepaid order that had never settled
+    // being walked all the way to 'completed' — where it is TERMINAL, so it can
+    // no longer be cancelled, its pay link stays live, and a payment arriving
+    // afterwards has no cancellation to protect it. The shop has handed over the
+    // goods and the order says, permanently, that it was never paid for.
+    //
+    // 409 with an explicit code the owner's UI can render as "this order has not
+    // been paid yet" — the same shape as the other refusals on this endpoint.
+    // The owner is not stuck: accepting/preparing/ready all stay open, the
+    // customer can still pay the live link, and the order can still be cancelled
+    // (which correctly moves nothing, because nothing was paid).
+    if (
+      next === 'completed'
+      && order.payment_mode === 'prepaid'
+      && order.payment_status !== 'paid'
+    ) {
+      throw ApiError.conflict('prepaid_not_paid', {
+        code: 'prepaid_not_paid',
+        payment_status: order.payment_status,
+        message: 'This prepaid order has not been paid yet. It cannot be completed.',
+      });
+    }
+
     // A CASH order is settled on hand-over: completing it means the owner has
     // collected the cash, so flip payment_status pending -> paid. Credit and
     // prepaid payment_status is untouched here (khata / Razorpay own those).

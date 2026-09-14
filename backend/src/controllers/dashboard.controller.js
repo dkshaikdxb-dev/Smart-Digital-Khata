@@ -3,6 +3,11 @@ const { hasPermission } = require('../config/permissions');
 const { PLAN_PRICE } = require('./admin.controller');
 const { buildInsights } = require('../utils/insights');
 const { buildCommentary } = require('../utils/commentary');
+// "Sold on credit", net of the compensating adjustments a cancelled or reduced
+// order leaves in the append-only ledger (batch DATA D4). The platform-wide
+// collection rates below are ratios over that figure, so an inflated denominator
+// understated every one of them.
+const { netCreditSalesSql, netCreditSalesFilteredSql } = require('../utils/creditSales');
 
 // Admin "Khata Control Room" (Phase E). One read-only aggregation endpoint that
 // returns { sections, insights, generated_at }. It is pure aggregation over the
@@ -174,7 +179,7 @@ async function buildNetwork() {
          WHERE c.balance > 0
        ) aged`
     ),
-    scalar("SELECT COALESCE(SUM(amount),0)::bigint AS s FROM transactions WHERE type = 'purchase' AND created_at >= NOW() - INTERVAL '30 days'"),
+    scalar(`SELECT ${netCreditSalesSql('t')}::bigint AS s FROM transactions t WHERE t.created_at >= NOW() - INTERVAL '30 days'`),
     scalar("SELECT COALESCE(SUM(amount),0)::bigint AS s FROM transactions WHERE type IN ('cash','upi') AND created_at >= NOW() - INTERVAL '30 days'"),
   ]);
 
@@ -411,11 +416,11 @@ async function buildFinance() {
     // repayments (cash/upi) over purchases in the same window.
     query(
       `SELECT
-         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase' AND created_at >= NOW() - INTERVAL '30 days'), 0)::bigint AS cur_purch,
-         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi') AND created_at >= NOW() - INTERVAL '30 days'), 0)::bigint AS cur_paid,
-         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase' AND created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'), 0)::bigint AS prior_purch,
-         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi') AND created_at >= NOW() - INTERVAL '60 days' AND created_at < NOW() - INTERVAL '30 days'), 0)::bigint AS prior_paid
-       FROM transactions`
+         ${netCreditSalesFilteredSql('t', "t.created_at >= NOW() - INTERVAL '30 days'")}::bigint AS cur_purch,
+         COALESCE(SUM(t.amount) FILTER (WHERE t.type IN ('cash','upi') AND t.created_at >= NOW() - INTERVAL '30 days'), 0)::bigint AS cur_paid,
+         ${netCreditSalesFilteredSql('t', "t.created_at >= NOW() - INTERVAL '60 days' AND t.created_at < NOW() - INTERVAL '30 days'")}::bigint AS prior_purch,
+         COALESCE(SUM(t.amount) FILTER (WHERE t.type IN ('cash','upi') AND t.created_at >= NOW() - INTERVAL '60 days' AND t.created_at < NOW() - INTERVAL '30 days'), 0)::bigint AS prior_paid
+       FROM transactions t`
     ),
   ]);
   const planCounts = { free: 0, pro: 0, family: 0 };
@@ -467,9 +472,9 @@ async function buildInvestor() {
     scalar('SELECT COALESCE(SUM(balance),0)::bigint AS s FROM customers WHERE balance > 0'),
     query(
       `SELECT
-         COALESCE(SUM(amount) FILTER (WHERE type = 'purchase'), 0)::bigint AS purch,
-         COALESCE(SUM(amount) FILTER (WHERE type IN ('cash','upi')), 0)::bigint AS paid
-       FROM transactions WHERE created_at >= NOW() - INTERVAL '30 days'`
+         ${netCreditSalesSql('t')}::bigint AS purch,
+         COALESCE(SUM(t.amount) FILTER (WHERE t.type IN ('cash','upi')), 0)::bigint AS paid
+       FROM transactions t WHERE t.created_at >= NOW() - INTERVAL '30 days'`
     ),
     // Distinct principals attributed to a referral code (shops + consumers).
     scalar('SELECT COUNT(*)::int AS c FROM referrals'),

@@ -36,6 +36,41 @@ const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
 // in shop.controller MAX_SHOP_IMAGES; a defensive LIMIT on the public read).
 const MAX_PHOTO_SLIDES = 3;
 
+// ===========================================================================
+// WHAT THE PUBLIC DIRECTORY IS ALLOWED TO SURFACE (batch DATA D1a + D2).
+//
+// `is_listed = true` is the shopkeeper's OPT-IN and it is necessary, not
+// sufficient. Two more conditions were missing and each produced a real,
+// reported defect:
+//
+//   NOT SUSPENDED (D2). `shops.status = 'suspended'` was read by exactly two
+//   admin counters and by nothing else. An admin suspending a shop for fraud got
+//   a 200 and an audit row, and the shop went on trading — still in the
+//   directory, still taking orders. The column now means what the admin screen
+//   says it means.
+//
+//   HAS SOMETHING TO SELL (D1a). A shopkeeper flips "list my shop" during
+//   onboarding, BEFORE adding any products, and was published to every shopper
+//   as a store with nothing in it — the "0 items" the product owner reported
+//   from the directory screenshot. Hiding the COUNT would have been the wrong
+//   fix: the shopper still taps through to an empty storefront. A shop enters
+//   the directory when it has something to sell and leaves it again when its
+//   last product is deactivated, which is also exactly what the shopkeeper
+//   would expect.
+//
+// Both are expressed HERE, once, and every public read (directory, cross-shop
+// product search, storefront) applies the same predicate, so the three can never
+// drift into three different ideas of "publishable".
+// ===========================================================================
+const PUBLISHABLE_SHOP_SQL = (s = 's') =>
+  `${s}.status <> 'suspended'
+   AND EXISTS (SELECT 1 FROM products dp
+                WHERE dp.shop_id = ${s}.id AND dp.is_active = true)`;
+
+// A suspended shop is not browsable even by deep link; an EMPTY one still is
+// (see getShop). This is the storefront half of the rule above.
+const NOT_SUSPENDED_SQL = (s = 's') => `${s}.status <> 'suspended'`;
+
 // Resolve ?lang= to a known language, defaulting to 'en'. Unknown/absent values
 // fall back to 'en' (base behaviour) rather than erroring — the public
 // catalogue must always render.
@@ -55,7 +90,8 @@ const haversineKm = ($lat, $lng) =>
 
 /**
  * Public, unauthenticated: browse listed shops. Only shops that opted in
- * (is_listed = true) are ever exposed, and only minimal, non-sensitive fields —
+ * (is_listed = true), are not suspended, and have at least one active product
+ * (see PUBLISHABLE_SHOP_SQL) are ever exposed, and only minimal fields —
  * no phones, balances, or owner info. Optional name/city filters. When both a
  * valid lat and lng are supplied, each located shop gets a great-circle
  * distance_km and results are ordered nearest-first; otherwise ordered by name.
@@ -95,7 +131,7 @@ exports.listShops = async (req, res) => {
   params.push(todayKey(now));
   const closureJoin = closuresJoinSql('s', 'sc', `$${params.length}`);
 
-  const where = ['s.is_listed = true'];
+  const where = ['s.is_listed = true', PUBLISHABLE_SHOP_SQL('s')];
 
   // The optional open-only filter has to be decided BEFORE the LIMIT, so it is
   // the one place the rule is expressed in SQL — see openPredicateSql(), which
@@ -292,7 +328,9 @@ exports.searchProducts = async (req, res) => {
   params.push(todayKey(now));
   const closureJoin = closuresJoinSql('s', 'sc', `$${params.length}`);
 
-  const where = ['p.is_active = true', 's.is_listed = true', matchClause];
+  // `p.is_active` + the join already guarantee the shop has something to sell,
+  // so only the suspension half of the publishable rule is needed here.
+  const where = ['p.is_active = true', 's.is_listed = true', NOT_SUSPENDED_SQL('s'), matchClause];
 
   if (city) {
     params.push(city);
@@ -425,9 +463,13 @@ exports.getShop = async (req, res) => {
        FROM shops s
        ${shopNameJoin}
        ${closureJoin}
-      WHERE s.id = $1 AND s.is_listed = true`,
+      WHERE s.id = $1 AND s.is_listed = true AND ${NOT_SUSPENDED_SQL('s')}`,
     shopParams
   );
+  // A SUSPENDED shop 404s here exactly as an unlisted one does (batch DATA D2):
+  // a shop the platform has stopped can no longer be reached by a saved link or
+  // a shared WhatsApp URL, and "suspended" is indistinguishable from "unknown" so
+  // probing reveals nothing about a moderation decision.
   if (!shop.rowCount) throw ApiError.notFound('Shop not found');
 
   // category/subcategory come from the linked base catalog item (LEFT JOIN, so
@@ -541,6 +583,19 @@ exports.getShop = async (req, res) => {
   }
 
   const body = { ...shop.rows[0], availability, products: products.rows, images, slides };
+
+  // THE DEEP LINK INTO A SHOP WITH NO CATALOGUE (batch DATA D1a).
+  //
+  // The directory no longer lists a shop with zero active products, but its
+  // storefront URL stays reachable — the shopkeeper shares that link themselves
+  // during onboarding, and a saved/bookmarked one must not start 404ing the
+  // moment the last product is deactivated. So the storefront still renders, and
+  // it SAYS SO instead of showing a bare empty list that reads like a loading
+  // failure: `catalogue_empty` is the flag, `catalogue_notice_code` the stable
+  // key the clients localize ("This shop has not added any items yet"). Both are
+  // additive — `products` keeps its shape and is simply [].
+  body.catalogue_empty = products.rowCount === 0;
+  body.catalogue_notice_code = products.rowCount === 0 ? 'shop_has_no_items_yet' : null;
 
   // Only expose the accent/tagline while premium is active. When not branded,
   // return is_branded:false and null out the theming fields so a lapsed shop's

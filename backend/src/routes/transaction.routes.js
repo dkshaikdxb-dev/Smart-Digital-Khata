@@ -18,8 +18,24 @@ const createSchema = Joi.object({
   client_request_id: Joi.string().uuid().optional(),
 });
 
+// QUERY VALIDATION for the ledger list (batch DATA D5). Three parameters reached
+// SQL unchecked and each 500'd with raw Postgres text:
+//   ?customer_id=abc  -> "invalid input syntax for type uuid"
+//   ?limit=abc        -> Number('abc') is NaN -> LIMIT NaN
+//   ?from=yesterday   -> invalid timestamp input
+// The bounds mirror what the controller already intended: limit defaults to 100
+// and is capped at 500, and `type` is the same vocabulary the create schema uses
+// plus 'adjustment' (a real ledger type since 0068, so it must be filterable).
+const listQuerySchema = Joi.object({
+  customer_id: Joi.string().uuid(),
+  type: Joi.string().valid('purchase', 'cash', 'upi', 'adjustment'),
+  from: Joi.date().iso(),
+  to: Joi.date().iso(),
+  limit: Joi.number().integer().min(1).max(500).default(100),
+});
+
 router.use(auth(['owner', 'staff']));
-router.get('/', asyncHandler(ctrl.list));
+router.get('/', validate(listQuerySchema, 'query'), asyncHandler(ctrl.list));
 router.post('/', validate(createSchema), asyncHandler(ctrl.create));
 router.get('/:id', asyncHandler(ctrl.get));
 

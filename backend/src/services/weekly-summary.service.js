@@ -12,6 +12,7 @@ const { query } = require('../config/db');
 const whatsapp = require('./whatsapp.service');
 const logger = require('../utils/logger');
 const { buildWeeklySummary, resolveLang } = require('../utils/weekly-summary');
+const { netCreditSalesSql } = require('../utils/creditSales');
 
 // The last-sent guard: a shop is eligible for a weekly send only when its last
 // send is null or strictly older than this. 6 (not 7) days gives the Sunday tick
@@ -43,12 +44,15 @@ async function computeWeeklyForShop(shopId, lang) {
           AND created_at >= NOW() - make_interval(days => $2::int)`,
       [shopId, WEEK_DAYS]
     ),
-    // New udhaar this week (purchases on credit), Σ in exact paise.
+    // New udhaar this week (purchases on credit), Σ in exact paise, NET of the
+    // compensating adjustments a cancelled or reduced order leaves in the
+    // append-only ledger (batch DATA D4). An order the owner rejected never
+    // became udhaar, so it must not be reported as this week's new udhaar.
     query(
-      `SELECT COALESCE(SUM(amount),0)::bigint AS s
-         FROM transactions
-        WHERE shop_id = $1 AND type = 'purchase'
-          AND created_at >= NOW() - make_interval(days => $2::int)`,
+      `SELECT ${netCreditSalesSql('t')}::bigint AS s
+         FROM transactions t
+        WHERE t.shop_id = $1
+          AND t.created_at >= NOW() - make_interval(days => $2::int)`,
       [shopId, WEEK_DAYS]
     ),
     // Customers still owing (balance > 0): count + total, all-time (matches the

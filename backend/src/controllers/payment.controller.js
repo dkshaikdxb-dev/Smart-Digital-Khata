@@ -3,9 +3,14 @@ const ApiError = require('../utils/ApiError');
 const razorpay = require('../services/razorpay.service');
 const whatsapp = require('../services/whatsapp.service');
 const { toE164 } = require('../utils/phone');
+const { assertShopNotSuspended } = require('../utils/shopOpen');
 
 exports.createOrder = async (req, res) => {
   const { customer_id, amount, note } = req.body;
+  // A SUSPENDED shop raises no new payment links (batch DATA D2). It is the same
+  // 403 `shop_suspended` the order gate throws, from the same helper — a
+  // suspension must stop the shop taking money, not only taking orders.
+  await assertShopNotSuspended(req.user.shopId);
   const c = await query(
     'SELECT id, name, phone, balance FROM customers WHERE id=$1 AND shop_id=$2',
     [customer_id, req.user.shopId]

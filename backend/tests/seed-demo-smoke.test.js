@@ -31,6 +31,21 @@ describe('demo seeders', () => {
     );
     expect(listed.rows[0].n).toBe(10);
 
+    // 1b. EVERY listed demo shop has a catalogue (batch DATA D1b). seed-demo
+    //     listed ten shops and inserted no products at all; seed-commerce stocks
+    //     only store01, so nine of ten demo shops were published as empty stores
+    //     — and, with the D1a directory filter, would now not be published at
+    //     all. A demo environment where nine shops are invisible is not a demo.
+    const stocked = await pool.query(
+      `SELECT COUNT(*)::int AS n
+         FROM shops s
+         JOIN users u ON u.shop_id = s.id
+        WHERE u.email LIKE 'store%@demo.local'
+          AND s.is_listed = true
+          AND EXISTS (SELECT 1 FROM products p WHERE p.shop_id = s.id AND p.is_active = true)`
+    );
+    expect(stocked.rows[0].n).toBe(10);
+
     // 2. store01 carries the clean, English-named commerce catalog (a name that
     //    matches a catalog_i18n term_en so it localizes downstream).
     const clean = await pool.query(
