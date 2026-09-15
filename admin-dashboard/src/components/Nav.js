@@ -7,6 +7,7 @@ import OrderAlert from './OrderAlert';
 import { clearApiCache } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions, clearPermsCache } from '../lib/adminPerms';
+import { usePendingReview, clearPendingReviewCache } from '../lib/pendingReview';
 
 export default function Nav() {
   const router = useRouter();
@@ -14,6 +15,12 @@ export default function Nav() {
   const [role, setRole] = useState(null);
   // Only admins have a permission set; skip the /api/admin/me fetch otherwise.
   const { has } = usePermissions(role === 'admin');
+  // How much is waiting on the moderation desk. One cached request per session,
+  // asked only of an admin who may act on the answer (ads:manage — the same
+  // permission the three queues themselves carry), so the pill can never
+  // announce work the viewer is not allowed to see.
+  const canReview = role === 'admin' && has('ads:manage');
+  const { total: pendingTotal, ready: pendingReady } = usePendingReview(canReview);
 
   // When the page is loaded inside the native app's WebView it is opened with
   // ?embed=1. In that case the app already provides its own header + bottom tab
@@ -53,6 +60,7 @@ export default function Nav() {
     // Drop cached API responses so a shared device doesn't leak this user's data.
     clearApiCache();
     clearPermsCache();
+    clearPendingReviewCache();
     router.push('/login');
   };
 
@@ -69,7 +77,25 @@ export default function Nav() {
           {has('revenue:view') && <Link href="/admin/referral-campaigns">{t('rc.nav')}</Link>}
           {has('content:manage') && <Link href="/admin/content">{t('content.nav')}</Link>}
           {has('ads:view') && <Link href="/admin/ads">Campaigns</Link>}
-          {has('audit:view') && <Link href="/admin/moderation">{t('mod.navModeration')}</Link>}
+          {/* Moderation is the desk, not just the log: an ads:manage admin (the
+              marketing role holds it without audit:view) has a queue to work
+              there, so the link is shown for either permission. The pill is the
+              only place the console says work is waiting — it is absent, not a
+              zero, when nothing is (calm) and when the count is unknown. */}
+          {(has('audit:view') || canReview) && (
+            <Link href="/admin/moderation">
+              {t('mod.navModeration')}
+              {pendingReady && pendingTotal > 0 && (
+                <span
+                  className="badge"
+                  style={{ marginLeft: 6, background: 'var(--warn-bg)', color: 'var(--warn-ink)', fontWeight: 700 }}
+                  aria-label={t('mod.pendingAria', { n: pendingTotal })}
+                >
+                  {pendingTotal}
+                </span>
+              )}
+            </Link>
+          )}
           {has('settings:manage') && <Link href="/admin/settings">{t('nav.settings')}</Link>}
           <Link href="/admin/i18n">{t('nav.translations')}</Link>
           <Link href="/admin/languages">{t('alang.title')}</Link>

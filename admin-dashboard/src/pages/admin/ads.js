@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { usePermissions } from '../../lib/adminPerms';
-import { money } from '../../lib/money';
+import GeoChips from '../../components/GeoChips';
+import ModerationQueue from '../../components/ModerationQueue';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -57,9 +58,6 @@ const PLACEMENTS = [
   { value: 'storefront', label: 'Storefront slot', hint: 'One slide inside a shop page' },
 ];
 const PLACEMENT_LABEL = Object.fromEntries(PLACEMENTS.map((p) => [p.value, p.label]));
-
-// The gallery photo bytes are served by the API host (not the dashboard origin).
-const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API}${url}`));
 
 const EMPTY = {
   id: null,
@@ -155,19 +153,9 @@ export default function AdminAds() {
   const canManage = has('ads:manage');
 
   const [items, setItems] = useState([]);
-  const [pending, setPending] = useState([]); // self-serve shop promos awaiting moderation
-  const [modBusy, setModBusy] = useState(null); // id currently being approved/rejected
-  // Storefront photo moderation queue (batch STOREFRONT-FULL): photos awaiting
-  // review + the shops currently trusted to auto-publish.
-  const [photoQueue, setPhotoQueue] = useState({ items: [], auto_publish_shops: [] });
-  const [photoBusy, setPhotoBusy] = useState(null); // photo id / shop id being acted on
   // AI moderation stats strip (batch AI-MOD): last-30-day AI decisions + how
   // often admins agreed with them. null until loaded / when unavailable.
   const [aiStats, setAiStats] = useState(null);
-  // Post-publish spot checks (batch MOD2): a sample of what the AI published,
-  // waiting for a human second look. Everything in here is ALREADY LIVE.
-  const [spotChecks, setSpotChecks] = useState([]);
-  const [spotBusy, setSpotBusy] = useState(null);
   const [geo, setGeo] = useState({ towns: [], villages: [], pincodes: [] });
   const [shops, setShops] = useState(null); // null = picker unavailable (no shops:view), else [] list
   const [filters, setFilters] = useState({ status: '', style: '', geo: '', placement: '' });
@@ -216,30 +204,6 @@ export default function AdminAds() {
 
   useEffect(() => { if (canView) load(); }, [canView, load]);
 
-  // Shop self-serve promo moderation queue (batch PROMO-BUY). Only a manager may
-  // see/act on it (ads:manage), so it stays empty for a view-only marketing admin.
-  const loadPending = useCallback(async () => {
-    if (!canManage) return;
-    try {
-      const r = await apiFetch('/api/admin/promos/pending');
-      setPending(r.items || []);
-    } catch (e) { /* non-fatal — the queue just stays empty */ }
-  }, [canManage]);
-
-  useEffect(() => { if (canManage) loadPending(); }, [canManage, loadPending]);
-
-  // Storefront photo queue (batch STOREFRONT-FULL). Manager-only like the promo
-  // queue; a failure just leaves it empty.
-  const loadPhotoQueue = useCallback(async () => {
-    if (!canManage) return;
-    try {
-      const r = await apiFetch('/api/admin/shop-images/pending');
-      setPhotoQueue({ items: r.items || [], auto_publish_shops: r.auto_publish_shops || [] });
-    } catch (e) { /* non-fatal — the queue just stays empty */ }
-  }, [canManage]);
-
-  useEffect(() => { if (canManage) loadPhotoQueue(); }, [canManage, loadPhotoQueue]);
-
   // AI stats strip. Manager-only like the queues; a failure just hides it.
   const loadAiStats = useCallback(async () => {
     if (!canManage) return;
@@ -250,80 +214,10 @@ export default function AdminAds() {
 
   useEffect(() => { if (canManage) loadAiStats(); }, [canManage, loadAiStats]);
 
-  // Spot-check queue. Manager-only like the other two; a failure just leaves it
-  // empty rather than blocking the desk.
-  const loadSpotChecks = useCallback(async () => {
-    if (!canManage) return;
-    try {
-      const r = await apiFetch('/api/admin/moderation/spot-checks');
-      setSpotChecks(r.items || []);
-    } catch (e) { /* non-fatal — the card just stays empty */ }
-  }, [canManage]);
-
-  useEffect(() => { if (canManage) loadSpotChecks(); }, [canManage, loadSpotChecks]);
-
-  // OK → the AI was right, the item stays live and the check closes. Not OK →
-  // the item is taken straight back down to the review queue (it stops being
-  // public), the shop loses the trust point the auto-approval earned, and the
-  // decision is audited against this admin.
-  async function reviewSpotCheck(id, verdict) {
-    if (!canManage || spotBusy) return;
-    setSpotBusy(id); setError(''); setMsg('');
-    try {
-      const r = await apiFetch(`/api/admin/moderation/spot-checks/${id}`, {
-        method: 'POST', body: JSON.stringify({ verdict }),
-      });
-      setMsg(verdict === 'ok'
-        ? 'Spot check cleared — the item stays live.'
-        : `Taken down${r && r.took_down === false ? ' (it was already down)' : ''} — it is back in the review queue below.`);
-      await Promise.all([loadSpotChecks(), loadAiStats(), loadPhotoQueue(), loadPending()]);
-    } catch (e) { setError(e.message); }
-    finally { setSpotBusy(null); }
-  }
-
-  // Approve → the photo goes live on the storefront. Reject → it never shows and
-  // the note is shown to the owner on their photo. No money moves either way.
-  async function moderatePhoto(id, action, note) {
-    if (!canManage || photoBusy) return;
-    setPhotoBusy(id); setError(''); setMsg('');
-    try {
-      const body = note ? { review_note: note } : {};
-      await apiFetch(`/api/admin/shop-images/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
-      setMsg(action === 'approve' ? 'Photo approved — now live on the storefront.' : 'Photo rejected.');
-      await Promise.all([loadPhotoQueue(), loadAiStats()]);
-    } catch (e) { setError(e.message); }
-    finally { setPhotoBusy(null); }
-  }
-
-  // Per-shop trust toggle: future uploads from this shop publish without review
-  // (on) or wait in this queue (off). Already-pending photos stay in the queue.
-  async function setAutoPublish(shopId, on) {
-    if (!canManage || photoBusy) return;
-    setPhotoBusy(shopId); setError(''); setMsg('');
-    try {
-      await apiFetch(`/api/admin/shops/${shopId}/slides`, { method: 'PATCH', body: JSON.stringify({ auto_publish: !!on }) });
-      setMsg(on ? 'Shop trusted — its new photos publish without review.' : 'Trust removed — this shop’s new photos wait for review.');
-      await loadPhotoQueue();
-    } catch (e) { setError(e.message); }
-    finally { setPhotoBusy(null); }
-  }
-
-  // Approve → the promo goes active and starts serving. Reject → it is declined
-  // and the shop's Khata Credits are refunded (idempotently, server-side).
-  async function moderate(id, action, note, isFree) {
-    if (!canManage || modBusy) return;
-    setModBusy(id); setError(''); setMsg('');
-    try {
-      // review_note is the canonical field; it is captured on both approve and
-      // reject and shown back to the owner on their placement.
-      const body = note ? { review_note: note } : {};
-      await apiFetch(`/api/admin/promos/${id}/${action}`, { method: 'POST', body: JSON.stringify(body) });
-      const rejectMsg = isFree ? 'Promo rejected.' : 'Promo rejected — credits refunded.';
-      setMsg(action === 'approve' ? 'Promo approved — now live.' : rejectMsg);
-      await Promise.all([loadPending(), load(), loadAiStats()]);
-    } catch (e) { setError(e.message); }
-    finally { setModBusy(null); }
-  }
+  // The review queue owns its own reload; this is what a decision moves on THIS
+  // page — an approved shop promo becomes a live campaign, and every decision is
+  // a data point in the AI-triage strip above it.
+  const queueDecided = useCallback(() => { load(); loadAiStats(); }, [load, loadAiStats]);
 
   function resetForm() {
     setForm(EMPTY);
@@ -760,148 +654,11 @@ export default function AdminAds() {
         </div>
       )}
 
-      {/* POST-PUBLISH SPOT CHECKS (batch MOD2). Deliberately its own card, above
-          the two pre-publish queues and tinted differently: everything here is
-          ALREADY PUBLIC. "OK" closes the check; "Not OK" takes the item down and
-          drops it back into the queue below. */}
-      {canManage && (
-        <div className="card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 0 }}>
-              Already live — spot checks <span className="badge" style={{ background: '#78350f', color: '#fde68a' }}>{spotChecks.length}</span>
-            </h3>
-            <button type="button" className="secondary" onClick={loadSpotChecks}>Refresh</button>
-          </div>
-          <p className="muted" style={{ marginTop: 8 }}>
-            A random sample of what the AI published <strong>without a human</strong>. These are live on the
-            storefront right now. “OK” means the AI was right. “Not OK” takes the item down immediately, puts it
-            back in the review queue below and costs the shop a trust point.
-          </p>
-          {spotChecks.length === 0 ? (
-            <div className="muted">Nothing sampled awaiting a second look.</div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Shop</th>
-                    <th>Item</th>
-                    <th>AI said</th>
-                    <th>Published</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {spotChecks.map((sc) => (
-                    <SpotCheckRow key={sc.id} sc={sc} busy={spotBusy === sc.id} onReview={reviewSpotCheck} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Storefront photo moderation queue (batch STOREFRONT-FULL). Owner photos
-          wait here at pending_review until a manager approves (→ live on the
-          storefront) or rejects them (→ never shown, note goes to the owner).
-          The per-shop trust toggle lets a shop's uploads skip the queue. */}
-      {canManage && (
-        <div className="card">
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 0 }}>Shop photos <span className="badge">{photoQueue.items.length}</span></h3>
-            <button type="button" className="secondary" onClick={loadPhotoQueue}>Refresh</button>
-          </div>
-          <p className="muted" style={{ marginTop: 8 }}>Storefront photos owners uploaded. Approve to show them on the shop page, or reject with a reason the owner will see. Trusted shops publish without review.</p>
-          {photoQueue.items.length === 0 ? (
-            <div className="muted">No shop photos awaiting review.</div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Shop</th>
-                    <th>Photo</th>
-                    <th>AI</th>
-                    <th>Uploaded</th>
-                    <th>Auto-publish</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {photoQueue.items.map((p) => (
-                    <PhotoPendingRow
-                      key={p.id} p={p}
-                      busy={photoBusy === p.id || photoBusy === p.shop_id}
-                      onModerate={moderatePhoto}
-                      onAutoPublish={setAutoPublish}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {photoQueue.auto_publish_shops.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Trusted shops (photos publish without review):</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {photoQueue.auto_publish_shops.map((s) => (
-                  <span key={s.shop_id} className="badge" style={{ display: 'inline-flex', gap: 6, alignItems: 'center', background: '#14532d', color: '#bbf7d0' }}>
-                    {s.shop_name}{s.shop_city ? ` · ${s.shop_city}` : ''}
-                    <button
-                      type="button"
-                      disabled={photoBusy === s.shop_id}
-                      onClick={() => setAutoPublish(s.shop_id, false)}
-                      title="Remove trust — new photos wait for review"
-                      aria-label={`Remove trust for ${s.shop_name}`}
-                      style={{ background: 'transparent', color: 'inherit', padding: 0, fontWeight: 700, lineHeight: 1 }}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Shop self-serve promo moderation queue (batch PROMO-BUY). Shops buy a
-          promo with Khata Credits; it waits here at pending_review until a manager
-          approves it (→ live) or rejects it (→ refunded). Manager-only. */}
-      {canManage && (
-        <div className="card">
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <h3 style={{ marginTop: 0, marginBottom: 0 }}>Shop requests <span className="badge">{pending.length}</span></h3>
-            <button type="button" className="secondary" onClick={loadPending}>Refresh</button>
-          </div>
-          <p className="muted" style={{ marginTop: 8 }}>Shops that spent Khata Credits to boost themselves. Approve to go live, or reject (credits are refunded).</p>
-          {pending.length === 0 ? (
-            <div className="muted">No shop promo requests awaiting review.</div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Shop</th>
-                    <th>Creative</th>
-                    <th>AI</th>
-                    <th>Targets</th>
-                    <th>Window</th>
-                    <th>Paid</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pending.map((p) => (
-                    <PendingRow key={p.id} p={p} busy={modBusy === p.id} onModerate={moderate} />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+      {/* THE review queue (batch MODQ). Spot checks, storefront photos and shop
+          promo requests, with their approve/reject actions — the same component
+          the Moderation page renders, so there is one queue and not two copies.
+          It gates itself on ads:manage and renders nothing without it. */}
+      <ModerationQueue pageLink onDecision={queueDecided} />
 
       {/* Matrix table */}
       <div className="card">
@@ -981,225 +738,6 @@ function CampaignRow({ c, canManage, onEdit, onToggle, onDelete }) {
           </div>
         </td>
       )}
-    </tr>
-  );
-}
-
-// Compact geo summary for a table cell: an "Everywhere" pill, or up to a few
-// value chips per kind with a "+N" overflow.
-function GeoChips({ targets }) {
-  const list = targets || [];
-  if (list.some((t) => t.geo_type === 'all')) {
-    return <span className="badge" style={{ background: '#1e3a8a', color: '#bfdbfe' }}>Everywhere</span>;
-  }
-  if (list.length === 0) return <span className="muted">—</span>;
-  const shown = list.slice(0, 4);
-  return (
-    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 240 }}>
-      {shown.map((t, i) => (
-        <span key={i} className="badge" title={t.geo_type}>{t.geo_type[0].toUpperCase()}·{t.geo_value}</span>
-      ))}
-      {list.length > shown.length && <span className="badge">+{list.length - shown.length}</span>}
-    </div>
-  );
-}
-
-// The AI's suggestion on a queue row (batch AI-MOD): decision + confidence % +
-// its one-line reason. "Hold" is a red pill (the row is also tinted), "Approve"
-// green (it sat below the auto-approve threshold, so a human still decides),
-// "Review" neutral. Nothing when the job has not run (feature off / no verdict).
-const AI_BADGE = {
-  approve: { label: 'AI: Approve', bg: '#14532d', fg: '#bbf7d0' },
-  hold: { label: 'AI: Hold', bg: '#7f1d1d', fg: '#fecaca' },
-  review: { label: 'AI: Review', bg: '#334155', fg: '#cbd5e1' },
-};
-function AiBadge({ v }) {
-  if (!v || !AI_BADGE[v.decision]) return <span className="muted" style={{ fontSize: 12 }}>—</span>;
-  const b = AI_BADGE[v.decision];
-  const pct = Number.isFinite(Number(v.confidence)) ? `${Math.round(Number(v.confidence) * 100)}%` : '';
-  const cats = Array.isArray(v.categories) && v.categories.length ? v.categories.join(', ') : '';
-  return (
-    <div style={{ display: 'grid', gap: 3, maxWidth: 220 }}>
-      <span className="badge" style={{ background: b.bg, color: b.fg, width: 'fit-content' }} title={cats || undefined}>
-        {b.label}{pct ? ` · ${pct}` : ''}
-      </span>
-      {v.reason && <div className="muted" style={{ fontSize: 12 }}>{v.reason}</div>}
-    </div>
-  );
-}
-// Rows the AI flagged sort first and read as "look at me".
-const flaggedRow = { background: 'rgba(127, 29, 29, 0.28)' };
-const aiReason = (p) => (p && p.ai_verdict && typeof p.ai_verdict.reason === 'string' ? p.ai_verdict.reason : '');
-
-// One row in the shop self-serve moderation queue. Approve → live; Reject captures
-// an optional note (shown to the owner) and, for a PAID promo, refunds the shop's
-// credits server-side. A FREE request (is_free) paid nothing, so its reject refunds
-// nothing — the row makes that explicit with a "Free" pill. The AI badge shows
-// the model's suggestion; Reject pre-fills its reason (editable), Approve stays
-// one tap.
-function PendingRow({ p, busy, onModerate }) {
-  const [note, setNote] = useState('');
-  const [rejecting, setRejecting] = useState(false);
-  const isFree = !!p.is_free || (Number(p.credits_spent_paise) || 0) === 0;
-  const paid = money(p.credits_spent_paise);
-  const win = (v) => (v ? new Date(v).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—');
-  const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined, isFree);
-  const startReject = () => { setNote(aiReason(p)); setRejecting(true); };
-  return (
-    <tr style={p.ai_flagged ? flaggedRow : undefined}>
-      <td style={cell}>
-        <div style={{ fontWeight: 600 }}>{p.shop_name || p.advertiser || '—'}</div>
-        {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
-      </td>
-      <td style={cell}>
-        <div>{p.glyph} {p.offer_text || <span className="muted">No offer line</span>}</div>
-        {p.subtitle && <div className="muted" style={{ fontSize: 12 }}>{p.subtitle}</div>}
-      </td>
-      <td style={cell}><AiBadge v={p.ai_verdict} /></td>
-      <td style={cell}><GeoChips targets={p.targets} /></td>
-      <td style={cell}>{win(p.starts_at)} – {win(p.ends_at)}</td>
-      <td style={cell}>
-        {isFree
-          ? <span className="badge" style={{ background: '#1e3a8a', color: '#bfdbfe' }}>Free</span>
-          : paid}
-      </td>
-      <td style={cell}>
-        {rejecting ? (
-          <div style={{ display: 'grid', gap: 6, minWidth: 200 }}>
-            <input
-              value={note}
-              placeholder={isFree ? 'Reason (optional)' : 'Reason (optional) — credits are refunded'}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={1000}
-              aria-label="Rejection reason"
-            />
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={doReject}>
-                {busy ? '…' : 'Confirm reject'}
-              </button>
-              <button type="button" className="secondary" disabled={busy} onClick={() => { setRejecting(false); setNote(''); }}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve', undefined, isFree)}>
-              {busy ? '…' : 'Approve'}
-            </button>
-            <button type="button" className="secondary" disabled={busy} onClick={startReject}>Reject</button>
-          </div>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-// One row in the POST-PUBLISH spot-check card (batch MOD2). The item is already
-// live, so this is a two-button row and nothing else: OK (the AI was right) or
-// Not OK (take it down now, back into the review queue). No note input — the
-// real decision happens in the pre-publish queue the item lands back in.
-function SpotCheckRow({ sc, busy, onReview }) {
-  const when = sc.created_at ? new Date(sc.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-  const creative = sc.creative || {};
-  return (
-    <tr>
-      <td style={cell}>
-        <div style={{ fontWeight: 600 }}>{sc.shop_name || '—'}</div>
-        {sc.shop_city && <div className="muted" style={{ fontSize: 12 }}>{sc.shop_city}</div>}
-      </td>
-      <td style={cell}>
-        {sc.kind === 'shop_image' ? (
-          sc.url
-            ? <img src={resolveImg(sc.url)} alt="Published photo" style={{ width: 88, height: 66, objectFit: 'cover', borderRadius: 6, border: '1px solid #334155' }} />
-            : <span className="muted">photo</span>
-        ) : (
-          <div style={{ maxWidth: 260 }}>
-            <div>{creative.glyph} {creative.offer_text || creative.title || <span className="muted">Promo</span>}</div>
-            {creative.subtitle && <div className="muted" style={{ fontSize: 12 }}>{creative.subtitle}</div>}
-          </div>
-        )}
-        {!sc.live && <div className="muted" style={{ fontSize: 12 }}>already taken down elsewhere</div>}
-      </td>
-      <td style={cell}><AiBadge v={sc.ai_verdict} /></td>
-      <td style={cell}>{when}</td>
-      <td style={cell}>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button type="button" disabled={busy} onClick={() => onReview(sc.id, 'ok')}>{busy ? '…' : 'OK'}</button>
-          <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={() => onReview(sc.id, 'bad')}>
-            Not OK — take down
-          </button>
-        </div>
-      </td>
-    </tr>
-  );
-}
-
-// One row in the storefront photo moderation queue (batch STOREFRONT-FULL).
-// Mirrors PendingRow: Approve → live; Reject captures an optional note shown to
-// the owner (pre-filled with the AI's reason when there is one). The
-// auto-publish checkbox is the per-shop trust toggle.
-function PhotoPendingRow({ p, busy, onModerate, onAutoPublish }) {
-  const [note, setNote] = useState('');
-  const [rejecting, setRejecting] = useState(false);
-  const when = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-  const doReject = () => onModerate(p.id, 'reject', note.trim() || undefined);
-  const startReject = () => { setNote(aiReason(p)); setRejecting(true); };
-  return (
-    <tr style={p.ai_flagged ? flaggedRow : undefined}>
-      <td style={cell}>
-        <div style={{ fontWeight: 600 }}>{p.shop_name || '—'}</div>
-        {p.shop_city && <div className="muted" style={{ fontSize: 12 }}>{p.shop_city}</div>}
-      </td>
-      <td style={cell}>
-        <a href={resolveImg(p.url)} target="_blank" rel="noreferrer" title="Open full size">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={resolveImg(p.url)}
-            alt={`${p.shop_name || 'Shop'} photo ${(p.position || 0) + 1}`}
-            loading="lazy"
-            style={{ display: 'block', width: 160, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #334155' }}
-          />
-        </a>
-      </td>
-      <td style={cell}><AiBadge v={p.ai_verdict} /></td>
-      <td style={cell}><div style={{ fontSize: 13 }}>{when}</div></td>
-      <td style={cell}>
-        <label style={{ display: 'flex', gap: 6, alignItems: 'center', width: 'auto', cursor: 'pointer' }} title="Publish this shop's future photos without review">
-          <input
-            type="checkbox"
-            style={{ width: 'auto' }}
-            checked={!!p.auto_publish}
-            disabled={busy}
-            onChange={(e) => onAutoPublish(p.shop_id, e.target.checked)}
-          />
-          <span style={{ fontSize: 12 }}>Trust shop</span>
-        </label>
-      </td>
-      <td style={cell}>
-        {rejecting ? (
-          <div style={{ display: 'grid', gap: 6, minWidth: 200 }}>
-            <input
-              value={note}
-              placeholder="Reason (shown to the owner)"
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={1000}
-              aria-label="Rejection reason"
-            />
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button type="button" className="secondary" style={{ color: 'var(--danger)' }} disabled={busy} onClick={doReject}>
-                {busy ? '…' : 'Confirm reject'}
-              </button>
-              <button type="button" className="secondary" disabled={busy} onClick={() => { setRejecting(false); setNote(''); }}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button type="button" disabled={busy} onClick={() => onModerate(p.id, 'approve')}>
-              {busy ? '…' : 'Approve'}
-            </button>
-            <button type="button" className="secondary" disabled={busy} onClick={startReject}>Reject</button>
-          </div>
-        )}
-      </td>
     </tr>
   );
 }

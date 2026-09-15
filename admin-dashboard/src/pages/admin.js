@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Nav from '../components/Nav';
 import DataTable from '../components/DataTable';
@@ -6,6 +7,7 @@ import DownloadList from '../components/DownloadList';
 import { apiFetch } from '../lib/api';
 import { useLang } from '../lib/i18n';
 import { usePermissions } from '../lib/adminPerms';
+import { usePendingReview } from '../lib/pendingReview';
 import { money as fmt } from '../lib/money';
 
 const ADMIN_ROLES = ['super', 'support', 'finance', 'moderation'];
@@ -22,6 +24,10 @@ export default function PlatformAdmin() {
 
   const canModerateUsers = has('users:moderate');
   const canManageAdmins = has('admin:manage');
+  // The hub is where an admin starts the day, so it is where the review queue
+  // says how much is waiting. Same ads:manage gate as the queue it links to.
+  const canReview = has('ads:manage');
+  const { counts, total: pendingTotal, ready: pendingReady } = usePendingReview(canReview);
 
   // Each export is shown only when the caller's permission set allows the data
   // it emits — matching the requirePerm gate on the backend route.
@@ -116,6 +122,38 @@ export default function PlatformAdmin() {
         <h1>Platform overview</h1>
         {error && <div className="card" style={{ color: 'var(--danger)' }}>{error}</div>}
         {msg && <div className="card" style={{ color: 'var(--accent)' }}>{msg}</div>}
+
+        {/* Waiting for review. Work waiting is a warm left edge and a count; no
+            work waiting is the same card, quiet — settled, not broken. Nothing
+            at all is rendered when the count could not be fetched, so the hub
+            never claims "all clear" on the strength of a failed request. */}
+        {canReview && pendingReady && (
+          <div className="card" style={{ borderLeft: `4px solid ${pendingTotal > 0 ? 'var(--warn)' : 'var(--border)'}` }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+              <div>
+                <div className="muted">{t('mod.pendingTitle')}</div>
+                {pendingTotal > 0 ? (
+                  <>
+                    <div className="kpi" style={{ color: 'var(--warn-ink)' }}>{t('mod.pendingSome', { n: pendingTotal })}</div>
+                    <div className="muted">
+                      {t('mod.pendingBreakdown', {
+                        promos: counts.promos,
+                        photos: counts.shop_images,
+                        checks: counts.spot_checks,
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 18, fontWeight: 600 }}>{t('mod.pendingNone')}</div>
+                    <div className="muted">{t('mod.pendingSettled')}</div>
+                  </>
+                )}
+              </div>
+              <Link href="/admin/moderation">{t('mod.pendingOpen')}</Link>
+            </div>
+          </div>
+        )}
 
         <div className="grid">
           <div className="card"><div className="muted">MRR</div><div className="kpi" style={{ color: 'var(--accent)' }}>{stats ? fmt(stats.mrr) : '—'}</div><div className="muted">{stats ? `${stats.plan_counts.pro} Pro · ${stats.plan_counts.family} Family` : ''}</div></div>

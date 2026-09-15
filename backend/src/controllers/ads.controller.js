@@ -541,6 +541,44 @@ async function moderateShopImage(req, next, note) {
   return row;
 }
 
+// GET /api/admin/moderation/pending-count — how much is waiting for a human,
+// as three numbers and their sum (batch MODQ).
+//
+// The console chrome (the nav pill, the platform-admin hub card) has to be able
+// to say "N waiting" on every page. It could ask the three queue endpoints, but
+// each of those returns up to 500 fully-joined rows, so drawing one digit would
+// cost three round trips of payload on a desk that is open all day. This is the
+// same three WHEREs with nothing selected — each one hits the index the queue
+// itself reads (idx_ad_campaigns_status_ai_flagged, shop_images_status,
+// idx_spot_checks_status) — in a single round trip.
+//
+// Permissioned identically to the three queues it counts (requirePerm
+// 'ads:manage' in admin.routes), so it cannot tell an admin that work exists
+// which they are not allowed to open. It is deliberately NOT widened to
+// audit:view: the audit log is the record of decisions already taken and has no
+// pending anything, so there is nothing here for an audit-only role to see.
+exports.pendingReviewCount = async (_req, res) => {
+  const r = await query(
+    `SELECT
+       (SELECT COUNT(*)::int FROM ad_campaigns
+         WHERE self_serve = true AND status = 'pending_review')      AS promos,
+       (SELECT COUNT(*)::int FROM shop_images
+         WHERE status = 'pending_review')                            AS shop_images,
+       (SELECT COUNT(*)::int FROM moderation_spot_checks
+         WHERE status = 'pending')                                   AS spot_checks`
+  );
+  const row = r.rows[0] || { promos: 0, shop_images: 0, spot_checks: 0 };
+  const promos = Number(row.promos) || 0;
+  const shopImages = Number(row.shop_images) || 0;
+  const spotChecks = Number(row.spot_checks) || 0;
+  res.json({
+    promos,
+    shop_images: shopImages,
+    spot_checks: spotChecks,
+    total: promos + shopImages + spotChecks,
+  });
+};
+
 // GET /api/admin/moderation/ai-stats — last-30-day counts from the ONE audit
 // trail (batch AI-MOD): how many rows the AI auto-approved / held / left for
 // review, and every admin approve/reject on the two queues split by the AI
