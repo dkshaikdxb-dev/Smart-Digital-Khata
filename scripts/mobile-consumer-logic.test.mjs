@@ -311,13 +311,25 @@ section('category chips');
   ok(shopsSrc.includes('goShelf(c.category)'),
     'the directory chip opens product search on a shelf, not a keyword');
 
-  // The web PWA's own chips are deliberately UNTOUCHED this batch and are still
-  // keywords. Recorded here so the divergence is a stated fact rather than an
-  // accident somebody discovers later.
-  const webCats = [...webShopsSrc.matchAll(/\{ key: '(\w+)', term: '(\w+)', icon: '([^']+)' \}/g)]
-    .map((m) => ({ key: m[1], term: m[2] }));
-  eq(webCats.map((c) => c.term), ['rice', 'milk', 'biscuit', 'soap', 'shampoo'],
-    'the web directory still runs the old keyword chips — a follow-up, not a regression');
+  // The web PWA used to run the OLD keyword chips, and this assertion recorded
+  // that divergence as a stated fact — a follow-up, not a regression. The
+  // follow-up has since landed, so the assertion is inverted rather than
+  // deleted: the web must now read the same shared list, and a shopper moving
+  // between the app and the site must get the same shelves.
+  //
+  // Only the label KEY differs (the web dictionary namespaces consumer strings
+  // under `c.`), so the SHELVES are what is compared. The three-way drift check
+  // against the backend's allowlist lives in
+  // admin-dashboard/tests/consumer-shelves.test.js; this one keeps the app and
+  // the web in step from the app's side.
+  ok(!/term: '(milk|biscuit)'/.test(webShopsSrc),
+    'the web directory no longer hardcodes the old keyword chips');
+  const webCatsSrc = fs.readFileSync(path.join(ROOT, 'admin-dashboard/src/lib/categories.js'), 'utf8');
+  const webShelves = [...webCatsSrc.matchAll(/category: '([a-z-]+)'/g)].map((m) => m[1]);
+  eq(webShelves, cats.map((c) => c.category),
+    'the web directory runs the SAME six shelves, in the same order, as the app');
+  ok(webShopsSrc.includes("from '../../lib/categories'"),
+    'and reads them from the shared list rather than a copy of its own');
 }
 
 section('the search unit: box then voice');
