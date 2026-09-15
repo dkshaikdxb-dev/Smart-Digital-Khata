@@ -6,6 +6,7 @@ const { pool } = require('../config/db');
 const { importCatalog } = require('./import-catalog');
 const { importCatalogI18n } = require('./import-catalog-i18n');
 const { importI18nOverrides } = require('./import-i18n-overrides');
+const { seedMissingShopNames } = require('./backfill-shop-name-i18n');
 
 async function run() {
   const dir = path.join(__dirname, '..', '..', 'migrations');
@@ -106,6 +107,52 @@ async function run() {
     }
   }
   console.log('product data complete');
+
+  // ---- THE DERIVED DATA ---------------------------------------------------
+  //
+  // Localized SHOP NAMES are the same defect one step removed. The renderer, the
+  // storage, the public API and the owner override UI all shipped; the only
+  // thing that ever wrote a shop_name_i18n row for a shop that already existed
+  // was `npm run backfill:shop-name-i18n`, a manual script whose own header read
+  // "Not auto-run — the operator runs it once post-deploy". No operator ever
+  // did. So on a deployed database the table was empty, COALESCE(sn.name,
+  // s.name) fell through to the raw English name, and the directory, the
+  // storefront and the product search served English shop names in all ten
+  // languages — including the six the renderer covers.
+  //
+  // These rows are NOT like the three above. The catalogue, its translations and
+  // the UI strings are read out of files in this repo; these are DERIVED from
+  // tenant data, and they transliterate proper nouns, which is exactly why every
+  // machine-rendered name is stored with needs_review and why the owner override
+  // UI exists. That is an argument for care, and the care is built in: an owner's
+  // corrected name (source = 'owner') is never overwritten, by this or by
+  // anything else. It is not an argument for waiting, because the thing being
+  // waited for is not a better name — it is the English name the shopper was
+  // already being shown.
+  //
+  // It is bounded, too. seedMissingShopNames selects only shops MISSING an auto
+  // row for at least one active render language, so an up-to-date database
+  // selects nothing and this costs one query; the work is proportional to the
+  // shortfall, never to the size of the tenant table. It still converges on a
+  // newly added render language, because every shop is then missing that one.
+  //
+  // Like the product data, a failure here fails the deploy.
+  //
+  // This step DERIVES rows about shops that already exist. It still invents no
+  // user, no shop and no money row — that is demo data, and it stays behind
+  // SEED_DEMO_DATA in scripts/deploy-data.sh.
+  console.log('-> localizing shop names that have none (shop_name_i18n)');
+  try {
+    const { langs, scanned, seeded } = await seedMissingShopNames();
+    console.log(
+      `   shop names complete: ${seeded}/${scanned} shop(s) localized into ${langs.join(', ')}` +
+        `${scanned === 0 ? ' (nothing missing)' : ''}`
+    );
+  } catch (err) {
+    console.error('x failed localizing shop names:', err.message);
+    await pool.end().catch(() => {});
+    process.exit(1);
+  }
 
   await pool.end();
 }

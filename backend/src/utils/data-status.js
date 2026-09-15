@@ -18,6 +18,7 @@
 require('dotenv').config();
 const path = require('path');
 const { pool } = require('../config/db');
+const { RENDER_LANGS, resolveActiveRenderLangs } = require('./shop-name-i18n');
 
 const catalogSeed = require(path.join(__dirname, '..', 'data', 'catalog-seed.json'));
 const catalogI18nSeed = require(path.join(__dirname, '..', 'data', 'catalog-i18n.json'));
@@ -28,6 +29,22 @@ const regionalSeed = require(path.join(__dirname, '..', 'data', 'regional-i18n.j
 // i18n_overrides, so a missing import is not a partial translation for them —
 // it is an entirely English app behind a working language picker.
 const OVERRIDE_ONLY_LANGS = ['bn', 'gu', 'mr'];
+
+// The live languages the shop-name renderer deliberately does NOT cover: every
+// active language except English and the render set. Today that is bn, gu and
+// mr — they have no script mapping and no curated business lexicon yet, so there
+// is nothing to render a shop name with and the raw English name stays their
+// fallback. Derived rather than listed, so the day one of them gains a lexicon
+// this line stops naming it instead of quietly lying.
+async function unrenderedLangs() {
+  const r = await pool.query(
+    `SELECT code FROM languages
+      WHERE is_active = true AND code <> 'en' AND NOT (code = ANY($1::text[]))
+      ORDER BY code`,
+    [RENDER_LANGS.slice()]
+  );
+  return r.rows.map((row) => row.code);
+}
 
 const pct = (have, want) => (want ? Math.round((have / want) * 100) : 100);
 const mark = (have, want) => (have >= want ? 'ok' : 'INCOMPLETE');
@@ -92,6 +109,58 @@ async function report() {
   lines.push(
     `                * ${OVERRIDE_ONLY_LANGS.join(', ')} have no built-in dictionary block — these rows are all the UI text they have`
   );
+
+  // ---- localized shop names ----------------------------------------------
+  //
+  // The third localized dataset, and the one that had no line here at all —
+  // which is how a shop_name_i18n table with zero rows in it went on looking
+  // exactly like an up-to-date one through six deploys, while the directory, the
+  // storefront and the product search served English shop names in every
+  // language. A shop is COVERED when it has a row for every active render
+  // language; the per-language breakdown is what makes a single language that
+  // stopped rendering visible rather than averaged away.
+  const renderLangs = await resolveActiveRenderLangs(pool);
+  const shopNames = await pool.query(
+    `SELECT
+       (SELECT COUNT(*)::int FROM shops) AS shops,
+       (SELECT COUNT(*)::int
+          FROM shops s
+          LEFT JOIN (
+            SELECT shop_id, COUNT(*)::int AS have
+              FROM shop_name_i18n
+             WHERE lang = ANY($1::text[])
+             GROUP BY shop_id
+          ) c ON c.shop_id = s.id
+         WHERE COALESCE(c.have, 0) >= $2::int) AS covered,
+       (SELECT COUNT(*)::int FROM shop_name_i18n WHERE source = 'owner') AS owner_rows,
+       (SELECT COUNT(*)::int FROM shop_name_i18n WHERE needs_review = true) AS review_rows`,
+    [renderLangs, renderLangs.length]
+  );
+  const sn = shopNames.rows[0];
+  const perShopLang = await pool.query(
+    `SELECT lang, COUNT(*)::int AS n FROM shop_name_i18n
+      WHERE lang = ANY($1::text[]) GROUP BY lang`,
+    [renderLangs]
+  );
+  const perShopLangBy = Object.fromEntries(perShopLang.rows.map((r) => [r.lang, r.n]));
+  const shopNamesOk = sn.covered >= sn.shops;
+  lines.push(
+    `shop names      ${sn.covered}/${sn.shops} shop(s) localized in all ${renderLangs.length} render language(s) ` +
+      `(${pct(sn.covered, sn.shops)}%) [${mark(sn.covered, sn.shops)}]`
+  );
+  lines.push(
+    `                ${renderLangs.slice().sort().map((l) => `${l}:${perShopLangBy[l] || 0}/${sn.shops}`).join('  ')}` +
+      `  |  ${sn.owner_rows} owner override(s), ${sn.review_rows} flagged needs_review`
+  );
+  const notRendered = await unrenderedLangs();
+  if (notRendered.length) {
+    lines.push(
+      `                ${notRendered.join(', ')} are NOT rendered — no script or lexicon yet, so they fall back to the English name by design`
+    );
+  }
+  if (!shopNamesOk) {
+    lines.push('                ^ run "npm run migrate" to localize the shops that have no name rows yet');
+  }
 
   // ---- demo data ---------------------------------------------------------
   const demo = await pool.query(
