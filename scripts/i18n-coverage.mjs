@@ -102,7 +102,29 @@ const FLOORS = {
   // back to English for: "Atta & Rice" is this app's own phrasing and is not a
   // catalogue term, so there was nothing in the repo to copy and a translator
   // is owed it.
-  consumer: { hi: 310, bn: 167, ta: 229, te: 229, kn: 229, ml: 229, mr: 167, gu: 167, ur: 229 },
+  //
+  // Batch INDOARYAN closed the consumer dictionary's gaps for the five
+  // Indo-Aryan languages this repo carries, taking each of them to 341 of en's
+  // 343 keys: hi 310 -> 341, bn 167 -> 341, mr 167 -> 341, gu 167 -> 341,
+  // ur 229 -> 341. Unlike every raise recorded above it, this one was NOT
+  // copied out of human-written text. Where the same English already had a
+  // translation in the owner dictionary or the shipped catalogue that wording
+  // was reused verbatim, but the large majority of these 665 values were
+  // MACHINE-AUTHORED and no native speaker has read them. Each language block
+  // says so in a comment above the strings, and the review sheet — generated
+  // from the shipped values and ordered worst-first, money and khata strings
+  // at the top — is docs/i18n-review-consumer-indo-aryan.md. Until a reviewer
+  // works through that file, these five are honest coverage of unreviewed text,
+  // which is a different thing from reviewed coverage.
+  //
+  // All five stop two keys short of en, and the same two: 'upd.runtime' and
+  // 'upd.channel'. Those label the Expo build tokens on the update card, whose
+  // VALUES are themselves English identifiers, so they fall back to en on
+  // purpose — no translation beats a transliterated one that reads as noise.
+  //
+  // ta/te/kn/ml were not in this batch, keep their floors, and their percentage
+  // is unchanged because en did not grow.
+  consumer: { hi: 341, bn: 341, ta: 229, te: 229, kn: 229, ml: 229, mr: 341, gu: 341, ur: 341 },
   owner: { hi: 325, bn: 315, ta: 123, te: 123, kn: 123, ml: 123, mr: 315, gu: 315, ur: 123 },
 };
 
