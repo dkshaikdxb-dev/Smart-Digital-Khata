@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      seed_demo:
+        description: >-
+          Also load the ten demo shops, their catalogues and the house promos.
+          This writes fictional shops, owners, customers and MONEY ROWS, so it is
+          off unless asked for. The seeders converge, so one run is enough — the
+          data persists and later deploys need not repeat it.
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -30,4 +39,9 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             chmod +x scripts/*.sh
+            # Empty on a push, so the server's own .env decides as before; only a
+            # deliberate dispatch with the box ticked can turn demo data on, and
+            # only for that one run. scripts/deploy-data.sh treats an empty value
+            # as "not set" and falls through to .env.
+            export SEED_DEMO_DATA="${{ inputs.seed_demo == true && 'true' || '' }}"
             ./scripts/deploy.sh
