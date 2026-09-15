@@ -146,7 +146,30 @@ const FLOORS = {
   // console labels — and 'oedit.historyReduced' / 'oedit.historyBy', which are
   // nothing but placeholders and punctuation. A row there would change nothing
   // on screen while inflating this ratchet, so it stays absent.
-  consumer: { hi: 341, bn: 341, ta: 229, te: 229, kn: 229, ml: 229, mr: 341, gu: 341, ur: 341 },
+  //
+  // Batch DRAVIDIAN-CONSUMER closed the last gap in the SHOPPER dictionary. The
+  // four Dravidian languages sat at 229 of en's 343 keys — 66.8%, so a shopper
+  // who picked Tamil, Telugu, Kannada or Malayalam read English for the order
+  // the shop had reduced, for every shop-closed and ready-by line, for every
+  // error message, for the account statement and for the whole update card. This
+  // batch AUTHORED the 112 strings each of those four was missing, in the
+  // register and with the vocabulary of that language's own existing block,
+  // taking each to 341 (99.4%) — level with the five the INDOARYAN batch raised.
+  //
+  // Like that batch and unlike every copy recorded above it, these values are
+  // MACHINE-AUTHORED and no native speaker has read them. Where the same English
+  // already had a translation in the owner dictionary the wording was reused
+  // verbatim — the shop-hours and ready-time lines, and '{item} — removed' — but
+  // the large majority of these 448 values were written here. Each of the four
+  // blocks says so in a comment above the strings, and the review sheet,
+  // generated from the shipped values and ordered worst-first with money and
+  // khata at the top, is docs/i18n-review-consumer-dravidian.md.
+  //
+  // All four stop two keys short of en, and the same two the Indo-Aryan five do:
+  // 'upd.runtime' and 'upd.channel', whose VALUES are English Expo identifiers.
+  // Nothing else in this file moved; hi/bn/mr/gu/ur keep their floors, and both
+  // owner rows are untouched.
+  consumer: { hi: 341, bn: 341, ta: 341, te: 341, kn: 341, ml: 341, mr: 341, gu: 341, ur: 341 },
   owner: { hi: 325, bn: 316, ta: 320, te: 320, kn: 320, ml: 320, mr: 316, gu: 316, ur: 320 },
 };
 
