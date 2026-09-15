@@ -70,6 +70,13 @@ jobs:
       - name: Dashboard tests
         working-directory: admin-dashboard
         run: npm test
+      # Script integrity of the two mobile dictionaries. The coverage gate asks
+      # whether a key is present and its placeholders match; this asks whether
+      # the text is actually in the language it claims to be. With translations
+      # arriving in bulk from outside the repo, a row-shifted paste puts Tamil in
+      # the Telugu block and every other gate stays green.
+      - name: Translation script integrity
+        run: node scripts/i18n-script-check.mjs
       - name: Build
         working-directory: admin-dashboard
         env:
