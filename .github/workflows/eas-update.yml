@@ -102,3 +102,29 @@ jobs:
           echo "Publishing an OTA update for the ${APP_FLAVOR} app to branch '${{ inputs.branch }}'. Installed apps on that channel pick it up on next launch."
           eas update --branch "${{ inputs.branch }}" --message "${{ inputs.message }}" --non-interactive
           echo "Done. The update group + its branch/channel appear above (also on https://expo.dev under this project's Updates)."
+
+      # An update can publish perfectly and still never reach a phone. The app
+      # asks for its CHANNEL (baked into the build from eas.json); `eas update`
+      # publishes to a BRANCH. If the channel is not pointed at that branch, the
+      # update exists and is served to nobody, silently and with no error.
+      #
+      # This step makes that visible instead of leaving it to be inferred from
+      # an app that will not change. It never fails the job: it is a diagnosis,
+      # and a missing channel is exactly what we want it to be able to report.
+      - name: Diagnose delivery (channel → branch, runtime version)
+        if: always()
+        working-directory: mobile-app
+        continue-on-error: true
+        run: |
+          echo "--- channels (what an installed build asks for) ---"
+          eas channel:list --non-interactive || echo "could not list channels"
+          echo
+          echo "--- channel '${{ inputs.branch }}' in detail: which branch does it serve? ---"
+          eas channel:view "${{ inputs.branch }}" --non-interactive || echo "NO CHANNEL NAMED '${{ inputs.branch }}' — an installed build on that channel is served nothing."
+          echo
+          echo "--- branch '${{ inputs.branch }}': what has been published to it? ---"
+          eas branch:view "${{ inputs.branch }}" --non-interactive || echo "could not view branch"
+          echo
+          echo "--- the runtime version this update was built for ---"
+          echo "runtimeVersion policy: sdkVersion (an installed APK only accepts updates whose runtime matches its own)"
+          node -e "const c=require('./app.config.js');const r=typeof c==='function'?c({config:{}}):(c.default||c);const o=(r&&r.expo)||r;console.log('updates.url =', (o.updates&&o.updates.url) || 'UNDEFINED — this build would never check for updates');" || true
