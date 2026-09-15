@@ -21,6 +21,17 @@
 #            and all of it UPSERTs, so it is safe on every deploy. It loads
 #            inside `npm run migrate` — see backend/src/utils/migrate.js.
 #
+#   always   the localized SHOP NAMES for any shop that has none. Also inside
+#            `npm run migrate`. These are derived from the shop's own English
+#            name rather than shipped in the repo, so the rule is stricter: only
+#            shops MISSING a language are touched (an up-to-date database does
+#            no work at all), and a name an owner has corrected by hand is never
+#            overwritten. Without it the discovery directory, the storefront and
+#            the product search all fall back to the raw English name in every
+#            language — which is what they did, on every deploy, until the
+#            manual backfill script stopped being something an operator had to
+#            remember.
+#
 #   opt-in   the DEMO data — ten demo shops with owners, customers, products,
 #            orders and transactions, plus the house promo cards. Loaded ONLY
 #            when SEED_DEMO_DATA=true, because silently inserting fictional

@@ -38,6 +38,7 @@ const { importI18nOverrides } = require('../src/utils/import-i18n-overrides');
 const catalogSeed = require('../src/data/catalog-seed.json');
 const regionalSeed = require('../src/data/regional-i18n.json');
 const { clearDemoData } = require('./helpers/demo-data-cleanup');
+const { RENDER_LANGS, localizeShopName } = require('../src/utils/shop-name-i18n');
 
 const BACKEND_DIR = path.join(__dirname, '..');
 const REPO_DIR = path.join(BACKEND_DIR, '..');
@@ -181,6 +182,135 @@ describe('npm run migrate loads the shipped product data', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 1b. `npm run migrate` also seeds the localized SHOP NAMES it can derive
+//     (batch SHOPNAME, deploy path).
+//
+// The renderer, the storage, the API and the owner override UI all shipped; the
+// only thing that ever wrote a `shop_name_i18n` row for an existing shop was
+// `npm run backfill:shop-name-i18n`, a manual script whose own header said "the
+// operator runs it once post-deploy". No operator ever did, so on a freshly
+// deployed database the table was empty and COALESCE(sn.name, s.name) fell
+// through to the raw English name in every language, on every surface.
+//
+// Unlike the catalogue and the UI strings, these rows are DERIVED FROM TENANT
+// DATA rather than read out of a file in the repo — so the rule migrate must
+// keep is stricter: it may re-derive what it already knows how to derive, and it
+// may never overwrite what a human put there. Hence the three claims below:
+// missing rows get filled, a second run changes nothing at all, and an owner's
+// override is untouchable.
+// ---------------------------------------------------------------------------
+describe('npm run migrate seeds the localized shop names it can derive', () => {
+  const uniq = `sn${Date.now().toString().slice(-9)}`;
+  const ENGLISH_NAME = 'Sharma Kirana Store';
+  // The renderer's own output for this name — asserted from the renderer rather
+  // than hardcoded, because this suite is not the place that pins the
+  // transliteration (tests/shop-name-i18n.test.js is).
+  const expectedFor = (lang) => localizeShopName(ENGLISH_NAME, lang).name;
+  let shopId;
+
+  const rowsFor = async () => {
+    const r = await pool.query(
+      `SELECT lang, name, source, needs_review, updated_at
+         FROM shop_name_i18n WHERE shop_id = $1 ORDER BY lang`,
+      [shopId]
+    );
+    return r.rows;
+  };
+
+  beforeAll(async () => {
+    // A shop created the way every shop that predates this feature was created:
+    // straight INSERT, no shop_name_i18n rows anywhere.
+    const u = await pool.query(
+      `INSERT INTO users (name, email, phone, password_hash, role)
+       VALUES ($1,$2,$3,'x','owner') RETURNING id`,
+      ['Shopname Owner', `${uniq}@test.local`, `+9199${uniq.slice(-9)}`]
+    );
+    const s = await pool.query(
+      'INSERT INTO shops (owner_id, name) VALUES ($1,$2) RETURNING id',
+      [u.rows[0].id, ENGLISH_NAME]
+    );
+    shopId = s.rows[0].id;
+    await pool.query('UPDATE users SET shop_id = $1 WHERE id = $2', [shopId, u.rows[0].id]);
+    expect(await rowsFor()).toEqual([]);
+  });
+
+  afterAll(async () => {
+    await pool.query('DELETE FROM users WHERE email = $1', [`${uniq}@test.local`]);
+  });
+
+  it('fills in a shop that has no localized names at all, one row per active render language', async () => {
+    runNode(MIGRATE_JS);
+
+    const rows = await rowsFor();
+    expect(rows.map((r) => r.lang)).toEqual(RENDER_LANGS.slice().sort());
+    for (const r of rows) {
+      expect(r.name).toBe(expectedFor(r.lang));
+      expect(r.source).toBe('auto');
+    }
+    // The one the product owner asked for by name.
+    expect(rows.find((r) => r.lang === 'ta').name).toBe('ஷர்மா கிராணா ஸ்டோர்');
+  }, 300000);
+
+  it('a second migrate changes nothing — not even an updated_at', async () => {
+    const before = await rowsFor();
+    expect(before.length).toBe(RENDER_LANGS.length);
+
+    runNode(MIGRATE_JS);
+
+    const after = await rowsFor();
+    // Deep equality including updated_at: a convergent deploy must not rewrite
+    // rows it already agrees with, or "idempotent" only means "same values".
+    expect(after).toEqual(before);
+  }, 300000);
+
+  it("never overwrites an owner's own override, and still fills the languages around it", async () => {
+    const OWNER_TA = 'சர்மா அங்காடி';
+    await pool.query(
+      `INSERT INTO shop_name_i18n (shop_id, lang, name, source, needs_review, updated_at)
+       VALUES ($1,'ta',$2,'owner',false, NOW())
+       ON CONFLICT (shop_id, lang) DO UPDATE
+         SET name = EXCLUDED.name, source = 'owner', needs_review = false, updated_at = NOW()`,
+      [shopId, OWNER_TA]
+    );
+    // Knock out two auto rows so this run has real work to do alongside the
+    // override — the override must survive a run that is NOT a no-op.
+    await pool.query("DELETE FROM shop_name_i18n WHERE shop_id = $1 AND lang IN ('hi','ur')", [shopId]);
+    const ownerRowBefore = (await rowsFor()).find((r) => r.lang === 'ta');
+
+    runNode(MIGRATE_JS);
+
+    const rows = await rowsFor();
+    expect(rows.map((r) => r.lang)).toEqual(RENDER_LANGS.slice().sort());
+    const ownerRow = rows.find((r) => r.lang === 'ta');
+    expect(ownerRow).toEqual(ownerRowBefore);
+    expect(ownerRow.name).toBe(OWNER_TA);
+    expect(ownerRow.source).toBe('owner');
+    // The two deleted languages came back, auto, with the renderer's values.
+    for (const lang of ['hi', 'ur']) {
+      const r = rows.find((x) => x.lang === lang);
+      expect(r.source).toBe('auto');
+      expect(r.name).toBe(expectedFor(lang));
+    }
+  }, 300000);
+
+  // Regression control (deliberately passing both before and after this batch).
+  // bn, gu and mr are EXCLUDED from the renderer on purpose: they have no script
+  // mapping and no curated lexicon yet, so there is nothing to render them with
+  // and English stays their fallback. A deploy-path backfill must not quietly
+  // invent rows for them.
+  it('writes nothing for bn, gu or mr — they are deliberately not rendered', async () => {
+    for (const lang of ['bn', 'gu', 'mr']) {
+      expect(RENDER_LANGS.includes(lang)).toBe(false);
+      expect(localizeShopName(ENGLISH_NAME, lang).name).toBe(ENGLISH_NAME);
+    }
+    const r = await pool.query(
+      "SELECT COUNT(*)::int AS n FROM shop_name_i18n WHERE lang IN ('bn','gu','mr')"
+    );
+    expect(r.rows[0].n).toBe(0);
+  }, 300000);
+});
+
+// ---------------------------------------------------------------------------
 // 2. The demo loader — one entry point, in the order that converges.
 // ---------------------------------------------------------------------------
 describe('the demo data loader', () => {
@@ -244,6 +374,63 @@ describe('npm run data:status', () => {
     // The override-only languages are called out by name — they are the ones
     // with no built-in dictionary block to fall back on.
     for (const lang of OVERRIDE_ONLY_LANGS) expect(out).toMatch(new RegExp(`\\b${lang}\\b`));
+  }, 300000);
+
+  // Shop-name coverage belongs in the same report, for the same reason the
+  // catalogue does: the gap that started this batch was invisible. Nothing
+  // counted how many shops actually had a localized name, so a table with zero
+  // rows in it looked exactly like a table that was up to date.
+  it('reports how many shops have a localized name, out of how many', async () => {
+    // Two shops, deliberately in different states, so the number it prints has
+    // to be counted rather than guessed: one that migrate has localized and one
+    // that has no shop_name_i18n row at all.
+    const tag = `st${Date.now().toString().slice(-9)}`;
+    const mkShop = async (suffix) => {
+      const u = await pool.query(
+        `INSERT INTO users (name, email, phone, password_hash, role)
+         VALUES ($1,$2,$3,'x','owner') RETURNING id`,
+        ['Status Owner', `${tag}${suffix}@test.local`, `+9198${tag.slice(-8)}${suffix}`]
+      );
+      const s = await pool.query(
+        'INSERT INTO shops (owner_id, name) VALUES ($1,$2) RETURNING id',
+        [u.rows[0].id, 'Patel Provision Mart']
+      );
+      await pool.query('UPDATE users SET shop_id = $1 WHERE id = $2', [s.rows[0].id, u.rows[0].id]);
+      return s.rows[0].id;
+    };
+    const covered = await mkShop('1');
+    runNode(MIGRATE_JS); // localizes `covered`
+    const bare = await mkShop('2'); // created after: still has no rows
+
+    try {
+      const totals = await pool.query(
+        `SELECT (SELECT COUNT(*)::int FROM shops) AS shops,
+                (SELECT COUNT(*)::int FROM shops s
+                  WHERE NOT EXISTS (
+                    SELECT 1 FROM unnest($1::text[]) AS l(lang)
+                     WHERE NOT EXISTS (
+                       SELECT 1 FROM shop_name_i18n sn
+                        WHERE sn.shop_id = s.id AND sn.lang = l.lang))) AS done`,
+        [RENDER_LANGS.slice()]
+      );
+      const { shops, done } = totals.rows[0];
+      expect(shops).toBeGreaterThan(done); // the bare shop really is a shortfall
+
+      const out = runNode(DATA_STATUS_JS);
+
+      expect(out).toMatch(/shop names/i);
+      // The actual coverage fraction, not just a label.
+      expect(out).toMatch(new RegExp(`\\b${done}/${shops}\\b`));
+      // A per-language breakdown, so a language that stopped rendering is visible.
+      for (const lang of RENDER_LANGS) expect(out).toMatch(new RegExp(`${lang}:${done}/${shops}\\b`));
+      // A shortfall is called INCOMPLETE, not quietly printed.
+      expect(out).toMatch(/shop names.*INCOMPLETE/);
+      // And the three that are deliberately not rendered are named as excluded.
+      expect(out).toMatch(/bn, gu, mr/);
+    } finally {
+      await pool.query('DELETE FROM users WHERE email LIKE $1', [`${tag}%@test.local`]);
+      void covered; void bare;
+    }
   }, 300000);
 });
 

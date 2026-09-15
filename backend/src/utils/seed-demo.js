@@ -14,6 +14,7 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const { pool } = require('../config/db');
+const { reseedShopName } = require('./shop-name-i18n');
 
 if (process.env.NODE_ENV === 'production' && process.env.FORCE_DEMO !== 'true') {
   console.error('Refusing to seed demo data in production. Set FORCE_DEMO=true to override.');
@@ -76,6 +77,8 @@ const STARTER_CATALOGUE = [
  *      when blank, so GET /api/public/shops surfaces every demo store, and give
  *      each one a starter CATALOGUE if it has none — the directory no longer
  *      surfaces a listed shop with zero active products (batch DATA D1).
+ *   1c. (Re)seed each shop's LOCALIZED NAMES from its English name, exactly as
+ *      signup does (batch SHOPNAME).
  *   2. Seed a few cash/upi COLLECTION transactions dated in the last 7 days for
  *      each demo shop, so owner Insights shows non-zero Collections + a non-zero
  *      collection rate (and a referred shop can "activate"). Money in paise.
@@ -103,14 +106,30 @@ async function finalizeDemoShops() {
       // 1. List the shop in the public directory (with a sensible default
       //    location so the geo directory can place it), without clobbering any
       //    real values already set.
-      await client.query(
+      const listedShop = await client.query(
         `UPDATE shops
             SET is_listed = true,
                 city = COALESCE(NULLIF(city, ''), 'Bengaluru'),
                 area = COALESCE(NULLIF(area, ''), 'MG Road')
-          WHERE id = $1`,
+          WHERE id = $1
+      RETURNING name`,
         [shopId]
       );
+
+      // 1c. The shop's NAME in every render language (batch SHOPNAME). A real
+      //     signup gets these the moment the shop row is written —
+      //     auth.controller calls reseedShopName, and shop.controller calls it
+      //     again on a rename — but this seeder wrote its shops with raw SQL and
+      //     called nothing, so every demo shop was born with an empty
+      //     shop_name_i18n and the directory, the storefront and the product
+      //     search all fell through COALESCE(sn.name, s.name) to the raw English
+      //     name in all ten languages. Same helper as signup, not a second path.
+      //
+      //     reseedShopName UPSERTs one 'auto' row per active render language and
+      //     its ON CONFLICT is guarded to source = 'auto', so re-running the
+      //     seeder re-derives the machine names and never touches a name an
+      //     owner has corrected by hand — which is what keeps this convergent.
+      await reseedShopName(client, shopId, listedShop.rows[0].name);
 
       // 1b. Give the shop a catalogue if it has none (batch DATA D1b). A LISTED
       //     shop with zero active products is no longer surfaced by the public
