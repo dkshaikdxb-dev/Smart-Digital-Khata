@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, Pressable, StyleSheet,
+  View, Text, ScrollView, Pressable, TextInput, StyleSheet,
 } from 'react-native';
 import { colors, sizes } from '../theme';
 import { Card, Loading, Empty, Button } from '../components';
@@ -9,6 +9,9 @@ import ProductThumb from '../components/ProductThumb';
 import { money } from '../money';
 import { publicApi } from '../consumerApi';
 import { friendlyError, canRetry } from '../lib/errorText';
+import {
+  groupVariants, filterUnits, categoriesOf, normalizeSelection, resolveVariant,
+} from '../lib/variantGroups';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
@@ -21,9 +24,22 @@ function gramsLabel(g) {
 }
 
 // Priority 3 — shop profile + catalog from GET /public/shops/:id (localized by
-// the app's selected language). Items add to the in-memory cart; a bottom bar
-// leads to the cart. Products render as e-commerce cards: thumbnail + name +
-// unit + ₹ price, with a stepper (unit items) or weight chips (sold_by_weight).
+// the app's selected language).
+//
+// VARIANT GROUPING (this batch). The storefront payload has always carried
+// `base_product`, `brand` and `pack`, and the web has always folded rows that
+// share a base product into ONE card with brand and size chips. The native app
+// did not, so four brands of Sona Masuri in three pack sizes came down as twelve
+// separate rows — harder to shop and, worse for the shopkeeper, it makes a
+// modest catalogue look padded with near-duplicates. The folding itself lives in
+// lib/variantGroups.js; each (brand, pack) is still its own product row with its
+// own id and its own integer-paise price, so the cart and checkout are untouched.
+//
+// SEARCH + CATEGORY CHIPS come with it, for the same reason they exist on the
+// web: once a shop has a few hundred rows, scrolling is not browsing. Both filter
+// the ALREADY-LOADED list on the device — no extra request, nothing to pay for
+// on 2G — and search matches the API's all-language `search_text` blob, so
+// "chawal" finds the row named "Rice".
 export default function ShopDetailScreen({ route, navigation }) {
   const { t, lang } = useT();
   const { shopId, shopName } = route.params;
@@ -33,6 +49,8 @@ export default function ShopDetailScreen({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retryable, setRetryable] = useState(false);
+  const [search, setSearch] = useState('');
+  const [activeCat, setActiveCat] = useState(''); // '' = every category
   // Whether a load has ever COMPLETED, so an empty catalogue is only ever
   // reported once we actually know the catalogue is empty.
   const [loaded, setLoaded] = useState(false);
@@ -58,8 +76,15 @@ export default function ShopDetailScreen({ route, navigation }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const inCart = (id) => cart.cart && cart.cart.shop_id === shopId ? cart.cart.items[id] : null;
+  const inCart = (id) => (cart.cart && cart.cart.shop_id === shopId ? cart.cart.items[id] : null);
   const name = shop ? shop.name : shopName;
+
+  const units = useMemo(() => groupVariants(products), [products]);
+  const categories = useMemo(() => categoriesOf(products), [products]);
+  const visibleUnits = useMemo(
+    () => filterUnits(units, { search, category: activeCat }),
+    [units, search, activeCat]
+  );
 
   // Shop availability (batch A). `shop.availability` is the SAME object the
   // directory and both web surfaces render; nothing is recomputed here. While
@@ -75,6 +100,71 @@ export default function ShopDetailScreen({ route, navigation }) {
     }
     if (shop.offers_pickup) return `🏬 ${t('shopdetail.pickup')}`;
     return null;
+  }
+
+  // The add / stepper control for ONE resolved product, shared by plain rows and
+  // by the resolved variant inside a group card.
+  function renderAction(p) {
+    const line = inCart(p.id);
+    if (line) {
+      return (
+        <View style={styles.stepper}>
+          <Pressable onPress={() => cart.setQty(p.id, line.quantity - 1)} style={styles.stepBtn}>
+            <Text style={styles.stepText}>−</Text>
+          </Pressable>
+          <Text style={styles.qty}>{line.quantity}</Text>
+          <Pressable
+            onPress={() => cart.setQty(p.id, line.quantity + 1)}
+            disabled={!shopOpen}
+            style={[styles.stepBtn, !shopOpen && styles.disabled]}
+          >
+            <Text style={styles.stepText}>+</Text>
+          </Pressable>
+        </View>
+      );
+    }
+    return (
+      <Pressable
+        onPress={() => cart.addUnit(shopId, name, p)}
+        disabled={!shopOpen}
+        style={[styles.addBtn, !shopOpen && styles.addBtnClosed]}
+      >
+        <Text style={[styles.addText, !shopOpen && styles.addTextClosed]}>
+          {shopOpen ? t('shopdetail.add') : t('open.cannotOrder')}
+        </Text>
+      </Pressable>
+    );
+  }
+
+  // Weight chips for a loose/weighed product, shared the same way.
+  function renderWeight(p) {
+    const line = inCart(p.id);
+    const activeG = line ? Number(line.weight_grams) : 0;
+    return (
+      <>
+        <View style={styles.chips}>
+          {WEIGHT_CHIPS.map((g) => (
+            <Pressable
+              key={g}
+              onPress={() => cart.setWeight(shopId, name, p, activeG === g ? 0 : g)}
+              disabled={!shopOpen}
+              style={[styles.chip, activeG === g && styles.chipActive, !shopOpen && styles.disabled]}
+            >
+              <Text style={[styles.chipText, activeG === g && styles.chipTextActive]}>{gramsLabel(g)}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {line ? (
+          <Text style={styles.lineTotal}>{gramsLabel(activeG)} · {money(lineTotalPaise(line))}</Text>
+        ) : null}
+      </>
+    );
+  }
+
+  function priceLine(p) {
+    return p.sold_by_weight
+      ? <Text style={styles.price}>{money(p.price)} <Text style={styles.per}>{t('shopdetail.perKg')}</Text></Text>
+      : <Text style={styles.price}>{money(p.price)} <Text style={styles.per}>{t('shopdetail.per', { unit: p.unit || t('shopdetail.unit') })}</Text></Text>;
   }
 
   return (
@@ -104,6 +194,50 @@ export default function ShopDetailScreen({ route, navigation }) {
             horizontal padding as the header; nothing renders when empty. */}
         {shop ? <ShopCarousel slides={shop.slides} images={shop.images} alt={name} /> : null}
 
+        {/* In-catalogue search + category chips. Only once there is a catalogue
+            to filter — a search box over an empty or failed list is furniture. */}
+        {shop && products.length > 0 ? (
+          <Card>
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder={t('shopdetail.searchProducts')}
+              placeholderTextColor={colors.textMuted}
+              style={styles.searchInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              accessibilityLabel={t('shopdetail.searchProducts')}
+            />
+            {categories.length > 0 ? (
+              <View style={styles.chipsTop}>
+                <Pressable
+                  onPress={() => setActiveCat('')}
+                  style={[styles.chip, activeCat === '' && styles.chipActive]}
+                >
+                  <Text style={[styles.chipText, activeCat === '' && styles.chipTextActive]}>
+                    {t('shopdetail.allCategories')}
+                  </Text>
+                </Pressable>
+                {categories.map((c) => (
+                  <Pressable
+                    key={c}
+                    onPress={() => setActiveCat(c)}
+                    style={[styles.chip, activeCat === c && styles.chipActive]}
+                  >
+                    {/* The LABEL is the localized name the backend supplies for
+                        non-English languages; the raw English `c` stays the
+                        filter key, so filtering is language-independent. */}
+                    <Text style={[styles.chipText, activeCat === c && styles.chipTextActive]}>
+                      {(shop.category_labels || {})[c] || c}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+          </Card>
+        ) : null}
+
         {/* Failed, loading and empty are three different screens. A catalogue
             that failed to load used to fall through to "This shop has not added
             items yet" — telling a shopper a stocked shop is bare. */}
@@ -118,74 +252,50 @@ export default function ShopDetailScreen({ route, navigation }) {
           <Loading text={t('shopdetail.loading')} />
         ) : loaded && products.length === 0 ? (
           <Empty icon="📦" text={t('shopdetail.noItems')} />
+        ) : visibleUnits.length === 0 ? (
+          // A filtered-to-nothing catalogue is NOT an empty shop, and must not
+          // borrow the empty-shop sentence.
+          <Empty icon="🔍" text={t('shopdetail.noResults')} />
         ) : (
-          products.map((p) => {
-            const line = inCart(p.id);
-            const thumb = <ProductThumb product={p} size={56} style={styles.thumb} />;
-            if (p.sold_by_weight) {
-              const activeG = line ? Number(line.weight_grams) : 0;
+          visibleUnits.map((u) => {
+            if (u.kind === 'group') {
               return (
-                <Card key={p.id}>
+                <VariantCard
+                  key={u.key}
+                  unit={u}
+                  t={t}
+                  renderAction={renderAction}
+                  renderWeight={renderWeight}
+                  priceLine={priceLine}
+                />
+              );
+            }
+            const p = u.product;
+            if (p.sold_by_weight) {
+              return (
+                <Card key={u.key}>
                   <View style={styles.prodRow}>
-                    {thumb}
+                    <ProductThumb product={p} size={56} style={styles.thumb} />
                     <View style={styles.prodInfo}>
                       <Text style={styles.prodName} numberOfLines={2}>{p.name}</Text>
                       {p.description ? <Text style={styles.desc} numberOfLines={2}>{p.description}</Text> : null}
-                      <Text style={styles.price}>{money(p.price)} <Text style={styles.per}>{t('shopdetail.perKg')}</Text></Text>
+                      {priceLine(p)}
                     </View>
                   </View>
-                  <View style={styles.chips}>
-                    {WEIGHT_CHIPS.map((g) => (
-                      <Pressable
-                        key={g}
-                        onPress={() => cart.setWeight(shopId, name, p, activeG === g ? 0 : g)}
-                        disabled={!shopOpen}
-                        style={[styles.chip, activeG === g && styles.chipActive, !shopOpen && styles.disabled]}
-                      >
-                        <Text style={[styles.chipText, activeG === g && styles.chipTextActive]}>{gramsLabel(g)}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                  {line ? (
-                    <Text style={styles.lineTotal}>{gramsLabel(activeG)} · {money(lineTotalPaise(line))}</Text>
-                  ) : null}
+                  {renderWeight(p)}
                 </Card>
               );
             }
             return (
-              <Card key={p.id}>
+              <Card key={u.key}>
                 <View style={styles.prodRow}>
-                  {thumb}
+                  <ProductThumb product={p} size={56} style={styles.thumb} />
                   <View style={styles.prodInfo}>
                     <Text style={styles.prodName} numberOfLines={2}>{p.name}</Text>
                     {p.description ? <Text style={styles.desc} numberOfLines={2}>{p.description}</Text> : null}
-                    <Text style={styles.price}>{money(p.price)} <Text style={styles.per}>{t('shopdetail.per', { unit: p.unit || t('shopdetail.unit') })}</Text></Text>
+                    {priceLine(p)}
                   </View>
-                  {line ? (
-                    <View style={styles.stepper}>
-                      <Pressable onPress={() => cart.setQty(p.id, line.quantity - 1)} style={styles.stepBtn}>
-                        <Text style={styles.stepText}>−</Text>
-                      </Pressable>
-                      <Text style={styles.qty}>{line.quantity}</Text>
-                      <Pressable
-                        onPress={() => cart.setQty(p.id, line.quantity + 1)}
-                        disabled={!shopOpen}
-                        style={[styles.stepBtn, !shopOpen && styles.disabled]}
-                      >
-                        <Text style={styles.stepText}>+</Text>
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <Pressable
-                      onPress={() => cart.addUnit(shopId, name, p)}
-                      disabled={!shopOpen}
-                      style={[styles.addBtn, !shopOpen && styles.addBtnClosed]}
-                    >
-                      <Text style={[styles.addText, !shopOpen && styles.addTextClosed]}>
-                        {shopOpen ? t('shopdetail.add') : t('open.cannotOrder')}
-                      </Text>
-                    </Pressable>
-                  )}
+                  {renderAction(p)}
                 </View>
               </Card>
             );
@@ -208,6 +318,91 @@ export default function ShopDetailScreen({ route, navigation }) {
   );
 }
 
+// ONE card for a multi-variant group: the generic product name, a brand row and
+// a size row, and the price/thumbnail/action of whichever concrete variant is
+// selected. The selection lives here, so switching brand or size re-prices the
+// card from the real product row rather than from anything computed.
+//
+// A row is rendered only when that axis has more than one choice — a group whose
+// variants all share a brand shows sizes only, and no dead single chip.
+function VariantCard({ unit, t, renderAction, renderWeight, priceLine }) {
+  const [brand, setBrand] = useState('');
+  const [pack, setPack] = useState('');
+  // Selections are normalized against the CURRENT variant list on every render,
+  // so a catalogue that reloads under the card (a language switch does exactly
+  // that) can never leave it pointing at a brand or size that no longer exists.
+  const sel = normalizeSelection(unit.variants, brand, pack);
+  const resolved = resolveVariant(unit.variants, sel.brand, sel.pack);
+  if (!resolved) return null;
+
+  function chooseBrand(b) {
+    setBrand(b);
+    // If the new brand does not carry the size in hand, drop to its first size
+    // rather than silently resolving to a product the shopper did not pick.
+    const next = normalizeSelection(unit.variants, b, pack);
+    setPack(next.pack);
+  }
+
+  const subtitle = [sel.brand, sel.pack].filter(Boolean).join(' · ');
+
+  return (
+    <Card>
+      <View style={styles.prodRow}>
+        <ProductThumb product={resolved} size={56} style={styles.thumb} />
+        <View style={styles.prodInfo}>
+          <Text style={styles.prodName} numberOfLines={2}>{unit.base}</Text>
+          {subtitle ? <Text style={styles.desc} numberOfLines={1}>{subtitle}</Text> : null}
+          {priceLine(resolved)}
+        </View>
+        {resolved.sold_by_weight ? null : renderAction(resolved)}
+      </View>
+
+      {sel.brands.length > 1 ? (
+        <View style={styles.axis}>
+          <Text style={styles.axisLabel}>{t('shopdetail.brand')}</Text>
+          <View style={styles.chips}>
+            {sel.brands.map((b) => (
+              <Pressable
+                key={b || '_'}
+                onPress={() => chooseBrand(b)}
+                style={[styles.chip, b === sel.brand && styles.chipActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: b === sel.brand }}
+              >
+                <Text style={[styles.chipText, b === sel.brand && styles.chipTextActive]}>{b}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {sel.packs.length > 1 ? (
+        <View style={styles.axis}>
+          <Text style={styles.axisLabel}>{t('shopdetail.size')}</Text>
+          <View style={styles.chips}>
+            {sel.packs.map((pk) => (
+              <Pressable
+                key={pk || '_'}
+                onPress={() => setPack(pk)}
+                style={[styles.chip, pk === sel.pack && styles.chipActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: pk === sel.pack }}
+              >
+                <Text style={[styles.chipText, pk === sel.pack && styles.chipTextActive]}>{pk}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {/* A weighed variant inside a group keeps its weight chips rather than a
+          unit stepper — the cart line for a loose item is a weight, not a count,
+          and adding it as "1" would put the wrong thing in the basket. */}
+      {resolved.sold_by_weight ? renderWeight(resolved) : null}
+    </Card>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: sizes.pad, paddingBottom: 90 },
@@ -220,6 +415,16 @@ const styles = StyleSheet.create({
   shopName: { color: colors.text, fontSize: 20, fontWeight: '800' },
   loc: { color: colors.textMuted, fontSize: 14, marginTop: 4 },
   ful: { color: colors.text, fontSize: 14, marginTop: 8 },
+  searchInput: {
+    backgroundColor: colors.cardAlt,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: sizes.radius,
+    color: colors.text,
+    fontSize: 17,
+    paddingHorizontal: 14,
+    minHeight: sizes.tap,
+  },
   closedBanner: {
     backgroundColor: colors.card,
     borderRadius: sizes.radius,
@@ -280,6 +485,9 @@ const styles = StyleSheet.create({
   stepText: { color: colors.text, fontSize: 22, fontWeight: '800' },
   qty: { color: colors.text, fontSize: 18, fontWeight: '800', minWidth: 32, textAlign: 'center' },
   chips: { flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' },
+  chipsTop: { flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' },
+  axis: { marginTop: 4 },
+  axisLabel: { color: colors.textMuted, fontSize: 13, fontWeight: '600', marginTop: 10 },
   chip: {
     borderWidth: 1, borderColor: colors.border, borderRadius: 999,
     paddingHorizontal: 18, minHeight: 44,

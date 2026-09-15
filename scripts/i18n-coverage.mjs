@@ -50,7 +50,26 @@ const TARGETS = [
  * that has not been translated yet — it just widens the honest gap.
  */
 const FLOORS = {
-  consumer: { hi: 235, bn: 162, ta: 180, te: 180, kn: 180, ml: 180, mr: 162, gu: 162, ur: 180 },
+  // Batch PARITY raised every floor that moved. The native consumer app gained
+  // the account features the web already had (gender/DOB, number change, account
+  // statement, invite & earn, Help & FAQ) plus in-shop search and brand/size
+  // chips, and the strings for them were COPIED VERBATIM out of the web
+  // dictionary (admin-dashboard/src/lib/i18n.js) rather than authored here —
+  // every one of those features is already translated on the web.
+  //
+  // en went 237 -> 334 keys: 71 copied from the web, plus 26 genuinely new
+  // English-only strings (the update-status card, and the handful of controls
+  // the web has no equivalent for) that every other language falls back on.
+  //
+  // The web dictionary carries only en/hi/ta/te/kn/ml/ur, so only those gained:
+  // hi +71, and ta/te/kn/ml/ur +45 each. A copied value that was byte-identical
+  // to the English one was NOT copied — several of the web's own non-English
+  // blocks still hold English placeholders for these keys, and carrying those
+  // across would change nothing a shopper sees (the dictionary already falls
+  // back to en) while inflating this very ratchet. bn, mr and gu gained nothing
+  // and their floors are unchanged; their percentage fell only because en grew,
+  // which is the honest gap widening, not a regression.
+  consumer: { hi: 306, bn: 162, ta: 225, te: 225, kn: 225, ml: 225, mr: 162, gu: 162, ur: 225 },
   owner: { hi: 325, bn: 315, ta: 123, te: 123, kn: 123, ml: 123, mr: 315, gu: 315, ur: 123 },
 };
 

@@ -23,6 +23,10 @@ import ProductSearchScreen from './screens/ProductSearchScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 import AccountScreen from './screens/AccountScreen';
+import ChangeNumberScreen from './screens/ChangeNumberScreen';
+import StatementScreen from './screens/StatementScreen';
+import ReferralScreen from './screens/ReferralScreen';
+import HelpFaqScreen from './screens/HelpFaqScreen';
 import FeatureWebView from '../screens/FeatureWebView';
 
 const RootStack = createNativeStackNavigator();
@@ -95,6 +99,12 @@ function AccountStackScreen() {
   return (
     <AccountStack.Navigator screenOptions={stackScreenOptions}>
       <AccountStack.Screen name="AccountHome" component={AccountScreen} options={{ title: t('account.title') }} />
+      {/* The web keeps all of these on one scrolling account page. On a phone
+          each is its own destination, reached from the hub list on AccountHome. */}
+      <AccountStack.Screen name="ChangeNumber" component={ChangeNumberScreen} options={{ title: t('num.change') }} />
+      <AccountStack.Screen name="Statement" component={StatementScreen} options={{ title: t('stmt.title') }} />
+      <AccountStack.Screen name="Referral" component={ReferralScreen} options={{ title: t('ref.title') }} />
+      <AccountStack.Screen name="HelpFaq" component={HelpFaqScreen} options={{ title: t('chelp.title') }} />
       <AccountStack.Screen
         name="FeatureWebView"
         component={FeatureWebView}
