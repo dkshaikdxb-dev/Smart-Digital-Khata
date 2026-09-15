@@ -105,13 +105,30 @@ async function report() {
          WHERE u.email LIKE 'store%@demo.local'
            AND s.is_listed = true
            AND EXISTS (SELECT 1 FROM products p WHERE p.shop_id = s.id AND p.is_active = true)) AS stocked,
-       (SELECT COUNT(*)::int FROM ad_campaigns WHERE advertiser = 'Smart Khata') AS promos`
+       (SELECT COUNT(*)::int FROM ad_campaigns WHERE advertiser = 'Smart Khata') AS promos,
+       (SELECT COUNT(*)::int
+          FROM shop_images i JOIN users u ON u.shop_id = i.shop_id
+         WHERE u.email = 'store01@demo.local' AND i.status = 'active') AS flagship_photos,
+       (SELECT COUNT(*)::int
+          FROM shops s JOIN users u ON u.shop_id = s.id
+         WHERE u.email = 'store01@demo.local'
+           AND s.branded_until IS NOT NULL AND s.branded_until > NOW()) AS flagship_premium,
+       (SELECT COUNT(*)::int
+          FROM ad_campaigns c JOIN users u ON u.shop_id = c.link_shop_id
+         WHERE u.email = 'store01@demo.local' AND c.self_serve = true AND c.status = 'active') AS flagship_promos`
   );
   const d = demo.rows[0];
   lines.push(
     `demo shops      ${d.owners} seeded, ${d.listed} listed, ${d.stocked} with a catalogue ` +
       `(only stocked+listed shops appear in the public directory); ${d.promos} house promo campaign(s)`
   );
+  if (d.owners) {
+    lines.push(
+      `demo flagship   store01 storefront: ${d.flagship_photos} photo slide(s), ` +
+        `premium ${d.flagship_premium ? 'active' : 'not active'}, ` +
+        `${d.flagship_promos} own slide(s) in the marketplace carousel`
+    );
+  }
   if (d.owners && d.stocked < d.owners) {
     lines.push('                ^ listed demo shops with an empty catalogue are hidden — run npm run data:demo');
   }

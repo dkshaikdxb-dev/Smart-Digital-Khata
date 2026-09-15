@@ -37,6 +37,7 @@ const { importCatalog } = require('../src/utils/import-catalog');
 const { importI18nOverrides } = require('../src/utils/import-i18n-overrides');
 const catalogSeed = require('../src/data/catalog-seed.json');
 const regionalSeed = require('../src/data/regional-i18n.json');
+const { clearDemoData } = require('./helpers/demo-data-cleanup');
 
 const BACKEND_DIR = path.join(__dirname, '..');
 const REPO_DIR = path.join(BACKEND_DIR, '..');
@@ -184,9 +185,10 @@ describe('npm run migrate loads the shipped product data', () => {
 // ---------------------------------------------------------------------------
 describe('the demo data loader', () => {
   afterAll(async () => {
-    // Deleting the owner users cascades to their shops and everything below.
-    await pool.query("DELETE FROM users WHERE email LIKE 'store%@demo.local'");
-    await pool.query("DELETE FROM ad_campaigns WHERE advertiser = 'Smart Khata'");
+    // Deleting the owner users cascades to their shops and everything below —
+    // but NOT to the flagship shop's campaign, wallet, ledger or audit rows, so
+    // the shared helper removes those first. See tests/helpers.
+    await clearDemoData(pool);
   });
 
   it('leaves ten listed demo shops that all have something to sell, and converges on a re-run', async () => {
