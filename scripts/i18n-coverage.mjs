@@ -79,7 +79,30 @@ const FLOORS = {
   // translated the very same tab: hi/ta/te/kn/ml/ur +1 each. bn, mr and gu have
   // no block in the web dictionary, so they gained nothing, fall back to
   // English, and keep their floors — the honest gap widening by one key.
-  consumer: { hi: 307, bn: 162, ta: 226, te: 226, kn: 226, ml: 226, mr: 162, gu: 162, ur: 226 },
+  //
+  // Batch SHELF rebuilt the consumer product-search screen and took the
+  // category chips off keywords and onto real catalogue shelves. en went
+  // 335 -> 343 keys: three new chip labels (cat.dalPulses, cat.spices,
+  // cat.cookingOils) and five English-only strings for the screen itself
+  // (psearch.voiceIn / buyAgain / recent / clearRecent / browse), which need a
+  // translator and fall back to English until they get one.
+  //
+  // The three CHIP LABELS were not authored here. Every non-English value was
+  // copied byte-for-byte out of the shipped catalogue translations
+  // (backend/src/data/catalog-i18n.json), whose subcategory rows already name
+  // "Spices", "Dal & Pulses" and "Cooking Oils" in all nine languages — the
+  // same human-written text a shopper reads on those shelves in the catalogue.
+  // So every language gained those three: hi/ta/te/kn/ml/ur +3.
+  //
+  // bn, mr and gu gained FIVE. They had no cat.* keys at all — they are the
+  // three languages the web dictionary, which every earlier copy came from, has
+  // no block for — so alongside the three new labels they also picked up
+  // cat.household and cat.personalCare, copied the same way from that file's
+  // top-level CATEGORY rows. cat.attaRice is the one chip label they still fall
+  // back to English for: "Atta & Rice" is this app's own phrasing and is not a
+  // catalogue term, so there was nothing in the repo to copy and a translator
+  // is owed it.
+  consumer: { hi: 310, bn: 167, ta: 229, te: 229, kn: 229, ml: 229, mr: 167, gu: 167, ur: 229 },
   owner: { hi: 325, bn: 315, ta: 123, te: 123, kn: 123, ml: 123, mr: 315, gu: 315, ur: 123 },
 };
 

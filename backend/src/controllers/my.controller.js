@@ -993,6 +993,81 @@ exports.createOrder = async (req, res) => {
 };
 
 /**
+ * GET /my/buy-again?limit= — the items THIS customer has ordered before, the
+ * ones they order most often first.
+ *
+ * A rural grocery basket is close to identical month to month, so the shortest
+ * path to the thing a returning shopper wants is the thing they already bought.
+ * One tap runs the remembered item name as a search; that is all this feeds.
+ *
+ * SCOPE. Exactly the same gate as every other /my endpoint: the authenticated
+ * customer's own phone, matched through `customers` to `orders.customer_id`.
+ * A row can only come from an order this phone placed. Nothing about any other
+ * shopper — no other customer's id, phone, name or order — is read or returned.
+ *
+ * NO PRICES. Deliberately. A price is per shop and per moment and would mean a
+ * lookup for every line; this screen is drawn on 2G, and a stale price beside a
+ * remembered item is worse than no price at all. The response carries the item
+ * name, the shop it last came from, and how often it was bought — nothing that
+ * a shopper could mistake for today's rate. No money field appears here, so
+ * nothing on this path touches the paise arithmetic or the append-only ledger.
+ *
+ * Cancelled orders are excluded: a basket that was never handed over is not a
+ * thing the shopper bought, and offering it back is the app misremembering.
+ *
+ * Items are folded by NAME, case-insensitively, rather than by product id, so
+ * the same dal bought twice from two shops — two different products rows — is
+ * one line and not two. The shop shown is the one it came from MOST RECENTLY,
+ * which is the one a shopper would expect to be sent back to.
+ */
+exports.buyAgain = async (req, res) => {
+  const phone = toE164(req.customerUser.phone);
+  // Eight is the cap the screen asks for; the ceiling here is a defensive one.
+  const limit = Math.min(20, Math.max(1, req.query.limit || 8));
+
+  const r = await query(
+    `WITH mine AS (
+       SELECT oi.name, o.id AS order_id, o.shop_id, o.created_at
+         FROM order_items oi
+         JOIN orders o ON o.id = oi.order_id
+         JOIN customers c ON c.id = o.customer_id
+        WHERE c.phone = $1
+          AND o.status <> 'cancelled'
+     ),
+     tally AS (
+       SELECT lower(name) AS key,
+              COUNT(DISTINCT order_id)::int AS times,
+              MAX(created_at) AS last_at
+         FROM mine
+        GROUP BY lower(name)
+     ),
+     latest AS (
+       SELECT DISTINCT ON (lower(name))
+              lower(name) AS key, name, shop_id
+         FROM mine
+        ORDER BY lower(name), created_at DESC
+     )
+     SELECT l.name, l.shop_id, s.name AS shop_name, t.times, t.last_at
+       FROM tally t
+       JOIN latest l ON l.key = t.key
+       LEFT JOIN shops s ON s.id = l.shop_id
+      ORDER BY t.times DESC, t.last_at DESC, l.name ASC
+      LIMIT $2`,
+    [phone, limit]
+  );
+
+  res.json({
+    items: r.rows.map((row) => ({
+      name: row.name,
+      shop_id: row.shop_id,
+      shop_name: row.shop_name,
+      times: row.times,
+      last_ordered_at: row.last_at,
+    })),
+  });
+};
+
+/**
  * GET /my/orders — this customer's orders across every shop, newest first,
  * with shop_name + item count.
  *
