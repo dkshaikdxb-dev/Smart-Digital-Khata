@@ -9,17 +9,7 @@ import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { useVoiceSearch } from '../../lib/useVoiceSearch';
 import VoiceSearchHint from '../../components/VoiceSearchHint';
 import { uiError } from '../../lib/errorText';
-
-// Flipkart-style quick-browse categories. The label is localized; the search
-// term is the English base word so the endpoint's name-ILIKE matches whatever
-// the shopkeeper actually typed. Emoji icons only (no images — keep it fast).
-const CATEGORIES = [
-  { key: 'catAttaRice', term: 'rice', icon: '🍚' },
-  { key: 'catDairy', term: 'milk', icon: '🧈' },
-  { key: 'catSnacks', term: 'biscuit', icon: '🍪' },
-  { key: 'catHousehold', term: 'soap', icon: '🧼' },
-  { key: 'catPersonalCare', term: 'shampoo', icon: '🧴' },
-];
+import { CATEGORIES } from '../../lib/categories';
 
 // Public shop directory. Search by name/city; optionally sort by distance using
 // the browser geolocation. No token required — anyone can browse. A prominent
@@ -97,6 +87,16 @@ export default function DiscoverShops() {
     router.push(`/c/products?q=${encodeURIComponent(v)}`);
   }
 
+  // A chip is a SHELF, not a word: it deep-links to the real catalogue filter
+  // (/c/products?category=<shelf>) instead of the keyword search that used to
+  // make "Household" mean the word `soap`. See lib/categories.js for what those
+  // keywords were actually reaching.
+  function goShelf(category) {
+    const key = (category || '').trim();
+    if (!key) return;
+    router.push(`/c/products?category=${encodeURIComponent(key)}`);
+  }
+
   function onProductSubmit(e) {
     e.preventDefault();
     goProducts(productQ);
@@ -152,13 +152,13 @@ export default function DiscoverShops() {
         <div className="cpwa-chips cpwa-cats" role="group" aria-label={t('c.productsTitle')}>
           {CATEGORIES.map((c) => (
             <button
-              key={c.key}
+              key={c.category}
               type="button"
               className="cpwa-chip"
-              onClick={() => goProducts(c.term)}
+              onClick={() => goShelf(c.category)}
             >
-              <span className="cpwa-chip-ico">{c.icon}</span>{' '}
-              <span className="cpwa-chip-label">{t(`c.${c.key}`)}</span>
+              <span className="cpwa-chip-ico" aria-hidden="true">{c.icon}</span>{' '}
+              <span className="cpwa-chip-label">{t(c.key)}</span>
             </button>
           ))}
         </div>
