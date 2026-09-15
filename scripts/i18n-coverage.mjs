@@ -69,7 +69,17 @@ const FLOORS = {
   // back to en) while inflating this very ratchet. bn, mr and gu gained nothing
   // and their floors are unchanged; their percentage fell only because en grew,
   // which is the honest gap widening, not a regression.
-  consumer: { hi: 306, bn: 162, ta: 225, te: 225, kn: 225, ml: 225, mr: 162, gu: 162, ur: 225 },
+  //
+  // Batch TABS added ONE English key to the consumer dictionary, 'tab.products'
+  // — the native app gained the Products tab the web has had all along — taking
+  // en from 334 to 335 keys. The floors here are ABSOLUTE counts of translated
+  // keys, not percentages, so an en-only key never moves one; what moved these
+  // six is that the word itself was COPIED VERBATIM out of the web dictionary's
+  // 'ctab.products' (admin-dashboard/src/lib/i18n.js), where a human had already
+  // translated the very same tab: hi/ta/te/kn/ml/ur +1 each. bn, mr and gu have
+  // no block in the web dictionary, so they gained nothing, fall back to
+  // English, and keep their floors — the honest gap widening by one key.
+  consumer: { hi: 307, bn: 162, ta: 226, te: 226, kn: 226, ml: 226, mr: 162, gu: 162, ur: 226 },
   owner: { hi: 325, bn: 315, ta: 123, te: 123, kn: 123, ml: 123, mr: 315, gu: 315, ur: 123 },
 };
 

@@ -126,6 +126,7 @@ const en = {
 
   'tab.khata': 'Khata',
   'tab.shops': 'Shops',
+  'tab.products': 'Products',
   'tab.orders': 'Orders',
   'tab.cart': 'Cart',
   'tab.account': 'Account',
@@ -573,6 +574,7 @@ const hi = {
 
   'tab.khata': 'खाता',
   'tab.shops': 'दुकानें',
+  'tab.products': 'उत्पाद',
   'tab.orders': 'ऑर्डर',
   'tab.cart': 'कार्ट',
   'tab.account': 'अकाउंट',
@@ -1140,6 +1142,7 @@ const ta = {
 
   'tab.khata': 'கணக்கு',
   'tab.shops': 'கடைகள்',
+  'tab.products': 'பொருட்கள்',
   'tab.orders': 'ஆர்டர்கள்',
   'tab.account': 'சுயவிவரம்',
 
@@ -1399,6 +1402,7 @@ const te = {
 
   'tab.khata': 'ఖాతా',
   'tab.shops': 'దుకాణాలు',
+  'tab.products': 'ఉత్పత్తులు',
   'tab.orders': 'ఆర్డర్లు',
   'tab.account': 'ప్రొఫైల్',
 
@@ -1658,6 +1662,7 @@ const kn = {
 
   'tab.khata': 'ಖಾತೆ',
   'tab.shops': 'ಅಂಗಡಿಗಳು',
+  'tab.products': 'ಉತ್ಪನ್ನಗಳು',
   'tab.orders': 'ಆರ್ಡರ್‌ಗಳು',
   'tab.account': 'ಪ್ರೊಫೈಲ್',
 
@@ -1917,6 +1922,7 @@ const ml = {
 
   'tab.khata': 'ഖാത',
   'tab.shops': 'കടകൾ',
+  'tab.products': 'ഉൽപ്പന്നങ്ങൾ',
   'tab.orders': 'ഓർഡറുകൾ',
   'tab.account': 'അക്കൗണ്ട്',
 
@@ -2542,6 +2548,7 @@ const ur = {
 
   'tab.khata': 'کھاتہ',
   'tab.shops': 'دکانیں',
+  'tab.products': 'مصنوعات',
   'tab.orders': 'آرڈر',
   'tab.account': 'اکاؤنٹ',
 

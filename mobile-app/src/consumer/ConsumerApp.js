@@ -33,6 +33,7 @@ const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const KhataStack = createNativeStackNavigator();
 const ShopsStack = createNativeStackNavigator();
+const ProductsStack = createNativeStackNavigator();
 const CartStack = createNativeStackNavigator();
 const OrdersStack = createNativeStackNavigator();
 const AccountStack = createNativeStackNavigator();
@@ -66,6 +67,28 @@ function ShopsStackScreen() {
       <ShopsStack.Screen name="ShopDetail" component={ShopDetailScreen} options={{ title: t('tab.shops') }} />
       <ShopsStack.Screen name="PayWebView" component={PayWebView} options={{ title: t('pay.title') }} />
     </ShopsStack.Navigator>
+  );
+}
+
+// Cross-shop product search is a TAB, as it is on the web. It was registered
+// only inside the Shops stack, reachable solely by first landing on the shop
+// directory and then noticing the product bar at the top of it — so the one
+// feature that answers "who near me sells this?" was hidden behind the question
+// it exists to replace. It keeps its door in the Shops stack as well (the
+// directory's product bar and category chips still push it there); a feature
+// with two doors is fine, a feature with none is not.
+//
+// The stack carries ShopDetail and PayWebView too, so tapping a result opens the
+// seller INSIDE this tab rather than throwing the shopper over to another one
+// and losing their search.
+function ProductsStackScreen() {
+  const { t } = useT();
+  return (
+    <ProductsStack.Navigator screenOptions={stackScreenOptions}>
+      <ProductsStack.Screen name="ProductSearchHome" component={ProductSearchScreen} options={{ title: t('psearch.title') }} />
+      <ProductsStack.Screen name="ShopDetail" component={ShopDetailScreen} options={{ title: t('tab.shops') }} />
+      <ProductsStack.Screen name="PayWebView" component={PayWebView} options={{ title: t('pay.title') }} />
+    </ProductsStack.Navigator>
   );
 }
 
@@ -114,20 +137,30 @@ function AccountStackScreen() {
   );
 }
 
-const tabIcon = (glyph) => ({ color }) => <Text style={{ fontSize: 20, color }}>{glyph}</Text>;
+const tabIcon = (glyph) => ({ color }) => <Text style={{ fontSize: 18, color }}>{glyph}</Text>;
 
 // react-navigation renders a string label with numberOfLines={1}, which on a
 // 320dp phone truncates the longer Indic tab words to an ellipsis once there
 // are five tabs instead of four — and a truncated tab label is unreadable for
 // exactly the shoppers who most need the word. So the label is rendered here
-// instead: two lines allowed, a tighter line height, and a slightly smaller
-// face. The web's tab bar needed the same explicit wrapping help in CSS at six
-// tabs; this is the native equivalent.
+// instead: two lines allowed, a tighter line height, and a smaller face. The
+// web's tab bar needed the same explicit wrapping help in CSS at six tabs; this
+// is the native equivalent.
+//
+// SIX TABS. A sixth column takes each tab from 64dp to 53dp on a 320dp screen,
+// which is the tightest this bar will ever be asked to be. It still clears the
+// 48dp minimum touch target, and it is the width the longest labels have to live
+// in: 'ಉತ್ಪನ್ನಗಳು', 'ഉൽപ്പന്നങ്ങൾ', 'ఉత్పత్తులు'. At 10px over two lines they wrap
+// rather than truncate, which is why the face shrank a point, the icon shrank
+// two, the horizontal padding react-navigation puts on each item is removed so
+// the text gets the whole column, and the bar grew to 78dp to hold a two-line
+// label under an icon. A truncated word is worse than a small one for a shopper
+// who reads slowly; nothing here is allowed to ellipsize at 320dp.
 const tabLabel = (text) => ({ color }) => (
   <Text
     numberOfLines={2}
     ellipsizeMode="tail"
-    style={{ fontSize: 11, lineHeight: 14, fontWeight: '600', color, textAlign: 'center', paddingHorizontal: 2 }}
+    style={{ fontSize: 10, lineHeight: 13, fontWeight: '600', color, textAlign: 'center', paddingHorizontal: 1 }}
   >
     {text}
   </Text>
@@ -145,9 +178,12 @@ function SignedInTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        // Taller than before: five tabs mean narrower columns, and a two-line
-        // Indic label needs the vertical room the fourth tab never asked for.
-        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border, height: 72, paddingBottom: 8, paddingTop: 6 },
+        // Taller again at six tabs: the columns are narrower, so more labels wrap
+        // to the second line that the fourth tab never asked for.
+        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border, height: 78, paddingBottom: 8, paddingTop: 6 },
+        // Give the label the full column. react-navigation's default item
+        // padding is what pushes an Indic word over the edge into an ellipsis.
+        tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.onAccent, fontWeight: '800' },
@@ -155,6 +191,10 @@ function SignedInTabs() {
     >
       <Tab.Screen name="KhataTab" component={KhataStackScreen} options={{ title: t('tab.khata'), tabBarLabel: tabLabel(t('tab.khata')), tabBarIcon: tabIcon('📒') }} />
       <Tab.Screen name="ShopsTab" component={ShopsStackScreen} options={{ title: t('tab.shops'), tabBarLabel: tabLabel(t('tab.shops')), tabBarIcon: tabIcon('🏪') }} />
+      {/* Next to Shops, as on the web, because the two are the same errand:
+          find a shop, or find a thing. The other four keep the order shoppers
+          already have in their thumbs. */}
+      <Tab.Screen name="ProductsTab" component={ProductsStackScreen} options={{ title: t('tab.products'), tabBarLabel: tabLabel(t('tab.products')), tabBarIcon: tabIcon('🔍') }} />
       <Tab.Screen
         name="CartTab"
         component={CartStackScreen}

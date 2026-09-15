@@ -9,18 +9,7 @@ import { friendlyError, canRetry } from '../lib/errorText';
 import { useT } from '../i18n';
 import { useNativeVoice } from '../../lib/useNativeVoice';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
-
-// Quick-browse category chips, mirroring the web directory's CATEGORIES. The
-// LABEL is localized; the search TERM stays the English base word, because the
-// endpoint matches against a search blob built from English names and
-// romanized aliases — sending a translated term would match less, not more.
-const CATEGORIES = [
-  { key: 'cat.attaRice', term: 'rice', icon: '🍚' },
-  { key: 'cat.dairy', term: 'milk', icon: '🧈' },
-  { key: 'cat.snacks', term: 'biscuit', icon: '🍪' },
-  { key: 'cat.household', term: 'soap', icon: '🧼' },
-  { key: 'cat.personalCare', term: 'shampoo', icon: '🧴' },
-];
+import { CATEGORIES } from '../lib/categories';
 
 // Priority 3 — public shop directory from GET /public/shops. Search by name/city
 // (server matches either). GPS is intentionally NOT used here: no location
