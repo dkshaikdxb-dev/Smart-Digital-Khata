@@ -43,10 +43,13 @@ export const LANGUAGES = [
 // `voice`     = ASR/TTS (BCP-47) is available for this language.
 //
 // This map is about CATALOGUE and VOICE only — it says nothing about how much of
-// the UI is translated, which is partial for every language but en. bn/gu/mr
-// still have NO translated catalogue, so they keep { catalogue: false } and the
-// picker's "(beta)" suffix (still fully selectable) — isBetaLang() is derived from the
-// catalogue flag alone. Their `voice` flag flipped to true in batch LANG, when
+// the UI is translated, which is partial for every language but en. bn/gu/mr DO
+// have a translated catalogue now, so they carry { catalogue: true } together
+// with an explicit { beta: true }, and keep the picker's "(beta)" suffix (still
+// fully selectable) — isBetaLang() reads that explicit flag first and only falls
+// back to the catalogue flag for a language that has not set one. See the note
+// below for why the two stopped being the same thing. Their `voice` flag flipped
+// to true in batch LANG, when
 // mobile-app/src/lib/useNativeVoice.js started mapping bn-IN / gu-IN / mr-IN;
 // the LIVE gate on the shops screen is that hook's localeSupported(), and this
 // map is the forward-looking mirror of it. A mapped language is still only
@@ -63,7 +66,7 @@ export const LANGUAGES = [
 // reasons that are specific and checkable: the shipped catalogue carries
 // DESCRIPTIONS in six languages and these three are not among them, so a name
 // reads in Bengali above an English sentence; their consumer UI sits at 162 of
-// 237 strings against 180 for the others; and the owner app's own bn/gu/mr were
+// 335 strings against 226 for the others; and the owner app's own bn/gu/mr were
 // authored in-repo and have not yet been read by a native speaker.
 //
 // Drop `beta` for a language when those close, not when this file is edited.

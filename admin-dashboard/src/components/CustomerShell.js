@@ -86,7 +86,24 @@ export default function CustomerShell({ title, children, tabs = true, back }) {
               )}
               {title && <h1 className="cpwa-topbar-title">{title}</h1>}
             </div>
-            <div className="cpwa-topbar-tools">
+            {/* The tools row may WRAP, and may be SQUEEZED. It holds three
+                controls whose widths are text-dependent — the location chip's
+                label, the language select's native-script value — and on a 320px
+                screen their natural widths add up to slightly more than the bar
+                can give them. The row used to be unable to do either: it was
+                sized to its own content and could not shrink, so the shortfall
+                was taken out of the one control that yields (the location chip),
+                which did not get narrower but got OVERLAPPED by its neighbour,
+                with the end of "Set location" underneath it.
+                Wrapping spends a row of height instead, which is the one currency
+                here that costs the shopper nothing; `flex: 0 1 auto; min-width: 0`
+                keeps the row itself inside the bar, so a saved town name with no
+                upper bound ends in an ellipsis rather than in a sideways scroll
+                of the whole page. */}
+            <div
+              className="cpwa-topbar-tools"
+              style={{ flexWrap: 'wrap', justifyContent: 'flex-end', flex: '0 1 auto', minWidth: 0 }}
+            >
               <CpwaLocationPicker />
               <CpwaThemeToggle />
               <LangSwitch variant="cpwa" />

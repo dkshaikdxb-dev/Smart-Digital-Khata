@@ -185,7 +185,13 @@ describe('GET /api/public/promos — localized creative + shape', () => {
       title: 'Base title',
       offer_text: 'Base offer',
       subtitle: 'Base subtitle',
-      i18n: { hi: { title: 'हिंदी शीर्षक' } },
+      i18n: {
+        hi: { title: 'हिंदी शीर्षक' },
+        bn: { title: 'বাংলা শিরোনাম' },
+        gu: { title: 'ગુજરાતી શીર્ષક' },
+        mr: { title: 'मराठी शीर्षक' },
+        pa: { title: 'ਪੰਜਾਬੀ ਸਿਰਲੇਖ' },
+      },
       targets: [{ geo_type: 'town', geo_value: LTOWN }],
     });
   });
@@ -201,6 +207,34 @@ describe('GET /api/public/promos — localized creative + shape', () => {
 
   test('no lang (base) returns the base title', async () => {
     const res = await request(app).get(`/api/public/promos?town=${encodeURIComponent(LTOWN)}`);
+    const promo = res.body.promos.find((p) => p.id === id);
+    expect(promo.title).toBe('Base title');
+  });
+
+  // Bengali, Gujarati and Marathi are ACTIVE languages of this platform — the
+  // shopper can pick any of them in the app's own language gate — and a campaign
+  // may carry creative for them in ad_campaigns.i18n. The serving path used to
+  // gate ?lang= on a hardcoded seven-code list that predated their activation, so
+  // a Bengali shopper was handed the English creative even when the Bengali copy
+  // was sitting in the row. This is the reproduction of that: the creative is
+  // there, and the only question is whether the request is allowed to ask for it.
+  test.each([
+    ['bn', 'বাংলা শিরোনাম'],
+    ['gu', 'ગુજરાતી શીર્ષક'],
+    ['mr', 'मराठी शीर्षक'],
+  ])('?lang=%s returns the %s creative, not English', async (code, expected) => {
+    const res = await request(app).get(`/api/public/promos?town=${encodeURIComponent(LTOWN)}&lang=${code}`);
+    expect(res.status).toBe(200);
+    const promo = res.body.promos.find((p) => p.id === id);
+    expect(promo.title).toBe(expected);
+  });
+
+  // A registered-but-not-yet-switched-on language is NOT served: 'pa' has a row
+  // in the registry with is_active=false, so it is staging, not live, and the
+  // shopper gets the base creative even if somebody has pre-written Punjabi copy.
+  test('a staged (registered but inactive) lang still falls back to base', async () => {
+    const res = await request(app).get(`/api/public/promos?town=${encodeURIComponent(LTOWN)}&lang=pa`);
+    expect(res.status).toBe(200);
     const promo = res.body.promos.find((p) => p.id === id);
     expect(promo.title).toBe('Base title');
   });
