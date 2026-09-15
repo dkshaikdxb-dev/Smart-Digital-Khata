@@ -284,3 +284,92 @@ describe('marketing CRUD lifecycle', () => {
     expect(t.rows[0].c).toBe(0);
   });
 });
+
+// The one number the console chrome renders (batch MODQ). The nav pill and the
+// platform hub need "how much is waiting", and the three queue endpoints each
+// return up to 500 rows — three round trips to draw one digit, on every page of
+// a console that is open all day. This answers it in one cheap call, behind the
+// SAME ads:manage gate as the queues it counts, so it can never tell an admin
+// that work exists which they are not allowed to open.
+describe('GET /api/admin/moderation/pending-count', () => {
+  const PATH = '/api/admin/moderation/pending-count';
+  const made = { campaigns: [], images: [], checks: [] };
+
+  const countFor = async (token) => {
+    const res = await auth(request(app).get(PATH), token);
+    expect(res.status).toBe(200);
+    return res.body;
+  };
+
+  afterAll(async () => {
+    if (made.checks.length) await pool.query('DELETE FROM moderation_spot_checks WHERE id = ANY($1::uuid[])', [made.checks]);
+    if (made.images.length) await pool.query('DELETE FROM shop_images WHERE id = ANY($1::uuid[])', [made.images]);
+    if (made.campaigns.length) await pool.query('DELETE FROM ad_campaigns WHERE id = ANY($1::uuid[])', [made.campaigns]);
+  });
+
+  test('a support admin (no ads:manage) is refused', async () => {
+    const res = await auth(request(app).get(PATH), admins.support.token);
+    expect(res.status).toBe(403);
+  });
+
+  test('each queue is counted, and the total is their sum', async () => {
+    const before = await countFor(admins.marketing.token);
+    for (const k of ['promos', 'shop_images', 'spot_checks', 'total']) {
+      expect(typeof before[k]).toBe('number');
+    }
+    expect(before.total).toBe(before.promos + before.shop_images + before.spot_checks);
+
+    // One of each kind of waiting work, plus two decided rows that must NOT be
+    // counted (an active campaign and an already-reviewed spot check).
+    const promo = await pool.query(
+      `INSERT INTO ad_campaigns (title, style, self_serve, status, link_shop_id, created_by)
+       VALUES ('Count me', 'offer', true, 'pending_review', $1, $2) RETURNING id`,
+      [owner.shop.id, admins.marketing.id]
+    );
+    made.campaigns.push(promo.rows[0].id);
+    const live = await pool.query(
+      `INSERT INTO ad_campaigns (title, style, self_serve, status, link_shop_id, created_by)
+       VALUES ('Do not count me', 'offer', true, 'active', $1, $2) RETURNING id`,
+      [owner.shop.id, admins.marketing.id]
+    );
+    made.campaigns.push(live.rows[0].id);
+    const img = await pool.query(
+      `INSERT INTO shop_images (shop_id, position, mime, data, status)
+       VALUES ($1, 0, 'image/png', decode('00','hex'), 'pending_review') RETURNING id`,
+      [owner.shop.id]
+    );
+    made.images.push(img.rows[0].id);
+    const liveImg = await pool.query(
+      `INSERT INTO shop_images (shop_id, position, mime, data, status)
+       VALUES ($1, 1, 'image/png', decode('00','hex'), 'active') RETURNING id`,
+      [owner.shop.id]
+    );
+    made.images.push(liveImg.rows[0].id);
+    const check = await pool.query(
+      `INSERT INTO moderation_spot_checks (kind, target_id, shop_id, status)
+       VALUES ('shop_image', $1, $2, 'pending') RETURNING id`,
+      [liveImg.rows[0].id, owner.shop.id]
+    );
+    made.checks.push(check.rows[0].id);
+    const closed = await pool.query(
+      `INSERT INTO moderation_spot_checks (kind, target_id, shop_id, status)
+       VALUES ('campaign', $1, $2, 'ok') RETURNING id`,
+      [live.rows[0].id, owner.shop.id]
+    );
+    made.checks.push(closed.rows[0].id);
+
+    const after = await countFor(admins.marketing.token);
+    expect(after.promos).toBe(before.promos + 1);
+    expect(after.shop_images).toBe(before.shop_images + 1);
+    expect(after.spot_checks).toBe(before.spot_checks + 1);
+    expect(after.total).toBe(before.total + 3);
+  });
+
+  test('super sees the same count as the marketing role', async () => {
+    const [asMarketing, asSuper] = await Promise.all([
+      countFor(admins.marketing.token),
+      countFor(admins.super.token),
+    ]);
+    expect(asSuper).toEqual(asMarketing);
+  });
+});

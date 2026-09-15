@@ -380,6 +380,13 @@ router.patch('/shops/:id/slides', requirePerm('ads:manage'), validate(shopSlides
 // two queues it describes.
 router.get('/moderation/ai-stats', requirePerm('ads:manage'), asyncHandler(adsCtrl.aiStats));
 
+// How much is waiting for a human, as one small number per queue (batch MODQ).
+// The console chrome renders it on every page, so it exists to save the three
+// full queue fetches that drawing one digit would otherwise cost. Same
+// ads:manage gate as the queues it counts — a count must never announce work
+// its caller is not allowed to open.
+router.get('/moderation/pending-count', requirePerm('ads:manage'), asyncHandler(adsCtrl.pendingReviewCount));
+
 // Post-publish spot checks (batch MOD2, 0070): a sample of what the AI
 // auto-approved, queued for a human SECOND look after it went live. Same
 // ads:manage gate as the two pre-publish queues. Marking one 'bad' takes the
