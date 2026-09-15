@@ -115,6 +115,25 @@ export const consumerAuth = {
   // PATCH /api/customer-auth/profile { name,email,gender,date_of_birth } -> { customer_user }
   updateProfile: (body) =>
     api.patch('/api/customer-auth/profile', body).then((r) => r.data),
+  // Self-service number change. BOTH steps require the current session; the
+  // second also proves control of the new number with a code sent to it. On
+  // success the server returns a token that authenticates as the (possibly
+  // merged) identity on the new number, so the caller must store it.
+  // POST /api/customer-auth/change-number/request { new_phone } -> { ok, dev_code? }
+  changeNumberRequest: (newPhone) =>
+    api
+      .post('/api/customer-auth/change-number/request', { new_phone: newPhone })
+      .then((r) => r.data),
+  // POST /api/customer-auth/change-number/verify { new_phone, code } -> { token, customer_user }
+  changeNumberVerify: (newPhone, code) =>
+    api
+      .post('/api/customer-auth/change-number/verify', { new_phone: newPhone, code })
+      .then((r) => r.data),
+  // GET /api/customer-auth/referral ->
+  //   { code, link_path, link, counts:{referred_total,activated_total},
+  //     reward:{accrued_paise}, referred:[...], referred_by }
+  // accrued_paise is integer paise (a bigint on the wire) — never divided here.
+  referral: () => api.get('/api/customer-auth/referral').then((r) => r.data),
 };
 
 // ---- Self / khata (Bearer) ------------------------------------------------
@@ -134,6 +153,22 @@ export const my = {
   createOrder: (body) => api.post('/api/my/orders', body).then((r) => r.data),
   // POST /api/my/orders/:id/cancel -> { order }
   cancelOrder: (id) => api.post(`/api/my/orders/${id}/cancel`).then((r) => r.data),
+  // GET /api/my/statement?shop_id=&from=&to= ->
+  //   with shop_id: { from, to, shop: { shop_name, statement } }
+  //   without:      { from, to, shops: [{shop_id,shop_name,statement}], combined }
+  // A statement is { opening, closing, total_purchases, total_paid,
+  // total_adjusted, lines:[{id,type,amount,balance,note,created_at}] }, every
+  // figure integer paise. The SAME builder serves the owner endpoint, so the
+  // opening/closing arithmetic a shopper argues with at the counter is the
+  // arithmetic the shopkeeper sees. `format=csv` exists but is deliberately not
+  // wired here — see StatementScreen for why a phone hands that to the web.
+  statement: ({ shopId, from, to } = {}) => {
+    const q = new URLSearchParams();
+    if (shopId) q.set('shop_id', String(shopId));
+    if (from) q.set('from', String(from));
+    if (to) q.set('to', String(to));
+    return api.get(`/api/my/statement?${q.toString()}`).then((r) => r.data);
+  },
 };
 
 // ---- Public (no auth) -----------------------------------------------------

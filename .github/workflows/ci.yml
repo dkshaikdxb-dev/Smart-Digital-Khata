@@ -77,7 +77,7 @@ jobs:
         run: npm run build
 
   mobile-i18n:
-    name: Mobile translation coverage
+    name: Mobile translation coverage & logic tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -92,6 +92,14 @@ jobs:
       # there is nothing to install.
       - name: Coverage ratchet
         run: node scripts/i18n-coverage.mjs
+      # The native consumer app has no test runner and nothing is installed for
+      # it here, so its PURE logic — variant grouping and catalogue filtering on
+      # the storefront, the typed statement date range, and the over-the-air
+      # update helpers — is exercised the same dependency-free way: read the
+      # source, run it in a vm, assert. The React screens are not covered; only
+      # the logic underneath them is.
+      - name: Consumer app logic tests
+        run: node scripts/mobile-consumer-logic.test.mjs
 
   docker:
     name: Docker build sanity

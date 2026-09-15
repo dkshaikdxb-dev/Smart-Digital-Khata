@@ -47,6 +47,29 @@ export function canRetry(err) {
   return status === 429 || status >= 500;
 }
 
+// A REFUSAL the server states in words worth repeating.
+//
+// friendlyError() flattens every 4xx to one authored sentence, which is right
+// for a list that failed to load and wrong for a step-by-step flow: "Something
+// in that was not right" cannot tell a shopper apart "that is already your
+// current number" from "that code has expired", and both are things only the
+// server knows. So for a 4xx that carries a message, the message wins — the
+// same trade the OTP login screen already makes. Everything else (no network,
+// a timeout, a 5xx, a 4xx with no message) still lands on an authored string.
+//
+// The server's refusals are authored in English only, so this is a deliberate
+// exception to "the shopper always reads their own language", taken where being
+// SPECIFIC matters more than being translated. Do not use it for bulk loads.
+export function refusalError(t, err) {
+  if (!err) return t('err.generic');
+  if (err.transport) return friendlyError(t, err);
+  const status = Number(err.status);
+  if (Number.isFinite(status) && status >= 400 && status < 500 && err.message) {
+    return String(err.message);
+  }
+  return friendlyError(t, err);
+}
+
 // True for a request we cancelled ourselves (a superseded search). The caller
 // must NOT show anything for these — they are not failures.
 export function isCancelled(err) {
