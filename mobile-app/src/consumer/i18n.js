@@ -74,14 +74,38 @@ export const LANG_CAPS = {
   en: { catalogue: true, voice: true },
   hi: { catalogue: true, voice: true },
   bn: { catalogue: true, voice: true, beta: true },
-  ta: { catalogue: true, voice: true },
-  te: { catalogue: true, voice: true },
-  kn: { catalogue: true, voice: true },
-  ml: { catalogue: true, voice: true },
+  ta: { catalogue: true, voice: true, beta: true },
+  te: { catalogue: true, voice: true, beta: true },
+  kn: { catalogue: true, voice: true, beta: true },
+  ml: { catalogue: true, voice: true, beta: true },
   mr: { catalogue: true, voice: true, beta: true },
   gu: { catalogue: true, voice: true, beta: true },
-  ur: { catalogue: true, voice: true },
+  ur: { catalogue: true, voice: true, beta: true },
 };
+
+// Why ta/te/kn/ml/ur joined the beta list rather than leaving it.
+//
+// The marker means one thing only: no native speaker has read these strings. It
+// has always meant that. Those five used to qualify as reviewed because what
+// they carried had been copied from human-written text, and what had not been
+// copied was simply absent — English, visibly incomplete, but never pretending.
+//
+// That changed when the machine-authored batches landed. The shopper app gained
+// hundreds of strings for Hindi and the three beta languages, and the shopkeeper
+// app gained a hundred and ninety-seven each for exactly these five, taking them
+// from thirty-eight per cent to ninety-eight. Every one of those was written by
+// a model and read by nobody.
+//
+// Marking only bn/gu/mr now would tell a Tamil shopkeeper their app is reviewed
+// when it is the least reviewed of all — it changed the most and most recently.
+// The honest state is that ten languages minus English are machine-authored in
+// part and none has been through a speaker, so the marker goes on all of them
+// and comes off one at a time as the review sheets in docs/ are worked through.
+// Hindi is the exception: it was human-authored from the start and its recent
+// additions were small.
+//
+// The marker never gates anything. Every language stays fully selectable and
+// fully functional; this is a statement about confidence, not capability.
 
 // Pure capability helpers. Default to false for any unknown/unlisted code, so a
 // newly added language is treated as capability-less until it is added above.

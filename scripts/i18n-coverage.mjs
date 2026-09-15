@@ -124,8 +124,30 @@ const FLOORS = {
   //
   // ta/te/kn/ml were not in this batch, keep their floors, and their percentage
   // is unchanged because en did not grow.
+  // Batch DRAVIDIAN-URDU moved the OWNER floors only. ta/te/kn/ml/ur sat at 123
+  // of en's 325 keys — 37.8%, so a shopkeeper who picked Tamil got an app that
+  // was mostly English, with editing an order, the new-order alert, shop hours,
+  // ready-times, families and settings never translated at all. This batch
+  // AUTHORED the 197 strings each of those five was missing, in the register and
+  // with the vocabulary of that language's own existing block, taking them to
+  // 320 (98.5%). Unlike every earlier owner-app batch, nothing here was copied
+  // from a human source: the web dictionary has no ta/te/kn/ml/ur rows for these
+  // features, so these are machine-authored and await a native speaker —
+  // docs/i18n-review-owner-app.md is the review sheet and the source of truth.
+  //
+  // bn, mr and gu gained exactly ONE, 'open.timePlaceholder': Hindi spells the
+  // shop-hours field hint out as घंटा:मिनट rather than leaving it "HH:MM", and
+  // these three now do the same in their own script.
+  //
+  // The five keys ta/te/kn/ml/ur still fall back on, and the nine bn/mr/gu do,
+  // are deliberate and are the same ones this file's header describes: the two
+  // app names and the dashboard title (all "Smart Khata"), 'txn.upi',
+  // 'set.razorpayKeyId' / 'set.keySecret' / 'set.webhookSecret' — brand and
+  // console labels — and 'oedit.historyReduced' / 'oedit.historyBy', which are
+  // nothing but placeholders and punctuation. A row there would change nothing
+  // on screen while inflating this ratchet, so it stays absent.
   consumer: { hi: 341, bn: 341, ta: 229, te: 229, kn: 229, ml: 229, mr: 341, gu: 341, ur: 341 },
-  owner: { hi: 325, bn: 315, ta: 123, te: 123, kn: 123, ml: 123, mr: 315, gu: 315, ur: 123 },
+  owner: { hi: 325, bn: 316, ta: 320, te: 320, kn: 320, ml: 320, mr: 316, gu: 316, ur: 320 },
 };
 
 /* ------------------------------------------------------- dictionary reading */
