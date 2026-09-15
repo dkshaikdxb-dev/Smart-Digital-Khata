@@ -127,4 +127,24 @@ jobs:
           echo
           echo "--- the runtime version this update was built for ---"
           echo "runtimeVersion policy: sdkVersion (an installed APK only accepts updates whose runtime matches its own)"
-          node -e "const c=require('./app.config.js');const r=typeof c==='function'?c({config:{}}):(c.default||c);const o=(r&&r.expo)||r;console.log('updates.url =', (o.updates&&o.updates.url) || 'UNDEFINED — this build would never check for updates');" || true
+          echo
+          echo "--- can the INSTALLED APP even ask for this update? ---"
+          # This used to evaluate app.config.js right here and print a URL, which
+          # was worse than printing nothing: EAS_PROJECT_ID is set on THIS runner,
+          # so it always resolved and always looked healthy — while the app that
+          # matters was built on the EAS worker, where the variable was absent and
+          # the URL came out undefined. The check confirmed the publisher's
+          # environment and told us nothing about the phone's.
+          #
+          # What actually decides it is the build profile's `env` block, because
+          # that is the only environment the worker sees.
+          node -e "
+            const j=require('./eas.json');
+            let bad=0;
+            for (const [name,p] of Object.entries(j.build||{})) {
+              const id=(p.env||{}).EAS_PROJECT_ID;
+              console.log('  ' + name.padEnd(20) + (id ? 'EAS_PROJECT_ID present -> app will have an updates URL' : 'NO EAS_PROJECT_ID -> an app built on this profile can NEVER update'));
+              if(!id) bad++;
+            }
+            if (bad) { console.log(''); console.log('::warning::' + bad + ' build profile(s) would produce an app with no updates URL.'); }
+          " || true

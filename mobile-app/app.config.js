@@ -4,6 +4,38 @@
 const fs = require('fs');
 const path = require('path');
 
+// THE UPDATE URL, AND WHY THIS THROWS.
+//
+// `updates.url` is what an installed app asks for a new bundle. If it is
+// undefined the app never checks, ever — and it fails SILENTLY: the build
+// succeeds, the APK installs, every `eas update` publishes green, and not one
+// phone is served anything. That is exactly what happened here. Both installed
+// builds shipped with no URL and ignored every update while every dashboard
+// reported success.
+//
+// The cause is worth writing down because it is not obvious. EAS evaluates THIS
+// FILE on the build worker, not on the machine that runs `eas build`. The
+// worker's environment comes from the build profile's `env` block in eas.json
+// and from nothing else, so an EAS_PROJECT_ID exported in CI is invisible here.
+// The build profiles now carry the id explicitly; this guard makes sure that if
+// anyone removes it, the build DIES rather than quietly producing an app that
+// can never be updated.
+//
+// It throws only during a real EAS build. A local `expo start` has no project
+// id and does not need one, because updates are irrelevant there.
+function resolveUpdatesUrl() {
+  const id = process.env.EAS_PROJECT_ID;
+  const url = process.env.EAS_UPDATE_URL || (id ? `https://u.expo.dev/${id}` : undefined);
+  if (!url && process.env.EAS_BUILD === 'true') {
+    throw new Error(
+      'No updates URL: EAS_PROJECT_ID is not set on the BUILD WORKER. It must live in the ' +
+      "build profile's `env` block in eas.json — a value exported in CI does not reach this " +
+      'file. Building without it produces an app that can never receive an update.'
+    );
+  }
+  return url;
+}
+
 const FLAVORS = {
   owner: {
     name: 'Smart Khata — Shop',
@@ -83,11 +115,7 @@ module.exports = ({ config }) => {
     updates: {
       enabled: true,
       fallbackToCacheTimeout: 0,
-      url:
-        process.env.EAS_UPDATE_URL ||
-        (process.env.EAS_PROJECT_ID
-          ? `https://u.expo.dev/${process.env.EAS_PROJECT_ID}`
-          : undefined),
+      url: resolveUpdatesUrl(),
     },
     ios: {
       supportsTablet: true,
