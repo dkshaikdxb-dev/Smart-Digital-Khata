@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { cloneElement, isValidElement, useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Nav from '../../components/Nav';
 import { apiFetch } from '../../lib/api';
 import { usePermissions } from '../../lib/adminPerms';
 import GeoChips from '../../components/GeoChips';
 import ModerationQueue from '../../components/ModerationQueue';
+import { useActiveLanguages } from '../../lib/i18n';
+import { toOverrideLangs } from '../../lib/overrideLangs';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -34,18 +36,6 @@ const STYLE_THEME = {
   shop: { from: '#bbf7d0', to: '#22c55e', ink: '#14532d' },
   festival: { from: '#fbcfe8', to: '#db2777', ink: '#831843' },
 };
-
-// Languages a marketer may override the base creative for (base = default /
-// fallback). Kept local so this admin page never imports the consumer c.* dict.
-const OVERRIDE_LANGS = [
-  { code: 'hi', name: 'हिन्दी' },
-  { code: 'ta', name: 'தமிழ்' },
-  { code: 'te', name: 'తెలుగు' },
-  { code: 'kn', name: 'ಕನ್ನಡ' },
-  { code: 'ml', name: 'മലയാളം' },
-  { code: 'ur', name: 'اردو' },
-  { code: 'en', name: 'English' },
-];
 
 const LINK_TYPES = ['none', 'shop', 'product', 'brand', 'url'];
 const STATUSES = ['draft', 'active', 'paused'];
@@ -161,6 +151,12 @@ export default function AdminAds() {
   const [filters, setFilters] = useState({ status: '', style: '', geo: '', placement: '' });
   const [form, setForm] = useState(EMPTY);
   const [overrideLang, setOverrideLang] = useState('hi');
+  // Authorable languages, straight from the active registry (see toOverrideLangs).
+  const activeLangs = useActiveLanguages();
+  const overrideLangs = useMemo(
+    () => toOverrideLangs(activeLangs, Object.keys(form.i18n || {})),
+    [activeLangs, form.i18n]
+  );
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -505,10 +501,11 @@ export default function AdminAds() {
               <p className="muted" style={{ marginTop: 0 }}>Base fields above are the default/fallback. Fill any language below to override.</p>
               <Field label="Language">
                 <select value={overrideLang} onChange={(e) => setOverrideLang(e.target.value)} style={{ maxWidth: 200 }}>
-                  {OVERRIDE_LANGS.map((l) => {
+                  {overrideLangs.map((l) => {
                     const o = (form.i18n || {})[l.code] || {};
                     const filled = o.title || o.offer_text || o.subtitle;
-                    return <option key={l.code} value={l.code}>{l.name} ({l.code}){filled ? ' •' : ''}</option>;
+                    const tail = `${filled ? ' •' : ''}${l.inactive ? ' (not active)' : ''}`;
+                    return <option key={l.code} value={l.code}>{l.name} ({l.code}){tail}</option>;
                   })}
                 </select>
               </Field>
@@ -615,9 +612,15 @@ export default function AdminAds() {
             <span><b>{aiStats.held}</b> flagged (hold)</span>
             <span><b>{aiStats.reviewed}</b> left for review</span>
             <span className="muted">·</span>
-            <span>Admins agreed <b>{aiStats.agreement.agreed}</b> / disagreed <b>{aiStats.agreement.disagreed}</b></span>
+            {/* Read through optional chaining, not aiStats.agreement.agreed. The
+                endpoint always sends `agreement` and `admin` — but a body
+                missing either (an older API behind a rolling deploy, a cache, a
+                proxy) used to throw INSIDE render and take the whole Campaigns
+                desk down, not just this strip. Same failure the owner Settings
+                page had. A missing number reads as a dash. */}
+            <span>Admins agreed <b>{aiStats.agreement?.agreed ?? '—'}</b> / disagreed <b>{aiStats.agreement?.disagreed ?? '—'}</b></span>
             <span className="muted">
-              (rejected after AI approve {aiStats.admin.reject_after_ai_approve}, approved after AI hold {aiStats.admin.approve_after_ai_hold})
+              (rejected after AI approve {aiStats.admin?.reject_after_ai_approve ?? '—'}, approved after AI hold {aiStats.admin?.approve_after_ai_hold ?? '—'})
             </span>
           </div>
           {/* What was actually saved, and what being wrong cost (batch MOD2).
@@ -829,11 +832,25 @@ function Tile({ label, value }) {
   return (<div className="card"><div className="muted">{label}</div><div className="kpi">{value}</div></div>);
 }
 
+// The label used to be a bare <label> with no htmlFor and the control as a
+// SIBLING, so nothing on this page was actually labelled: a screen reader
+// reading the campaign builder announced "combo box", "edit text", "edit text"
+// with no idea which field was which, and clicking a label did not focus its
+// input. Associating them costs one generated id per field.
 function Field({ label, children, style }) {
+  const id = useId();
+  // Give the id to a single element child that has not set one itself; anything
+  // else (a fragment, several children, an already-identified input) is left
+  // exactly as it was and simply goes unassociated, as before.
+  const control =
+    isValidElement(children) && !children.props.id
+      ? cloneElement(children, { id })
+      : children;
+  const htmlFor = control === children ? undefined : id;
   return (
     <div style={style}>
-      <label className="muted" style={{ display: 'block', marginBottom: 4 }}>{label}</label>
-      {children}
+      <label className="muted" htmlFor={htmlFor} style={{ display: 'block', marginBottom: 4 }}>{label}</label>
+      {control}
     </div>
   );
 }
