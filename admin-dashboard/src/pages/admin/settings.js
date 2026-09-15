@@ -17,7 +17,10 @@ const toPaise = (rupees) => Math.round((Number(rupees) || 0) * 100);
 // summary line converts back to paise before the shared formatter renders it.
 const rs = (rupees) => moneyAuto(toPaise(rupees));
 
-// Plain feature switches (default ON except where noted).
+// Plain feature switches (default ON except where noted). The list is the SAVE
+// group, not the layout: saveToggles builds its PATCH from every entry here, and
+// switchTile draws whichever one a card asks for, so a switch can sit with the
+// settings it governs without changing a byte of what gets sent.
 const TOGGLE_KEYS = [
   ['voice_assistant_enabled', 'Voice assistant', 'Owner “Ask” mic — free, on-device voice help.'],
   ['social_share_enabled', 'Share poster', 'Owner “Share your shop” poster for WhatsApp / IG / FB.'],
@@ -27,12 +30,14 @@ const TOGGLE_KEYS = [
   ['storefront_ad_free_enabled', 'Storefront ad-free buy-out', 'Lets a shop spend Khata Credits to keep the sponsored slide off its storefront.'],
   ['ai_moderation_enabled', 'AI moderation triage', 'An AI pre-screens shop photos and owner promos: auto-approves the clearly safe, flags the unsafe to the top of the queue. Never rejects. Needs the API key + moderation model id (Integrations → AI, below).'],
   // Shop trust (batch MOD2) — its OWN switch, independent of the triage above.
+  // Rendered in the Shop trust & spot checks card, with the adjustments it bends.
   // Off means every shop is judged at the plain platform bar whatever its
   // history; the history keeps being recorded either way.
   ['ai_moderation_trust_enabled', 'Shop trust for AI triage', 'Lets a shop’s own record bend its bar: a clean history auto-approves a little more easily, a rejected history a little less. Never below 75% confidence, and it never rejects. Turn OFF to judge every shop identically.'],
   // Shop availability (batch A) — the MASTER KILL-SWITCH for the whole
   // open/closed gate. Turning it off makes every shop count as open again, on
-  // every surface and at order time, with no deploy.
+  // every surface and at order time, with no deploy. Rendered in the Shop
+  // availability card, above the pause ceiling it shares a subject with.
   ['shop_hours_enabled', 'Shop open/closed gate', 'Honours each shop\u2019s open switch, daily hours, pause and holiday closures \u2014 and refuses orders to a shut shop. Turn OFF to treat every shop as open again.'],
 ];
 // AI moderation thresholds (batch AI-MOD): decimals in 0.5..1.0, edited as-is.
@@ -71,6 +76,21 @@ const INT_KEYS = [
 // comma-separated minute list behind the owner's three accept chips.
 const TEXT_KEYS = ['order_eta_chips'];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
+
+// How the feature switches are laid out now. Each switch is an outlined tile
+// with its description on its own line, and the tiles go in a grid that is one
+// column on a phone and two or three on a desktop; min(100%, 280px) keeps a
+// track from overflowing a narrow screen. What this replaces was a single 560px
+// column nine checkboxes deep, running down the middle of a wide window.
+const SWITCH_GRID = { display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', maxWidth: 940 };
+// A two-up row of fields. Two 16px inputs side by side inside a 336px card is
+// what '1fr 1fr' comes to on a 400px phone, so the row folds to one column when
+// a track can no longer hold 200px.
+const FIELD_PAIR = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10 };
+const SWITCH_TILE = { display: 'flex', gap: 10, alignItems: 'flex-start', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' };
+// A paid feature and the money it costs, in one block, so a switch and its
+// price are never in two different cards.
+const PRICE_BLOCK = { display: 'grid', gap: 10, alignContent: 'start' };
 
 // Build the editable form state from the API `features` object: amounts → ₹.
 function featFromApi(f) {
@@ -426,7 +446,7 @@ export default function AdminSettings() {
             Will be cleared on save. <a href="#clear" onClick={(e) => { e.preventDefault(); setForm({ ...form, [field]: '' }); }}>Undo</a>
           </p>
         ) : (
-          <input id={`f-${field}`} type="password" autoComplete="new-password" value={v || ''}
+          <input id={`f-${field}`} data-setting={field} type="password" autoComplete="new-password" value={v || ''}
             placeholder={isSet ? '•••••••• (leave blank to keep)' : placeholder}
             onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
         )}
@@ -442,7 +462,7 @@ export default function AdminSettings() {
     return (
       <div>
         <label className="muted" htmlFor={`f-${field}`}>{label} {sourceHint(source)}</label>
-        <input id={`f-${field}`} value={form[field] == null ? '' : form[field]} placeholder={placeholder} inputMode={inputMode}
+        <input id={`f-${field}`} data-setting={field} value={form[field] == null ? '' : form[field]} placeholder={placeholder} inputMode={inputMode}
           onChange={(e) => setForm({ ...form, [field]: e.target.value })} />
       </div>
     );
@@ -465,25 +485,48 @@ export default function AdminSettings() {
         onConfirm={confirmIntegrationSave}
       />
       <button className="secondary" onClick={() => router.push('/admin')} style={{ marginBottom: 12 }}>← Platform</button>
-      <h1>Integration settings</h1>
+      <h1>Platform settings</h1>
       <p className="muted" style={{ fontSize: 13 }}>
-        Values saved here override the server <code>.env</code> and apply immediately. Every credential change asks you to type <b>I CONFIRM</b>.
+        Five sections, in the order the platform works: what it connects to, what it charges, what it
+        moderates, what it lets a shop do for itself, and what is not live yet.
       </p>
+      <p className="muted" style={{ fontSize: 13 }}>
+        <b>Feature toggles</b> —{' '}
+        Turn platform features on or off. Changes read live — a save applies within a minute.
+        {' '}Each switch now sits in the card with the settings it governs, and the nine of them are still
+        saved as one group: the <b>Save feature toggles</b> button in any of those cards saves every one.
+      </p>
+      <nav aria-label="Sections" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, margin: '0 0 16px', fontSize: 13 }}>
+        <a href="#integrations">Integrations</a>
+        <a href="#money">Money</a>
+        <a href="#moderation">Moderation</a>
+        <a href="#shops">Shops &amp; orders</a>
+        <a href="#later">Not live yet</a>
+      </nav>
       {msg && <div className="card" style={{ color: 'var(--accent)' }}>{msg}</div>}
       {err && <div className="card" style={{ color: 'var(--danger)' }}>{err}</div>}
 
-      {/* Razorpay */}
+      {/* SECTION 1 — what the platform connects to (batch INTEG). Every card in this
+          section saves a CREDENTIAL and goes through the typed I CONFIRM modal,
+          which is why that warning now sits here rather than over the whole page:
+          none of the feature policy below asks for it. */}
+      <h2 id="integrations" style={{ marginTop: 24 }}>Integrations</h2>
+      <p className="muted" style={{ fontSize: 13 }}>
+        Values saved here override the server <code>.env</code> and apply immediately. Every credential change asks you to type <b>I CONFIRM</b>.
+      </p>
+
+      {/* 1. Razorpay */}
       <div className="card">
         <h3>Razorpay {s.razorpay.mode && <span className="badge">{s.razorpay.mode} mode</span>}</h3>
         <p className="muted">Payment links + subscriptions. Get keys at dashboard.razorpay.com → API Keys.</p>
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
-          <label className="muted">Key ID</label>
-          <input placeholder="rzp_live_… or rzp_test_…" value={rz.razorpay_key_id} onChange={(e) => setRz({ ...rz, razorpay_key_id: e.target.value })} />
+          <label className="muted" htmlFor="f-razorpay_key_id">Key ID</label>
+          <input id="f-razorpay_key_id" data-setting="razorpay_key_id" placeholder="rzp_live_… or rzp_test_…" value={rz.razorpay_key_id} onChange={(e) => setRz({ ...rz, razorpay_key_id: e.target.value })} />
           {secretField({ label: 'Key Secret', field: 'razorpay_key_secret', isSet: s.razorpay.key_secret_set, placeholder: 'Key secret', form: rz, setForm: setRz })}
           {secretField({ label: 'Webhook Secret', field: 'razorpay_webhook_secret', isSet: s.razorpay.webhook_secret_set, placeholder: 'Webhook secret', form: rz, setForm: setRz })}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div><label className="muted">Pro plan ID</label><input placeholder="plan_…" value={rz.razorpay_plan_pro} onChange={(e) => setRz({ ...rz, razorpay_plan_pro: e.target.value })} /></div>
-            <div><label className="muted">Family plan ID</label><input placeholder="plan_…" value={rz.razorpay_plan_family} onChange={(e) => setRz({ ...rz, razorpay_plan_family: e.target.value })} /></div>
+          <div style={FIELD_PAIR}>
+            <div><label className="muted" htmlFor="f-razorpay_plan_pro">Pro plan ID</label><input id="f-razorpay_plan_pro" data-setting="razorpay_plan_pro" placeholder="plan_…" value={rz.razorpay_plan_pro} onChange={(e) => setRz({ ...rz, razorpay_plan_pro: e.target.value })} /></div>
+            <div><label className="muted" htmlFor="f-razorpay_plan_family">Family plan ID</label><input id="f-razorpay_plan_family" data-setting="razorpay_plan_family" placeholder="plan_…" value={rz.razorpay_plan_family} onChange={(e) => setRz({ ...rz, razorpay_plan_family: e.target.value })} /></div>
           </div>
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
             <button onClick={() => requestIntegrationSave('Save Razorpay settings', rz, 'Razorpay settings saved.')}>Save Razorpay</button>
@@ -493,21 +536,21 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* WhatsApp */}
+      {/* 2. WhatsApp Cloud API */}
       <div className="card">
         <h3>WhatsApp Cloud API {badge('token', s.whatsapp.api_token_set)}</h3>
         <p className="muted">Notifications + inbound commands. From Meta → WhatsApp → API Setup.</p>
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
           {secretField({ label: 'Permanent Access Token', field: 'whatsapp_api_token', isSet: s.whatsapp.api_token_set, placeholder: 'EAA…', form: wa, setForm: setWa })}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div><label className="muted">Phone Number ID</label><input value={wa.whatsapp_phone_number_id} onChange={(e) => setWa({ ...wa, whatsapp_phone_number_id: e.target.value })} /></div>
-            <div><label className="muted">Business Account ID</label><input value={wa.whatsapp_business_account_id} onChange={(e) => setWa({ ...wa, whatsapp_business_account_id: e.target.value })} /></div>
+          <div style={FIELD_PAIR}>
+            <div><label className="muted" htmlFor="f-whatsapp_phone_number_id">Phone Number ID</label><input id="f-whatsapp_phone_number_id" data-setting="whatsapp_phone_number_id" value={wa.whatsapp_phone_number_id} onChange={(e) => setWa({ ...wa, whatsapp_phone_number_id: e.target.value })} /></div>
+            <div><label className="muted" htmlFor="f-whatsapp_business_account_id">Business Account ID</label><input id="f-whatsapp_business_account_id" data-setting="whatsapp_business_account_id" value={wa.whatsapp_business_account_id} onChange={(e) => setWa({ ...wa, whatsapp_business_account_id: e.target.value })} /></div>
           </div>
-          <label className="muted">Verify Token (any string; paste same in Meta webhook)</label>
-          <input value={wa.whatsapp_verify_token} onChange={(e) => setWa({ ...wa, whatsapp_verify_token: e.target.value })} />
+          <label className="muted" htmlFor="f-whatsapp_verify_token">Verify Token (any string; paste same in Meta webhook)</label>
+          <input id="f-whatsapp_verify_token" data-setting="whatsapp_verify_token" value={wa.whatsapp_verify_token} onChange={(e) => setWa({ ...wa, whatsapp_verify_token: e.target.value })} />
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}>
-            <div><label className="muted">Reminder template name</label><input placeholder="dues_reminder" value={wa.whatsapp_template_reminder} onChange={(e) => setWa({ ...wa, whatsapp_template_reminder: e.target.value })} /></div>
-            <div><label className="muted">Template language</label><input value={wa.whatsapp_template_lang} onChange={(e) => setWa({ ...wa, whatsapp_template_lang: e.target.value })} /></div>
+            <div><label className="muted" htmlFor="f-whatsapp_template_reminder">Reminder template name</label><input id="f-whatsapp_template_reminder" data-setting="whatsapp_template_reminder" placeholder="dues_reminder" value={wa.whatsapp_template_reminder} onChange={(e) => setWa({ ...wa, whatsapp_template_reminder: e.target.value })} /></div>
+            <div><label className="muted" htmlFor="f-whatsapp_template_lang">Template language</label><input id="f-whatsapp_template_lang" data-setting="whatsapp_template_lang" value={wa.whatsapp_template_lang} onChange={(e) => setWa({ ...wa, whatsapp_template_lang: e.target.value })} /></div>
           </div>
           <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
             <button onClick={() => requestIntegrationSave('Save WhatsApp settings', wa, 'WhatsApp settings saved.')}>Save WhatsApp</button>
@@ -515,22 +558,23 @@ export default function AdminSettings() {
           </div>
           <p className="muted" style={{ fontSize: 13 }}>Webhook URL for Meta: <code>{origin}/api/webhooks/whatsapp</code> (subscribe to <b>messages</b>)</p>
         </div>
+      </div>
 
-        <div className="card">
-          <h3>Public website</h3>
-          <p className="muted" style={{ fontSize: 13 }}>The “chat with us” WhatsApp number shown on the marketing landing (khata.dadashaik.com). International digits, e.g. <code>919731422995</code> — no “+”. Changes go live within a minute; leave blank to use the built-in default. This is separate from the Cloud API sender above.</p>
-          <label className="muted">Landing WhatsApp number</label>
-          <input inputMode="numeric" placeholder="919731422995" value={landing.landing_whatsapp} onChange={(e) => setLanding({ landing_whatsapp: e.target.value })} />
-          <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-            <button onClick={() => save(landing, 'Landing settings saved.')}>Save landing</button>
-          </div>
+      {/* 3. Public website — a landing-page number, not a Cloud API
+          credential, and it saves plainly — so it is a card of its own here
+          rather than one nested inside the WhatsApp card, which is where it
+          used to live. */}
+      <div className="card">
+        <h3>Public website</h3>
+        <p className="muted" style={{ fontSize: 13 }}>The “chat with us” WhatsApp number shown on the marketing landing (khata.dadashaik.com). International digits, e.g. <code>919731422995</code> — no “+”. Changes go live within a minute; leave blank to use the built-in default. This is separate from the Cloud API sender above.</p>
+        <label className="muted" htmlFor="f-landing_whatsapp">Landing WhatsApp number</label>
+        <input id="f-landing_whatsapp" data-setting="landing_whatsapp" inputMode="numeric" placeholder="919731422995" value={landing.landing_whatsapp} onChange={(e) => setLanding({ landing_whatsapp: e.target.value })} />
+        <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+          <button onClick={() => save(landing, 'Landing settings saved.')}>Save landing</button>
         </div>
       </div>
 
-      {/* Integrations (batch INTEG): AI, Meta, SMTP, NMT — all via config/settings */}
-      <h2 id="integrations" style={{ marginTop: 24 }}>Integrations</h2>
-
-      {/* 1. AI */}
+      {/* 4. AI */}
       <div className="card" id="integrations-ai">
         <h3>
           AI (moderation &amp; content drafts){' '}
@@ -543,7 +587,7 @@ export default function AdminSettings() {
         </p>
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
           {secretField({ label: 'API key', field: 'anthropic_api_key', isSet: iAi.api_key_set, source: iAi.api_key_source, placeholder: 'API key', form: ai, setForm: setAi })}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={FIELD_PAIR}>
             {textField({ label: 'Moderation model id', field: 'moderation_llm_model', source: iAi.moderation_model_source, placeholder: 'model id', form: ai, setForm: setAi })}
             {textField({ label: 'Content model id', field: 'content_llm_model', source: iAi.content_model_source, placeholder: 'model id', form: ai, setForm: setAi })}
           </div>
@@ -554,7 +598,7 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* 2. Meta */}
+      {/* 5. Meta */}
       <div className="card" id="integrations-meta">
         <h3>
           Meta (Facebook / Instagram publishing){' '}
@@ -575,7 +619,7 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* 3. SMTP */}
+      {/* 6. SMTP */}
       <div className="card" id="integrations-smtp">
         <h3>Email (SMTP newsletters) {onBadge('configured', iSmtp.configured, 'not configured')}</h3>
         <p className="muted" style={{ fontSize: 13 }}>
@@ -587,12 +631,12 @@ export default function AdminSettings() {
             {textField({ label: 'Host', field: 'smtp_host', source: iSmtp.host_source, placeholder: 'smtp.example.com', form: smtp, setForm: setSmtp })}
             {textField({ label: 'Port', field: 'smtp_port', placeholder: '587', inputMode: 'numeric', form: smtp, setForm: setSmtp })}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div style={FIELD_PAIR}>
             {textField({ label: 'User', field: 'smtp_user', placeholder: 'user', form: smtp, setForm: setSmtp })}
             {secretField({ label: 'Password', field: 'smtp_pass', isSet: iSmtp.pass_set, source: iSmtp.pass_source, placeholder: 'password', form: smtp, setForm: setSmtp })}
           </div>
           <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <input type="checkbox" checked={!!smtp.smtp_secure} style={{ width: 'auto' }} onChange={(e) => setSmtp({ ...smtp, smtp_secure: e.target.checked })} />
+            <input type="checkbox" data-setting="smtp_secure" checked={!!smtp.smtp_secure} style={{ width: 'auto' }} onChange={(e) => setSmtp({ ...smtp, smtp_secure: e.target.checked })} />
             <span>TLS from the start (secure) — port 465 is always secure</span>
           </label>
           {textField({ label: 'From address', field: 'newsletter_from', source: iSmtp.from_source, placeholder: 'news@example.com', form: smtp, setForm: setSmtp })}
@@ -603,7 +647,7 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* 4. Speech & translation */}
+      {/* 7. Speech & translation */}
       <div className="card" id="integrations-nmt">
         <h3>
           Speech &amp; translation (Bhashini / Sarvam){' '}
@@ -615,7 +659,7 @@ export default function AdminSettings() {
         </p>
         <div style={{ display: 'grid', gap: 10, maxWidth: 560 }}>
           <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <input type="checkbox" checked={!!nmt.bhashini_nmt} style={{ width: 'auto' }} onChange={(e) => setNmt({ ...nmt, bhashini_nmt: e.target.checked })} />
+            <input type="checkbox" data-setting="bhashini_nmt" checked={!!nmt.bhashini_nmt} style={{ width: 'auto' }} onChange={(e) => setNmt({ ...nmt, bhashini_nmt: e.target.checked })} />
             <span>Enable neural translation (NMT) {sourceHint(iNmt.enabled_source)}</span>
           </label>
           {secretField({ label: 'Bhashini API key', field: 'bhashini_api_key', isSet: iNmt.bhashini_key_set, source: iNmt.bhashini_key_source, placeholder: 'Bhashini API key', form: nmt, setForm: setNmt })}
@@ -633,41 +677,64 @@ export default function AdminSettings() {
         const splitOk = splitSum <= 100;
         const rupeeInput = (key, label, help) => (
           <div>
-            <label className="muted">{label} (₹)</label>
-            <input type="number" min="0" step="1" inputMode="numeric" value={feat[key]}
+            <label className="muted" htmlFor={`f-${key}`}>{label} (₹)</label>
+            <input id={`f-${key}`} data-setting={key} type="number" min="0" step="1" inputMode="numeric" value={feat[key]}
               onChange={(e) => setFeat({ ...feat, [key]: e.target.value })} />
             {help && <p className="muted" style={{ fontSize: 12, margin: '4px 0 0' }}>{help}</p>}
           </div>
         );
+        // A whole-number ceiling belonging to one paid feature (its max days).
+        const daysInput = (key, label) => (
+          <div>
+            <label className="muted" htmlFor={`f-${key}`}>{label}</label>
+            <input id={`f-${key}`} data-setting={key} type="number" min="1" step="1" value={feat[key]}
+              onChange={(e) => setFeat({ ...feat, [key]: e.target.value })} />
+          </div>
+        );
+        // One feature switch, drawn as an outlined tile: a real hit area, the name
+        // in bold, and the description on its own line instead of trailing off the
+        // end of a row. Tiles sit in SWITCH_GRID — one column on a phone, two or
+        // three on a desktop. The nine of them used to run down the middle of a
+        // wide screen in a single 560px column.
+        const switchTile = (key) => {
+          const [, label, desc] = TOGGLE_KEYS.find(([k]) => k === key);
+          return (
+            <label key={key} style={SWITCH_TILE}>
+              <input type="checkbox" data-setting={key} checked={!!feat[key]} style={{ width: 'auto', marginTop: 3 }}
+                onChange={(e) => setFeat({ ...feat, [key]: e.target.checked })} />
+              <span><b>{label}</b><br /><span className="muted" style={{ fontSize: 13 }}>{desc}</span></span>
+            </label>
+          );
+        };
+        // The nine switches are one row of platform_settings, and saveToggles still
+        // sends all nine in a single PATCH built from TOGGLE_KEYS — spreading the
+        // switches over several cards changed where they are shown, not what is
+        // sent. So every card that shows a switch also carries that button: nobody
+        // flips something here and then goes hunting for a save over there.
+        const toggleNote = (
+          <p className="muted" style={{ fontSize: 12, margin: 0 }}>
+            The feature switches save as one group: <b>Save feature toggles</b> sends all nine, from whichever card you press it in.
+          </p>
+        );
         return (
           <>
-            {/* Feature flags & pricing (batch FLAGS1) */}
-            <div className="card">
-              <h3>Feature toggles</h3>
-              <p className="muted">Turn platform features on or off. Changes read live — a save applies within a minute.</p>
-              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-                {TOGGLE_KEYS.map(([key, label, desc]) => (
-                  <label key={key} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <input type="checkbox" checked={!!feat[key]} style={{ marginTop: 3 }}
-                      onChange={(e) => setFeat({ ...feat, [key]: e.target.checked })} />
-                    <span><b>{label}</b><br /><span className="muted" style={{ fontSize: 13 }}>{desc}</span></span>
-                  </label>
-                ))}
-                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-                  <button onClick={saveToggles}>Save feature toggles</button>
-                </div>
-              </div>
-            </div>
+            {/* SECTION 2 — what the platform charges. Both cards move money, so they sit
+                together, and the money-critical one keeps its danger border. */}
+            <h2 id="money" style={{ marginTop: 24 }}>Money</h2>
+            <p className="muted" style={{ fontSize: 13 }}>
+              What the platform charges: enrolment, the referral split paid out of it, and the price of
+              every paid feature a shop can buy.
+            </p>
 
             {/* Enrolment & economics — money-critical, warning-tinted */}
-            <div className="card" style={{ borderColor: 'var(--danger)' }}>
+            <div className="card" data-money-critical="enrolment" style={{ borderColor: 'var(--danger)' }}>
               <h3>Enrolment &amp; economics</h3>
               <p className="muted" style={{ fontSize: 13 }}>
                 Money-critical. The referral split feeds the zero-burn engine — infra + L1 + L2 can never exceed 100%.
               </p>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
                 <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <input type="checkbox" checked={!!feat.enrolment_fee_enabled} style={{ marginTop: 3 }}
+                  <input type="checkbox" data-setting="enrolment_fee_enabled" checked={!!feat.enrolment_fee_enabled} style={{ width: 'auto', marginTop: 3 }}
                     onChange={(e) => toggleEnrolmentMaster(e.target.checked)} />
                   <span>
                     <b>Paid enrolment {feat.enrolment_fee_enabled ? 'ON' : 'OFF'}</b>
@@ -677,7 +744,7 @@ export default function AdminSettings() {
                     </span>
                   </span>
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div style={FIELD_PAIR}>
                   {rupeeInput('enrolment_fee_basic_paise', 'Basic enrolment fee')}
                   {rupeeInput('enrolment_fee_premium_paise', 'Premium enrolment fee')}
                 </div>
@@ -685,8 +752,8 @@ export default function AdminSettings() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                   {PCT_KEYS.map((key, i) => (
                     <div key={key}>
-                      <label className="muted" style={{ fontSize: 12 }}>{['Infra', 'L1', 'L2'][i]} %</label>
-                      <input type="number" min="0" max="100" step="1" value={feat[key]}
+                      <label className="muted" style={{ fontSize: 12 }} htmlFor={`f-${key}`}>{['Infra', 'L1', 'L2'][i]} %</label>
+                      <input id={`f-${key}`} data-setting={key} type="number" min="0" max="100" step="1" value={feat[key]}
                         onChange={(e) => setFeat({ ...feat, [key]: e.target.value })} />
                     </div>
                   ))}
@@ -701,32 +768,37 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {/* Pricing */}
+            {/* Pricing (batch FLAGS1). Each paid feature's own on/off switch now
+                sits directly above the price it governs — the switch says whether a
+                shop may buy the thing at all, the fields say what it costs. The
+                switches still save as one PATCH; see toggleNote. */}
             <div className="card">
               <h3>Pricing</h3>
               <p className="muted">Fees &amp; ceilings for the paid features. All amounts in ₹ (stored as paise).</p>
-              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {rupeeInput('shop_promo_credits_per_day_paise', 'Shop promo — per day')}
-                  <div>
-                    <label className="muted">Shop promo — max days</label>
-                    <input type="number" min="1" step="1" value={feat.shop_promo_max_days}
-                      onChange={(e) => setFeat({ ...feat, shop_promo_max_days: e.target.value })} />
+              <div style={{ display: 'grid', gap: 12 }}>
+                <div style={SWITCH_GRID}>
+                  <div style={PRICE_BLOCK}>
+                    {switchTile('shop_promo_enabled')}
+                    {rupeeInput('shop_promo_credits_per_day_paise', 'Shop promo — per day')}
+                    {daysInput('shop_promo_max_days', 'Shop promo — max days')}
                   </div>
-                  {rupeeInput('branded_store_credits_per_day_paise', 'Branded store — per day')}
-                  <div>
-                    <label className="muted">Branded store — max days</label>
-                    <input type="number" min="1" step="1" value={feat.branded_store_max_days}
-                      onChange={(e) => setFeat({ ...feat, branded_store_max_days: e.target.value })} />
+                  <div style={PRICE_BLOCK}>
+                    {switchTile('branded_store_enabled')}
+                    {rupeeInput('branded_store_credits_per_day_paise', 'Branded store — per day')}
+                    {daysInput('branded_store_max_days', 'Branded store — max days')}
                   </div>
-                  {rupeeInput('storefront_ad_free_credits_per_day_paise', 'Storefront ad-free — per day')}
-                  <div>
-                    <label className="muted">Storefront ad-free — max days</label>
-                    <input type="number" min="1" step="1" value={feat.storefront_ad_free_max_days}
-                      onChange={(e) => setFeat({ ...feat, storefront_ad_free_max_days: e.target.value })} />
+                  <div style={PRICE_BLOCK}>
+                    {switchTile('storefront_ad_free_enabled')}
+                    {rupeeInput('storefront_ad_free_credits_per_day_paise', 'Storefront ad-free — per day')}
+                    {daysInput('storefront_ad_free_max_days', 'Storefront ad-free — max days')}
                   </div>
-                  {rupeeInput('consumer_prepay_max_advance_paise', 'Consumer prepay — max advance')}
-                  {rupeeInput('delivery_champion_fee_paise', 'Delivery champion fee')}
+                  <div style={PRICE_BLOCK}>
+                    {switchTile('consumer_prepay_enabled')}
+                    {rupeeInput('consumer_prepay_max_advance_paise', 'Consumer prepay — max advance')}
+                  </div>
+                  <div style={PRICE_BLOCK}>
+                    {rupeeInput('delivery_champion_fee_paise', 'Delivery champion fee')}
+                  </div>
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>
                   Promo {rs(feat.shop_promo_credits_per_day_paise)}/day · branded {rs(feat.branded_store_credits_per_day_paise)}/day · ad-free {rs(feat.storefront_ad_free_credits_per_day_paise)}/day ·
@@ -734,13 +806,25 @@ export default function AdminSettings() {
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={savePricing}>Save pricing</button>
+                  <button onClick={saveToggles}>Save feature toggles</button>
                 </div>
+                {toggleNote}
               </div>
             </div>
 
-            {/* AI moderation (batch AI-MOD): the toggle lives in Feature toggles
-                above; here the two confidence thresholds + whether the server is
-                configured at all (the key + model id live in Integrations → AI). */}
+            {/* SECTION 3 — what the platform moderates. The triage switch with its
+                thresholds, and the trust switch with its adjustments — each pair
+                in one card now, instead of one card and a distant list. */}
+            <h2 id="moderation" style={{ marginTop: 24 }}>Moderation</h2>
+            <p className="muted" style={{ fontSize: 13 }}>
+              What the AI is allowed to decide on its own, and how much of what it publishes a human still sees.
+            </p>
+
+            {/* AI moderation (batch AI-MOD). The triage switch used to be nine
+                cards away in the Feature toggles list while its two confidence
+                thresholds sat here; now the switch is the first thing in the card,
+                above the thresholds it governs. Whether the server is configured at
+                all is still the key + model id in Integrations → AI. */}
             <div className="card">
               <h3>AI moderation</h3>
               <p className="muted" style={{ fontSize: 13 }}>
@@ -750,33 +834,37 @@ export default function AdminSettings() {
                 a human as before.
               </p>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                {switchTile('ai_moderation_enabled')}
                 <p className="muted" style={{ fontSize: 13, margin: 0 }}>
                   Server configured: <b>{iAi.moderation_configured ? 'yes' : 'no'}</b>
                   {!iAi.moderation_configured && <> — set the API key and the moderation model id in <a href="#integrations-ai">Integrations → AI</a>; the toggle is inert until then.</>}
                   {iAi.moderation_configured && <> (model <code>{iAi.moderation_model}</code> — <a href="#integrations-ai">change</a>)</>}
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div style={FIELD_PAIR}>
                   <div>
-                    <label className="muted">Auto-approve min confidence</label>
-                    <input type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_auto_approve_min}
+                    <label className="muted" htmlFor="f-ai_moderation_auto_approve_min">Auto-approve min confidence</label>
+                    <input id="f-ai_moderation_auto_approve_min" data-setting="ai_moderation_auto_approve_min" type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_auto_approve_min}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_auto_approve_min: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Hold (flag) min confidence</label>
-                    <input type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_hold_min}
+                    <label className="muted" htmlFor="f-ai_moderation_hold_min">Hold (flag) min confidence</label>
+                    <input id="f-ai_moderation_hold_min" data-setting="ai_moderation_hold_min" type="number" min="0.5" max="1" step="0.01" inputMode="decimal" value={feat.ai_moderation_hold_min}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_hold_min: e.target.value })} />
                   </div>
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>0.5 – 1.0. Raise the auto-approve threshold to publish less without a human; raise the hold threshold to flag less.</p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveAiModeration}>Save AI thresholds</button>
+                  <button onClick={saveToggles}>Save feature toggles</button>
                 </div>
+                {toggleNote}
               </div>
             </div>
 
-            {/* Shop trust + post-publish spot checks (batch MOD2). The toggle is
-                in Feature toggles above; here is how far trust bends the bar and
-                how much of what gets published is looked at again. */}
+            {/* Shop trust + post-publish spot checks (batch MOD2). Its switch is
+                its own, independent of the triage switch above, and it now sits in
+                this card with the numbers it governs: how far trust bends the bar,
+                and how much of what gets published is looked at again. */}
             <div className="card">
               <h3>Shop trust &amp; spot checks</h3>
               <p className="muted" style={{ fontSize: 13 }}>
@@ -794,25 +882,26 @@ export default function AdminSettings() {
                 {' '}<b>The bar never drops below 0.75</b>, whatever is set here, and the AI still never rejects.
               </p>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {switchTile('ai_moderation_trust_enabled')}
+                <div style={FIELD_PAIR}>
                   <div>
-                    <label className="muted">Trusted shop bonus (bar drops by)</label>
-                    <input type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_trust_bonus}
+                    <label className="muted" htmlFor="f-ai_moderation_trust_bonus">Trusted shop bonus (bar drops by)</label>
+                    <input id="f-ai_moderation_trust_bonus" data-setting="ai_moderation_trust_bonus" type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_trust_bonus}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_trust_bonus: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Distrusted shop penalty (bar rises by)</label>
-                    <input type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_distrust_penalty}
+                    <label className="muted" htmlFor="f-ai_moderation_distrust_penalty">Distrusted shop penalty (bar rises by)</label>
+                    <input id="f-ai_moderation_distrust_penalty" data-setting="ai_moderation_distrust_penalty" type="number" min="0" max="0.3" step="0.01" inputMode="decimal" value={feat.ai_moderation_distrust_penalty}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_distrust_penalty: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Items before trust applies</label>
-                    <input type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_trust_min_items}
+                    <label className="muted" htmlFor="f-ai_moderation_trust_min_items">Items before trust applies</label>
+                    <input id="f-ai_moderation_trust_min_items" data-setting="ai_moderation_trust_min_items" type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_trust_min_items}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_trust_min_items: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Spot-check sample (% of auto-approvals)</label>
-                    <input type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_spot_check_pct}
+                    <label className="muted" htmlFor="f-ai_moderation_spot_check_pct">Spot-check sample (% of auto-approvals)</label>
+                    <input id="f-ai_moderation_spot_check_pct" data-setting="ai_moderation_spot_check_pct" type="number" min="0" max="100" step="1" inputMode="numeric" value={feat.ai_moderation_spot_check_pct}
                       onChange={(e) => setFeat({ ...feat, ai_moderation_spot_check_pct: e.target.value })} />
                   </div>
                 </div>
@@ -823,7 +912,45 @@ export default function AdminSettings() {
                 </p>
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   <button onClick={saveAiTrust}>Save trust settings</button>
+                  <button onClick={saveToggles}>Save feature toggles</button>
                 </div>
+                {toggleNote}
+              </div>
+            </div>
+
+            {/* SECTION 4 — what the platform lets a shop do for itself. */}
+            <h2 id="shops" style={{ marginTop: 24 }}>Shops &amp; orders</h2>
+            <p className="muted" style={{ fontSize: 13 }}>
+              What a shop may do without asking anyone: shut its own doors, chase a new order, promise a
+              ready time — and the free tools in the owner app.
+            </p>
+
+            {/* Shop availability (batch A). The master kill-switch for the whole
+                open/closed gate now heads this card, rather than sitting in a list
+                of nine while the one number it shares a subject with — the ceiling
+                on a single shop pause — sat down here on its own. */}
+            <div className="card">
+              <h3>Shop availability</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                A shopkeeper can pause their shop for a short while (&ldquo;back in 30 minutes&rdquo;) straight from Home.
+                This is the longest a single pause may last, so a mis-tap can never shutter a shop indefinitely.
+                A pause always expires on its own; the shop reopens with no further action.
+              </p>
+              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
+                {switchTile('shop_hours_enabled')}
+                <div>
+                  <label className="muted" htmlFor="f-shop_pause_max_minutes">Max pause (minutes)</label>
+                  <input id="f-shop_pause_max_minutes" data-setting="shop_pause_max_minutes" type="number" min="1" max="43200" step="1" inputMode="numeric" value={feat.shop_pause_max_minutes}
+                    onChange={(e) => setFeat({ ...feat, shop_pause_max_minutes: e.target.value })} />
+                </div>
+                <p className="muted" style={{ fontSize: 12 }}>
+                  A single pause can last at most {feat.shop_pause_max_minutes} minutes. &ldquo;Rest of today&rdquo; is capped by this too.
+                </p>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={savePauseCeiling}>Save pause ceiling</button>
+                  <button onClick={saveToggles}>Save feature toggles</button>
+                </div>
+                {toggleNote}
               </div>
             </div>
 
@@ -842,24 +969,24 @@ export default function AdminSettings() {
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                   <div>
-                    <label className="muted">Min repeat (minutes)</label>
-                    <input type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_min_minutes}
+                    <label className="muted" htmlFor="f-order_alert_min_minutes">Min repeat (minutes)</label>
+                    <input id="f-order_alert_min_minutes" data-setting="order_alert_min_minutes" type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_min_minutes}
                       onChange={(e) => setFeat({ ...feat, order_alert_min_minutes: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Max repeat (minutes)</label>
-                    <input type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_max_minutes}
+                    <label className="muted" htmlFor="f-order_alert_max_minutes">Max repeat (minutes)</label>
+                    <input id="f-order_alert_max_minutes" data-setting="order_alert_max_minutes" type="number" min="1" max="720" step="1" inputMode="numeric" value={feat.order_alert_max_minutes}
                       onChange={(e) => setFeat({ ...feat, order_alert_max_minutes: e.target.value })} />
                   </div>
                   <div>
-                    <label className="muted">Max repeats (cap)</label>
-                    <input type="number" min="1" max="100" step="1" inputMode="numeric" value={feat.order_alert_max_repeats_cap}
+                    <label className="muted" htmlFor="f-order_alert_max_repeats_cap">Max repeats (cap)</label>
+                    <input id="f-order_alert_max_repeats_cap" data-setting="order_alert_max_repeats_cap" type="number" min="1" max="100" step="1" inputMode="numeric" value={feat.order_alert_max_repeats_cap}
                       onChange={(e) => setFeat({ ...feat, order_alert_max_repeats_cap: e.target.value })} />
                   </div>
                 </div>
                 <div style={{ maxWidth: 220 }}>
-                  <label className="muted">&ldquo;Not now&rdquo; snooze (minutes)</label>
-                  <input type="number" min="1" max="120" step="1" inputMode="numeric" value={feat.order_alert_snooze_minutes}
+                  <label className="muted" htmlFor="f-order_alert_snooze_minutes">&ldquo;Not now&rdquo; snooze (minutes)</label>
+                  <input id="f-order_alert_snooze_minutes" data-setting="order_alert_snooze_minutes" type="number" min="1" max="120" step="1" inputMode="numeric" value={feat.order_alert_snooze_minutes}
                     onChange={(e) => setFeat({ ...feat, order_alert_snooze_minutes: e.target.value })} />
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>
@@ -877,30 +1004,6 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {/* Shop availability (batch A): the ceiling on a single shop pause.
-                The master kill-switch itself is a plain toggle above. */}
-            <div className="card">
-              <h3>Shop availability</h3>
-              <p className="muted" style={{ fontSize: 13 }}>
-                A shopkeeper can pause their shop for a short while (&ldquo;back in 30 minutes&rdquo;) straight from Home.
-                This is the longest a single pause may last, so a mis-tap can never shutter a shop indefinitely.
-                A pause always expires on its own; the shop reopens with no further action.
-              </p>
-              <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
-                <div>
-                  <label className="muted">Max pause (minutes)</label>
-                  <input type="number" min="1" max="43200" step="1" inputMode="numeric" value={feat.shop_pause_max_minutes}
-                    onChange={(e) => setFeat({ ...feat, shop_pause_max_minutes: e.target.value })} />
-                </div>
-                <p className="muted" style={{ fontSize: 12 }}>
-                  A single pause can last at most {feat.shop_pause_max_minutes} minutes. &ldquo;Rest of today&rdquo; is capped by this too.
-                </p>
-                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
-                  <button onClick={savePauseCeiling}>Save pause ceiling</button>
-                </div>
-              </div>
-            </div>
-
             {/* One-tap accept (batch B): the three coarse chips an owner taps to
                 accept an order AND promise a ready time, plus the ceiling that
                 promise is clamped to. Coarse on purpose — a kirana owner is not
@@ -914,13 +1017,13 @@ export default function AdminSettings() {
               </p>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
                 <div>
-                  <label className="muted">Chips (minutes, comma-separated)</label>
-                  <input type="text" inputMode="numeric" placeholder="15,30,60" value={feat.order_eta_chips}
+                  <label className="muted" htmlFor="f-order_eta_chips">Chips (minutes, comma-separated)</label>
+                  <input id="f-order_eta_chips" data-setting="order_eta_chips" type="text" inputMode="numeric" placeholder="15,30,60" value={feat.order_eta_chips}
                     onChange={(e) => setFeat({ ...feat, order_eta_chips: e.target.value })} />
                 </div>
                 <div>
-                  <label className="muted">Max ready time (minutes)</label>
-                  <input type="number" min="1" max="1440" step="1" inputMode="numeric" value={feat.order_eta_max_minutes}
+                  <label className="muted" htmlFor="f-order_eta_max_minutes">Max ready time (minutes)</label>
+                  <input id="f-order_eta_max_minutes" data-setting="order_eta_max_minutes" type="number" min="1" max="1440" step="1" inputMode="numeric" value={feat.order_eta_max_minutes}
                     onChange={(e) => setFeat({ ...feat, order_eta_max_minutes: e.target.value })} />
                 </div>
                 <p className="muted" style={{ fontSize: 12 }}>
@@ -933,12 +1036,39 @@ export default function AdminSettings() {
               </div>
             </div>
 
+            {/* The two free owner-app switches. Neither has numbers of its own,
+                which is why they had nowhere to be but the old nine-deep list —
+                so they get a card, rather than being the leftovers of one. */}
+            <div className="card">
+              <h3>Owner tools</h3>
+              <p className="muted" style={{ fontSize: 13 }}>
+                Free features in the owner app. Nothing is charged for either, so there is no price to
+                set here — only whether a shopkeeper is offered them at all.
+              </p>
+              <div style={{ display: 'grid', gap: 12 }}>
+                <div style={SWITCH_GRID}>
+                  {switchTile('voice_assistant_enabled')}
+                  {switchTile('social_share_enabled')}
+                </div>
+                <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={saveToggles}>Save feature toggles</button>
+                </div>
+                {toggleNote}
+              </div>
+            </div>
+
+            {/* SECTION 5 — what is not live yet. */}
+            <h2 id="later" style={{ marginTop: 24 }}>Not live yet</h2>
+            <p className="muted" style={{ fontSize: 13 }}>
+              Built, but switched off at the source and waiting on something outside this panel.
+            </p>
+
             {/* Coming soon — inert Meta auto-post stub, always locked */}
             <div className="card">
               <h3>Coming soon</h3>
               <div style={{ display: 'grid', gap: 12, maxWidth: 560 }}>
                 <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', opacity: 0.6 }}>
-                  <input type="checkbox" checked={false} disabled style={{ marginTop: 3 }} />
+                  <input type="checkbox" checked={false} disabled style={{ width: 'auto', marginTop: 3 }} />
                   <span>
                     <b>Meta auto-post</b> <span className="badge">coming soon</span>
                     <br />
