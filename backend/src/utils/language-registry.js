@@ -96,6 +96,47 @@ async function resolveCatalogueLang(raw) {
   }
 }
 
+/**
+ * Resolve a caller's `?lang=` to the language a piece of PER-CAMPAIGN or
+ * PER-RECORD authored content should be served in — content that lives in an
+ * i18n blob on its own row, not in the shipped catalogue.
+ *
+ * The question here is NOT resolveCatalogueLang's question. That one asks "has
+ * this language got a translated catalogue", answered by languages.has_catalogue,
+ * which migration 0075 derives from the catalog_i18n rows themselves. Promo
+ * creative is not in catalog_i18n at all: it is whatever a marketer typed into
+ * ad_campaigns.i18n for one campaign. A language can have a Bengali promo written
+ * for it and no Bengali catalogue, or a catalogue and no promo, and the row's own
+ * COALESCE already falls back to the base column when the creative is missing.
+ * So the only gate this path needs is the one the catalogue gate takes for
+ * granted: is this a language the platform actually serves to users?
+ *
+ * That is `languages.is_active` — the registry column the platform admin flips
+ * when a language goes live, and the same set the consumer app's own language
+ * picker is built from. A code the shopper can choose in the app is a code the
+ * app must be able to answer in. Registered-but-inactive codes (pa/or/as, staged
+ * for a later launch) resolve to 'en': they are capacity, not a live language,
+ * and nothing should be serving content in them yet.
+ *
+ * Gating on has_catalogue instead would be wrong in both directions — it would
+ * refuse a language that is live but has no catalogue, and it would accept a
+ * staged one the moment somebody imported terms for it.
+ *
+ * As with the catalogue resolver, 'en' is the base and the only failure mode: an
+ * unknown code, an inactive one, or an unreadable registry all degrade to English
+ * so a public, unauthenticated surface still renders.
+ */
+async function resolveServingLang(raw) {
+  const code = normalizeLangCode(raw);
+  if (!code || code === 'en') return 'en';
+  try {
+    const r = await query('SELECT 1 FROM languages WHERE code = $1 AND is_active = true', [code]);
+    return r.rowCount ? code : 'en';
+  } catch (err) {
+    return 'en';
+  }
+}
+
 module.exports = {
   CODE_RE,
   normalizeLangCode,
@@ -103,4 +144,5 @@ module.exports = {
   isRegisteredLang,
   toStorableLang,
   resolveCatalogueLang,
+  resolveServingLang,
 };

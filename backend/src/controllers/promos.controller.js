@@ -3,6 +3,7 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { spendCredits } = require('../utils/wallet');
 const { getShopPromoConfig, getShopPromoFreeConfig } = require('../utils/shopPromo');
+const { resolveServingLang } = require('../utils/language-registry');
 // AI triage of a submitted owner promo (batch AI-MOD) — enqueue only, after commit.
 const moderation = require('../services/moderation.service');
 
@@ -16,18 +17,25 @@ const moderation = require('../services/moderation.service');
 // a pincode, or 'all' (district-wide). The shopper sends their saved location
 // (any subset of town/village/pincode); we return the campaigns that match.
 
-// Languages the consumer app can be viewed in. Mirrors discovery/catalog
-// controllers' resolveLang so every public path localizes consistently. 'en' is
-// the base language: it uses the plain base columns (no i18n override lookup).
-const KNOWN_LANGS = new Set(['en', 'hi', 'ta', 'te', 'kn', 'ml', 'ur']);
-
-// Resolve ?lang= to a known language, defaulting to 'en'. Unknown/absent values
-// fall back to 'en' (base creative) rather than erroring — the promo slider must
-// always render.
-function resolveLang(raw) {
-  const lang = (raw || '').trim().toLowerCase();
-  return KNOWN_LANGS.has(lang) ? lang : 'en';
-}
+// Which language a promo is served in is the registry's answer, not this file's.
+//
+// There used to be a seven-code Set here — en/hi/ta/te/kn/ml/ur — with a comment
+// claiming it mirrored the discovery and catalog controllers' resolveLang. It no
+// longer mirrored anything: those copies were consolidated into
+// utils/language-registry, and the list itself had been wrong since migration
+// 0033 switched Bengali, Gujarati and Marathi on. A shopper reading the app in
+// Bengali got the English creative even when the campaign carried Bengali copy,
+// because the request was never allowed to ask for it.
+//
+// resolveServingLang gates on languages.is_active — "a language this platform
+// serves" — which is the right question for creative that lives in this row's own
+// ad_campaigns.i18n blob. It is deliberately NOT resolveCatalogueLang, whose
+// has_catalogue gate answers a question about catalog_i18n that has nothing to do
+// with what a marketer wrote for one campaign. See the note on resolveServingLang.
+//
+// 'en' remains the base language: it reads the plain base columns with no i18n
+// override lookup, and every unknown/inactive/unreadable case degrades to it, so
+// the promo slider always renders.
 
 // A blank/absent geo value → null, so the SQL's `IS NOT NULL` guards treat it as
 // "not supplied" (matches only 'all' campaigns for that dimension).
@@ -96,7 +104,7 @@ async function serveCampaigns({ lang, town, village, pincode, placement, limit }
 // serveCampaigns for the eligibility / geo / localization rules). A constant
 // `sponsored: true` flag is added so the client always shows the sponsored label.
 exports.listPromos = async (req, res) => {
-  const lang = resolveLang(req.query.lang);
+  const lang = await resolveServingLang(req.query.lang);
   const rows = await serveCampaigns({
     lang,
     town: req.query.town,
@@ -136,7 +144,7 @@ exports.listPromos = async (req, res) => {
 // (ad-free buy-out / branded → no slide at all).
 exports.pickStorefrontCampaign = async ({ lang, town, village, pincode }) => {
   const rows = await serveCampaigns({
-    lang: resolveLang(lang),
+    lang: await resolveServingLang(lang),
     town,
     village,
     pincode,

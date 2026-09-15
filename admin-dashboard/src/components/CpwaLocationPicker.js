@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../lib/i18n';
 import { getCustomerToken, customerFetch, publicFetch } from '../lib/customerApi';
+import { placeAnchoredSheet, UNMEASURED_PLACEMENT } from './anchoredSheet';
 
 // The single source of truth the client will later send to the promos API. It
 // lives in localStorage so it is available whether or not the shopper is logged
@@ -47,6 +48,14 @@ function writeStoredLoc(loc) {
   }
 }
 
+// useLayoutEffect measures and repositions the sheet BEFORE the browser paints,
+// so the sheet is never seen in the unmeasured fallback position. React warns
+// when it is called during a server render (where it does nothing), and this
+// component is server-rendered as part of the topbar, so fall back to useEffect
+// there. The sheet only exists once a shopper has opened it, which is always
+// client-side, so the server branch never actually places anything.
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 function hasAny(loc) {
   return !!(loc && ((loc.town || '').trim() || (loc.village || '').trim() || (loc.pincode || '').trim()));
 }
@@ -68,6 +77,14 @@ function PinIcon() {
 // and Save / Cancel. Mirrors CpwaThemeToggle's popover mechanics: a stable SSR
 // first paint (empty chip, closed), then a mount effect reads the effective
 // location; Escape / outside-click close and restore focus to the trigger.
+//
+// Where the sheet is drawn is NOT left to CSS. It is placed from the trigger's
+// measured rect and clamped inside the viewport, and below the phone breakpoint
+// it stops being a popover and spans the width of the screen. The arithmetic and
+// the reasoning live in components/anchoredSheet.js. This matters more than it
+// sounds: this is how a shopper tells the storefront where they are, and the
+// field labels are the only thing saying which box is the town and which the
+// pincode, so a sheet half off the screen is a control nobody can use.
 export default function CpwaLocationPicker() {
   const { t } = useLang();
   const [mounted, setMounted] = useState(false);
@@ -75,6 +92,9 @@ export default function CpwaLocationPicker() {
   const [form, setForm] = useState(EMPTY); // the in-sheet draft
   const [open, setOpen] = useState(false);
   const [detecting, setDetecting] = useState(false);
+  // Viewport coordinates for the open sheet, recomputed from the live trigger
+  // rect. null until the first measurement lands (see the layout effect below).
+  const [placement, setPlacement] = useState(null);
   const suggestedRef = useRef(false); // GPS suggestion attempted this session
   const btnRef = useRef(null);
   const sheetRef = useRef(null);
@@ -187,6 +207,37 @@ export default function CpwaLocationPicker() {
     closeSheet(true);
   }, [form, closeSheet]);
 
+  // Keep the open sheet inside the viewport. The placement is derived from the
+  // trigger's LIVE rect rather than from CSS, because the only way to guarantee
+  // both edges are on-screen is to measure where the trigger actually is and
+  // clamp against the actual viewport — see components/anchoredSheet.js for why
+  // the pure-CSS end-anchor put the sheet off the left edge on a phone.
+  //
+  // Re-measured on resize (rotation, a desktop window drag across the phone
+  // breakpoint) and on scroll in the capture phase, so an ancestor scrolling the
+  // sticky topbar out from under the sheet moves the sheet with it.
+  useIsomorphicLayoutEffect(() => {
+    if (!open) {
+      setPlacement(null);
+      return undefined;
+    }
+    const reposition = () => {
+      const anchor = btnRef.current;
+      setPlacement(placeAnchoredSheet({
+        anchorRect: anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : null,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      }));
+    };
+    reposition();
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    return () => {
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+    };
+  }, [open]);
+
   // Focus the first field when the sheet opens.
   useEffect(() => {
     if (open && firstFieldRef.current) firstFieldRef.current.focus();
@@ -238,6 +289,28 @@ export default function CpwaLocationPicker() {
         ref={btnRef}
         type="button"
         className="secondary cpwa-loc-chip"
+        // WHY THE LABEL TRUNCATED. Two causes, neither of them a pixel value.
+        //
+        // First, .cpwa-loc-chip caps the chip at max-width: 116px. 116 is not a
+        // measurement of anything: the pin glyph (15) + gap (6) + the chip's own
+        // padding and border (22) leave about 73px for the text, and "Set
+        // location" at 13px/600 needs 74. It has been one pixel too narrow to say
+        // what it is for. Raising the number would only move the problem to the
+        // next language — the Urdu label is wider again — so the cap goes, and
+        // `max-width: 100%` takes its place: the chip may be as wide as its text
+        // needs, but never wider than the box it sits in.
+        //
+        // Second, that box (.cpwa-loc-picker, `flex: 0 1 auto; min-width: 0`) is
+        // the ONLY shrinkable item in the topbar's tools row, so every pixel the
+        // row is short is taken out of this one control. The capped chip did not
+        // shrink with it, it OVERFLOWED it, and the theme toggle was painted on
+        // top of the end of the word. Bounding the chip to its wrapper turns that
+        // silent overlap into an honest ellipsis — and CustomerShell now lets the
+        // tools row WRAP, so on a phone the row is not short in the first place
+        // and the label is shown in full. A saved town name long enough to still
+        // not fit degrades to an ellipsis, which is the right answer for a value
+        // that has no upper bound.
+        style={{ maxWidth: '100%' }}
         onClick={() => (open ? closeSheet(false) : openSheet())}
         onKeyDown={onTriggerKeyDown}
         aria-haspopup="dialog"
@@ -252,6 +325,12 @@ export default function CpwaLocationPicker() {
         <div
           ref={sheetRef}
           className="cpwa-loc-sheet"
+          // Measured placement, or the plainly-on-screen fallback for the single
+          // frame before the layout effect has run. Inline styles win over the
+          // stylesheet's absolute/end-anchored rule outright, which is the point:
+          // there is one place that decides where this sheet goes, and it is the
+          // one that can see the viewport.
+          style={placement || UNMEASURED_PLACEMENT}
           role="dialog"
           aria-label={t('c.loc.title')}
           onKeyDown={onSheetKeyDown}
