@@ -354,8 +354,12 @@ section('the browse surface, in order');
   const again = psearchSrc.indexOf("t('psearch.buyAgain')");
   const recent = psearchSrc.indexOf("t('psearch.recent')");
   const browse = psearchSrc.indexOf("t('psearch.browse')");
-  ok(again > -1 && recent > again, 'recent searches come after buy-it-again');
-  ok(browse > recent, 'shop-by-category comes last');
+  // The owner set this order after seeing both states rendered: the two compact
+  // sections sit where they can be read at a glance, and buy-it-again — eight
+  // rows, by far the tallest — goes last rather than pushing them off a 360dp
+  // screen. A shopper who wants their usual basket scrolls for it.
+  ok(recent > -1 && browse > recent, 'shop-by-category comes after recent searches');
+  ok(again > browse, 'buy-it-again comes last');
   ['psearch.buyAgain', 'psearch.recent', 'psearch.clearRecent', 'psearch.browse', 'psearch.voiceIn']
     .forEach((k) => ok(hasEnKey(k), `"${k}" exists in the en dictionary`));
 
@@ -373,7 +377,15 @@ section('the browse surface, in order');
   // The sentinel matters: without it a screen with no buy-again section at all
   // would slice an EMPTY string here and "contains no price" would pass for
   // precisely the wrong reason.
-  const againBlock = again > -1 && recent > again ? psearchSrc.slice(again, recent) : ' money(';
+  // Buy-it-again is now the LAST browse section, so it is bounded by the start
+  // of the results list rather than by the section that used to follow it. The
+  // sentinel is kept and still matters: if either marker goes missing this
+  // slices a string that FAILS rather than an empty one that would pass for
+  // precisely the wrong reason. It earned its keep on this very edit — when the
+  // sections were reordered the old bounds went stale, and the sentinel caught
+  // it instead of letting the check pass silently.
+  const againEnd = psearchSrc.indexOf('{!error && !loading && products.map(');
+  const againBlock = again > -1 && againEnd > again ? psearchSrc.slice(again, againEnd) : ' money(';
   ok(!againBlock.includes('money('), 'buy-it-again shows no price');
   ok(againBlock.includes("t('psearch.atShop'"), 'but does show which shop it came from');
 

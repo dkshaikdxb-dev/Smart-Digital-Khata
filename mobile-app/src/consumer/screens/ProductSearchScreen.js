@@ -381,37 +381,7 @@ export default function ProductSearchScreen({ route, navigation }) {
 
       {/* ---- 2/3/4. The browse surface, shown only before a search ---- */}
 
-      {/* 2. BUY IT AGAIN. Their own items, most frequent first. One tap runs the
-             remembered name as a search. NO PRICE is shown and none is
-             fetched — a price is a per-shop lookup and this screen is drawn on
-             2G. Absent entirely when the list is empty, which is every
-             brand-new shopper and every signed-out install. */}
-      {browsing && buyAgain.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🧺 {t('psearch.buyAgain')}</Text>
-          {buyAgain.map((item, i) => (
-            <Pressable
-              key={`${item.name}:${item.shop_id || i}`}
-              onPress={() => pickTerm(item.name)}
-              style={({ pressed }) => [styles.againRow, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel={`${item.name} · ${item.shop_name || ''}`}
-            >
-              <Text style={styles.againIcon}>↻</Text>
-              <View style={styles.againText}>
-                <Text style={styles.againName} numberOfLines={1}>{item.name}</Text>
-                {item.shop_name ? (
-                  <Text style={styles.againShop} numberOfLines={1}>
-                    {t('psearch.atShop', { shop: item.shop_name })}
-                  </Text>
-                ) : null}
-              </View>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-
-      {/* 3. RECENT SEARCHES. The shopper's own words, from this handset only —
+      {/* 2. RECENT SEARCHES. The shopper's own words, from this handset only —
              no backend, nothing synced. Compact chips, and a Clear. */}
       {browsing && recent.length > 0 ? (
         <View style={styles.section}>
@@ -442,7 +412,7 @@ export default function ProductSearchScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* 4. SHOP BY CATEGORY. Always present. Each chip filters by a REAL
+      {/* 3. SHOP BY CATEGORY. Always present. Each chip filters by a REAL
              catalogue shelf, not a guessed keyword — see lib/categories.js for
              what the keywords were actually reaching. */}
       {browsing ? (
@@ -462,6 +432,42 @@ export default function ProductSearchScreen({ route, navigation }) {
               </Pressable>
             ))}
           </View>
+        </View>
+      ) : null}
+
+      {/* 4. BUY IT AGAIN. Their own items, most frequent first. One tap runs the
+             remembered name as a search. NO PRICE is shown and none is
+             fetched — a price is a per-shop lookup and this screen is drawn on
+             2G. Absent entirely when the list is empty, which is every
+             brand-new shopper and every signed-out install.
+
+             LAST on purpose. It is the tallest section by far — eight rows
+             against two compact ones — so placing it above pushed the recent
+             words and the shelves off the bottom of a 360dp screen. The
+             shopper who wants it is the one who has scrolled for it, and the
+             two sections that fit in a glance now do. */}
+      {browsing && buyAgain.length > 0 ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🧺 {t('psearch.buyAgain')}</Text>
+          {buyAgain.map((item, i) => (
+            <Pressable
+              key={`${item.name}:${item.shop_id || i}`}
+              onPress={() => pickTerm(item.name)}
+              style={({ pressed }) => [styles.againRow, pressed && styles.pressed]}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.name} · ${item.shop_name || ''}`}
+            >
+              <Text style={styles.againIcon}>↻</Text>
+              <View style={styles.againText}>
+                <Text style={styles.againName} numberOfLines={1}>{item.name}</Text>
+                {item.shop_name ? (
+                  <Text style={styles.againShop} numberOfLines={1}>
+                    {t('psearch.atShop', { shop: item.shop_name })}
+                  </Text>
+                ) : null}
+              </View>
+            </Pressable>
+          ))}
         </View>
       ) : null}
 
