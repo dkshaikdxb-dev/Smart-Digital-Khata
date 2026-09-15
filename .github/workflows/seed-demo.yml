@@ -27,7 +27,15 @@ jobs:
           script: |
             set -euo pipefail
             cd "${{ secrets.VPS_PATH || '/opt/Smart-Digital-Khata' }}"
-            # FORCE_DEMO lets the guarded seeders run against the production DB;
-            # both only ever touch the demo shop (store01@demo.local).
-            docker compose exec -T -e FORCE_DEMO=true backend npm run seed:demo
-            docker compose exec -T -e FORCE_DEMO=true backend npm run seed:commerce
+            # One entry point, not a hand-maintained list. This calls the SAME
+            # loader a deploy uses when SEED_DEMO_DATA is set, so the two can
+            # never drift: running the two seeders by name here quietly skipped
+            # the house promos and the branded flagship storefront, and would
+            # have skipped whatever is added next.
+            #
+            # FORCE_DEMO is the seeders' own production guard; setting it here is
+            # this workflow saying the operator asked for demo data on purpose.
+            # Everything it runs converges, so re-running changes nothing.
+            docker compose exec -T -e FORCE_DEMO=true backend npm run data:demo
+            # Say what the database now holds, the same as a deploy does.
+            docker compose exec -T backend npm run data:status
