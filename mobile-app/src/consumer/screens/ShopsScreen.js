@@ -112,10 +112,14 @@ export default function ShopsScreen({ navigation }) {
 
   const onRefresh = () => { setRefreshing(true); load(search, true); };
 
-  const goProducts = (term) => {
-    const q = String(term || '').trim();
-    if (!q) return;
-    navigation.navigate('ProductSearch', { q });
+  // A category chip opens product search on a real catalogue SHELF rather than
+  // seeding it with a keyword. The chips used to pass `q=milk` for Dairy and
+  // `q=soap` for Household, which reached a fraction of each aisle — see
+  // lib/categories.js for the measured numbers.
+  const goShelf = (category) => {
+    const key = String(category || '').trim();
+    if (!key) return;
+    navigation.navigate('ProductSearch', { category: key });
   };
 
   return (
@@ -146,7 +150,7 @@ export default function ShopsScreen({ navigation }) {
           {CATEGORIES.map((c) => (
             <Pressable
               key={c.key}
-              onPress={() => goProducts(c.term)}
+              onPress={() => goShelf(c.category)}
               style={({ pressed }) => [styles.cat, pressed && styles.pressed]}
               accessibilityRole="button"
             >
@@ -268,9 +272,13 @@ const styles = StyleSheet.create({
     minHeight: sizes.tap,
   },
   productBarText: { flex: 1, color: colors.textMuted, fontSize: 16 },
-  cats: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  // Six shelves, not five, so the row WRAPS: on a 360dp phone six in one line
+  // would be 52dp each and the labels would be unreadable. Three across, two
+  // rows, each chip still a full tap target.
+  cats: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
   cat: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '30%',
     minHeight: sizes.tap,
     paddingVertical: 8,
     paddingHorizontal: 4,

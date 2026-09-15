@@ -147,6 +147,27 @@ export const my = {
     api.post('/api/my/pay', { shop_id: shopId, amount: amountPaise }).then((r) => r.data),
   // GET /api/my/orders -> { items:[...] }
   orders: () => api.get('/api/my/orders').then((r) => r.data),
+  // GET /api/my/buy-again?limit= -> { items:[{name,shop_id,shop_name,times,last_ordered_at}] }
+  // The shopper's own previously ordered items, most frequent first. NO PRICE
+  // is returned and none should be asked for: a price is a per-shop lookup and
+  // this screen is drawn on 2G.
+  //
+  // DEPLOY ORDER: this endpoint does not exist on a server older than the batch
+  // that added it, and the app bundle can reach a phone before that server is
+  // updated. Every failure — a 404 from an old server, a 400, a dead radio, a
+  // 2G timeout — resolves to an EMPTY list rather than rejecting, because the
+  // section this feeds renders nothing at all when it is empty. An older
+  // backend therefore produces a screen with one section missing, which is
+  // exactly the screen a brand-new shopper gets, and never a broken one.
+  //
+  // A 401 is deliberately NOT swallowed here in spirit — the axios interceptor
+  // has already cleared the token and bounced to login by the time this runs,
+  // so returning an empty list is simply what is left to do.
+  buyAgain: (limit) =>
+    api
+      .get(`/api/my/buy-again?limit=${encodeURIComponent(String(limit || 8))}`)
+      .then((r) => (r.data && Array.isArray(r.data.items) ? r.data.items : []))
+      .catch(() => []),
   // GET /api/my/orders/:id -> { order:{...,items} }
   order: (id) => api.get(`/api/my/orders/${id}`).then((r) => r.data),
   // POST /api/my/orders { shop_id, items, fulfillment_type, payment_mode, address, note } -> 201 { order, pay_link? }
@@ -193,19 +214,44 @@ export const publicApi = {
     const q = lang ? `?lang=${encodeURIComponent(String(lang))}` : '';
     return api.get(`/api/public/shops/${shopId}${q}`).then((r) => r.data);
   },
-  // GET /api/public/products/search?q=&lang=&limit= -> { products:[{...,shop:{...}}] }
+  // GET /api/public/products/search?q=&category=&lang=&limit= -> { products:[...] }
   // Cross-shop product search — the SAME endpoint the web PWA's /c/products
   // page uses, so both surfaces rank and localize identically. `signal` lets a
   // caller abort a superseded request instead of paying for it on 2G; the
   // rejection then carries transport 'cancelled' and is silently dropped.
-  searchProducts: ({ q, lang, limit, signal } = {}) => {
-    const params = new URLSearchParams();
-    params.set('q', String(q == null ? '' : q).trim());
-    if (lang) params.set('lang', String(lang));
-    params.set('limit', String(limit || 30));
-    return api
-      .get(`/api/public/products/search?${params.toString()}`, signal ? { signal } : undefined)
-      .then((r) => r.data);
+  //
+  // `category` is a SHELF KEY (see lib/categories.js), sent instead of a
+  // keyword. DEPLOY ORDER: the backend ships before the app bundle does, but
+  // the reverse is what actually hurts — an app that has already updated
+  // talking to a server that has not. A server without the shelf filter drops
+  // the unknown param and then 400s for want of the `q` it still requires, so a
+  // shelf request that comes back 400 (or 404, or 422) is retried ONCE with
+  // `fallbackTerm`, which is the very keyword that chip used before this
+  // change. The shopper sees the old, narrower results — never an error, never
+  // an empty screen — and nothing has to be sequenced.
+  searchProducts: ({ q, category, fallbackTerm, lang, limit, signal } = {}) => {
+    const build = (term, shelf) => {
+      const params = new URLSearchParams();
+      const text = String(term == null ? '' : term).trim();
+      if (text) params.set('q', text);
+      if (shelf) params.set('category', String(shelf));
+      if (lang) params.set('lang', String(lang));
+      params.set('limit', String(limit || 30));
+      return `/api/public/products/search?${params.toString()}`;
+    };
+    const opts = signal ? { signal } : undefined;
+    const first = api.get(build(q, category), opts).then((r) => r.data);
+    if (!category) return first;
+    return first.catch((err) => {
+      // Only a REFUSAL is retried. A timeout or a dead radio is the shopper's
+      // network and must surface as itself; retrying it would double the wait
+      // on 2G and then report the same failure anyway.
+      const status = err && err.status;
+      const oldServer = status === 400 || status === 404 || status === 422;
+      const term = String(fallbackTerm || q || '').trim();
+      if (!oldServer || !term) throw err;
+      return api.get(build(term, null), opts).then((r) => r.data);
+    });
   },
 };
 

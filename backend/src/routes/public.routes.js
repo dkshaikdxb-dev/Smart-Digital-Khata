@@ -8,6 +8,7 @@ const discoveryCtrl = require('../controllers/discovery.controller');
 const configCtrl = require('../controllers/config.controller');
 const contentPublicCtrl = require('../controllers/content-public.controller');
 const promosCtrl = require('../controllers/promos.controller');
+const { SHELF_KEYS } = require('../utils/catalog-shelves');
 
 // Public runtime config for the marketing landing (safe values only).
 router.get('/config', asyncHandler(configCtrl.publicConfig));
@@ -39,16 +40,27 @@ const listSchema = Joi.object({
 router.get('/shops', validate(listSchema, 'query'), asyncHandler(discoveryCtrl.listShops));
 
 // Cross-shop product search (Flipkart-style). Active products in listed shops
-// whose (localized or base) name matches `q`. Same query-param style as the
-// directory; `q` is required.
+// whose (localized or base) name matches `q`, and/or that sit on the catalogue
+// shelf named by `category`.
+//
+// `q` used to be REQUIRED, which is why the consumer apps' category chips were
+// keyword searches — "Dairy" meant `q=milk` — and why they reached a seventh of
+// the shelf they were named after. `category` is the real filter: a key from the
+// closed allowlist in utils/catalog-shelves, resolved to the catalogue's own
+// category/subcategory values. It is deliberately NOT free text, so a client
+// cannot invent a shelf.
+//
+// Either one is now enough, and both together narrow ("rice" within Spices).
+// Neither is a 400, because a search for nothing at all is not a question.
 const searchSchema = Joi.object({
-  q: Joi.string().trim().min(1).max(120).required(),
+  q: Joi.string().trim().min(1).max(120),
+  category: Joi.string().trim().valid(...SHELF_KEYS),
   city: Joi.string().trim().max(120),
   lat: Joi.number().min(-90).max(90),
   lng: Joi.number().min(-180).max(180),
   lang: Joi.string(),
   limit: Joi.number().integer(),
-});
+}).or('q', 'category');
 router.get('/products/search', validate(searchSchema, 'query'), asyncHandler(discoveryCtrl.searchProducts));
 
 router.get('/shops/:shopId', asyncHandler(discoveryCtrl.getShop));

@@ -91,6 +91,13 @@ const ordersCsvQuerySchema = Joi.object({
   shop_id: Joi.string().uuid(),
 });
 
+// "Buy it again" — the shopper's own previously ordered items, most frequent
+// first. Scoped by customerAuth() above like everything else under /my.
+const buyAgainQuerySchema = Joi.object({
+  limit: Joi.number().integer().min(1).max(20),
+});
+router.get('/buy-again', validate(buyAgainQuerySchema, 'query'), asyncHandler(ctrl.buyAgain));
+
 router.post('/orders', validate(createOrderSchema), asyncHandler(ctrl.createOrder));
 router.get('/orders.csv', validate(ordersCsvQuerySchema, 'query'), asyncHandler(ctrl.ordersCsv));
 router.get('/orders', asyncHandler(ctrl.listOrders));

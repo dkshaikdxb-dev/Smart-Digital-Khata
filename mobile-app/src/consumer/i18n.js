@@ -386,6 +386,13 @@ const en = {
   'psearch.none': 'No products found. Try another word.',
   'psearch.failedTitle': 'Search did not finish',
   'psearch.atShop': 'at {shop}',
+  // The full-width voice control, and the three sections under it. {language}
+  // is the language's OWN name out of LANGUAGES, never a translated string.
+  'psearch.voiceIn': 'Listens in {language}',
+  'psearch.buyAgain': 'Buy it again',
+  'psearch.recent': 'Recent searches',
+  'psearch.clearRecent': 'Clear',
+  'psearch.browse': 'Shop by category',
 
   // Quick-browse categories on the shop directory (labels only — the search
   // term sent to the API stays the English base word).
@@ -394,6 +401,10 @@ const en = {
   'cat.snacks': 'Snacks',
   'cat.household': 'Household',
   'cat.personalCare': 'Personal Care',
+  // Three shelves the chips gained when they stopped being keyword guesses.
+  'cat.dalPulses': 'Dal & Pulses',
+  'cat.spices': 'Spices',
+  'cat.cookingOils': 'Cooking Oils',
 
   'shops.heroTitle': 'What do you need today?',
   'shops.searching': 'Searching…',
@@ -552,6 +563,15 @@ const en = {
 };
 
 const hi = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'दाल और दलहन',
+  'cat.spices': 'मसाले',
+  'cat.cookingOils': 'खाद्य तेल',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -909,6 +929,17 @@ const hi = {
 };
 
 const bn = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'ডাল ও কড়াই',
+  'cat.spices': 'মশলা',
+  'cat.cookingOils': 'রান্নার তেল',
+  'cat.household': 'গৃহস্থালি',
+  'cat.personalCare': 'ব্যক্তিগত যত্ন',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -1092,6 +1123,15 @@ const bn = {
 };
 
 const ta = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'பருப்பு வகைகள்',
+  'cat.spices': 'மசாலா',
+  'cat.cookingOils': 'சமையல் எண்ணெய்',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -1352,6 +1392,15 @@ const ta = {
 };
 
 const te = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'పప్పు ధాన్యాలు',
+  'cat.spices': 'మసాలాలు',
+  'cat.cookingOils': 'వంట నూనె',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -1612,6 +1661,15 @@ const te = {
 };
 
 const kn = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'ಬೇಳೆಕಾಳುಗಳು',
+  'cat.spices': 'ಮಸಾಲೆ',
+  'cat.cookingOils': 'ಅಡುಗೆ ಎಣ್ಣೆ',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -1872,6 +1930,15 @@ const kn = {
 };
 
 const ml = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'പയർ വർഗ്ഗങ്ങൾ',
+  'cat.spices': 'മസാല',
+  'cat.cookingOils': 'പാചക എണ്ണ',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -2132,6 +2199,17 @@ const ml = {
 };
 
 const mr = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'डाळ आणि कडधान्ये',
+  'cat.spices': 'मसाले',
+  'cat.cookingOils': 'स्वयंपाकाचे तेल',
+  'cat.household': 'घरगुती सामान',
+  'cat.personalCare': 'वैयक्तिक काळजी',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -2315,6 +2393,17 @@ const mr = {
 };
 
 const gu = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'દાળ અને કઠોળ',
+  'cat.spices': 'મસાલા',
+  'cat.cookingOils': 'રસોઈ તેલ',
+  'cat.household': 'ઘરવપરાશ',
+  'cat.personalCare': 'વ્યક્તિગત સંભાળ',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary
@@ -2498,6 +2587,15 @@ const gu = {
 };
 
 const ur = {
+  // Chip labels for the shelves the category filter added. NOT new
+  // translation: every value here is copied byte-for-byte out of the shipped
+  // catalogue translations (backend/src/data/catalog-i18n.json), which is the
+  // same human-written text a shopper already sees naming these very shelves
+  // inside the catalogue.
+  'cat.dalPulses': 'دالیں',
+  'cat.spices': 'مصالحے',
+  'cat.cookingOils': 'کھانے کا تیل',
+
   // Transcribed verbatim from translations a human already authored in this
   // repository: the regional seed that populates i18n_overrides
   // (backend/src/data/regional-i18n.json) and the web dictionary

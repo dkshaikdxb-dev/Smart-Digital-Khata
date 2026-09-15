@@ -257,18 +257,50 @@ const hasEnKey = (k) => enBlock.includes(`'${k}':`);
 section('category chips');
 {
   const cats = CATS.CATEGORIES;
-  eq(cats.map((c) => c.key),
-    ['cat.attaRice', 'cat.dairy', 'cat.snacks', 'cat.household', 'cat.personalCare'],
-    'the five web categories, in the web order');
-  eq(cats.map((c) => c.term), ['rice', 'milk', 'biscuit', 'soap', 'shampoo'],
-    'the search TERM stays the English base word the endpoint indexes');
 
-  // The web's own list, read out of the page that owns it. If someone adds a
-  // sixth category there, this says so instead of the app quietly lagging.
-  const webCats = [...webShopsSrc.matchAll(/\{ key: '(\w+)', term: '(\w+)', icon: '([^']+)' \}/g)]
-    .map((m) => ({ key: m[1], term: m[2], icon: m[3] }));
-  eq(webCats.map((c) => c.term), cats.map((c) => c.term), 'same terms as the web directory');
-  eq(webCats.map((c) => c.icon), cats.map((c) => c.icon), 'same icons as the web directory');
+  // WHAT CHANGED, AND WHY THIS SECTION NO LONGER COMPARES ITSELF TO THE WEB.
+  // A chip used to carry a KEYWORD and run a text search: "Dairy" searched
+  // `milk` and reached 14 of the catalogue's 44 Dairy SKUs, "Household"
+  // searched `soap` and reached 20 of 294. It now carries a SHELF KEY that the
+  // endpoint resolves against the catalogue's own category/subcategory columns.
+  // The web's /c/shops chips are still the old keyword list — matching them was
+  // the point of the old check and would now pin the app back to the defect —
+  // so what is asserted instead is that the app's list and the SERVER'S
+  // allowlist agree, which is the pairing that can actually break at run time.
+  eq(cats.map((c) => c.key),
+    ['cat.attaRice', 'cat.dalPulses', 'cat.spices', 'cat.cookingOils',
+      'cat.household', 'cat.personalCare'],
+    'six shelves, staples first');
+  eq(cats.map((c) => c.category),
+    ['atta-rice', 'dal-pulses', 'spices', 'cooking-oils', 'household', 'personal-care'],
+    'every chip carries a shelf key, not a keyword');
+
+  // The server's closed allowlist, read out of the file that owns it.
+  const shelvesSrc = fs.readFileSync(path.join(ROOT, 'backend/src/utils/catalog-shelves.js'), 'utf8');
+  const serverKeys = [...shelvesSrc.matchAll(/\{ key: '([a-z-]+)'/g)].map((m) => m[1]);
+  eq(serverKeys, cats.map((c) => c.category),
+    'the app asks for exactly the shelves the server allows, in the same order');
+
+  // Every shelf the server names must resolve to catalogue values that the
+  // shipped seed actually uses — otherwise a chip is a guess again, just a
+  // more expensive one.
+  const seed = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'backend/src/data/catalog-seed.json'), 'utf8'),
+  );
+  const realCats = new Set(seed.map((s) => s.category));
+  const realSubs = new Set(seed.map((s) => s.subcategory));
+  const named = [...shelvesSrc.matchAll(/(categories|subcategories): \[([^\]]*)\]/g)]
+    .flatMap((m) => [...m[2].matchAll(/'([^']+)'/g)].map((x) => ({ kind: m[1], value: x[1] })));
+  ok(named.length >= cats.length, 'each shelf names at least one catalogue value');
+  named.forEach((n) => ok(
+    n.kind === 'categories' ? realCats.has(n.value) : realSubs.has(n.value),
+    `shelf value "${n.value}" is a real catalogue ${n.kind === 'categories' ? 'category' : 'subcategory'}`,
+  ));
+
+  // The old keyword survives ONLY as the degradation path for a backend that
+  // predates the shelf filter, so it must still be there and still be a word.
+  cats.forEach((c) => ok(typeof c.term === 'string' && c.term.length > 0,
+    `"${c.category}" keeps a fallback keyword for an older server`));
 
   cats.forEach((c) => ok(hasEnKey(c.key), `"${c.key}" exists in the en dictionary`));
 
@@ -276,19 +308,129 @@ section('category chips');
     'the shop directory reads the shared list rather than its own copy');
   ok(psearchSrc.includes("from '../lib/categories'"),
     'the product search screen reads the shared list too');
+  ok(shopsSrc.includes('goShelf(c.category)'),
+    'the directory chip opens product search on a shelf, not a keyword');
+
+  // The web PWA's own chips are deliberately UNTOUCHED this batch and are still
+  // keywords. Recorded here so the divergence is a stated fact rather than an
+  // accident somebody discovers later.
+  const webCats = [...webShopsSrc.matchAll(/\{ key: '(\w+)', term: '(\w+)', icon: '([^']+)' \}/g)]
+    .map((m) => ({ key: m[1], term: m[2] }));
+  eq(webCats.map((c) => c.term), ['rice', 'milk', 'biscuit', 'soap', 'shampoo'],
+    'the web directory still runs the old keyword chips — a follow-up, not a regression');
 }
 
-section('product search empty state');
+section('the search unit: box then voice');
 {
-  // The empty state is the `!searched` branch. Before this batch it held only
-  // the psearch.start prompt, which reads as a blank page to a shopper who does
-  // not know what to type.
-  const branch = psearchSrc.slice(psearchSrc.indexOf('{!error && !loading && !searched ?'));
-  const emptyState = branch.slice(0, branch.indexOf('{/* SEARCHED, GENUINELY NOTHING */}'));
-  ok(emptyState.includes("t('psearch.start')"), 'the prompt is still there');
-  ok(emptyState.includes('CATEGORIES.map'), 'the category chips are rendered in the empty state');
-  ok(emptyState.includes('pickCategory(c.term)'), 'tapping a chip runs that category as a search');
-  ok(psearchSrc.includes('function pickCategory'), 'the chip handler exists');
+  // The voice control is the zero-literacy, zero-data path and the one thing on
+  // this screen that works for someone who cannot read the box above it, so it
+  // sits directly under the box and is full width. The old screen had a small
+  // mic beside the field on the DIRECTORY and nothing at all here.
+  const boxAt = psearchSrc.indexOf('styles.searchBar');
+  const voiceAt = psearchSrc.indexOf('styles.voiceBtn');
+  const catsAt = psearchSrc.indexOf('CATEGORIES.map');
+  ok(boxAt > -1 && voiceAt > boxAt, 'the voice control is rendered after the text box');
+  ok(catsAt > voiceAt, 'and above the category chips');
+
+  ok(psearchSrc.includes("t('psearch.voiceIn'"),
+    'the control names the language it will listen in');
+  ok(psearchSrc.includes('languageLabel(lang)'),
+    'that language is the language’s own name from LANGUAGES, not a translated string');
+  ok(psearchSrc.includes('voice.supported && voice.localeSupported(lang)'),
+    'it respects the per-language ASR capability flags');
+  ok(/\{canVoice \? \(/.test(psearchSrc),
+    'a device or language that cannot listen renders no control at all');
+  ok(!psearchSrc.includes("t('voice.notInLanguage')"),
+    'and says nothing about it — no nag on a screen the shopper cannot act on');
+
+  const voiceStyle = psearchSrc.slice(psearchSrc.indexOf('  voiceBtn: {'));
+  const minH = voiceStyle.match(/minHeight: (\d+)/);
+  ok(minH && Number(minH[1]) >= 56, 'the control is a large, unmistakable target');
+}
+
+section('the browse surface, in order');
+{
+  // Order on the screen is the order of the source, so read the positions.
+  const again = psearchSrc.indexOf("t('psearch.buyAgain')");
+  const recent = psearchSrc.indexOf("t('psearch.recent')");
+  const browse = psearchSrc.indexOf("t('psearch.browse')");
+  ok(again > -1 && recent > again, 'recent searches come after buy-it-again');
+  ok(browse > recent, 'shop-by-category comes last');
+  ['psearch.buyAgain', 'psearch.recent', 'psearch.clearRecent', 'psearch.browse', 'psearch.voiceIn']
+    .forEach((k) => ok(hasEnKey(k), `"${k}" exists in the en dictionary`));
+
+  // THE GOVERNING RULE: an empty personal section renders NOTHING. Not a
+  // skeleton, not "you have no past orders". Both are guarded on a non-zero
+  // length, and the category chips are guarded on nothing at all.
+  ok(/browsing && buyAgain\.length > 0 \?/.test(psearchSrc),
+    'buy-it-again renders only when it has items');
+  ok(/browsing && recent\.length > 0 \?/.test(psearchSrc),
+    'recent searches render only when there are any');
+  ok(/\{browsing \? \(/.test(psearchSrc),
+    'the category chips are always present — the universal fallback');
+
+  // No per-item price lookup: the brief's hard rule for a screen drawn on 2G.
+  // The sentinel matters: without it a screen with no buy-again section at all
+  // would slice an EMPTY string here and "contains no price" would pass for
+  // precisely the wrong reason.
+  const againBlock = again > -1 && recent > again ? psearchSrc.slice(again, recent) : ' money(';
+  ok(!againBlock.includes('money('), 'buy-it-again shows no price');
+  ok(againBlock.includes("t('psearch.atShop'"), 'but does show which shop it came from');
+
+  ok(psearchSrc.includes('const token = await getToken();'),
+    'buy-it-again is signed-in only and never fires a request without a token');
+}
+
+section('recent searches are local only');
+{
+  const store = fs.readFileSync(
+    path.join(ROOT, 'mobile-app/src/consumer/lib/recentSearchStorage.js'), 'utf8',
+  );
+  ok(store.includes("from 'expo-secure-store'"),
+    'stored in expo-secure-store, which the app already depends on');
+  ok(!/consumerApi|axios|fetch\(/.test(store),
+    'there is no backend behind recent searches and nothing is synced');
+
+  const R = loadPure('mobile-app/src/consumer/lib/recentSearches.js', ['RECENT_MAX', 'TERM_MAX']);
+  eq(R.addRecentTerm([], 'atta'), ['atta'], 'a first term becomes the list');
+  eq(R.addRecentTerm(['dal', 'atta'], 'chai'), ['chai', 'dal', 'atta'], 'newest first');
+  eq(R.addRecentTerm(['dal', 'atta'], 'atta'), ['atta', 'dal'],
+    'a repeat moves to the front rather than duplicating');
+  eq(R.addRecentTerm(['Toor Dal'], 'toor dal'), ['toor dal'],
+    'de-duplication ignores case and keeps the latest spelling');
+  eq(R.addRecentTerm(['a'], '   '), ['a'], 'a blank term changes nothing');
+  eq(R.addRecentTerm(null, 'atta'), ['atta'], 'a missing list is an empty one, not a throw');
+  eq(R.addRecentTerm(['a', 'b', 'c', 'd', 'e', 'f'], 'g').length, R.RECENT_MAX,
+    'the list is capped');
+  eq(R.addRecentTerm([], '  chai   patti '), ['chai patti'], 'whitespace is collapsed');
+  eq(R.cleanTerm('x'.repeat(200)).length, R.TERM_MAX, 'an absurdly long term is capped');
+
+  eq(R.parseRecent(''), [], 'nothing stored reads as an empty list');
+  eq(R.parseRecent('not json'), [], 'a corrupt value reads as an empty list, not a throw');
+  eq(R.parseRecent('{"a":1}'), [], 'a non-array reads as an empty list');
+  eq(R.parseRecent('["atta",5,null,"Atta","dal"]'), ['atta', 'dal'],
+    'junk entries and duplicates are dropped on the way in');
+  eq(R.parseRecent(R.serializeRecent(['atta', 'dal'])), ['atta', 'dal'], 'a round trip is lossless');
+}
+
+section('degrading against an older backend');
+{
+  const apiSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/consumerApi.js'), 'utf8');
+
+  // The backend deploys before the app bundle does, but the app can still meet
+  // a server that has not been updated. Neither new call may then break the
+  // screen.
+  const buyAgain = apiSrc.slice(apiSrc.indexOf('buyAgain:'));
+  ok(/\.catch\(\(\) => \[\]\)/.test(buyAgain.slice(0, 600)),
+    'buy-it-again resolves to an empty list on ANY failure, including a 404');
+
+  const search = apiSrc.slice(apiSrc.indexOf('searchProducts:'));
+  ok(/status === 400 \|\| status === 404 \|\| status === 422/.test(search),
+    'a shelf request refused by an older server is recognised as such');
+  ok(search.includes('fallbackTerm'),
+    'and retried once with the keyword that chip used before shelves existed');
+  ok(/if \(!oldServer \|\| !term\) throw err;/.test(search),
+    'a timeout or a dead radio is NOT retried and surfaces as itself');
 }
 
 section('consumer tabs');

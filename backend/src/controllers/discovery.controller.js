@@ -2,6 +2,7 @@ const { query, withTx } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { normalizeQuery } = require('../utils/search-normalize');
 const { resolveCatalogueLang } = require('../utils/language-registry');
+const { shelfScope } = require('../utils/catalog-shelves');
 const { pickStorefrontCampaign } = require('./promos.controller');
 // Shop availability (batch A) — the ONE definition every surface derives from.
 // Nothing in this file re-implements "is the shop open"; it only joins, reads
@@ -222,16 +223,25 @@ exports.listShops = async (req, res) => {
 
 /**
  * Public, unauthenticated: cross-shop product search. Finds ACTIVE products in
- * LISTED shops whose name matches `q` (localized name OR base English name).
+ * LISTED shops whose name matches `q` (localized name OR base English name)
+ * and/or that sit on the catalogue shelf named by `category`.
  * Every value derived from user input — the search term `q` and the optional
  * `city` — is passed ONLY as a bound parameter and wrapped with wildcards in
  * SQL ('%'||$n||'%'); nothing user-supplied is ever interpolated into the query
  * text, so the endpoint is injection-safe. Mirrors listShops: `is_listed`
  * gating, optional lat/lng great-circle distance (nearest-first), and the
  * catalog_i18n localization join used by getShop / publicCatalog.
+ *
+ * `category` is a SHELF KEY from the closed allowlist in utils/catalog-shelves,
+ * never free text: the route's Joi schema rejects anything else, and the key is
+ * resolved here into the catalogue's own category/subcategory values, which are
+ * then bound as text[] parameters like every other user-derived value. It
+ * filters through products.catalog_item_id, so a shop's hand-entered product
+ * with no catalogue link is honestly absent from a shelf rather than guessed
+ * onto it.
  */
 exports.searchProducts = async (req, res) => {
-  const { q, city, lat, lng } = req.query;
+  const { q, city, lat, lng, category } = req.query;
   const useDistance = lat !== undefined && lng !== undefined;
   const limit = Math.min(50, Math.max(1, req.query.limit || 30));
   const lang = await resolveCatalogueLang(req.query.lang);
@@ -247,8 +257,10 @@ exports.searchProducts = async (req, res) => {
   // Normalize the query the SAME way products.search_text was built: lowercase,
   // punctuation-stripped, colloquial units/number-words mapped ("1 kilo" ->
   // "1 kg"). `tokens` drives a token-wise recall net; `qn` drives whole-phrase,
-  // trigram, and word-similarity (fuzzy) matching.
-  const { normalized: qn, tokens } = normalizeQuery(q);
+  // trigram, and word-similarity (fuzzy) matching. With no `q` at all (a pure
+  // shelf browse) there is nothing to normalize and nothing to rank by.
+  const hasQ = q !== undefined && String(q).trim() !== '';
+  const { normalized: qn, tokens } = hasQ ? normalizeQuery(q) : { normalized: '', tokens: [] };
   const tokenPatterns = tokens.map((t) => `%${t}%`);
 
   const params = [];
@@ -282,10 +294,22 @@ exports.searchProducts = async (req, res) => {
   // Recall net + exact/alias-preferred rank. When the query normalizes to no
   // tokens (e.g. all punctuation), fall back to the old name-ILIKE behaviour so
   // the endpoint never 500s.
-  let matchClause;
-  let rankExact = 'false';
-  let rankSimilarity = '0';
-  if (tokens.length === 0) {
+  //
+  // `matchClause` is null when there is no `q`; `rankExact`/`rankSimilarity` are
+  // null whenever there is nothing to rank BY, which is either of the two
+  // no-token cases. They must stay null rather than becoming the constants
+  // 'false'/'0' they used to be: Postgres reads a bare integer constant in
+  // ORDER BY as a COLUMN POSITION, so `ORDER BY false DESC, 0 DESC, name ASC`
+  // is not "rank everything equally", it is `ERROR: non-integer constant in
+  // ORDER BY` — a 500 that any query of pure punctuation ("???") could already
+  // trigger before this change, because normalizeQuery yields no tokens for it.
+  // Every rank term is now omitted when it is not a real expression.
+  let matchClause = null;
+  let rankExact = null;
+  let rankSimilarity = null;
+  if (!hasQ) {
+    // Pure shelf browse — the category predicate below is the whole filter.
+  } else if (tokens.length === 0) {
     params.push(q);
     const qIdx = `$${params.length}`;
     matchClause = localized
@@ -323,17 +347,45 @@ exports.searchProducts = async (req, res) => {
 
   // `p.is_active` + the join already guarantee the shop has something to sell,
   // so only the suspension half of the publishable rule is needed here.
-  const where = ['p.is_active = true', 's.is_listed = true', NOT_SUSPENDED_SQL('s'), matchClause];
+  const where = ['p.is_active = true', 's.is_listed = true', NOT_SUSPENDED_SQL('s')];
+  if (matchClause) where.push(matchClause);
 
   if (city) {
     params.push(city);
     where.push(`s.city ILIKE '%'||$${params.length}||'%'`);
   }
 
+  // SHELF FILTER. The key was validated against the allowlist by the route, and
+  // is turned into catalogue values HERE, once — a chip can therefore only ever
+  // select a set of real `catalog_items.category` / `.subcategory` values, both
+  // bound as text[] parameters. An empty side of the pair contributes nothing
+  // (it would otherwise be `= ANY('{}')`, which is false for every row and would
+  // make a subcategory-only shelf return nothing at all).
+  let catalogJoin = '';
+  if (category) {
+    const scope = shelfScope(category);
+    const parts = [];
+    if (scope.categories.length) {
+      params.push(scope.categories);
+      parts.push(`ci.category = ANY($${params.length}::text[])`);
+    }
+    if (scope.subcategories.length) {
+      params.push(scope.subcategories);
+      parts.push(`ci.subcategory = ANY($${params.length}::text[])`);
+    }
+    // An INNER join: a product with no catalogue link is not on any shelf, and
+    // pretending otherwise is the keyword-guessing this filter replaces.
+    catalogJoin = 'JOIN catalog_items ci ON ci.id = p.catalog_item_id';
+    where.push(`(${parts.join(' OR ')})`);
+  }
+
   // Rank exact/alias substring matches ABOVE fuzzy-only ones, then by trigram
-  // similarity, then distance (when supplied), then name.
+  // similarity, then distance (when supplied), then name. A rank term that is
+  // not a real SQL expression (no `q`, or a `q` that normalized to nothing) is
+  // left out entirely rather than emitted as a constant — see above.
   let distanceSelect = 'NULL AS distance_km';
-  let orderBy = `${rankExact} DESC, ${rankSimilarity} DESC, name ASC`;
+  const rank = [rankExact, rankSimilarity].filter(Boolean).map((r) => `${r} DESC`);
+  let orderBy = [...rank, 'name ASC'].join(', ');
   if (useDistance) {
     params.push(lat);
     const latIdx = `$${params.length}`;
@@ -342,7 +394,7 @@ exports.searchProducts = async (req, res) => {
     // latitude/longitude are unambiguous (only shops carries them). Cast to
     // double precision so pg returns a JS number, not a numeric string.
     distanceSelect = `CAST(ROUND(CAST(${haversineKm(latIdx, lngIdx)} AS numeric), 1) AS double precision) AS distance_km`;
-    orderBy = `${rankExact} DESC, ${rankSimilarity} DESC, distance_km ASC NULLS LAST, name ASC`;
+    orderBy = [...rank, 'distance_km ASC NULLS LAST', 'name ASC'].join(', ');
   }
 
   params.push(limit);
@@ -355,6 +407,7 @@ exports.searchProducts = async (req, res) => {
             ${distanceSelect}
        FROM products p
        JOIN shops s ON s.id = p.shop_id
+       ${catalogJoin}
        ${i18nJoin}
        ${closureJoin}
       WHERE ${where.join(' AND ')}
