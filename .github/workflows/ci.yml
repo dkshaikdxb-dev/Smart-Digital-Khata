@@ -107,6 +107,14 @@ jobs:
       # the logic underneath them is.
       - name: Consumer app logic tests
         run: node scripts/mobile-consumer-logic.test.mjs
+      # The owner app's More menu routes seven rows into the live web console.
+      # The list used to carry a comment saying the paths were "confirmed
+      # against admin-dashboard/src/pages" — confirmed once, by hand. A page
+      # renamed on the web side would leave a row that opens a 404 inside a
+      # WebView, and nothing would say so. This checks the relationship instead
+      # of describing it.
+      - name: Owner app logic tests
+        run: node scripts/mobile-owner-logic.test.mjs
 
   docker:
     name: Docker build sanity

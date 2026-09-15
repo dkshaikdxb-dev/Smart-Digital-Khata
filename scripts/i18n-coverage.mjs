@@ -170,7 +170,21 @@ const FLOORS = {
   // Nothing else in this file moved; hi/bn/mr/gu/ur keep their floors, and both
   // owner rows are untouched.
   consumer: { hi: 341, bn: 341, ta: 341, te: 341, kn: 341, ml: 341, mr: 341, gu: 341, ur: 341 },
-  owner: { hi: 325, bn: 316, ta: 320, te: 320, kn: 320, ml: 320, mr: 316, gu: 316, ur: 320 },
+  //
+  // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'
+  // and 'more.transactions' — for the Staff / Suppliers / Transactions rows the
+  // app could not reach at all. None of these values was authored here: each is
+  // the string the WEB console already shows for that same page, copied
+  // verbatim (nav.staff and nav.transactions from admin-dashboard's dictionary,
+  // sup.nav from i18nSupply, and the bn/gu/mr ones from regional-i18n.json), so
+  // the app and the site say the same word and nothing new needs review.
+  //
+  // bn/gu/mr gain two of the three, not three: 'sup.nav' has no Bengali,
+  // Gujarati or Marathi anywhere in the codebase, so "Suppliers" falls back to
+  // English for them until docs/i18n-web/web-{bn,gu,mr}.csv comes back. That is
+  // not a regression — the row did not exist for them before, and every string
+  // on the page it opens is already English for these three.
+  owner: { hi: 328, bn: 318, ta: 323, te: 323, kn: 323, ml: 323, mr: 318, gu: 318, ur: 323 },
 };
 
 /* ------------------------------------------------------- dictionary reading */

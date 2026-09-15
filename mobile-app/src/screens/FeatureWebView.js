@@ -34,9 +34,18 @@ const FLAVOR = Constants.expoConfig?.extra?.flavor || 'owner';
 // `skhata_role`; consumer web (lib/customerApi.js) reads `ckhata_token`. The two
 // flavors deliberately use different keys so a device that somehow has both never
 // crosses tokens.
+//
+// `roleKey` is where the SIGNED-IN role is kept. It used to be a constant
+// 'owner' here, which told the web app that every signed-in user was a shop
+// OWNER — so a STAFF member opening a web feature got the owner-only console:
+// /staff would render the staff-management screen to someone who may not manage
+// staff. The API still refused the calls (the token is what the server checks,
+// not this string), so nothing could actually be done — but the person was
+// shown a screen that then failed, which is its own kind of wrong. The real
+// role is in SecureStore next to the token; read it.
 const AUTH = {
-  owner: { secureKey: 'skhata_token', webToken: 'skhata_token', webRole: 'skhata_role', role: 'owner' },
-  consumer: { secureKey: 'skhata_consumer_token', webToken: 'ckhata_token', webRole: null, role: null },
+  owner: { secureKey: 'skhata_token', webToken: 'skhata_token', webRole: 'skhata_role', roleKey: 'skhata_role', fallbackRole: 'owner' },
+  consumer: { secureKey: 'skhata_consumer_token', webToken: 'ckhata_token', webRole: null, roleKey: null, fallbackRole: null },
 };
 
 // Restrict in-WebView navigation to the target origin (scheme + host), any path.
@@ -113,12 +122,17 @@ function looksLikeDownload(url) {
 // seeding localStorage BEFORE any page script runs. Token is JSON-encoded so it
 // can never break out of the string. Returns a no-op (that still yields `true`
 // for iOS) when there is no token — we never inject an empty/blank session.
-function buildInjectedJS(token) {
+function buildInjectedJS(token, role) {
   const cfg = AUTH[FLAVOR] || AUTH.owner;
   if (!token) return 'true;';
   const sets = [`window.localStorage.setItem(${JSON.stringify(cfg.webToken)}, ${JSON.stringify(token)});`];
-  if (cfg.webRole && cfg.role) {
-    sets.push(`window.localStorage.setItem(${JSON.stringify(cfg.webRole)}, ${JSON.stringify(cfg.role)});`);
+  // The stored role, or this flavor's default when it was never written (an
+  // older install that signed in before the role was kept). Never a role the
+  // person does not have: the fallback is the same value this used to hardcode,
+  // so nothing regresses for an owner.
+  const effective = role || cfg.fallbackRole;
+  if (cfg.webRole && effective) {
+    sets.push(`window.localStorage.setItem(${JSON.stringify(cfg.webRole)}, ${JSON.stringify(effective)});`);
   }
   return `(function(){try{${sets.join('')}}catch(e){}})(); true;`;
 }
@@ -153,13 +167,21 @@ export default function FeatureWebView(props) {
     const cfg = AUTH[FLAVOR] || AUTH.owner;
     (async () => {
       let token = null;
+      let role = null;
       try {
         token = await SecureStore.getItemAsync(cfg.secureKey);
       } catch (e) {
         token = null;
       }
+      if (cfg.roleKey) {
+        try {
+          role = await SecureStore.getItemAsync(cfg.roleKey);
+        } catch (e) {
+          role = null;
+        }
+      }
       if (!alive) return;
-      setInjectedJS(buildInjectedJS(token));
+      setInjectedJS(buildInjectedJS(token, role));
       setReady(true);
     })();
     return () => { alive = false; };
