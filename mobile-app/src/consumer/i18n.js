@@ -94,7 +94,12 @@ export const LANG_CAPS = {
 // hundreds of strings for Hindi and the three beta languages, and the shopkeeper
 // app gained a hundred and ninety-seven each for exactly these five, taking them
 // from thirty-eight per cent to ninety-eight. Every one of those was written by
-// a model and read by nobody.
+// a model and read by nobody. THIS file then did the same for ta/te/kn/ml, a
+// hundred and twelve strings each in batch DRAVIDIAN-CONSUMER, taking the
+// shopper app from sixty-seven per cent to ninety-nine for those four — money,
+// shop hours, errors and the account statement included. So the four Dravidian
+// languages are now machine-authored on BOTH sides, and their review sheet is
+// docs/i18n-review-consumer-dravidian.md.
 //
 // Marking only bn/gu/mr now would tell a Tamil shopkeeper their app is reviewed
 // when it is the least reviewed of all — it changed the most and most recently.
@@ -1661,6 +1666,147 @@ const ta = {
   'shopdetail.brand': 'பிராண்ட்',
   'shopdetail.size': 'அளவு',
   'shopdetail.noResults': 'பொருந்தும் பொருட்கள் இல்லை.',
+
+  // --- batch DRAVIDIAN-CONSUMER: MACHINE-AUTHORED, NOT YET READ BY A NATIVE
+  // SPEAKER ---
+  // Every string below this line was written by the build in batch
+  // DRAVIDIAN-CONSUMER. No native Tamil speaker has read any of it. It ships
+  // because the alternative was an English screen in front of a Tamil-speaking
+  // shopper, and plain, unreviewed Tamil beats that — but treat every line as
+  // provisional until a reviewer signs it off. The review sheet is
+  // docs/i18n-review-consumer-dravidian.md, generated from these exact values
+  // and ordered worst-first: money, khata and order strings sit at the top of
+  // it, because those are the ones that cost a shopper money when they are
+  // wrong.
+  //
+  // Where the same English already had a Tamil translation elsewhere in this
+  // repo — the owner dictionary (mobile-app/src/i18n.js) — that wording was
+  // reused verbatim rather than re-invented, so the shopper and the shopkeeper
+  // read the same words about the same order. That covers the shop-hours
+  // lines, the ready-time lines and '{item} — removed'.
+  //
+  // Money the shop HOLDS for this shopper and money the shopper OWES the shop
+  // never share a word here. 'coedit.prepaid' and 'ref.creditBalance' use this
+  // language's in-your-favour word; 'coedit.credit', 'account.prepaySub' and
+  // the khata strings use its dues word; the two were read against each other
+  // before this landed.
+  //
+  // 'upd.runtime' and 'upd.channel' are deliberately absent and fall back to
+  // en. They label the two Expo build tokens on the update card, whose VALUES
+  // are themselves English identifiers; a transliterated label beside one of
+  // those would read as noise, so no translation is better than a bad one.
+  'txn.upi': 'UPI செலுத்தியது',
+  'txn.adjustment': 'கடை சரிசெய்தது',
+  'coedit.title': 'கடை உங்கள் ஆர்டரைக் குறைத்துள்ளது',
+  'coedit.intro': '{shop} இல் நீங்கள் கேட்ட எல்லாப் பொருளும் இல்லை.',
+  'coedit.removed': '{item} — அகற்றப்பட்டது',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'உங்கள் ஆர்டர் இப்போது {now} ஆகிறது.',
+  'coedit.wasSubtotal': 'முதலில் இருந்த பொருட்களின் மொத்தம் {was}',
+  'coedit.credit': 'இந்தக் கடையில் உங்கள் கணக்கில் இருந்து {amount} குறைக்கப்பட்டுள்ளது.',
+  'coedit.prepaid': 'நீங்கள் ஏற்கனவே பணம் கட்டிவிட்டீர்கள். {amount} இந்தக் கடையில் உங்களுக்கு வரவாக இருக்கும் — இங்கே அடுத்த ஆர்டரில் குறையும்.',
+  'coedit.cash': 'எடுக்கும்போது {now} கொடுங்கள் — {amount} மதிப்புள்ள பொருட்கள் நீக்கப்பட்டன.',
+  'voice.search': 'குரலில் தேடு',
+  'voice.hint.permission': 'மைக் அனுமதி இல்லை. குரலில் தேட அமைப்புகளில் அதை இயக்குங்கள்.',
+  'voice.hint.no-match': 'புரியவில்லை. மீண்டும் சொல்லுங்கள்.',
+  'voice.hint.network': 'குரல் தேடலுக்கு இணையம் தேவை. உங்கள் இணைப்பைப் பாருங்கள்.',
+  'voice.hint.unavailable': 'குரல் தேடல் இப்போது கிடைக்கவில்லை.',
+  'voice.notInLanguage': 'இந்த மொழியில் குரல் தேடல் இன்னும் கிடைக்கவில்லை.',
+  'account.prepay': 'முன்பணம் செலுத்து',
+  'account.prepaySub': 'வெப் ஆப்பில் முன்பணம் போடுங்கள், பாக்கியைத் தீருங்கள்',
+  'account.dataSaverSub': 'நெட் மெதுவாக இருந்தால் கூடுதல் படங்களைத் தவிர்க்கும்',
+  'open.open': 'திறந்திருக்கிறது',
+  'open.closed': 'மூடியிருக்கிறது',
+  'open.closedPill': 'மூடியிருக்கிறது',
+  'open.todayAt': '{time} மணிக்கு',
+  'open.tomorrowAt': 'நாளை {time} மணிக்கு',
+  'open.stateClosed': 'மூடியிருக்கிறது — கடை இப்போது அணைத்து வைக்கப்பட்டுள்ளது',
+  'open.statePaused': 'சிறிது நேரம் நிறுத்தம் — {when} திரும்பும்',
+  'open.stateHoliday': 'இன்று மூடியிருக்கிறது — {when} திறக்கும்',
+  'open.stateHolidayReason': 'இன்று மூடியிருக்கிறது ({reason}) — {when} திறக்கும்',
+  'open.stateHours': 'மூடியிருக்கிறது — {when} திறக்கும்',
+  'open.bannerTitle': 'இந்தக் கடை இப்போது மூடியிருக்கிறது',
+  'open.browseOnly': 'நீங்கள் பார்க்கலாம் — கடை திறந்ததும் மீண்டும் ஆர்டர் செய்யலாம்.',
+  'open.cannotOrder': 'மூடியிருக்கிறது — ஆர்டர் செய்ய முடியாது',
+  'open.cartBlocked': 'இந்தக் கடை இப்போது மூடியிருக்கிறது, அதனால் ஆர்டர் செய்ய முடியாது. உங்கள் கூடை சேமிக்கப்பட்டுள்ளது.',
+  'eta.readyBy': '{time} மணிக்குள் தயார்',
+  'eta.takingLonger': 'கொஞ்சம் அதிக நேரம் ஆகிறது',
+  'eta.takingLongerHelp': '{time} மணிக்குள் தயாராக வேண்டியது. இன்னும் அதிக நேரம் ஆகாது.',
+  'eta.noPromise': 'தயாராகும் நேரம் சொல்லப்படவில்லை',
+  'cart.restoring': 'உங்கள் கூடை வருகிறது…',
+  'cart.switchShopTitle': 'வேறு கடையில் கூடை',
+  'cart.switchShopClear': 'நீக்கிவிட்டு இங்கே தொடங்கு',
+  'psearch.title': 'பொருளைத் தேடு',
+  'psearch.failedTitle': 'தேடல் முடியவில்லை',
+  'psearch.voiceIn': '{language} இல் கேட்கும்',
+  'psearch.buyAgain': 'மீண்டும் வாங்கு',
+  'psearch.recent': 'சமீபத்தில் தேடியவை',
+  'psearch.clearRecent': 'அழி',
+  'psearch.browse': 'வகை வாரியாக வாங்கு',
+  'shops.heroTitle': 'இன்று உங்களுக்கு என்ன வேண்டும்?',
+  'shops.failedTitle': 'கடைகளை ஏற்ற முடியவில்லை',
+  'shopdetail.failedTitle': 'இந்தக் கடையை ஏற்ற முடியவில்லை',
+  'orders.failedTitle': 'உங்கள் ஆர்டர்களை ஏற்ற முடியவில்லை',
+  'err.offline': 'இப்போது இணையம் இல்லை. இணைப்பைப் பார்த்து மீண்டும் முயற்சிக்கவும்.',
+  'err.slow': 'நெட் மிக மெதுவாக இருப்பதால் அது முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+  'err.server': 'எங்கள் பக்கம் ஏதோ தவறு. கொஞ்ச நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.',
+  'err.notFound': 'அது இனி இல்லை.',
+  'err.notAllowed': 'இதை நீங்கள் திறக்க முடியாது.',
+  'err.signedOut': 'நீங்கள் வெளியேற்றப்பட்டீர்கள். மீண்டும் உள்நுழையவும்.',
+  'err.tooMany': 'அதிக முறை முயற்சித்தாகிவிட்டது. ஒரு நிமிடம் கழித்து மீண்டும் முயற்சிக்கவும்.',
+  'err.badRequest': 'அதில் ஏதோ சரியில்லை. பார்த்துவிட்டு மீண்டும் முயற்சிக்கவும்.',
+  'err.conflict': 'அதை இப்போது செய்ய முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+  'err.generic': 'ஏதோ தவறாகிவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+  'account.gender': 'பாலினம்',
+  'account.genderUnset': 'குறிப்பிடவில்லை',
+  'account.genderMale': 'ஆண்',
+  'account.genderFemale': 'பெண்',
+  'account.genderOther': 'மற்றவை',
+  'account.genderPreferNot': 'சொல்ல விரும்பவில்லை',
+  'account.dob': 'பிறந்த தேதி',
+  'account.phoneReadonly': 'ஃபோன் எண்தான் உங்கள் லாகின், இங்கே மாற்ற முடியாது.',
+  'stmt.title': 'கணக்கு அறிக்கை',
+  'stmt.subtitle': 'தொடக்க இருப்பு, தேர்ந்த காலத்தின் தேதிவாரியான பதிவுகள், முடிவு இருப்பு.',
+  'stmt.pickShop': 'கடையைத் தேர்ந்தெடுங்கள்',
+  'stmt.allShops': 'எல்லாக் கடைகளும் (சேர்த்து)',
+  'stmt.from': 'முதல்',
+  'stmt.to': 'வரை',
+  'stmt.view': 'பார்',
+  'stmt.opening': 'தொடக்க இருப்பு',
+  'stmt.closing': 'முடிவு இருப்பு',
+  'stmt.totalPurchases': 'மொத்த வாங்குதல்',
+  'stmt.totalPaid': 'மொத்தம் செலுத்தியது',
+  'stmt.totalAdjusted': 'கடை சரிசெய்தது',
+  'stmt.noData': 'இந்த தேதி வரம்பில் பதிவுகள் இல்லை.',
+  'stmt.rangeError': '"முதல்" தேதி "வரை" தேதிக்கு முன்பாகவோ அதே நாளாகவோ இருக்க வேண்டும்.',
+  'stmt.loadError': 'அறிக்கையை ஏற்ற முடியவில்லை.',
+  'stmt.combined': 'எல்லாம் சேர்த்து மொத்தம்',
+  'ref.creditBalance': 'உங்கள் பரிந்துரை வரவு',
+  'ref.activatedOf': '{n} இல் {a} செயல்படுத்தப்பட்டது',
+  'upd.title': 'ஆப் பதிப்பு & புதுப்பிப்புகள்',
+  'upd.sub': 'இந்த ஃபோனில் ஆப்பின் எந்தப் பதிப்பு இயங்குகிறது.',
+  'upd.embedded': 'ஆப்புடன் வந்த பதிப்பு — புதுப்பிக்கப்படவில்லை',
+  'upd.downloaded': 'பதிவிறக்கிய புதுப்பிப்பு இயங்குகிறது',
+  'upd.bundle': 'பதிப்பு',
+  'upd.builtOn': 'எவ்வளவு பழையது',
+  'upd.unknown': 'தெரியவில்லை',
+  'upd.ageNow': 'இப்போதுதான்',
+  'upd.ageMinutes': '{n} நிமிடம் பழையது',
+  'upd.ageHours': '{n} மணி நேரம் பழையது',
+  'upd.ageDays': '{n} நாள் பழையது',
+  'upd.check': 'இப்போதே புதுப்பிப்பைப் பார்',
+  'upd.checking': 'பார்க்கிறது…',
+  'upd.upToDate': 'உங்களிடம் ஏற்கனவே புதிய பதிப்பு உள்ளது.',
+  'upd.reloading': 'புதிய பதிப்பு பதிவிறக்கப்பட்டது. ஆப் மீண்டும் தொடங்குகிறது…',
+  'upd.failed': 'புதுப்பிப்பைப் பார்க்க முடியவில்லை. இணையத்தைப் பார்த்து மீண்டும் முயற்சிக்கவும்.',
+  'upd.disabled': 'இந்த ஆப்பில் புதுப்பிப்புகள் அணைக்கப்பட்டுள்ளன.',
+  'account.manage': 'நிர்வகி',
+  'account.dobInvalid': 'பிறந்த தேதியை YYYY-MM-DD வடிவத்தில் எழுதுங்கள்.',
+  'stmt.last30': 'கடந்த 30 நாட்கள்',
+  'stmt.last90': 'கடந்த 90 நாட்கள்',
+  'stmt.badDate': 'இரண்டு தேதிகளையும் YYYY-MM-DD வடிவத்தில் எழுதுங்கள்.',
+  'stmt.exportOnWeb': 'CSV பதிவிறக்கு அல்லது அச்சிடு',
+  'stmt.exportOnWebSub': 'கோப்பைச் சேமிக்கவும் அச்சிடவும் வெப் ஆப் தேவை. இது அதை நீங்கள் உள்நுழைந்த நிலையிலேயே திறக்கும்.',
 };
 
 const te = {
@@ -1930,6 +2076,147 @@ const te = {
   'shopdetail.brand': 'బ్రాండ్',
   'shopdetail.size': 'సైజు',
   'shopdetail.noResults': 'సరిపోలే వస్తువులు లేవు.',
+
+  // --- batch DRAVIDIAN-CONSUMER: MACHINE-AUTHORED, NOT YET READ BY A NATIVE
+  // SPEAKER ---
+  // Every string below this line was written by the build in batch
+  // DRAVIDIAN-CONSUMER. No native Telugu speaker has read any of it. It ships
+  // because the alternative was an English screen in front of a
+  // Telugu-speaking shopper, and plain, unreviewed Telugu beats that — but
+  // treat every line as provisional until a reviewer signs it off. The review
+  // sheet is docs/i18n-review-consumer-dravidian.md, generated from these
+  // exact values and ordered worst-first: money, khata and order strings sit
+  // at the top of it, because those are the ones that cost a shopper money
+  // when they are wrong.
+  //
+  // Where the same English already had a Telugu translation elsewhere in this
+  // repo — the owner dictionary (mobile-app/src/i18n.js) — that wording was
+  // reused verbatim rather than re-invented, so the shopper and the shopkeeper
+  // read the same words about the same order. That covers the shop-hours
+  // lines, the ready-time lines and '{item} — removed'.
+  //
+  // Money the shop HOLDS for this shopper and money the shopper OWES the shop
+  // never share a word here. 'coedit.prepaid' and 'ref.creditBalance' use this
+  // language's in-your-favour word; 'coedit.credit', 'account.prepaySub' and
+  // the khata strings use its dues word; the two were read against each other
+  // before this landed.
+  //
+  // 'upd.runtime' and 'upd.channel' are deliberately absent and fall back to
+  // en. They label the two Expo build tokens on the update card, whose VALUES
+  // are themselves English identifiers; a transliterated label beside one of
+  // those would read as noise, so no translation is better than a bad one.
+  'txn.upi': 'UPI చెల్లింపు',
+  'txn.adjustment': 'దుకాణం చేసిన సర్దుబాటు',
+  'coedit.title': 'దుకాణం మీ ఆర్డర్‌ను తగ్గించింది',
+  'coedit.intro': '{shop} వద్ద మీరు అడిగిన సరుకులు అన్నీ లేవు.',
+  'coedit.removed': '{item} — తీసివేయబడింది',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'మీ ఆర్డర్ ఇప్పుడు {now} అవుతుంది.',
+  'coedit.wasSubtotal': 'మొదట ఉన్న సరుకుల మొత్తం {was}',
+  'coedit.credit': 'ఈ దుకాణంలో మీ ఖాతా నుండి {amount} తగ్గించారు.',
+  'coedit.prepaid': 'మీరు ఇప్పటికే చెల్లించారు. {amount} ఈ దుకాణంలో మీకు జమగా ఉంటుంది — ఇక్కడ మీ తర్వాతి ఆర్డర్‌లో తగ్గుతుంది.',
+  'coedit.cash': 'తీసుకునేటప్పుడు {now} ఇవ్వండి — {amount} విలువైన సరుకులు తీసేశారు.',
+  'voice.search': 'మాట్లాడి వెతుకు',
+  'voice.hint.permission': 'మైక్ అనుమతి లేదు. మాట్లాడి వెతకడానికి సెట్టింగ్స్‌లో దాన్ని ఆన్ చేయండి.',
+  'voice.hint.no-match': 'అర్థం కాలేదు. మళ్లీ చెప్పండి.',
+  'voice.hint.network': 'మాట్లాడి వెతకడానికి ఇంటర్నెట్ కావాలి. మీ కనెక్షన్ చూడండి.',
+  'voice.hint.unavailable': 'మాట్లాడి వెతకడం ఇప్పుడు అందుబాటులో లేదు.',
+  'voice.notInLanguage': 'ఈ భాషలో మాట్లాడి వెతకడం ఇంకా అందుబాటులో లేదు.',
+  'account.prepay': 'ముందస్తుగా చెల్లించు',
+  'account.prepaySub': 'వెబ్ యాప్‌లో ముందుగా డబ్బు వేయండి, బాకీ తీర్చండి',
+  'account.dataSaverSub': 'నెట్ నెమ్మదిగా ఉంటే అదనపు ఫోటోలు తీసుకురాదు',
+  'open.open': 'తెరిచి ఉంది',
+  'open.closed': 'మూసి ఉంది',
+  'open.closedPill': 'మూసి ఉంది',
+  'open.todayAt': '{time}కి',
+  'open.tomorrowAt': 'రేపు {time}కి',
+  'open.stateClosed': 'మూసి ఉంది — దుకాణం ఇప్పుడు ఆపి ఉంచారు',
+  'open.statePaused': 'కాసేపు ఆపారు — {when} తిరిగి',
+  'open.stateHoliday': 'ఈరోజు మూసి ఉంది — {when} మళ్లీ తెరుస్తారు',
+  'open.stateHolidayReason': 'ఈరోజు మూసి ఉంది ({reason}) — {when} మళ్లీ తెరుస్తారు',
+  'open.stateHours': 'మూసి ఉంది — {when} తెరుస్తారు',
+  'open.bannerTitle': 'ఈ దుకాణం ఇప్పుడు మూసి ఉంది',
+  'open.browseOnly': 'మీరు చూడవచ్చు — దుకాణం తెరిచాక మళ్లీ ఆర్డర్ చేయవచ్చు.',
+  'open.cannotOrder': 'మూసి ఉంది — ఆర్డర్ చేయలేరు',
+  'open.cartBlocked': 'ఈ దుకాణం ఇప్పుడు మూసి ఉంది, అందుకే ఆర్డర్ చేయలేరు. మీ బుట్ట భద్రంగా ఉంది.',
+  'eta.readyBy': '{time}కల్లా సిద్ధం',
+  'eta.takingLonger': 'కొంచెం ఎక్కువ సమయం పడుతోంది',
+  'eta.takingLongerHelp': '{time}కల్లా అవ్వాల్సింది. ఇంక ఎక్కువ ఆలస్యం కాదు.',
+  'eta.noPromise': 'సిద్ధమయ్యే సమయం చెప్పలేదు',
+  'cart.restoring': 'మీ బుట్ట వస్తోంది…',
+  'cart.switchShopTitle': 'వేరే దుకాణంలో కార్ట్',
+  'cart.switchShopClear': 'తీసేసి ఇక్కడ మొదలుపెట్టు',
+  'psearch.title': 'వస్తువు వెతుకు',
+  'psearch.failedTitle': 'వెతకడం పూర్తి కాలేదు',
+  'psearch.voiceIn': '{language} లో వింటుంది',
+  'psearch.buyAgain': 'మళ్లీ కొను',
+  'psearch.recent': 'ఇటీవల వెతికినవి',
+  'psearch.clearRecent': 'తొలగించు',
+  'psearch.browse': 'వర్గం వారీగా కొను',
+  'shops.heroTitle': 'ఈరోజు మీకు ఏం కావాలి?',
+  'shops.failedTitle': 'దుకాణాలు లోడ్ కాలేదు',
+  'shopdetail.failedTitle': 'ఈ దుకాణం లోడ్ కాలేదు',
+  'orders.failedTitle': 'మీ ఆర్డర్లు లోడ్ కాలేదు',
+  'err.offline': 'ఇప్పుడు ఇంటర్నెట్ లేదు. కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.',
+  'err.slow': 'నెట్ చాలా నెమ్మదిగా ఉండటంతో అది పూర్తి కాలేదు. మళ్లీ ప్రయత్నించండి.',
+  'err.server': 'మా వైపు ఏదో పొరపాటు. కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.',
+  'err.notFound': 'అది ఇక లేదు.',
+  'err.notAllowed': 'దీన్ని మీరు తెరవలేరు.',
+  'err.signedOut': 'మీరు సైన్ అవుట్ అయ్యారు. మళ్లీ సైన్ ఇన్ చేయండి.',
+  'err.tooMany': 'చాలాసార్లు ప్రయత్నించారు. ఒక నిమిషం ఆగి మళ్లీ ప్రయత్నించండి.',
+  'err.badRequest': 'అందులో ఏదో సరిగా లేదు. చూసి మళ్లీ ప్రయత్నించండి.',
+  'err.conflict': 'అది ఇప్పుడు చేయలేకపోయాం. మళ్లీ ప్రయత్నించండి.',
+  'err.generic': 'ఏదో పొరపాటు జరిగింది. మళ్లీ ప్రయత్నించండి.',
+  'account.gender': 'లింగం',
+  'account.genderUnset': 'ఇవ్వలేదు',
+  'account.genderMale': 'పురుషుడు',
+  'account.genderFemale': 'స్త్రీ',
+  'account.genderOther': 'ఇతర',
+  'account.genderPreferNot': 'చెప్పదలచుకోలేదు',
+  'account.dob': 'పుట్టిన తేదీ',
+  'account.phoneReadonly': 'ఫోన్ నంబరే మీ లాగిన్, ఇక్కడ మార్చలేరు.',
+  'stmt.title': 'ఖాతా స్టేట్‌మెంట్',
+  'stmt.subtitle': 'ప్రారంభ నిల్వ, ఎంచుకున్న కాలంలోని తేదీల వారీ ఎంట్రీలు, చివరి నిల్వ.',
+  'stmt.pickShop': 'దుకాణం ఎంచుకోండి',
+  'stmt.allShops': 'అన్ని దుకాణాలు (కలిపి)',
+  'stmt.from': 'నుండి',
+  'stmt.to': 'వరకు',
+  'stmt.view': 'చూడు',
+  'stmt.opening': 'ప్రారంభ నిల్వ',
+  'stmt.closing': 'చివరి నిల్వ',
+  'stmt.totalPurchases': 'మొత్తం కొనుగోలు',
+  'stmt.totalPaid': 'మొత్తం చెల్లింపు',
+  'stmt.totalAdjusted': 'దుకాణం చేసిన సర్దుబాటు',
+  'stmt.noData': 'ఈ తేదీల మధ్య ఎంట్రీలు లేవు.',
+  'stmt.rangeError': '"నుండి" తేదీ "వరకు" తేదీ కంటే ముందు లేదా అదే రోజు కావాలి.',
+  'stmt.loadError': 'స్టేట్‌మెంట్ లోడ్ కాలేదు.',
+  'stmt.combined': 'అన్నీ కలిపి మొత్తం',
+  'ref.creditBalance': 'మీ రిఫరల్ జమ',
+  'ref.activatedOf': '{n} లో {a} యాక్టివ్ అయ్యారు',
+  'upd.title': 'యాప్ వెర్షన్ & అప్‌డేట్లు',
+  'upd.sub': 'ఈ ఫోన్‌లో యాప్ ఏ వెర్షన్ నడుస్తోంది.',
+  'upd.embedded': 'యాప్‌తో వచ్చిన వెర్షన్ — ఎప్పుడూ అప్‌డేట్ కాలేదు',
+  'upd.downloaded': 'డౌన్‌లోడ్ చేసిన అప్‌డేట్ నడుస్తోంది',
+  'upd.bundle': 'వెర్షన్',
+  'upd.builtOn': 'ఎంత పాతది',
+  'upd.unknown': 'తెలియదు',
+  'upd.ageNow': 'ఇప్పుడే',
+  'upd.ageMinutes': '{n} నిమిషాల పాతది',
+  'upd.ageHours': '{n} గంటల పాతది',
+  'upd.ageDays': '{n} రోజుల పాతది',
+  'upd.check': 'ఇప్పుడే అప్‌డేట్ చూడు',
+  'upd.checking': 'చూస్తోంది…',
+  'upd.upToDate': 'మీ దగ్గర ఇప్పటికే కొత్త వెర్షన్ ఉంది.',
+  'upd.reloading': 'కొత్త వెర్షన్ డౌన్‌లోడ్ అయింది. యాప్ మళ్లీ మొదలవుతోంది…',
+  'upd.failed': 'అప్‌డేట్ చూడలేకపోయాం. ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి.',
+  'upd.disabled': 'ఈ యాప్‌లో అప్‌డేట్లు ఆపి ఉన్నాయి.',
+  'account.manage': 'నిర్వహించు',
+  'account.dobInvalid': 'పుట్టిన తేదీని YYYY-MM-DD రూపంలో రాయండి.',
+  'stmt.last30': 'గత 30 రోజులు',
+  'stmt.last90': 'గత 90 రోజులు',
+  'stmt.badDate': 'రెండు తేదీలనూ YYYY-MM-DD రూపంలో రాయండి.',
+  'stmt.exportOnWeb': 'CSV డౌన్‌లోడ్ చేయి లేదా ప్రింట్ చేయి',
+  'stmt.exportOnWebSub': 'ఫైల్ సేవ్ చేయడానికి, ప్రింట్ చేయడానికి వెబ్ యాప్ కావాలి. ఇది దాన్ని మీరు సైన్ ఇన్ అయిన స్థితిలోనే తెరుస్తుంది.',
 };
 
 const kn = {
@@ -2199,6 +2486,147 @@ const kn = {
   'shopdetail.brand': 'ಬ್ರ್ಯಾಂಡ್',
   'shopdetail.size': 'ಗಾತ್ರ',
   'shopdetail.noResults': 'ಹೊಂದುವ ವಸ್ತುಗಳಿಲ್ಲ.',
+
+  // --- batch DRAVIDIAN-CONSUMER: MACHINE-AUTHORED, NOT YET READ BY A NATIVE
+  // SPEAKER ---
+  // Every string below this line was written by the build in batch
+  // DRAVIDIAN-CONSUMER. No native Kannada speaker has read any of it. It ships
+  // because the alternative was an English screen in front of a
+  // Kannada-speaking shopper, and plain, unreviewed Kannada beats that — but
+  // treat every line as provisional until a reviewer signs it off. The review
+  // sheet is docs/i18n-review-consumer-dravidian.md, generated from these
+  // exact values and ordered worst-first: money, khata and order strings sit
+  // at the top of it, because those are the ones that cost a shopper money
+  // when they are wrong.
+  //
+  // Where the same English already had a Kannada translation elsewhere in this
+  // repo — the owner dictionary (mobile-app/src/i18n.js) — that wording was
+  // reused verbatim rather than re-invented, so the shopper and the shopkeeper
+  // read the same words about the same order. That covers the shop-hours
+  // lines, the ready-time lines and '{item} — removed'.
+  //
+  // Money the shop HOLDS for this shopper and money the shopper OWES the shop
+  // never share a word here. 'coedit.prepaid' and 'ref.creditBalance' use this
+  // language's in-your-favour word; 'coedit.credit', 'account.prepaySub' and
+  // the khata strings use its dues word; the two were read against each other
+  // before this landed.
+  //
+  // 'upd.runtime' and 'upd.channel' are deliberately absent and fall back to
+  // en. They label the two Expo build tokens on the update card, whose VALUES
+  // are themselves English identifiers; a transliterated label beside one of
+  // those would read as noise, so no translation is better than a bad one.
+  'txn.upi': 'UPI ಪಾವತಿ',
+  'txn.adjustment': 'ಅಂಗಡಿಯ ಹೊಂದಾಣಿಕೆ',
+  'coedit.title': 'ಅಂಗಡಿ ನಿಮ್ಮ ಆರ್ಡರ್ ಕಡಿಮೆ ಮಾಡಿದೆ',
+  'coedit.intro': '{shop} ನಲ್ಲಿ ನೀವು ಕೇಳಿದ ಎಲ್ಲಾ ಸಾಮಾನು ಇರಲಿಲ್ಲ.',
+  'coedit.removed': '{item} — ತೆಗೆಯಲಾಗಿದೆ',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'ನಿಮ್ಮ ಆರ್ಡರ್ ಈಗ {now} ಆಗುತ್ತದೆ.',
+  'coedit.wasSubtotal': 'ಮೊದಲಿದ್ದ ಸಾಮಾನುಗಳ ಒಟ್ಟು {was}',
+  'coedit.credit': 'ಈ ಅಂಗಡಿಯಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಯಿಂದ {amount} ಕಡಿಮೆ ಮಾಡಲಾಗಿದೆ.',
+  'coedit.prepaid': 'ನೀವು ಈಗಾಗಲೇ ಪಾವತಿಸಿದ್ದೀರಿ. {amount} ಈ ಅಂಗಡಿಯಲ್ಲಿ ನಿಮಗೆ ಜಮೆ ಇರುತ್ತದೆ — ಇಲ್ಲಿ ನಿಮ್ಮ ಮುಂದಿನ ಆರ್ಡರ್‌ನಲ್ಲಿ ಕಡಿಮೆಯಾಗುತ್ತದೆ.',
+  'coedit.cash': 'ತೆಗೆದುಕೊಳ್ಳುವಾಗ {now} ಕೊಡಿ — {amount} ಬೆಲೆಯ ಸಾಮಾನು ತೆಗೆಯಲಾಗಿದೆ.',
+  'voice.search': 'ಧ್ವನಿಯಿಂದ ಹುಡುಕಿ',
+  'voice.hint.permission': 'ಮೈಕ್ ಅನುಮತಿ ಇಲ್ಲ. ಧ್ವನಿಯಿಂದ ಹುಡುಕಲು ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ ಅದನ್ನು ಆನ್ ಮಾಡಿ.',
+  'voice.hint.no-match': 'ಅರ್ಥವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಹೇಳಿ.',
+  'voice.hint.network': 'ಧ್ವನಿ ಹುಡುಕಾಟಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ನಿಮ್ಮ ಕನೆಕ್ಷನ್ ನೋಡಿ.',
+  'voice.hint.unavailable': 'ಧ್ವನಿ ಹುಡುಕಾಟ ಈಗ ಲಭ್ಯವಿಲ್ಲ.',
+  'voice.notInLanguage': 'ಈ ಭಾಷೆಯಲ್ಲಿ ಧ್ವನಿ ಹುಡುಕಾಟ ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ.',
+  'account.prepay': 'ಮುಂಗಡ ಪಾವತಿಸಿ',
+  'account.prepaySub': 'ವೆಬ್ ಆ್ಯಪ್‌ನಲ್ಲಿ ಮುಂಗಡ ಹಾಕಿ, ಬಾಕಿ ತೀರಿಸಿ',
+  'account.dataSaverSub': 'ನೆಟ್ ನಿಧಾನವಿದ್ದರೆ ಹೆಚ್ಚುವರಿ ಫೋಟೋ ತರುವುದಿಲ್ಲ',
+  'open.open': 'ತೆರೆದಿದೆ',
+  'open.closed': 'ಮುಚ್ಚಿದೆ',
+  'open.closedPill': 'ಮುಚ್ಚಿದೆ',
+  'open.todayAt': '{time} ಕ್ಕೆ',
+  'open.tomorrowAt': 'ನಾಳೆ {time} ಕ್ಕೆ',
+  'open.stateClosed': 'ಮುಚ್ಚಿದೆ — ಅಂಗಡಿ ಈಗ ಆಫ್ ಮಾಡಲಾಗಿದೆ',
+  'open.statePaused': 'ಸ್ವಲ್ಪ ಹೊತ್ತು ನಿಲ್ಲಿಸಲಾಗಿದೆ — {when} ವಾಪಸ್',
+  'open.stateHoliday': 'ಇಂದು ಮುಚ್ಚಿದೆ — {when} ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ',
+  'open.stateHolidayReason': 'ಇಂದು ಮುಚ್ಚಿದೆ ({reason}) — {when} ಮತ್ತೆ ತೆರೆಯುತ್ತದೆ',
+  'open.stateHours': 'ಮುಚ್ಚಿದೆ — {when} ತೆರೆಯುತ್ತದೆ',
+  'open.bannerTitle': 'ಈ ಅಂಗಡಿ ಈಗ ಮುಚ್ಚಿದೆ',
+  'open.browseOnly': 'ನೀವು ನೋಡಬಹುದು — ಅಂಗಡಿ ತೆರೆದ ಮೇಲೆ ಮತ್ತೆ ಆರ್ಡರ್ ಮಾಡಬಹುದು.',
+  'open.cannotOrder': 'ಮುಚ್ಚಿದೆ — ಆರ್ಡರ್ ಮಾಡಲಾಗದು',
+  'open.cartBlocked': 'ಈ ಅಂಗಡಿ ಈಗ ಮುಚ್ಚಿದೆ, ಹಾಗಾಗಿ ಆರ್ಡರ್ ಮಾಡಲಾಗದು. ನಿಮ್ಮ ಬುಟ್ಟಿ ಉಳಿಸಿಟ್ಟಿದೆ.',
+  'eta.readyBy': '{time} ಒಳಗೆ ಸಿದ್ಧ',
+  'eta.takingLonger': 'ಸ್ವಲ್ಪ ಹೆಚ್ಚು ಸಮಯ ಆಗುತ್ತಿದೆ',
+  'eta.takingLongerHelp': '{time} ಒಳಗೆ ಆಗಬೇಕಿತ್ತು. ಇನ್ನು ಹೆಚ್ಚು ತಡವಾಗುವುದಿಲ್ಲ.',
+  'eta.noPromise': 'ಸಿದ್ಧವಾಗುವ ಸಮಯ ಹೇಳಿಲ್ಲ',
+  'cart.restoring': 'ನಿಮ್ಮ ಬುಟ್ಟಿ ಬರುತ್ತಿದೆ…',
+  'cart.switchShopTitle': 'ಬೇರೆ ಅಂಗಡಿಯಲ್ಲಿ ಕಾರ್ಟ್',
+  'cart.switchShopClear': 'ತೆಗೆದು ಇಲ್ಲಿ ಶುರು ಮಾಡಿ',
+  'psearch.title': 'ವಸ್ತು ಹುಡುಕಿ',
+  'psearch.failedTitle': 'ಹುಡುಕಾಟ ಪೂರ್ಣವಾಗಲಿಲ್ಲ',
+  'psearch.voiceIn': '{language} ನಲ್ಲಿ ಕೇಳುತ್ತದೆ',
+  'psearch.buyAgain': 'ಮತ್ತೆ ಖರೀದಿಸಿ',
+  'psearch.recent': 'ಇತ್ತೀಚಿನ ಹುಡುಕಾಟಗಳು',
+  'psearch.clearRecent': 'ಅಳಿಸಿ',
+  'psearch.browse': 'ವರ್ಗದ ಪ್ರಕಾರ ಖರೀದಿಸಿ',
+  'shops.heroTitle': 'ಇಂದು ನಿಮಗೆ ಏನು ಬೇಕು?',
+  'shops.failedTitle': 'ಅಂಗಡಿಗಳು ಲೋಡ್ ಆಗಲಿಲ್ಲ',
+  'shopdetail.failedTitle': 'ಈ ಅಂಗಡಿ ಲೋಡ್ ಆಗಲಿಲ್ಲ',
+  'orders.failedTitle': 'ನಿಮ್ಮ ಆರ್ಡರ್‌ಗಳು ಲೋಡ್ ಆಗಲಿಲ್ಲ',
+  'err.offline': 'ಈಗ ಇಂಟರ್ನೆಟ್ ಇಲ್ಲ. ಕನೆಕ್ಷನ್ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.slow': 'ನೆಟ್ ತುಂಬಾ ನಿಧಾನವಿರುವುದರಿಂದ ಅದು ಪೂರ್ಣವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.server': 'ನಮ್ಮ ಕಡೆ ಏನೋ ತಪ್ಪಾಗಿದೆ. ಸ್ವಲ್ಪ ಹೊತ್ತಿನ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.notFound': 'ಅದು ಇನ್ನು ಇಲ್ಲ.',
+  'err.notAllowed': 'ಇದನ್ನು ನೀವು ತೆರೆಯಲಾಗದು.',
+  'err.signedOut': 'ನೀವು ಸೈನ್ ಔಟ್ ಆಗಿದ್ದೀರಿ. ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.',
+  'err.tooMany': 'ತುಂಬಾ ಸಲ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ. ಒಂದು ನಿಮಿಷ ಕಾದು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.badRequest': 'ಅದರಲ್ಲಿ ಏನೋ ಸರಿಯಿಲ್ಲ. ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.conflict': 'ಅದನ್ನು ಈಗ ಮಾಡಲಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'err.generic': 'ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'account.gender': 'ಲಿಂಗ',
+  'account.genderUnset': 'ಕೊಟ್ಟಿಲ್ಲ',
+  'account.genderMale': 'ಪುರುಷ',
+  'account.genderFemale': 'ಮಹಿಳೆ',
+  'account.genderOther': 'ಇತರೆ',
+  'account.genderPreferNot': 'ಹೇಳಲು ಇಷ್ಟವಿಲ್ಲ',
+  'account.dob': 'ಹುಟ್ಟಿದ ದಿನಾಂಕ',
+  'account.phoneReadonly': 'ಫೋನ್ ಸಂಖ್ಯೆಯೇ ನಿಮ್ಮ ಲಾಗಿನ್, ಇಲ್ಲಿ ಬದಲಾಯಿಸಲಾಗದು.',
+  'stmt.title': 'ಖಾತೆ ವಿವರಣೆ',
+  'stmt.subtitle': 'ಆರಂಭದ ಬ್ಯಾಲೆನ್ಸ್, ಆರಿಸಿದ ಅವಧಿಯ ದಿನಾಂಕವಾರು ನಮೂದುಗಳು, ಕೊನೆಯ ಬ್ಯಾಲೆನ್ಸ್.',
+  'stmt.pickShop': 'ಅಂಗಡಿ ಆರಿಸಿ',
+  'stmt.allShops': 'ಎಲ್ಲಾ ಅಂಗಡಿಗಳು (ಒಟ್ಟಿಗೆ)',
+  'stmt.from': 'ಇಂದ',
+  'stmt.to': 'ವರೆಗೆ',
+  'stmt.view': 'ನೋಡಿ',
+  'stmt.opening': 'ಆರಂಭದ ಬ್ಯಾಲೆನ್ಸ್',
+  'stmt.closing': 'ಕೊನೆಯ ಬ್ಯಾಲೆನ್ಸ್',
+  'stmt.totalPurchases': 'ಒಟ್ಟು ಖರೀದಿ',
+  'stmt.totalPaid': 'ಒಟ್ಟು ಪಾವತಿ',
+  'stmt.totalAdjusted': 'ಅಂಗಡಿಯ ಹೊಂದಾಣಿಕೆ',
+  'stmt.noData': 'ಈ ದಿನಾಂಕಗಳ ನಡುವೆ ನಮೂದುಗಳಿಲ್ಲ.',
+  'stmt.rangeError': '"ಇಂದ" ದಿನಾಂಕ "ವರೆಗೆ" ದಿನಾಂಕಕ್ಕಿಂತ ಮೊದಲು ಅಥವಾ ಅದೇ ದಿನ ಇರಬೇಕು.',
+  'stmt.loadError': 'ವಿವರಣೆ ಲೋಡ್ ಆಗಲಿಲ್ಲ.',
+  'stmt.combined': 'ಎಲ್ಲಾ ಸೇರಿ ಒಟ್ಟು',
+  'ref.creditBalance': 'ನಿಮ್ಮ ರೆಫರಲ್ ಜಮೆ',
+  'ref.activatedOf': '{n} ರಲ್ಲಿ {a} ಸಕ್ರಿಯವಾಗಿದೆ',
+  'upd.title': 'ಆ್ಯಪ್ ವರ್ಶನ್ & ಅಪ್‌ಡೇಟ್‌ಗಳು',
+  'upd.sub': 'ಈ ಫೋನ್‌ನಲ್ಲಿ ಆ್ಯಪ್‌ನ ಯಾವ ವರ್ಶನ್ ಓಡುತ್ತಿದೆ.',
+  'upd.embedded': 'ಆ್ಯಪ್‌ನೊಂದಿಗೆ ಬಂದ ವರ್ಶನ್ — ಎಂದೂ ಅಪ್‌ಡೇಟ್ ಆಗಿಲ್ಲ',
+  'upd.downloaded': 'ಡೌನ್‌ಲೋಡ್ ಆದ ಅಪ್‌ಡೇಟ್ ಓಡುತ್ತಿದೆ',
+  'upd.bundle': 'ವರ್ಶನ್',
+  'upd.builtOn': 'ಎಷ್ಟು ಹಳೆಯದು',
+  'upd.unknown': 'ಗೊತ್ತಿಲ್ಲ',
+  'upd.ageNow': 'ಈಗಷ್ಟೇ',
+  'upd.ageMinutes': '{n} ನಿಮಿಷ ಹಳೆಯದು',
+  'upd.ageHours': '{n} ಗಂಟೆ ಹಳೆಯದು',
+  'upd.ageDays': '{n} ದಿನ ಹಳೆಯದು',
+  'upd.check': 'ಈಗಲೇ ಅಪ್‌ಡೇಟ್ ನೋಡಿ',
+  'upd.checking': 'ನೋಡುತ್ತಿದೆ…',
+  'upd.upToDate': 'ನಿಮ್ಮ ಬಳಿ ಈಗಾಗಲೇ ಹೊಸ ವರ್ಶನ್ ಇದೆ.',
+  'upd.reloading': 'ಹೊಸ ವರ್ಶನ್ ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ. ಆ್ಯಪ್ ಮತ್ತೆ ಶುರುವಾಗುತ್ತಿದೆ…',
+  'upd.failed': 'ಅಪ್‌ಡೇಟ್ ನೋಡಲಾಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ನೋಡಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'upd.disabled': 'ಈ ಆ್ಯಪ್‌ನಲ್ಲಿ ಅಪ್‌ಡೇಟ್‌ಗಳು ಆಫ್ ಆಗಿವೆ.',
+  'account.manage': 'ನಿರ್ವಹಿಸಿ',
+  'account.dobInvalid': 'ಹುಟ್ಟಿದ ದಿನಾಂಕವನ್ನು YYYY-MM-DD ರೂಪದಲ್ಲಿ ಬರೆಯಿರಿ.',
+  'stmt.last30': 'ಕಳೆದ 30 ದಿನ',
+  'stmt.last90': 'ಕಳೆದ 90 ದಿನ',
+  'stmt.badDate': 'ಎರಡೂ ದಿನಾಂಕಗಳನ್ನು YYYY-MM-DD ರೂಪದಲ್ಲಿ ಬರೆಯಿರಿ.',
+  'stmt.exportOnWeb': 'CSV ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ಅಥವಾ ಪ್ರಿಂಟ್ ಮಾಡಿ',
+  'stmt.exportOnWebSub': 'ಫೈಲ್ ಉಳಿಸಲು ಮತ್ತು ಪ್ರಿಂಟ್ ಮಾಡಲು ವೆಬ್ ಆ್ಯಪ್ ಬೇಕು. ಇದು ಅದನ್ನು ನೀವು ಸೈನ್ ಇನ್ ಆದ ಸ್ಥಿತಿಯಲ್ಲೇ ತೆರೆಯುತ್ತದೆ.',
 };
 
 const ml = {
@@ -2468,6 +2896,147 @@ const ml = {
   'shopdetail.brand': 'ബ്രാൻഡ്',
   'shopdetail.size': 'വലുപ്പം',
   'shopdetail.noResults': 'പൊരുത്തപ്പെടുന്ന ഇനങ്ങളില്ല.',
+
+  // --- batch DRAVIDIAN-CONSUMER: MACHINE-AUTHORED, NOT YET READ BY A NATIVE
+  // SPEAKER ---
+  // Every string below this line was written by the build in batch
+  // DRAVIDIAN-CONSUMER. No native Malayalam speaker has read any of it. It
+  // ships because the alternative was an English screen in front of a
+  // Malayalam-speaking shopper, and plain, unreviewed Malayalam beats that —
+  // but treat every line as provisional until a reviewer signs it off. The
+  // review sheet is docs/i18n-review-consumer-dravidian.md, generated from
+  // these exact values and ordered worst-first: money, khata and order strings
+  // sit at the top of it, because those are the ones that cost a shopper money
+  // when they are wrong.
+  //
+  // Where the same English already had a Malayalam translation elsewhere in
+  // this repo — the owner dictionary (mobile-app/src/i18n.js) — that wording
+  // was reused verbatim rather than re-invented, so the shopper and the
+  // shopkeeper read the same words about the same order. That covers the
+  // shop-hours lines, the ready-time lines and '{item} — removed'.
+  //
+  // Money the shop HOLDS for this shopper and money the shopper OWES the shop
+  // never share a word here. 'coedit.prepaid' and 'ref.creditBalance' use this
+  // language's in-your-favour word; 'coedit.credit', 'account.prepaySub' and
+  // the khata strings use its dues word; the two were read against each other
+  // before this landed.
+  //
+  // 'upd.runtime' and 'upd.channel' are deliberately absent and fall back to
+  // en. They label the two Expo build tokens on the update card, whose VALUES
+  // are themselves English identifiers; a transliterated label beside one of
+  // those would read as noise, so no translation is better than a bad one.
+  'txn.upi': 'UPI അടച്ചു',
+  'txn.adjustment': 'കട തിരുത്തിയത്',
+  'coedit.title': 'കട നിങ്ങളുടെ ഓർഡർ കുറച്ചു',
+  'coedit.intro': '{shop} ൽ നിങ്ങൾ പറഞ്ഞ എല്ലാ സാധനവും ഉണ്ടായിരുന്നില്ല.',
+  'coedit.removed': '{item} — നീക്കി',
+  'coedit.reduced': '{item} — {before} → {after}',
+  'coedit.nowTotal': 'നിങ്ങളുടെ ഓർഡർ ഇപ്പോൾ {now} ആണ്.',
+  'coedit.wasSubtotal': 'ആദ്യമുണ്ടായിരുന്ന സാധനങ്ങളുടെ ആകെ {was}',
+  'coedit.credit': 'ഈ കടയിൽ നിങ്ങളുടെ ഖാതയിൽ നിന്ന് {amount} കുറച്ചിട്ടുണ്ട്.',
+  'coedit.prepaid': 'നിങ്ങൾ നേരത്തേ പണം അടച്ചിരുന്നു. {amount} ഈ കടയിൽ നിങ്ങളുടെ വരവായി ഉണ്ടാകും — ഇവിടെ അടുത്ത ഓർഡറിൽ കുറയും.',
+  'coedit.cash': 'എടുക്കുമ്പോൾ {now} കൊടുക്കുക — {amount} വിലയുള്ള സാധനങ്ങൾ ഒഴിവാക്കി.',
+  'voice.search': 'ശബ്ദത്തിലൂടെ തിരയുക',
+  'voice.hint.permission': 'മൈക്ക് അനുമതി ഇല്ല. ശബ്ദത്തിലൂടെ തിരയാൻ സെറ്റിംഗ്സിൽ അത് ഓണാക്കുക.',
+  'voice.hint.no-match': 'മനസ്സിലായില്ല. വീണ്ടും പറയുക.',
+  'voice.hint.network': 'ശബ്ദത്തിലൂടെ തിരയാൻ ഇന്റർനെറ്റ് വേണം. നിങ്ങളുടെ കണക്ഷൻ നോക്കുക.',
+  'voice.hint.unavailable': 'ശബ്ദത്തിലൂടെ തിരയൽ ഇപ്പോൾ ലഭ്യമല്ല.',
+  'voice.notInLanguage': 'ഈ ഭാഷയിൽ ശബ്ദത്തിലൂടെ തിരയൽ ഇതുവരെ ലഭ്യമല്ല.',
+  'account.prepay': 'അഡ്വാൻസ് അടയ്ക്കുക',
+  'account.prepaySub': 'വെബ് ആപ്പിൽ അഡ്വാൻസ് ഇടുക, കുടിശ്ശിക തീർക്കുക',
+  'account.dataSaverSub': 'നെറ്റ് പതുക്കെയാണെങ്കിൽ അധിക ഫോട്ടോ എടുക്കില്ല',
+  'open.open': 'തുറന്നിരിക്കുന്നു',
+  'open.closed': 'അടച്ചിരിക്കുന്നു',
+  'open.closedPill': 'അടച്ചിരിക്കുന്നു',
+  'open.todayAt': '{time}-ന്',
+  'open.tomorrowAt': 'നാളെ {time}-ന്',
+  'open.stateClosed': 'അടച്ചിരിക്കുന്നു — കട ഇപ്പോൾ ഓഫാക്കി വെച്ചിരിക്കുന്നു',
+  'open.statePaused': 'കുറച്ച് നേരത്തേക്ക് നിർത്തി — {when} തിരികെ',
+  'open.stateHoliday': 'ഇന്ന് അടവാണ് — {when} വീണ്ടും തുറക്കും',
+  'open.stateHolidayReason': 'ഇന്ന് അടവാണ് ({reason}) — {when} വീണ്ടും തുറക്കും',
+  'open.stateHours': 'അടച്ചിരിക്കുന്നു — {when} തുറക്കും',
+  'open.bannerTitle': 'ഈ കട ഇപ്പോൾ അടച്ചിരിക്കുന്നു',
+  'open.browseOnly': 'നിങ്ങൾക്ക് നോക്കാം — കട തുറന്നാൽ വീണ്ടും ഓർഡർ ചെയ്യാം.',
+  'open.cannotOrder': 'അടച്ചിരിക്കുന്നു — ഓർഡർ ചെയ്യാനാവില്ല',
+  'open.cartBlocked': 'ഈ കട ഇപ്പോൾ അടച്ചിരിക്കുന്നു, അതുകൊണ്ട് ഓർഡർ ചെയ്യാനാവില്ല. നിങ്ങളുടെ കൊട്ട സൂക്ഷിച്ചിട്ടുണ്ട്.',
+  'eta.readyBy': '{time}-ന് തയ്യാർ',
+  'eta.takingLonger': 'കുറച്ച് കൂടി സമയമെടുക്കുന്നു',
+  'eta.takingLongerHelp': '{time}-ന് ആകേണ്ടതായിരുന്നു. ഇനി അധികം വൈകില്ല.',
+  'eta.noPromise': 'തയ്യാറാകുന്ന സമയം പറഞ്ഞിട്ടില്ല',
+  'cart.restoring': 'നിങ്ങളുടെ കൊട്ട എടുക്കുന്നു…',
+  'cart.switchShopTitle': 'മറ്റൊരു കടയിൽ കാർട്ട്',
+  'cart.switchShopClear': 'നീക്കി ഇവിടെ തുടങ്ങുക',
+  'psearch.title': 'സാധനം തിരയുക',
+  'psearch.failedTitle': 'തിരയൽ പൂർത്തിയായില്ല',
+  'psearch.voiceIn': '{language} ൽ കേൾക്കും',
+  'psearch.buyAgain': 'വീണ്ടും വാങ്ങുക',
+  'psearch.recent': 'അടുത്തിടെ തിരഞ്ഞവ',
+  'psearch.clearRecent': 'മായ്ക്കുക',
+  'psearch.browse': 'വിഭാഗം അനുസരിച്ച് വാങ്ങുക',
+  'shops.heroTitle': 'ഇന്ന് നിങ്ങൾക്ക് എന്താണ് വേണ്ടത്?',
+  'shops.failedTitle': 'കടകൾ ലോഡ് ചെയ്യാനായില്ല',
+  'shopdetail.failedTitle': 'ഈ കട ലോഡ് ചെയ്യാനായില്ല',
+  'orders.failedTitle': 'നിങ്ങളുടെ ഓർഡറുകൾ ലോഡ് ചെയ്യാനായില്ല',
+  'err.offline': 'ഇപ്പോൾ ഇന്റർനെറ്റ് ഇല്ല. കണക്ഷൻ നോക്കി വീണ്ടും ശ്രമിക്കുക.',
+  'err.slow': 'നെറ്റ് വളരെ പതുക്കെയായതിനാൽ അത് പൂർത്തിയായില്ല. വീണ്ടും ശ്രമിക്കുക.',
+  'err.server': 'ഞങ്ങളുടെ ഭാഗത്ത് എന്തോ കുഴപ്പം. കുറച്ച് കഴിഞ്ഞ് വീണ്ടും ശ്രമിക്കുക.',
+  'err.notFound': 'അത് ഇനി ഇല്ല.',
+  'err.notAllowed': 'ഇത് നിങ്ങൾക്ക് തുറക്കാനാവില്ല.',
+  'err.signedOut': 'നിങ്ങൾ സൈൻ ഔട്ട് ആയി. വീണ്ടും സൈൻ ഇൻ ചെയ്യുക.',
+  'err.tooMany': 'ഒരുപാട് തവണ ശ്രമിച്ചു. ഒരു മിനിറ്റ് കഴിഞ്ഞ് വീണ്ടും ശ്രമിക്കുക.',
+  'err.badRequest': 'അതിൽ എന്തോ ശരിയല്ല. നോക്കി വീണ്ടും ശ്രമിക്കുക.',
+  'err.conflict': 'അത് ഇപ്പോൾ ചെയ്യാനായില്ല. വീണ്ടും ശ്രമിക്കുക.',
+  'err.generic': 'എന്തോ കുഴപ്പം സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.',
+  'account.gender': 'ലിംഗം',
+  'account.genderUnset': 'നൽകിയിട്ടില്ല',
+  'account.genderMale': 'പുരുഷൻ',
+  'account.genderFemale': 'സ്ത്രീ',
+  'account.genderOther': 'മറ്റുള്ളവ',
+  'account.genderPreferNot': 'പറയാൻ ഇഷ്ടമില്ല',
+  'account.dob': 'ജനന തീയതി',
+  'account.phoneReadonly': 'ഫോൺ നമ്പറാണ് നിങ്ങളുടെ ലോഗിൻ, ഇവിടെ മാറ്റാനാവില്ല.',
+  'stmt.title': 'ഖാത സ്റ്റേറ്റ്‌മെന്റ്',
+  'stmt.subtitle': 'തുടക്കത്തിലെ ബാക്കി, തിരഞ്ഞെടുത്ത കാലയളവിലെ തീയതി തിരിച്ചുള്ള എൻട്രികൾ, അവസാനത്തെ ബാക്കി.',
+  'stmt.pickShop': 'കട തിരഞ്ഞെടുക്കുക',
+  'stmt.allShops': 'എല്ലാ കടകളും (ഒരുമിച്ച്)',
+  'stmt.from': 'മുതൽ',
+  'stmt.to': 'വരെ',
+  'stmt.view': 'കാണുക',
+  'stmt.opening': 'തുടക്കത്തിലെ ബാക്കി',
+  'stmt.closing': 'അവസാനത്തെ ബാക്കി',
+  'stmt.totalPurchases': 'ആകെ വാങ്ങൽ',
+  'stmt.totalPaid': 'ആകെ അടച്ചത്',
+  'stmt.totalAdjusted': 'കട തിരുത്തിയത്',
+  'stmt.noData': 'ഈ തീയതികൾക്കിടയിൽ എൻട്രികൾ ഇല്ല.',
+  'stmt.rangeError': '"മുതൽ" തീയതി "വരെ" തീയതിക്ക് മുമ്പോ അതേ ദിവസമോ ആയിരിക്കണം.',
+  'stmt.loadError': 'സ്റ്റേറ്റ്‌മെന്റ് ലോഡ് ചെയ്യാനായില്ല.',
+  'stmt.combined': 'എല്ലാം കൂടി ആകെ',
+  'ref.creditBalance': 'നിങ്ങളുടെ റഫറൽ വരവ്',
+  'ref.activatedOf': '{n} ൽ {a} സജീവമായി',
+  'upd.title': 'ആപ്പ് വേർഷൻ & അപ്‌ഡേറ്റുകൾ',
+  'upd.sub': 'ഈ ഫോണിൽ ആപ്പിന്റെ ഏത് വേർഷൻ ഓടുന്നു എന്ന്.',
+  'upd.embedded': 'ആപ്പിനൊപ്പം വന്ന വേർഷൻ — ഒരിക്കലും അപ്‌ഡേറ്റ് ആയിട്ടില്ല',
+  'upd.downloaded': 'ഡൗൺലോഡ് ചെയ്ത അപ്‌ഡേറ്റ് ഓടുന്നു',
+  'upd.bundle': 'വേർഷൻ',
+  'upd.builtOn': 'എത്ര പഴയത്',
+  'upd.unknown': 'അറിയില്ല',
+  'upd.ageNow': 'ഇപ്പോൾ തന്നെ',
+  'upd.ageMinutes': '{n} മിനിറ്റ് പഴക്കം',
+  'upd.ageHours': '{n} മണിക്കൂർ പഴക്കം',
+  'upd.ageDays': '{n} ദിവസം പഴക്കം',
+  'upd.check': 'ഇപ്പോൾ തന്നെ അപ്‌ഡേറ്റ് നോക്കുക',
+  'upd.checking': 'നോക്കുന്നു…',
+  'upd.upToDate': 'നിങ്ങളുടെ കയ്യിൽ ഇപ്പോൾത്തന്നെ പുതിയ വേർഷൻ ഉണ്ട്.',
+  'upd.reloading': 'പുതിയ വേർഷൻ ഡൗൺലോഡ് ആയി. ആപ്പ് വീണ്ടും തുടങ്ങുന്നു…',
+  'upd.failed': 'അപ്‌ഡേറ്റ് നോക്കാനായില്ല. ഇന്റർനെറ്റ് നോക്കി വീണ്ടും ശ്രമിക്കുക.',
+  'upd.disabled': 'ഈ ആപ്പിൽ അപ്‌ഡേറ്റുകൾ ഓഫാണ്.',
+  'account.manage': 'കൈകാര്യം ചെയ്യുക',
+  'account.dobInvalid': 'ജനന തീയതി YYYY-MM-DD രൂപത്തിൽ എഴുതുക.',
+  'stmt.last30': 'കഴിഞ്ഞ 30 ദിവസം',
+  'stmt.last90': 'കഴിഞ്ഞ 90 ദിവസം',
+  'stmt.badDate': 'രണ്ട് തീയതിയും YYYY-MM-DD രൂപത്തിൽ എഴുതുക.',
+  'stmt.exportOnWeb': 'CSV ഡൗൺലോഡ് ചെയ്യുക അല്ലെങ്കിൽ പ്രിന്റ് ചെയ്യുക',
+  'stmt.exportOnWebSub': 'ഫയൽ സേവ് ചെയ്യാനും പ്രിന്റ് ചെയ്യാനും വെബ് ആപ്പ് വേണം. ഇത് അത് നിങ്ങൾ സൈൻ ഇൻ ചെയ്ത നിലയിൽത്തന്നെ തുറക്കും.',
 };
 
 const mr = {
