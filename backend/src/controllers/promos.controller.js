@@ -330,6 +330,10 @@ function shopTargets(shop) {
   if (out.length === 0) out.push({ geo_type: 'town', geo_value: town });
   return out;
 }
+// Exported so the demo flagship seeder (utils/seed-flagship.js) targets a seeded
+// self-serve promo at EXACTLY the geography a real purchase would, instead of
+// keeping a second idea of what "the shop's own locality" means.
+exports.shopTargets = shopTargets;
 
 // POST /api/promos/mine — create a moderated promo placement. Validated by Joi in
 // the route: { mode ('paid'|'free'), days (1..max), offer_text? (<=60),

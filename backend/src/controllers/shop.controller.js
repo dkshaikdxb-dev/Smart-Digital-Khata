@@ -3,6 +3,8 @@ const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { RENDER_LANGS, reseedShopName } = require('../utils/shop-name-i18n');
 const { processImage, ALLOWED_IMAGE_MIMES } = require('../utils/image');
+// The ONE storefront-photo cap (shared with discovery.controller + the seeder).
+const { MAX_SHOP_IMAGES } = require('../utils/shopImages');
 const { getBrandedStoreConfig } = require('../utils/brandedStore');
 const { getStorefrontAdFreeConfig } = require('../utils/storefrontAdFree');
 const { spendCredits } = require('../utils/wallet');
@@ -613,8 +615,10 @@ exports.uploadImage = async (req, res) => {
 // admin review queue needs to render the pending photo).
 // ===========================================================================
 
-// Hard cap of photos per shop (spec §1/§2). Enforced in the app, not the schema.
-const MAX_SHOP_IMAGES = 3;
+// The hard cap of photos per shop (spec §1/§2) is MAX_SHOP_IMAGES, imported at
+// the top of this file from utils/shopImages. Enforced in the app, not the
+// schema, and kept in one place so the public read (discovery.controller) and
+// the demo seeder cannot drift from this upload cap.
 
 // Cache-busted public URL for a gallery image row. The epoch comes from
 // updated_at so an owner re-uploading (a future feature) would bust the cache;

@@ -25,7 +25,15 @@
  * variant SKUs read out of `catalog_items`, so it wants the base catalogue
  * loaded first — which, since migrate now loads it, it is.
  *
- * Idempotent end to end: run it twice and the second run changes nothing.
+ * seed-flagship goes LAST. It brands store01 as the premium demo storefront —
+ * three generated banner photos, a paid premium window, and the shop's own slide
+ * in the marketplace carousel — and it needs the shop to exist (seed-demo) and to
+ * be the shop with the rich catalogue (seed-commerce) before any of that is
+ * true. It buys with real guarded credit debits, so running it before those two
+ * would either fail or brand the wrong thing.
+ *
+ * Idempotent end to end: run it twice and the second run changes nothing — no
+ * fourth photo, no second campaign, no second debit.
  * Returns a summary of what is now in the database.
  */
 require('dotenv').config();
@@ -47,6 +55,8 @@ async function loadDemoData() {
   const { seedCommerce } = require('./seed-commerce');
   // eslint-disable-next-line global-require
   const { main: seedPromoDemo } = require('./seed-promo-demo');
+  // eslint-disable-next-line global-require
+  const { seedFlagship } = require('./seed-flagship');
 
   console.log('-> demo shops (seed-demo)');
   await seedDemo();
@@ -56,6 +66,9 @@ async function loadDemoData() {
 
   console.log('-> house promo cards (seed-promo-demo)');
   await seedPromoDemo();
+
+  console.log('-> branded flagship storefront for store01 (seed-flagship)');
+  await seedFlagship();
 
   const r = await pool.query(
     `SELECT
@@ -68,13 +81,20 @@ async function loadDemoData() {
          WHERE u.email LIKE 'store%@demo.local'
            AND s.is_listed = true
            AND EXISTS (SELECT 1 FROM products p WHERE p.shop_id = s.id AND p.is_active = true)) AS stocked,
-       (SELECT COUNT(*)::int FROM ad_campaigns WHERE advertiser = 'Smart Khata') AS promos`
+       (SELECT COUNT(*)::int FROM ad_campaigns WHERE advertiser = 'Smart Khata') AS promos,
+       (SELECT COUNT(*)::int
+          FROM shop_images i JOIN users u ON u.shop_id = i.shop_id
+         WHERE u.email = 'store01@demo.local' AND i.status = 'active') AS flagship_photos,
+       (SELECT COUNT(*)::int
+          FROM ad_campaigns c JOIN users u ON u.shop_id = c.link_shop_id
+         WHERE u.email = 'store01@demo.local' AND c.self_serve = true AND c.status = 'active') AS flagship_promos`
   );
   const summary = r.rows[0];
   console.log(
     `demo data complete: ${summary.shops} demo shops, ${summary.listed} listed, ` +
       `${summary.stocked} with a catalogue (only these are visible in the public directory), ` +
-      `${summary.promos} house promo campaign(s)`
+      `${summary.promos} house promo campaign(s), and the flagship storefront with ` +
+      `${summary.flagship_photos} photo slide(s) + ${summary.flagship_promos} slide(s) of its own in the carousel`
   );
   return summary;
 }

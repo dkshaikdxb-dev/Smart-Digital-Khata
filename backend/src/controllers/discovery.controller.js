@@ -32,9 +32,10 @@ const WORD_SIM_THRESHOLD = 0.5;
 // drift from the others again. 'en' is the base language: plain English
 // products.name with NO i18n join, so its behaviour is exactly as before.
 
-// Cap on owner photo slides composed into a storefront (mirrors the upload cap
-// in shop.controller MAX_SHOP_IMAGES; a defensive LIMIT on the public read).
-const MAX_PHOTO_SLIDES = 3;
+// Cap on owner photo slides composed into a storefront — a defensive LIMIT on
+// the public read. It is the SAME constant as the upload cap (utils/shopImages),
+// not a second copy of the number, so the two can never disagree.
+const { MAX_SHOP_IMAGES: MAX_PHOTO_SLIDES } = require('../utils/shopImages');
 
 // ===========================================================================
 // WHAT THE PUBLIC DIRECTORY IS ALLOWED TO SURFACE (batch DATA D1a + D2).
