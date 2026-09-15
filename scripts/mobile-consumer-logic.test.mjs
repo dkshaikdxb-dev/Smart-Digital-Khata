@@ -38,12 +38,17 @@ const ROOT = path.join(HERE, '..');
  * `require` is deliberately left UNDEFINED so that appUpdates.js takes its own
  * "native module missing" path — which is the branch a phone running Expo Go
  * takes, and the one that must never throw.
+ *
+ * A top-level `const` is lexical, so unlike a function declaration it never
+ * lands on the context by itself; `expose` names the const bindings a caller
+ * wants back (the shared category list, for one) and copies them across.
  */
-function loadPure(rel) {
+function loadPure(rel, expose = []) {
   const code = fs
     .readFileSync(path.join(ROOT, rel), 'utf8')
     .replace(/^export default .*$/gm, '')
-    .replace(/^export (async function|function|const|let)/gm, '$1');
+    .replace(/^export (async function|function|const|let)/gm, '$1')
+    + expose.map((n) => `\n;globalThis.${n} = ${n};`).join('');
   const ctx = { console, Date, Math, Number, String, Array, Map, JSON, isNaN, setTimeout };
   vm.createContext(ctx);
   new vm.Script(code, { filename: rel }).runInContext(ctx);
@@ -223,6 +228,97 @@ section('update status with expo-updates unavailable');
     .then((r) => eq(r, { outcome: 'disabled' },
       'checking for updates resolves to "disabled" instead of throwing'))
     .catch((e) => { failures += 1; console.error('  FAIL  checkAndApplyUpdate rejected: ' + e.message); });
+}
+
+/* ------------------------------------------- discovery: chips and the tabs */
+// The two fixes below are NAVIGATION and LAYOUT, which this harness cannot
+// render — there is no React runner here, by design (see the header). What it
+// CAN do, and what these checks do, is pin the source facts those fixes consist
+// of: which categories the shared chip list holds, that the product-search
+// screen actually renders them in its empty state, which tabs the consumer app
+// registers and in what order, and that every label key those tabs and chips ask
+// for exists in the English dictionary so none of them can render as a raw key
+// name. Stated plainly: this proves the wiring, not the pixels.
+const CATS = loadPure('mobile-app/src/consumer/lib/categories.js', ['CATEGORIES']);
+const psearchSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/screens/ProductSearchScreen.js'), 'utf8');
+const shopsSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/screens/ShopsScreen.js'), 'utf8');
+const appSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/ConsumerApp.js'), 'utf8');
+const webShopsSrc = fs.readFileSync(path.join(ROOT, 'admin-dashboard/src/pages/c/shops.js'), 'utf8');
+
+// The English block of the consumer dictionary, as raw text: enough to answer
+// "does this key exist", which is the only question asked of it here.
+const consumerI18n = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/i18n.js'), 'utf8');
+const enBlock = consumerI18n.slice(
+  consumerI18n.indexOf('const en = {'),
+  consumerI18n.indexOf('const hi = {'),
+);
+const hasEnKey = (k) => enBlock.includes(`'${k}':`);
+
+section('category chips');
+{
+  const cats = CATS.CATEGORIES;
+  eq(cats.map((c) => c.key),
+    ['cat.attaRice', 'cat.dairy', 'cat.snacks', 'cat.household', 'cat.personalCare'],
+    'the five web categories, in the web order');
+  eq(cats.map((c) => c.term), ['rice', 'milk', 'biscuit', 'soap', 'shampoo'],
+    'the search TERM stays the English base word the endpoint indexes');
+
+  // The web's own list, read out of the page that owns it. If someone adds a
+  // sixth category there, this says so instead of the app quietly lagging.
+  const webCats = [...webShopsSrc.matchAll(/\{ key: '(\w+)', term: '(\w+)', icon: '([^']+)' \}/g)]
+    .map((m) => ({ key: m[1], term: m[2], icon: m[3] }));
+  eq(webCats.map((c) => c.term), cats.map((c) => c.term), 'same terms as the web directory');
+  eq(webCats.map((c) => c.icon), cats.map((c) => c.icon), 'same icons as the web directory');
+
+  cats.forEach((c) => ok(hasEnKey(c.key), `"${c.key}" exists in the en dictionary`));
+
+  ok(shopsSrc.includes("from '../lib/categories'"),
+    'the shop directory reads the shared list rather than its own copy');
+  ok(psearchSrc.includes("from '../lib/categories'"),
+    'the product search screen reads the shared list too');
+}
+
+section('product search empty state');
+{
+  // The empty state is the `!searched` branch. Before this batch it held only
+  // the psearch.start prompt, which reads as a blank page to a shopper who does
+  // not know what to type.
+  const branch = psearchSrc.slice(psearchSrc.indexOf('{!error && !loading && !searched ?'));
+  const emptyState = branch.slice(0, branch.indexOf('{/* SEARCHED, GENUINELY NOTHING */}'));
+  ok(emptyState.includes("t('psearch.start')"), 'the prompt is still there');
+  ok(emptyState.includes('CATEGORIES.map'), 'the category chips are rendered in the empty state');
+  ok(emptyState.includes('pickCategory(c.term)'), 'tapping a chip runs that category as a search');
+  ok(psearchSrc.includes('function pickCategory'), 'the chip handler exists');
+}
+
+section('consumer tabs');
+{
+  const tabs = [...appSrc.matchAll(/<Tab\.Screen\s+name="(\w+)"/g)].map((m) => m[1]);
+  eq(tabs, ['KhataTab', 'ShopsTab', 'ProductsTab', 'CartTab', 'OrdersTab', 'AccountTab'],
+    'six tabs, matching the web’s set, with Products beside Shops');
+
+  const labelKeys = [...appSrc.matchAll(/tabBarLabel: tabLabel\(t\('([\w.]+)'\)\)/g)].map((m) => m[1]);
+  eq(labelKeys,
+    ['tab.khata', 'tab.shops', 'tab.products', 'tab.cart', 'tab.orders', 'tab.account'],
+    'every tab is labelled from the dictionary, in tab order');
+  labelKeys.forEach((k) => ok(hasEnKey(k), `"${k}" exists in the en dictionary`));
+
+  // Six columns on a 320dp phone are 53dp each. The label has to wrap rather
+  // than truncate, which is what the explicit two-line label component and the
+  // taller bar are for.
+  ok(/numberOfLines=\{2\}/.test(appSrc), 'tab labels may wrap to two lines instead of truncating');
+  const barHeight = appSrc.match(/tabBarStyle: \{[^}]*height: (\d+)/);
+  ok(barHeight && Number(barHeight[1]) >= 78,
+    'the bar is tall enough for an icon above a two-line label');
+  ok(/tabBarItemStyle: \{ paddingHorizontal: 0 \}/.test(appSrc),
+    'each tab gets its whole column, so an Indic word is not padded into an ellipsis');
+
+  // Product search keeps its original door too: the directory's product bar and
+  // its chips still push it inside the Shops stack.
+  ok(/<ShopsStack\.Screen name="ProductSearch"/.test(appSrc),
+    'product search is still reachable from the shop directory');
+  ok(/<ProductsStack\.Screen name="ShopDetail"/.test(appSrc),
+    'a result opens the seller inside the Products tab rather than jumping tabs');
 }
 
 console.log('');

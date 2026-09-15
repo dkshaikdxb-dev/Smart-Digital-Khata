@@ -10,6 +10,7 @@ import { publicApi } from '../consumerApi';
 import { friendlyError, canRetry, isCancelled } from '../lib/errorText';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
+import { CATEGORIES } from '../lib/categories';
 
 // P4 — cross-shop product search. "Who near me sells Surf Excel?" was
 // unanswerable in the app: only shop NAMES were searchable, so a shopper had to
@@ -130,6 +131,15 @@ export default function ProductSearchScreen({ route, navigation }) {
     runSearch(q);
   }
 
+  // A chip is a seeded search: it fills the box with the term and runs it, which
+  // is exactly what the directory's chips already do by opening this screen with
+  // that term. The shopper can then edit the word instead of inventing one.
+  function pickCategory(term) {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setQ(term);
+    runSearch(term);
+  }
+
   function clearAll() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setQ('');
@@ -190,11 +200,28 @@ export default function ProductSearchScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      {/* NOT SEARCHED YET */}
+      {/* NOT SEARCHED YET. A prompt alone reads as a blank page to a shopper who
+          does not know what to type — which is most of them, the first time. So
+          the same five category chips the web offers sit under it, each one a
+          search the shopper can make with one tap and then edit. */}
       {!error && !loading && !searched ? (
         <View style={styles.stateCard}>
           <Text style={styles.stateIcon}>🔍</Text>
           <Text style={styles.stateText}>{t('psearch.start')}</Text>
+          <View style={styles.cats}>
+            {CATEGORIES.map((c) => (
+              <Pressable
+                key={c.key}
+                onPress={() => pickCategory(c.term)}
+                style={({ pressed }) => [styles.cat, pressed && styles.pressed]}
+                accessibilityRole="button"
+                accessibilityLabel={t(c.key)}
+              >
+                <Text style={styles.catIcon}>{c.icon}</Text>
+                <Text style={styles.catLabel} numberOfLines={2}>{t(c.key)}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
       ) : null}
 
@@ -280,6 +307,27 @@ const styles = StyleSheet.create({
   },
   stateIcon: { fontSize: 40, marginBottom: 10 },
   stateText: { color: colors.textMuted, fontSize: 16, textAlign: 'center' },
+
+  // Category chips under the empty prompt. Same five as the directory and the
+  // web; each is a full 44pt-tall target because this is how a shopper who
+  // cannot spell "shampoo" gets anywhere at all.
+  cats: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 18 },
+  cat: {
+    minHeight: sizes.tap,
+    minWidth: 96,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  catIcon: { fontSize: 18 },
+  catLabel: { color: colors.text, fontSize: 14, fontWeight: '600', flexShrink: 1 },
 
   errCard: {
     backgroundColor: 'rgba(239,68,68,0.12)',

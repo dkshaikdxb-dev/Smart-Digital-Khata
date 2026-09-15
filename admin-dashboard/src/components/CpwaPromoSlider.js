@@ -4,6 +4,7 @@ import { publicFetch } from '../lib/customerApi';
 import { useLang } from '../lib/i18n';
 import { useDataSaver } from '../lib/useDataSaver';
 import { fireBeacon, followPromoLink } from '../lib/promoLink';
+import { activeSlideIndex, scrollTrackToSlide } from './carouselTrack';
 
 // Consumer promo band (batch ADS5) — the visible finale of the geo-targeted promo
 // system. Sits on the home screen between search and categories. It fetches the
@@ -20,6 +21,10 @@ import { fireBeacon, followPromoLink } from '../lib/promoLink';
 
 const LOC_KEY = 'skhata-loc';
 const MAX_SLIDES = 5;
+// How long between auto-advances, and how long to leave the band alone after the
+// shopper has finished touching it before the timer takes over again.
+const AUTO_MS = 5000;
+const SETTLE_MS = 5000;
 
 // Neutral per-style glyph fallbacks — used when a promo carries no glyph and no
 // (usable) image. Emoji only, so there is nothing to download.
@@ -64,7 +69,15 @@ export default function CpwaPromoSlider() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const trackRef = useRef(null);
+  const sectionRef = useRef(null);
   const activeIndexRef = useRef(0);
+  // Auto-advance is suspended until this timestamp. Infinity while a finger is
+  // actually down; a few seconds past the release afterwards.
+  const holdUntilRef = useRef(0);
+  // Whether the band is anywhere near the viewport. Starts true so the first
+  // rotation is not delayed by waiting for an observer callback; an observer, if
+  // the browser has one, corrects it within a frame.
+  const [inView, setInView] = useState(true);
   const firedRef = useRef(new Set()); // promo ids that already sent an impression
   const mountedRef = useRef(true);
   useEffect(() => () => { mountedRef.current = false; }, []);
@@ -106,34 +119,23 @@ export default function CpwaPromoSlider() {
   const onScroll = useCallback(() => {
     const el = trackRef.current;
     if (!el || !el.children.length) return;
-    const rtl = typeof window !== 'undefined' && window.getComputedStyle
-      ? window.getComputedStyle(el).direction === 'rtl'
-      : false;
-    const trackRect = el.getBoundingClientRect();
-    const edge = rtl ? trackRect.right : trackRect.left;
-    let best = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < el.children.length; i += 1) {
-      const r = el.children[i].getBoundingClientRect();
-      const slideEdge = rtl ? r.right : r.left;
-      const dist = Math.abs(slideEdge - edge);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = i;
-      }
-    }
+    const best = activeSlideIndex(el);
     activeIndexRef.current = best;
     setActiveIndex(best);
   }, []);
 
+  // Move the BAND, and nothing else. See components/carouselTrack.js for why
+  // scrollIntoView — which scrolls every ancestor, the page included — is the
+  // wrong tool here and what replaced it.
   const scrollToSlide = useCallback((i) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const target = el.children[i];
-    if (target && target.scrollIntoView) {
-      target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-    }
+    scrollTrackToSlide(trackRef.current, i);
   }, []);
+
+  // The shopper is driving. Hold the timer off entirely while a pointer is down,
+  // then leave the band on whatever they landed on for a few seconds after they
+  // let go, rather than snatching it away mid-read.
+  const holdAuto = useCallback(() => { holdUntilRef.current = Infinity; }, []);
+  const releaseAuto = useCallback(() => { holdUntilRef.current = Date.now() + SETTLE_MS; }, []);
 
   // Impression beacons: fire once per promo per mount, when the slide first
   // scrolls at least half into view. A fresh promo set (new fetch) resets the
@@ -165,20 +167,43 @@ export default function CpwaPromoSlider() {
     return () => io.disconnect();
   }, [promos]);
 
-  // Gentle auto-advance — ONLY when the viewer has not asked to reduce motion.
+  // Is the band on screen at all? Rotating a carousel nobody can see is pointless
+  // work on a phone that is paying for every wakeup — and while the bug above was
+  // live it was worse than pointless, because the off-screen ticks were exactly
+  // the ones that dragged the page. A browser without IntersectionObserver keeps
+  // the old always-on behaviour rather than losing the rotation entirely.
   useEffect(() => {
     if (promos.length <= 1) return undefined;
+    if (typeof IntersectionObserver === 'undefined') return undefined;
+    const el = sectionRef.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === el) setInView(entry.isIntersecting);
+      });
+    }, { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [promos.length]);
+
+  // Gentle auto-advance — ONLY when the viewer has not asked to reduce motion,
+  // only while the band is actually on screen, and never over the top of a
+  // shopper who is swiping it themselves.
+  useEffect(() => {
+    if (promos.length <= 1) return undefined;
+    if (!inView) return undefined;
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(prefers-reduced-motion: no-preference)');
     if (!mq.matches) return undefined;
     const id = setInterval(() => {
+      if (Date.now() < holdUntilRef.current) return;
       const el = trackRef.current;
       if (!el || !el.children.length) return;
       const next = (activeIndexRef.current + 1) % el.children.length;
       scrollToSlide(next);
-    }, 5000);
+    }, AUTO_MS);
     return () => clearInterval(id);
-  }, [promos.length, scrollToSlide]);
+  }, [promos.length, inView, scrollToSlide]);
 
   // Tap a slide → click beacon (fire-and-forget) then navigate by link_type
   // (the shared rule in lib/promoLink.js).
@@ -194,7 +219,18 @@ export default function CpwaPromoSlider() {
   if (!promos.length) return null;
 
   return (
-    <section className="cpwa-promo" aria-label={t('c.promo.sponsored')}>
+    <section
+      className="cpwa-promo"
+      aria-label={t('c.promo.sponsored')}
+      ref={sectionRef}
+      onPointerDown={holdAuto}
+      onPointerUp={releaseAuto}
+      onPointerCancel={releaseAuto}
+      onTouchStart={holdAuto}
+      onTouchEnd={releaseAuto}
+      onTouchCancel={releaseAuto}
+      onWheel={releaseAuto}
+    >
       <div className="cpwa-promo-track" ref={trackRef} onScroll={onScroll}>
         {promos.map((p) => {
           const style = DEFAULT_GLYPH[p.style] ? p.style : 'offer';

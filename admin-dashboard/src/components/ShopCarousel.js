@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useDataSaver } from '../lib/useDataSaver';
 import { useLang } from '../lib/i18n';
 import { fireBeacon, followPromoLink } from '../lib/promoLink';
+import { activeSlideIndex, scrollTrackToSlide } from './carouselTrack';
 
 // Storefront slider (batch LITE → FULL). Renders a shop's `slides` — the owner's
 // up-to-3 moderated photos plus AT MOST ONE sponsored slide the server composed
@@ -28,6 +29,10 @@ import { fireBeacon, followPromoLink } from '../lib/promoLink';
 // (lib/promoLink.js). It always carries a small "Sponsored" tag.
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+// How long between auto-advances, and how long to leave the slider alone after
+// the shopper has finished touching it before the timer takes over again.
+const AUTO_MS = 5000;
+const SETTLE_MS = 5000;
 const resolveImg = (url) => (!url ? '' : (/^https?:\/\//i.test(url) ? url : `${API_BASE}${url}`));
 
 // Normalize the props into one slide list: `slides` when present, else the
@@ -80,7 +85,14 @@ export default function ShopCarousel({ slides, images, alt = '' }) {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const trackRef = useRef(null);
+  const wrapRef = useRef(null);
   const activeIndexRef = useRef(0);
+  // Auto-advance is suspended until this timestamp: Infinity while a finger is
+  // down, a few seconds past the release afterwards.
+  const holdUntilRef = useRef(0);
+  // Whether the slider is anywhere near the viewport. Starts true so the first
+  // rotation is not delayed waiting for an observer callback.
+  const [inView, setInView] = useState(true);
   const firedRef = useRef(new Set()); // campaign ids that already sent an impression
 
   const list = toSlides(slides, images);
@@ -90,28 +102,27 @@ export default function ShopCarousel({ slides, images, alt = '' }) {
   const shown = dataSaver ? list.filter((s) => s.type === 'photo').slice(0, 1) : list;
   const sponsoredLabel = t('c.promo.sponsored');
 
+  // Which slide sits at the track's inline start — the active dot. Measured from
+  // the inline-START edge, so it is right in RTL (Urdu) too, where it used to
+  // read the left edge and pick the wrong dot.
   const onScroll = useCallback(() => {
     const el = trackRef.current;
     if (!el || !el.children.length) return;
-    const trackLeft = el.getBoundingClientRect().left;
-    let best = 0;
-    let bestDist = Infinity;
-    for (let i = 0; i < el.children.length; i += 1) {
-      const dist = Math.abs(el.children[i].getBoundingClientRect().left - trackLeft);
-      if (dist < bestDist) { bestDist = dist; best = i; }
-    }
+    const best = activeSlideIndex(el);
     activeIndexRef.current = best;
     setActiveIndex(best);
   }, []);
 
+  // Move the TRACK, and nothing else. See components/carouselTrack.js: this used
+  // to be scrollIntoView, which scrolls every scrollable ancestor including the
+  // document, so the storefront page itself jumped every five seconds.
   const scrollToSlide = useCallback((i) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const target = el.children[i];
-    if (target && target.scrollIntoView) {
-      target.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-    }
+    scrollTrackToSlide(trackRef.current, i);
   }, []);
+
+  // Don't fight a shopper who is swiping the slider themselves.
+  const holdAuto = useCallback(() => { holdUntilRef.current = Infinity; }, []);
+  const releaseAuto = useCallback(() => { holdUntilRef.current = Date.now() + SETTLE_MS; }, []);
 
   // Sponsored click → click beacon (fire-and-forget) then the shared link rule.
   const onSponsoredClick = useCallback((s) => {
@@ -152,20 +163,39 @@ export default function ShopCarousel({ slides, images, alt = '' }) {
     return () => io.disconnect();
   }, [sponsoredIds]);
 
-  // Gentle auto-advance — ONLY when the viewer has not asked to reduce motion,
-  // and only when there is more than one slide actually shown.
+  // Is the slider on screen? Rotating one nobody is looking at is wasted battery
+  // on a 2G handset. No IntersectionObserver — keep the old always-on behaviour.
   useEffect(() => {
     if (shown.length <= 1) return undefined;
+    if (typeof IntersectionObserver === 'undefined') return undefined;
+    const el = wrapRef.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === el) setInView(entry.isIntersecting);
+      });
+    }, { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown.length]);
+
+  // Gentle auto-advance — ONLY when the viewer has not asked to reduce motion,
+  // only when there is more than one slide actually shown, only while the slider
+  // is on screen, and never over the top of a shopper's own swipe.
+  useEffect(() => {
+    if (shown.length <= 1) return undefined;
+    if (!inView) return undefined;
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
     const mq = window.matchMedia('(prefers-reduced-motion: no-preference)');
     if (!mq.matches) return undefined;
     const id = setInterval(() => {
+      if (Date.now() < holdUntilRef.current) return;
       const el = trackRef.current;
       if (!el || !el.children.length) return;
       scrollToSlide((activeIndexRef.current + 1) % el.children.length);
-    }, 5000);
+    }, AUTO_MS);
     return () => clearInterval(id);
-  }, [shown.length, scrollToSlide]);
+  }, [shown.length, inView, scrollToSlide]);
 
   if (!shown.length) return null;
 
@@ -192,7 +222,17 @@ export default function ShopCarousel({ slides, images, alt = '' }) {
   }
 
   return (
-    <div className="cpwa-shopcar">
+    <div
+      className="cpwa-shopcar"
+      ref={wrapRef}
+      onPointerDown={holdAuto}
+      onPointerUp={releaseAuto}
+      onPointerCancel={releaseAuto}
+      onTouchStart={holdAuto}
+      onTouchEnd={releaseAuto}
+      onTouchCancel={releaseAuto}
+      onWheel={releaseAuto}
+    >
       <div className="cpwa-shopcar-track" ref={trackRef} onScroll={onScroll}>
         {shown.map((s, i) => (
           <div className="cpwa-shopcar-slide" key={slideKey(s)}>
