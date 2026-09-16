@@ -1,0 +1,127 @@
+key,english,placeholders,where_it_appears
+csfaq.subtitle,"Answers your shops have shared — timings, delivery, returns and more.",,Shopper: account
+csfaq.title,Questions about your shops,,Shopper: account
+ctab.products,Products,,Shopper: account; Shopper: cart; Shopper: khata
+dem.addItem,Add item,,Shopkeeper: suppliers/demand
+dem.boardTitle,Demand board,,Shopkeeper: suppliers/demand
+dem.cancel,Cancel need,,Shopkeeper: suppliers/demand
+dem.cancelConfirm,Cancel this demand post?,,Shopkeeper: suppliers/demand
+dem.claim,Claim & make order,,Shopkeeper: distributor/demand
+dem.claimedBy,Claimed by {name},{name},Shopkeeper: suppliers/demand
+dem.claiming,Claiming…,,Shopkeeper: distributor/demand
+dem.distSubtitle,Upcoming needs from shops near you. Claim one to make an order.,,Shopkeeper: distributor/demand
+dem.myPosts,My posted needs,,Shopkeeper: suppliers/demand
+dem.nav,Demand board,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dem.nearYou,Needs near you,,Shopkeeper: distributor/demand
+dem.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/demand
+dem.neededBy,Needed by,,Shopkeeper: suppliers/demand
+dem.neededByOn,Needed by {when},{when},Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noDate,No date set,,Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noOpen,No open needs near you right now.,,Shopkeeper: distributor/demand
+dem.noPosts,You haven’t posted any needs yet.,,Shopkeeper: suppliers/demand
+dem.optionalNote,Note (optional),,Shopkeeper: suppliers/demand
+dem.ownerSubtitle,Post what you need soon. Nearby farmers claim it and make the order.,,Shopkeeper: suppliers/demand
+dem.post,Post need,,Shopkeeper: suppliers/demand
+dem.postNeed,Post a need,,Shopkeeper: suppliers/demand
+dem.posted,Need posted.,,Shopkeeper: suppliers/demand
+dem.posting,Posting…,,Shopkeeper: suppliers/demand
+dem.viewOrder,View order,,Shopkeeper: suppliers/demand
+dist.accountSubtitle,How shops in your city find you.,,Shopkeeper: distributor/account
+dist.accountTitle,My profile,,Shopkeeper: distributor/account
+dist.activeOff,Hidden,,Shopkeeper: distributor/account
+dist.activeOn,Active,,Shopkeeper: distributor/account
+dist.activeToggle,Listed to shops,,Shopkeeper: distributor/account
+dist.areYou,Are you a distributor? ,,Shopkeeper: login
+dist.area,Area,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.brand,Supplier,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.brands,Brands,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.businessName,Business name,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.cancel,Cancel order,,Shopkeeper: distributor/orders/[id]
+dist.cancelConfirm,Cancel this order?,,Shopkeeper: distributor/orders/[id]
+dist.categories,Categories,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.city,City,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.close,Close,,Shopkeeper: distributor/shops
+dist.confirm,Confirm order,,Shopkeeper: distributor/orders/[id]
+dist.confirmed,Order confirmed.,,Shopkeeper: distributor/orders/[id]
+dist.create,Create distributor account,,Shopkeeper: distributor/register
+dist.deliver,Mark delivered,,Shopkeeper: distributor/orders/[id]
+dist.deliverHint,Marking delivered posts this order to the shop’s ledger.,,Shopkeeper: distributor/orders/[id]
+dist.delivered,Order marked delivered.,,Shopkeeper: distributor/orders/[id]
+dist.dispatch,Mark dispatched,,Shopkeeper: distributor/orders/[id]
+dist.dispatched,Order marked dispatched.,,Shopkeeper: distributor/orders/[id]
+dist.email,Email (optional),,Shopkeeper: distributor/register
+dist.empty,No purchase orders yet.,,Shopkeeper: distributor/index
+dist.farmerBadge,🌾 Farmer,,Shopkeeper: distributor/account
+dist.freshHint,"As a farmer, you sell Fresh Produce with no minimum order.",,Shopkeeper: distributor/register
+dist.freshProduce,Fresh Produce,,Shopkeeper: distributor/register
+dist.haveAccount,Already registered? ,,Shopkeeper: distributor/register
+dist.iAm,I am a…,,Shopkeeper: distributor/register
+dist.itemsN,{n} item{s},{n} {s},Shopkeeper: distributor/index
+dist.kindDistributor,Distributor,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.kindFarmer,Farmer (Fresh Produce),,Shopkeeper: distributor/register
+dist.lineTotal,Total,,Shopkeeper: distributor/orders/[id]
+dist.listHint,Comma-separated.,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.minOrderRs,Minimum order (₹),,Shopkeeper: distributor/account
+dist.navAccount,Account,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.navHome,Orders,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.navShops,Shops,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.orderBack,Orders,,Shopkeeper: distributor/orders/[id]
+dist.password,Password,,Shopkeeper: distributor/register
+dist.payAmountRs,Amount received (₹),,Shopkeeper: distributor/shops
+dist.payFrom,Payment from {name},{name},Shopkeeper: distributor/shops
+dist.payMethod,Method,,Shopkeeper: distributor/shops
+dist.payNote,Note (optional),,Shopkeeper: distributor/shops
+dist.paySave,Save payment,,Shopkeeper: distributor/shops
+dist.paySaved,Payment recorded.,,Shopkeeper: distributor/shops
+dist.phone,Phone,,Shopkeeper: distributor/register
+dist.placedOn,Placed {when},{when},Shopkeeper: distributor/index
+dist.priceFirst,Set a price on every item before confirming.,,Shopkeeper: distributor/orders/[id]
+dist.pricesHint,Enter a unit price in ₹ for each item. The subtotal updates as you type.,,Shopkeeper: distributor/orders/[id]
+dist.pricesSaved,Prices saved.,,Shopkeeper: distributor/orders/[id]
+dist.recordPayment,Record payment,,Shopkeeper: distributor/shops
+dist.registerCta,Register,,Shopkeeper: login
+dist.registerSubtitle,List your business and start receiving orders from shops in your city.,,Shopkeeper: distributor/register
+dist.registerTitle,Register as a distributor,,Shopkeeper: distributor/register
+dist.savePrices,Save prices,,Shopkeeper: distributor/orders/[id]
+dist.setPrices,Set your prices,,Shopkeeper: distributor/orders/[id]
+dist.shop,Shop,,Shopkeeper: distributor/orders/[id]
+dist.shopsEmpty,No shops trade with you yet.,,Shopkeeper: distributor/shops
+dist.shopsSubtitle,Shops that order from you and what each owes.,,Shopkeeper: distributor/shops
+dist.shopsTitle,Shops,,Shopkeeper: distributor/shops
+dist.subtitle,"Purchase orders from shops. Price the items, confirm, and fulfil.",,Shopkeeper: distributor/index
+dist.terminal,This order is {s} — no further changes.,{s},Shopkeeper: distributor/orders/[id]
+dist.title,Incoming orders,,Shopkeeper: distributor/index
+dist.unitPriceRs,Unit price (₹),,Shopkeeper: distributor/orders/[id]
+dist.village,Village,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.whatsapp,WhatsApp number,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.yourName,Your name,,Shopkeeper: distributor/register
+dlv.activate,Activate,,Shopkeeper: delivery
+dlv.active,Active,,Shopkeeper: delivery
+dlv.activeDeliveries,{n} active,{n},Shopkeeper: delivery
+dlv.add,Add champion,,Shopkeeper: delivery
+dlv.addTitle,Add a champion,,Shopkeeper: delivery
+dlv.adding,Adding…,,Shopkeeper: delivery
+dlv.area,Area (optional),,Shopkeeper: delivery
+dlv.areaPlaceholder,e.g. Sector 5 / 560001,,Shopkeeper: delivery
+dlv.assign,Assign,,Shopkeeper: delivery
+dlv.assigning,Assigning…,,Shopkeeper: delivery
+dlv.champion,Champion,,Shopkeeper: delivery
+dlv.champions,Champions,,Shopkeeper: delivery
+dlv.copied,Copied!,,Shopkeeper: delivery
+dlv.copyLink,Copy link,,Shopkeeper: delivery
+dlv.deactivate,Deactivate,,Shopkeeper: delivery
+dlv.deliveredCount,{n} delivered,{n},Shopkeeper: delivery
+dlv.feeLabel,Incentive ₹ (optional),,Shopkeeper: delivery
+dlv.inactive,Inactive,,Shopkeeper: delivery
+dlv.name,Name,,Shopkeeper: delivery
+dlv.namePlaceholder,e.g. Ravi,,Shopkeeper: delivery
+dlv.needChampion,Pick a champion first.,,Shopkeeper: delivery
+dlv.noChampions,No champions yet. Add your first delivery agent above.,,Shopkeeper: delivery
+dlv.noOrders,No home-delivery orders yet.,,Shopkeeper: delivery
+dlv.orders,Delivery orders,,Shopkeeper: delivery
+dlv.phone,Phone (optional),,Shopkeeper: delivery
+dlv.phonePlaceholder,e.g. 98xxxxxxxx,,Shopkeeper: delivery
+dlv.pickChampion,Pick a champion,,Shopkeeper: delivery
+dlv.subtitle,Register your delivery agents and assign home-delivery orders to them. Each champion gets a no-login link to mark orders picked up and delivered.,,Shopkeeper: delivery
+dlv.title,Delivery Champions,,Shopkeeper: delivery
+dlv.unassigned,Not assigned,,Shopkeeper: delivery

@@ -1,0 +1,72 @@
+key,english,placeholders,where_it_appears
+snl.auto,Auto,,Shopkeeper: settings
+snl.desc,Customers see your shop name in their own language. These are filled in automatically — edit any that need a fix.,,Shopkeeper: settings
+snl.english,English name,,Shopkeeper: settings
+snl.owner,Edited by you,,Shopkeeper: settings
+snl.review,Needs review,,Shopkeeper: settings
+snl.save,Save,,Shopkeeper: settings
+snl.title,Shop name in other languages,,Shopkeeper: settings
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stmt.totalAdjusted,Adjusted by shop,,Shopkeeper: customers/[id]; Shopper: account
+sup.addItem,Add item,,Shopkeeper: suppliers/index
+sup.area,Area,,Shopkeeper: suppliers/index
+sup.brands,Brands,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.cancelConfirm,Cancel this purchase order?,,Shopkeeper: suppliers/orders/[id]
+sup.cancelOrder,Cancel order,,Shopkeeper: suppliers/orders/[id]
+sup.cancelled,This order was cancelled.,,Shopkeeper: suppliers/orders/[id]
+sup.carries,Carries,,Shopkeeper: suppliers/index
+sup.clearFilters,Clear filters,,Shopkeeper: suppliers/index
+sup.empty,No suppliers found for your city yet.,,Shopkeeper: suppliers/index
+sup.emptyHint,"Suppliers are matched to your shop’s city. Set your city in Settings, or check back soon.",,Shopkeeper: suppliers/index
+sup.entriesFor,Entries — {name},{name},Shopkeeper: suppliers/ledger
+sup.farmerBadge,🌾 Farmer,,Shopkeeper: suppliers/index
+sup.filterBrand,Brand,,Shopkeeper: suppliers/index
+sup.filterCategory,Category,,Shopkeeper: suppliers/index
+sup.filterEmpty,No suppliers match these filters.,,Shopkeeper: suppliers/index
+sup.freshFilter,🌾 Fresh from farmers,,Shopkeeper: suppliers/index
+sup.hideEntries,Hide entries,,Shopkeeper: suppliers/ledger
+sup.itemName,Item name,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.itemsN,{n} item{s},{n} {s},Shopkeeper: suppliers/orders
+sup.ledgerEmpty,You don’t owe any supplier right now.,,Shopkeeper: suppliers/ledger
+sup.ledgerTitle,What I owe suppliers,,Shopkeeper: suppliers/ledger
+sup.lineTotal,Total,,Shopkeeper: suppliers/orders/[id]
+sup.minOrder,Min order,,Shopkeeper: suppliers/index
+sup.nav,Suppliers,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+sup.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/index
+sup.newPO,New purchase order,,Shopkeeper: suppliers/index
+sup.noEntries,No entries yet.,,Shopkeeper: suppliers/ledger
+sup.noMinOrder,No minimum,,Shopkeeper: suppliers/index
+sup.noteOptional,Note (optional),,Shopkeeper: suppliers/index
+sup.orderBack,Purchase orders,,Shopkeeper: suppliers/orders/[id]
+sup.orderingFrom,Ordering from {name},{name},Shopkeeper: suppliers/index
+sup.ordersEmpty,No purchase orders yet.,,Shopkeeper: suppliers/orders; Shopkeeper: suppliers/orders/[id]
+sup.ordersTitle,My purchase orders,,Shopkeeper: suppliers/orders
+sup.placedOn,Placed {when},{when},Shopkeeper: suppliers/orders
+sup.poRef,PO,,Shopkeeper: suppliers/ledger
+sup.priceNote,You send items and quantities; the supplier sets the prices.,,Shopkeeper: suppliers/index
+sup.pricesPending,The supplier sets prices when they confirm this order.,,Shopkeeper: suppliers/orders/[id]
+sup.qty,Qty,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.reorder,Reorder from this supplier,,Shopkeeper: suppliers/index
+sup.searchCatalogue,Search my products…,,Shopkeeper: suppliers/index
+sup.send,Send order,,Shopkeeper: suppliers/index
+sup.sending,Sending…,,Shopkeeper: suppliers/index
+sup.sent,Order sent to {name}. They will price it and confirm.,{name},Shopkeeper: suppliers/index
+sup.subtitle,Distributors serving your city. Reorder stock in a few taps.,,Shopkeeper: suppliers/index
+sup.supplier,Supplier,,Shopkeeper: suppliers/orders/[id]
+sup.tabDiscover,Discover,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.tabLedger,What I owe,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.tabOrders,My orders,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.title,Suppliers near you,,Shopkeeper: suppliers/index
+sup.typePayment,Payment,,Shopkeeper: suppliers/ledger
+sup.typeSupply,Supply,,Shopkeeper: suppliers/ledger
+sup.unitPrice,Unit price,,Shopkeeper: suppliers/orders/[id]
+sup.viewEntries,View entries,,Shopkeeper: suppliers/ledger
+sup.village,Village,,Shopkeeper: suppliers/index
+txn.adjustment,adjustment,,Shopkeeper: customers/[id]; Shopper: account
+type.adjustment,Adjustment,,Shopkeeper: transactions
+voice.err.denied,Allow microphone access to search by voice,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.empty,Didn’t catch that — tap the mic and speak,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.generic,Voice search didn’t work — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.ios,Voice search isn’t supported on iPhone yet — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.network,Voice search needs a connection,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops

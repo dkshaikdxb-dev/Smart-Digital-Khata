@@ -1,0 +1,125 @@
+key,english,placeholders,where_it_appears
+acc.language,Language,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ask.answer.credits,Your Khata Credits reward balance is ₹{amount}.,{amount},Shopkeeper: dashboard
+ask.answer.custBalance,{name} owes you ₹{amount}.,{name} {amount},Shopkeeper: dashboard
+ask.answer.custNotFound,I could not find that customer — please say the name again.,,Shopkeeper: dashboard
+ask.answer.myPlan,Your current plan is {plan}.,{plan},Shopkeeper: dashboard
+ask.answer.notAvailable,That is not available right now — please try again.,,Shopkeeper: dashboard
+ask.answer.storeLink,Your store link is shown on screen.,,Shopkeeper: dashboard
+ask.answer.weekSummary,This week you have collected ₹{amount}.,{amount},Shopkeeper: dashboard
+c.addMoney,Add money / Pre-pay,,Shopper: khata
+c.advanceLabel,Advance: {amt},{amt},Shopper: khata
+c.buyItAgain,Buy it again,,Shopper: products
+c.clearRecent,Clear,,Shopper: products
+c.enterAmount,Enter an amount to pay.,,Shopper: khata
+c.prepayHelper,"{due} clears your due, extra becomes advance",{due},Shopper: khata
+c.prepayHelperNoDue,{amt} becomes an advance you can spend later,{amt},Shopper: khata
+c.prepayMaxHint,You can pre-pay up to {amt} in advance,{amt},Shopper: khata
+c.prepayTooMuch,You can pay at most {amt} right now.,{amt},Shopper: khata
+c.recentSearches,Recent searches,,Shopper: products
+c.settledLabel,Settled — nothing due,,Shopper: khata
+c.shopByCategory,Shop by category,,Shopper: products
+c.voiceIn,Listens in {language},{language},Shopper: products
+c.youOwe,You owe {amt},{amt},Shopper: khata
+cat.savePhoto,Save photo,,Shopkeeper: catalog
+cat.uploadingPhoto,Uploading…,,Shopkeeper: catalog
+coedit.cash,Pay {now} when you collect — {amount} of items were taken off.,{now} {amount},Shopper: orders/[id]
+coedit.credit,{amount} has been taken off your khata at this shop.,{amount},Shopper: orders/[id]
+coedit.intro,{shop} could not supply everything you ordered.,{shop},Shopper: orders/[id]
+coedit.nowTotal,Your order now comes to {now}.,{now},Shopper: orders/[id]
+coedit.prepaid,You had already paid. {amount} is kept as credit at this shop — it comes off your next order here.,{amount},Shopper: orders/[id]
+coedit.reduced,{item} — {before} → {after},{item} {before} {after},Shopper: orders/[id]
+coedit.removed,{item} — removed,{item},Shopper: orders/[id]
+coedit.title,The shop adjusted your order,,Shopper: orders/[id]
+coedit.wasSubtotal,Original items total {was},{was},Shopper: orders/[id]
+common.refresh,Refresh,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+common.retry,Try again,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+credits.balanceLabel,Your Khata Credits,,Shopkeeper: account
+credits.bySource,By source,,Shopkeeper: account
+credits.earnedTitle,Earned so far,,Shopkeeper: account
+credits.empty,No credits yet — refer a shop to start earning,,Shopkeeper: account
+credits.kind.other,Adjustment,,Shopkeeper: account
+credits.pending,{amt} pending,{amt},Shopkeeper: account
+credits.recentTitle,Recent activity,,Shopkeeper: account
+credits.spendNote,"Spend on your subscription, promos and more",,Shopkeeper: account
+credits.title,Khata Credits,,Shopkeeper: account
+err.accountStopped,This account has been stopped. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.badRequest,Something in that was not right. Please check and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.conflict,That could not be done just now. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.generic,Something went wrong. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.notAllowed,You cannot open this.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.notFound,That is not available any more.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.offline,No internet right now. Check your connection and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.server,Something went wrong at our end. Please try again in a moment.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.signInRejected,"That number, email or password is not right. Please check and try again.",,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.signedOut,You have been signed out. Please sign in again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.slow,The network is too slow to finish that. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.suspended,This shop has been stopped by Smart Digital Khata. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.tooMany,Too many tries. Please wait a minute and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.accept,Accept,,Shopkeeper: orders
+eta.chipHour,~{n} hour,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.chipHourMin,~{h} hr {m} min,{h} {m},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.chipMin,~{n} min,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.late,Past the time you promised,,Shopkeeper: orders; Shopkeeper: orders/[id]
+eta.needMore,Need more time,,Shopkeeper: orders/[id]
+eta.needMoreHelp,Pick a new time — the customer is told straight away.,,Shopkeeper: orders/[id]
+eta.noPromise,No ready time promised,,Shopkeeper: orders/[id]
+eta.noTime,Accept without a time,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.notNow,Not now,,Shopkeeper: orders; Shopkeeper: orders/[id]
+eta.pickTime,Ready in about…,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.promisedBy,You promised ready by {time},{time},Shopkeeper: orders/[id]
+eta.readyBy,Ready by {time},{time},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.sent,The customer has been told the new time.,,Shopkeeper: orders/[id]
+eta.takingLonger,Taking a little longer,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+eta.takingLongerHelp,It was expected by {time}. It should not be much longer.,{time},Shopper: orders/[id]
+mod.pendingAria,{n} items waiting for review,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.accept,Accept,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.decide,This keeps alerting until you accept or reject it.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.enableSound,Turn on sound,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.items,{n} items,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.more,+{n} more,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.mute30,Mute 30 min,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.open,Open,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.setClamped,The platform limits how often alerts may repeat — your value was adjusted to the nearest allowed one.,,Shopkeeper: settings
+oalert.setEnabled,Alert me about new orders,,Shopkeeper: settings
+oalert.setHelp,A new order keeps alerting you — here and on WhatsApp — until you ACCEPT it or REJECT it. Not now only quiets one order for a few minutes; it never stops the alert.,,Shopkeeper: settings
+oalert.setMaxRepeats,Stop after (repeats),,Shopkeeper: settings
+oalert.setMuteNow,Mute for 30 minutes,,Shopkeeper: settings
+oalert.setMutedUntil,Muted until {when},{when},Shopkeeper: settings
+oalert.setRepeat,Repeat every (minutes),,Shopkeeper: settings
+oalert.setTitle,Order alerts,,Shopkeeper: settings
+oalert.settings,Alert settings,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.snooze,Not now — {mins} min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.snoozedFor,Quiet for {mins} more min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.spoken,New order. {name}. {n} items. {amount} rupees.,{name} {n} {amount},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.stillWaiting,Still waiting — you have not answered this one yet.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.title,New order waiting,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.unmute,Unmute,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.waiting,waiting {mins} min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oedit.cancelInstead,You have taken off everything. Cancel the order instead.,,Shopkeeper: orders/[id]
+oedit.confirm,Confirm the new order,,Shopkeeper: orders/[id]
+oedit.feeMayChange,"If this takes the order under your free-delivery amount, the delivery fee is recalculated when you confirm.",,Shopkeeper: orders/[id]
+oedit.help,"Take off what you do not have. You can only REMOVE items or LOWER quantities — nothing here can add an item, raise a quantity or change a price.",,Shopkeeper: orders/[id]
+oedit.historyBy,"{who}, {when}",{who} {when},Shopkeeper: orders/[id]
+oedit.historyReduced,{item} — {before} → {after},{item} {before} {after},Shopkeeper: orders/[id]; Shopper: orders/[id]
+oedit.historyRemoved,{item} — removed,{item},Shopkeeper: orders/[id]; Shopper: orders/[id]
+oedit.historyTitle,What was taken off,,Shopkeeper: orders/[id]
+oedit.historyUnknownWho,the shop,,Shopkeeper: orders/[id]
+oedit.keep,Leave it as it was,,Shopkeeper: orders/[id]
+oedit.moneyCash,Collect {amount} less when you hand the order over.,{amount},Shopkeeper: orders/[id]
+oedit.moneyCredit,{amount} will come off this customer's khata.,{amount},Shopkeeper: orders/[id]
+oedit.moneyPrepaid,Already paid online — {amount} will be kept as credit at your shop for this customer.,{amount},Shopkeeper: orders/[id]
+oedit.noChange,Nothing has been changed yet.,,Shopkeeper: orders/[id]
+oedit.originalSubtotal,Original subtotal,,Shopkeeper: orders/[id]
+oedit.reducedBy,You are taking off {amount}.,{amount},Shopkeeper: orders/[id]
+oedit.remove,Remove,,Shopkeeper: orders/[id]
+oedit.removedTag,Removed,,Shopkeeper: orders/[id]
+oedit.restore,Put back,,Shopkeeper: orders/[id]
+oedit.saved,The order has been reduced. The customer has been told what changed.,,Shopkeeper: orders/[id]
+oedit.saving,Saving…,,Shopkeeper: orders/[id]
+oedit.start,Not everything in stock?,,Shopkeeper: orders/[id]
+oedit.startBtn,Reduce this order,,Shopkeeper: orders/[id]
+oedit.thenAccept,Now accept it and tell the customer when it will be ready.,,Shopkeeper: orders/[id]
+oedit.title,Reduce this order,,Shopkeeper: orders/[id]
+oedit.was,Was {was},{was},Shopkeeper: orders/[id]
+oedit.wasNow,Was {was} — now {now},{was} {now},Shopkeeper: orders/[id]

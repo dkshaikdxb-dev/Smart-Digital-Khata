@@ -1,0 +1,109 @@
+key,english,placeholders,where_it_appears
+open.addClosure,Add date,,Shopkeeper: settings
+open.alwaysOpen,No daily hours set — open all day.,,Shopkeeper: settings
+open.bannerTitle,This shop is closed right now,,Shopper: cart; Shopper: shop/[shopId]
+open.browseOnly,You can look around — ordering opens again when the shop does.,,Shopper: shop/[shopId]
+open.cannotOrder,Closed — cannot order,,Shopper: cart; Shopper: shop/[shopId]
+open.cartBlocked,"This shop is closed right now, so the order cannot be placed. Your cart is saved.",,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.clearHours,Clear hours,,Shopkeeper: settings
+open.closeTime,Closes at,,Shopkeeper: settings
+open.closed,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.closedPill,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.closureDate,Date,,Shopkeeper: settings
+open.closureReason,Reason (optional),,Shopkeeper: settings
+open.closureReasonPlaceholder,Diwali,,Shopkeeper: settings
+open.closuresHelp,"Add the dates your shop will be shut — a festival, a wedding, anything. Customers see it before they order.",,Shopkeeper: settings
+open.closuresTitle,Holiday closures,,Shopkeeper: settings
+open.hoursHelp,"Set the daily opening and closing time, or leave both empty to stay open all day. A closing time earlier than the opening time means you stay open past midnight.",,Shopkeeper: settings
+open.hoursIncomplete,"Set both the opening and the closing time, or clear both.",,Shopkeeper: settings
+open.hoursTitle,Shop hours,,Shopkeeper: settings
+open.noClosures,No closures in the next 90 days.,,Shopkeeper: settings
+open.notTakingOrders,Customers cannot order right now.,,Shopkeeper: dashboard
+open.open,Open,,Shopkeeper: dashboard
+open.openTime,Opens at,,Shopkeeper: settings
+open.pause30,30 min,,Shopkeeper: dashboard
+open.pause60,1 hour,,Shopkeeper: dashboard
+open.pauseHelp,"Shutting for a bit? One tap, no time picker.",,Shopkeeper: dashboard
+open.pauseToday,Rest of today,,Shopkeeper: dashboard
+open.removeClosure,Remove,,Shopkeeper: settings
+open.resume,Resume now,,Shopkeeper: dashboard
+open.saveHours,Save hours,,Shopkeeper: settings
+open.stateClosed,Closed — you switched the shop off,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHoliday,Closed today — reopens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHolidayReason,Closed today ({reason}) — reopens {when},{reason} {when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHours,Closed — opens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.statePaused,Paused — back {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.switchLabel,Shop is open,,Shopkeeper: dashboard
+open.takingOrders,You are taking orders right now.,,Shopkeeper: dashboard
+open.title,Shop availability,,Shopkeeper: dashboard
+open.todayAt,at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.tomorrowAt,tomorrow at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+orej.back,Back,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.confirm,Reject order,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.done,Order rejected.,,Shopkeeper: orders/[id]
+orej.help,Tell the customer why — it is sent to them with the cancellation.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.placeholder,Another reason (optional),,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.prepaidCredit,Paid online — the amount becomes credit for this customer at your shop. There is no refund.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r1,Out of stock,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r2,Too busy right now,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r3,Shop is closing,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.reject,Reject,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.title,Reject this order?,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+own.pause,Pause,,Shopkeeper: dashboard
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+rc.nav,Ref campaigns,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ref.activatedOf,{a} of {n} activated,{a} {n},Shopkeeper: account; Shopper: account
+ref.creditBalance,Your referral credit,,Shopkeeper: account; Shopper: account
+set.addPhoto,Add photo,,Shopkeeper: settings
+set.choosePhoto,Choose a photo,,Shopkeeper: settings
+set.photoLive,Live,,Shopkeeper: settings
+set.photoPending,Pending review,,Shopkeeper: settings
+set.photoRejected,Rejected,,Shopkeeper: settings
+set.photoUploadedPending,Photo added. It will show on your storefront once our team approves it.,,Shopkeeper: settings
+set.photosFull,You can add up to 3 photos. Remove one to add another.,,Shopkeeper: settings
+set.removePhoto,Remove photo,,Shopkeeper: settings
+set.savingPhoto,Saving…,,Shopkeeper: settings
+set.shopPhotos,Storefront photos,,Shopkeeper: settings
+set.shopPhotosDesc,Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.,,Shopkeeper: settings
+share.captionCopied,Caption copied.,,Shopkeeper: dashboard
+share.copyCaption,Copy caption,,Shopkeeper: dashboard
+share.downloadBtn,Download,,Shopkeeper: dashboard
+share.downloaded,Poster downloaded.,,Shopkeeper: dashboard
+share.err,Could not make the poster on this device.,,Shopkeeper: dashboard
+share.offerDefault,Visit our shop today!,,Shopkeeper: dashboard
+share.offerLabel,Today's offer or message,,Shopkeeper: dashboard
+share.offerPlaceholder,e.g. Fresh stock today! Special discount till evening.,,Shopkeeper: dashboard
+share.preset1,Fresh stock today!,,Shopkeeper: dashboard
+share.preset2,Special discount today,,Shopkeeper: dashboard
+share.preset3,Free home delivery,,Shopkeeper: dashboard
+share.scanCta,Scan to open our shop,,Shopkeeper: dashboard
+share.shareBtn,Share,,Shopkeeper: dashboard
+share.shared,Opening share…,,Shopkeeper: dashboard
+share.subtitle,"Make a poster with your offer and store QR, then post it to WhatsApp Status, Instagram or Facebook.",,Shopkeeper: dashboard
+share.title,Share your shop,,Shopkeeper: dashboard
+snl.auto,Auto,,Shopkeeper: settings
+snl.desc,Customers see your shop name in their own language. These are filled in automatically — edit any that need a fix.,,Shopkeeper: settings
+snl.english,English name,,Shopkeeper: settings
+snl.owner,Edited by you,,Shopkeeper: settings
+snl.review,Needs review,,Shopkeeper: settings
+snl.save,Save,,Shopkeeper: settings
+snl.title,Shop name in other languages,,Shopkeeper: settings
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stmt.totalAdjusted,Adjusted by shop,,Shopkeeper: customers/[id]; Shopper: account
+txn.adjustment,adjustment,,Shopkeeper: customers/[id]; Shopper: account
+type.adjustment,Adjustment,,Shopkeeper: transactions
+voice.err.denied,Allow microphone access to search by voice,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.empty,Didn’t catch that — tap the mic and speak,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.generic,Voice search didn’t work — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.ios,Voice search isn’t supported on iPhone yet — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.network,Voice search needs a connection,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops

@@ -1,0 +1,121 @@
+key,english,placeholders,where_it_appears
+ord.advanceCol,Advance,,Shopkeeper: orders
+orej.back,Back,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.confirm,Reject order,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.done,Order rejected.,,Shopkeeper: orders/[id]
+orej.help,Tell the customer why — it is sent to them with the cancellation.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.placeholder,Another reason (optional),,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.prepaidCredit,Paid online — the amount becomes credit for this customer at your shop. There is no refund.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r1,Out of stock,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r2,Too busy right now,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r3,Shop is closing,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.reject,Reject,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.title,Reject this order?,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ostatus.cancelledNote,This order was cancelled.,,Shopper: orders/[id]
+ostatus.hint.ready_delivery,Ready — awaiting dispatch,,Shopkeeper: distributor/orders/[id]; Shopkeeper: orders; Shopkeeper: orders/[id]
+ostatus.hint.ready_pickup,Ready for pickup,,Shopkeeper: distributor/orders/[id]; Shopkeeper: orders; Shopkeeper: orders/[id]
+own.pause,Pause,,Shopkeeper: dashboard
+pay.cashOnDelivery,Cash on delivery,,Shopper: orders/[id]
+pay.cashOnPickup,Cash on pickup,,Shopper: orders/[id]
+pay.onKhata,On khata,,Shopper: orders/[id]
+pay.paid,Paid,,Shopper: orders/[id]
+pay.payOnline,Pay online,,Shopper: orders/[id]
+promo.balanceLabel,Your Khata Credits,,Shopkeeper: promote
+promo.clicks,Taps,,Shopkeeper: promote
+promo.costLabel,Cost,,Shopkeeper: promote
+promo.days,How many days,,Shopkeeper: promote
+promo.disabledNote,Shop promos are not available right now. Please check back later.,,Shopkeeper: promote
+promo.empty,No placements yet. Boost your shop above to appear to nearby shoppers.,,Shopkeeper: promote
+promo.freeBadge,Free,,Shopkeeper: promote
+promo.freeCap,"Up to {days} days, and {max} free promo running at a time.",{days} {max},Shopkeeper: promote
+promo.freeDisabledNote,Free promo requests are not available right now. Please check back later.,,Shopkeeper: promote
+promo.freeLimit,You already have a free promo pending or live. Wait for it to finish before requesting another.,,Shopkeeper: promote
+promo.freeSubmit,Request free promo,,Shopkeeper: promote
+promo.freeSubmitted,Request sent for review. It goes live once approved.,,Shopkeeper: promote
+promo.freeSubmitting,Requesting…,,Shopkeeper: promote
+promo.freeSubtitle,No Khata Credits needed. Our team reviews it before it goes live.,,Shopkeeper: promote
+promo.freeTitle,Request a free promo,,Shopkeeper: promote
+promo.freeUsed,You have {count} of {max} free promo(s) pending or live.,{count} {max},Shopkeeper: promote
+promo.impr,Views,,Shopkeeper: promote
+promo.loading,Loading…,,Shopkeeper: promote
+promo.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more credits.,,Shopkeeper: promote
+promo.myPlacements,My placements,,Shopkeeper: promote
+promo.nav,Boost,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+promo.offerPlaceholder,e.g. Fresh stock daily,,Shopkeeper: promote
+promo.offerText,Offer line (optional),,Shopkeeper: promote
+promo.paidBadge,Boosted,,Shopkeeper: promote
+promo.perDay,{amount} / day,{amount},Shopkeeper: promote
+promo.refundNote,"If a promo is rejected, your Khata Credits are refunded in full.",,Shopkeeper: promote
+promo.reviewNote,Review note,,Shopkeeper: promote
+promo.spent,Spent,,Shopkeeper: promote
+promo.stActive,Live,,Shopkeeper: promote
+promo.stDraft,Draft,,Shopkeeper: promote
+promo.stPaused,Paused,,Shopkeeper: promote
+promo.stPending,Pending review,,Shopkeeper: promote
+promo.stRejected,Rejected (refunded),,Shopkeeper: promote
+promo.submit,Boost for {amount},{amount},Shopkeeper: promote
+promo.submitted,Submitted for review. It goes live once approved.,,Shopkeeper: promote
+promo.submitting,Submitting…,,Shopkeeper: promote
+promo.subtitle,Spend your Khata Credits to feature your shop to nearby shoppers. A quick review keeps the marketplace clean before your promo goes live.,,Shopkeeper: promote
+promo.subtitleField,Subtitle (optional),,Shopkeeper: promote
+promo.subtitlePlaceholder,e.g. Visit us today,,Shopkeeper: promote
+promo.title,Boost my shop,,Shopkeeper: promote
+promo.window,Runs,,Shopkeeper: promote
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+rc.nav,Ref campaigns,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ref.activatedOf,{a} of {n} activated,{a} {n},Shopkeeper: account; Shopper: account
+ref.creditBalance,Your referral credit,,Shopkeeper: account; Shopper: account
+set.addPhoto,Add photo,,Shopkeeper: settings
+set.choosePhoto,Choose a photo,,Shopkeeper: settings
+set.keySecret,Key Secret,,Shopkeeper: settings
+set.photoLive,Live,,Shopkeeper: settings
+set.photoPending,Pending review,,Shopkeeper: settings
+set.photoRejected,Rejected,,Shopkeeper: settings
+set.photoUploadedPending,Photo added. It will show on your storefront once our team approves it.,,Shopkeeper: settings
+set.photosFull,You can add up to 3 photos. Remove one to add another.,,Shopkeeper: settings
+set.pincode,Pincode,,Shopkeeper: settings
+set.razorpayKeyId,Razorpay Key ID,,Shopkeeper: settings
+set.removePhoto,Remove photo,,Shopkeeper: settings
+set.savingPhoto,Saving…,,Shopkeeper: settings
+set.shopPhotos,Storefront photos,,Shopkeeper: settings
+set.shopPhotosDesc,Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.,,Shopkeeper: settings
+set.village,Village,,Shopkeeper: settings
+set.webhookSecret,Webhook Secret,,Shopkeeper: settings
+sfaq.active,Show to customers,,Shopkeeper: settings
+sfaq.add,Add FAQ,,Shopkeeper: settings
+sfaq.answer,Answer,,Shopkeeper: settings
+sfaq.answerPlaceholder,e.g. We are open 8am–9pm every day.,,Shopkeeper: settings
+sfaq.delete,Delete,,Shopkeeper: settings
+sfaq.empty,No FAQs yet. Add your first question and answer below.,,Shopkeeper: settings
+sfaq.needBoth,Please write both a question and an answer.,,Shopkeeper: settings
+sfaq.order,Order,,Shopkeeper: settings
+sfaq.question,Question,,Shopkeeper: settings
+sfaq.questionPlaceholder,e.g. What are your shop timings?,,Shopkeeper: settings
+sfaq.save,Save,,Shopkeeper: settings
+sfaq.subtitle,"Write answers to common questions for your customers — timings, delivery, returns, offers. These show on each customer’s account page.",,Shopkeeper: settings
+sfaq.title,Store FAQ,,Shopkeeper: settings
+share.captionCopied,Caption copied.,,Shopkeeper: dashboard
+share.copyCaption,Copy caption,,Shopkeeper: dashboard
+share.downloadBtn,Download,,Shopkeeper: dashboard
+share.downloaded,Poster downloaded.,,Shopkeeper: dashboard
+share.err,Could not make the poster on this device.,,Shopkeeper: dashboard
+share.offerDefault,Visit our shop today!,,Shopkeeper: dashboard
+share.offerLabel,Today's offer or message,,Shopkeeper: dashboard
+share.offerPlaceholder,e.g. Fresh stock today! Special discount till evening.,,Shopkeeper: dashboard
+share.preset1,Fresh stock today!,,Shopkeeper: dashboard
+share.preset2,Special discount today,,Shopkeeper: dashboard
+share.preset3,Free home delivery,,Shopkeeper: dashboard
+share.scanCta,Scan to open our shop,,Shopkeeper: dashboard
+share.shareBtn,Share,,Shopkeeper: dashboard
+share.shared,Opening share…,,Shopkeeper: dashboard
+share.subtitle,"Make a poster with your offer and store QR, then post it to WhatsApp Status, Instagram or Facebook.",,Shopkeeper: dashboard
+share.title,Share your shop,,Shopkeeper: dashboard

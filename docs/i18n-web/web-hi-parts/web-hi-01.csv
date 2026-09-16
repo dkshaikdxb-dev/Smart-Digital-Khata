@@ -1,0 +1,22 @@
+key,english,placeholders,where_it_appears
+c.buyItAgain,Buy it again,,Shopper: products
+c.clearRecent,Clear,,Shopper: products
+c.recentSearches,Recent searches,,Shopper: products
+c.shopByCategory,Shop by category,,Shopper: products
+c.voiceIn,Listens in {language},{language},Shopper: products
+err.accountStopped,This account has been stopped. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.signInRejected,"That number, email or password is not right. Please check and try again.",,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.suspended,This shop has been stopped by Smart Digital Khata. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+mod.pendingAria,{n} items waiting for review,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]

@@ -56,13 +56,27 @@ function parseCsv(text) {
 const file = process.argv[2];
 const apply = process.argv.includes('--apply');
 if (!file) { console.error('usage: node scripts/web-i18n-verify.mjs <file.csv> [--apply]'); process.exit(2); }
-const lang = path.basename(file).replace(/^web-/, '').replace(/\.csv$/, '');
+const lang = path.basename(file).replace(/^web-/, '').replace(/-\d+$/, '').replace(/\.csv$/, '').replace(/-\d+$/, '');
 if (!SCRIPT[lang]) { console.error('unknown language in filename:', lang); process.exit(2); }
 
-const rows = parseCsv(fs.readFileSync(path.join(ROOT, file), 'utf8'));
+const filePath = path.isAbsolute(file) ? file : path.join(ROOT, file);
+const rows = parseCsv(fs.readFileSync(filePath, 'utf8'));
 const head = rows.shift().map((h) => h.trim());
-const col = (name) => { const i = head.indexOf(name); if (i < 0) { console.error('missing column:', name); process.exit(2); } return i; };
-const [K, E, P, W, T] = ['key', 'english', 'placeholders', 'where_it_appears', 'translation'].map(col);
+const col = (name, required = true) => {
+  const i = head.indexOf(name);
+  if (i < 0 && required) { console.error('missing column:', name); process.exit(2); }
+  return i;
+};
+const K = col('key');
+const T = col('translation');
+// The `english` column is OPTIONAL, because the leaner return we now ask for is
+// just key + translation. That is the stronger shape, not a concession: the KEY
+// travels with the translation, so a row that shifts cannot silently pair text
+// with the wrong string, and the English is read from this repo — the source of
+// truth — instead of from a column the model re-emitted and may have reflowed.
+// When a file does carry `english` (the original five-column sheets), it is
+// still checked, because then a mismatch is real evidence of a shifted row.
+const E = col('english', false);
 
 const known = new Set(getAllKeys());
 const phOf = (s) => [...String(s).matchAll(/\{[a-zA-Z0-9_]+\}/g)].map((m) => m[0]).sort();
@@ -70,15 +84,17 @@ const phOf = (s) => [...String(s).matchAll(/\{[a-zA-Z0-9_]+\}/g)].map((m) => m[0
 const accepted = {}; const rejected = []; let blank = 0;
 for (const r of rows) {
   const key = (r[K] || '').trim();
-  const en = r[E] || '';
+  // Always compare placeholders against the repo's English, never the file's.
+  const en = staticValue('en', key) || '';
   const tr = (r[T] || '').trim();
   const rej = (why) => rejected.push({ key, why, tr });
 
   if (!key) { rej('row has no key'); continue; }
   if (!known.has(key)) { rej('key is not in this repo’s dictionary'); continue; }
-  // Identity: the row must still describe the string it claims to. This is the
-  // check that catches a row that bled in from another language's file.
-  if (en !== staticValue('en', key)) { rej('english no longer matches the repo — row may have shifted'); continue; }
+  // Identity: when the file echoes the English, it must still describe the
+  // string it claims to. This is the check that caught a row bled in from
+  // another language's file.
+  if (E >= 0 && (r[E] || '') !== en) { rej('english no longer matches the repo — row may have shifted'); continue; }
   if (!tr) { blank++; continue; }
   if (tr === en) { rej('left in English'); continue; }
   if (tr.includes('�')) { rej('contains U+FFFD (mojibake)'); continue; }
@@ -96,6 +112,37 @@ for (const r of rows) {
 
 const n = Object.keys(accepted).length;
 console.log(`${file}: ${rows.length} rows — ${n} accepted, ${rejected.length} rejected, ${blank} left blank`);
+
+// TRUNCATION. The most likely way a run of this size goes wrong is the model
+// quietly stopping near the end, and a short reply is indistinguishable from a
+// complete one by eye. When the request this answers is on disk, the key sets
+// are compared: a missing key is a row that was never translated, not a row
+// that was rejected, and nothing above would have said so.
+let truncated = 0;
+const base = path.basename(file);
+const langOf = base.replace(/^web-/, '').replace(/-\d+\.csv$/, '').replace(/\.csv$/, '');
+const candidates = [
+  path.join(ROOT, 'docs/i18n-web', `web-${langOf}-parts`, base),
+  path.join(ROOT, 'docs/i18n-web', base),
+  path.join(ROOT, 'docs/i18n-web', `web-${langOf}.csv`),
+];
+const requestFile = candidates.find((c) => fs.existsSync(c) && path.resolve(c) !== path.resolve(filePath));
+if (requestFile) {
+  const reqRows = parseCsv(fs.readFileSync(requestFile, 'utf8'));
+  const reqHead = reqRows.shift().map((h) => h.trim());
+  const rk = reqHead.indexOf('key');
+  const asked = reqRows.map((r) => (r[rk] || '').trim()).filter(Boolean);
+  const answered = new Set(rows.map((r) => (r[K] || '').trim()));
+  const missing = asked.filter((k) => !answered.has(k));
+  console.log(`\nagainst ${path.relative(ROOT, requestFile)}: ${asked.length} asked, ${asked.length - missing.length} answered`);
+  truncated = missing.length;
+  if (missing.length) {
+    console.log(`  ${missing.length} ROWS NEVER CAME BACK — the reply was cut short, not merely wrong:`);
+    console.log(`    first missing: ${missing.slice(0, 3).join(', ')}`);
+    console.log(`    last missing:  ${missing.slice(-3).join(', ')}`);
+    console.log('  Re-run that part and ask for the missing keys, rather than accepting a partial file.');
+  }
+}
 if (rejected.length) {
   console.log('\nREJECTED (not applied, nothing repaired silently):');
   const byWhy = {};
@@ -106,7 +153,7 @@ if (rejected.length) {
   }
 }
 
-if (!apply) { console.log('\n(dry run — pass --apply to merge the accepted rows)'); process.exit(rejected.length ? 1 : 0); }
+if (!apply) { console.log('\n(dry run — pass --apply to merge the accepted rows)'); process.exit(rejected.length || truncated ? 1 : 0); }
 if (!n) { console.log('\nnothing accepted; not writing'); process.exit(1); }
 
 const regPath = path.join(ROOT, 'backend/src/data/regional-i18n.json');
