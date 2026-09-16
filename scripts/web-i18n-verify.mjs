@@ -89,9 +89,15 @@ function parseKeyValue(text) {
       if (out.length) out[out.length - 1][1] += '\n' + line;
       continue;
     }
-    let value = line.slice(i + 1).trim();
-    if (value.length > 1 && value.startsWith('"') && value.endsWith('"')) {
-      value = value.slice(1, -1).replace(/""/g, '"');
+    // Do NOT trim here. A leading space can be the whole point of a string:
+    // lang.betaSuffix is " (beta)", appended to a language name, and trimming
+    // it renders "বাংলা(বিটা)". Surrounding quotes are still unwrapped; the
+    // decision about whitespace is made later against the English, which is the
+    // only thing that knows whether a space belongs.
+    let value = line.slice(i + 1).replace(/^\uFEFF/, '');
+    const t = value.trim();
+    if (t.length > 1 && t.startsWith('"') && t.endsWith('"')) {
+      value = t.slice(1, -1).replace(/""/g, '"');
     }
     out.push([line.slice(0, i).trim(), value]);
   }
@@ -147,7 +153,12 @@ for (const r of rows) {
   const key = (r[K] || '').trim();
   // Always compare placeholders against the repo's English, never the file's.
   const en = staticValue('en', key) || '';
-  const tr = (r[T] || '').trim();
+  // Match the English's own edges: keep a leading/trailing space only where the
+  // source has one, so a stray space after the comma is dropped and a
+  // deliberate one (" (beta)") survives.
+  let tr = String(r[T] || '');
+  if (!/^\s/.test(en)) tr = tr.replace(/^\s+/, '');
+  if (!/\s$/.test(en)) tr = tr.replace(/\s+$/, '');
   const rej = (why) => rejected.push({ key, why, tr });
 
   if (!key) { rej('row has no key'); continue; }
@@ -206,6 +217,31 @@ for (const r of rows) {
   accepted[key] = tr;
 }
 
+// A CURRENCY WORD NEXT TO AN AMOUNT THAT ALREADY CARRIES ₹.
+//
+// Every money placeholder in this app arrives pre-formatted — money()/inr()
+// put the ₹ in — so a translation that writes "{amount} টাকা" renders
+// "₹500.00 টাকা", i.e. "₹500.00 rupees". Harmless to understand, but it is not
+// what the English says and not what a person would write.
+//
+// A WARNING, not a rejection, and the fix is deliberately not made here:
+// dropping the word works in "আপনি {amount} টাকা কমাচ্ছেন" but not in
+// "{amount} টাকার জিনিস", where the genitive is doing grammatical work and the
+// sentence has to be rephrased instead. That is a native speaker's call.
+//
+// Only fires when the word sits WITHIN a few characters of the placeholder, and
+// never when the English itself says "rupee" — oalert.spoken is read aloud by a
+// speech engine from an unformatted number and correctly says টাকা.
+const CURRENCY_WORD = {
+  bn: 'টাকা', hi: 'रुपये|रुपए', mr: 'रुपये', gu: 'રૂપિયા', ta: 'ரூபாய்',
+  te: 'రూపాయల|రూపాయి', kn: 'ರೂಪಾಯಿ', ml: 'രൂപ', ur: 'روپے',
+};
+function redundantCurrencyWord(lang, en, tr) {
+  const word = CURRENCY_WORD[lang];
+  if (!word || /rupee/i.test(en) || !/\{[a-zA-Z0-9_]+\}/.test(en)) return false;
+  return new RegExp(`\\{[a-zA-Z0-9_]+\\}[^\\s]{0,3}\\s?(${word})`).test(tr);
+}
+
 // NOT CHECKED HERE: spelling drift inside one reply.
 //
 // The first good Bengali reply spelled "Premium" প্রিমিয়াম five times and
@@ -226,6 +262,14 @@ console.log(`${file}: ${rows.length} rows — ${n} accepted, ${rejected.length} 
 // are compared: a missing key is a row that was never translated, not a row
 // that was rejected, and nothing above would have said so.
 let truncated = 0;
+const currencyNotes = Object.entries(accepted)
+  .filter(([k, v]) => redundantCurrencyWord(lang, staticValue('en', k) || '', v));
+if (currencyNotes.length) {
+  console.log(`\nWORTH A LOOK — ${currencyNotes.length} row(s) put a currency word after an amount that already carries ₹:`);
+  for (const [k, v] of currencyNotes.slice(0, 8)) console.log(`  ${k}: ${v}`);
+  console.log('  Applied anyway. Dropping the word suits some of these and not others — leave it to the native review.');
+}
+
 const base = path.basename(file);
 const langOf = base.replace(/^web-/, '').replace(/-\d+\.csv$/, '').replace(/\.csv$/, '');
 const candidates = [
