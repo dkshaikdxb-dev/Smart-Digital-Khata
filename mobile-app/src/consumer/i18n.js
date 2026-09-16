@@ -301,6 +301,8 @@ const en = {
   'cart.placing': 'Placing…',
   'cart.addressRequired': 'Please enter a delivery address.',
   'cart.creditNote': 'Added to your khata at this shop.',
+  'cart.khataFull': 'This order is more than your khata allows at this shop. Choose Pay online or Cash, or order less.',
+  'cart.itemGone': 'An item in your cart is no longer sold at this shop. Remove it and try again.',
   'cart.prepaidNote': 'Pay now on the shop’s secure page.',
   'cart.cashNote': 'Pay cash on pickup or delivery.',
   'cart.remove': 'Remove',

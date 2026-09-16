@@ -73,13 +73,34 @@ api.interceptors.response.use(
 );
 
 // Turn an axios error into a plain Error carrying the server's message when it
-// sent one (ApiError responses are { error: { message } } or { message }).
+// sent one.
+//
+// THE ENVELOPE THIS LOOKED FOR DID NOT EXIST. This read `data.error?.message`,
+// i.e. it expected `{ error: { message } }`. What middleware/errorHandler.js
+// actually sends is `{ error: <string>, details }` — `error` IS the message.
+// `data.error?.message` on a string is undefined, `data.message` is undefined,
+// so EVERY http failure fell through to axios's own text and `e.message` became
+// "Request failed with status code 422".
+//
+// The server's reason was therefore never available to any screen. That is why
+// a shopper whose order hit their khata limit was told "Something in that was
+// not right" — the only thing errorText.js had left to go on was the status.
+// It also silently defeated refusalError(), which exists precisely to show the
+// server's words and was showing axios's instead.
+//
+// Both shapes are read now, string first. `e.code` is left alone: for the 409
+// the server sends `error: 'shop_closed'`, and shopClosedMessage matches on it.
+function serverMessage(data) {
+  if (!data) return null;
+  if (typeof data.error === 'string' && data.error) return data.error;
+  if (data.error && typeof data.error.message === 'string' && data.error.message) return data.error.message;
+  if (typeof data.message === 'string' && data.message) return data.message;
+  return null;
+}
+
 function normalizeError(error) {
   const data = error.response && error.response.data;
-  const msg =
-    (data && (data.error?.message || data.message)) ||
-    error.message ||
-    'Something went wrong';
+  const msg = serverMessage(data) || error.message || 'Something went wrong';
   const e = new Error(msg);
   e.status = error.response && error.response.status;
   // Keep the TYPED part of the failure. The backend answers a refusal as

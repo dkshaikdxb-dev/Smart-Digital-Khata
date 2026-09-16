@@ -64,10 +64,64 @@ export function refusalError(t, err) {
   if (!err) return t('err.generic');
   if (err.transport) return friendlyError(t, err);
   const status = Number(err.status);
-  if (Number.isFinite(status) && status >= 400 && status < 500 && err.message) {
+  if (Number.isFinite(status) && status >= 400 && status < 500 && showableServerText(err)) {
     return String(err.message);
   }
   return friendlyError(t, err);
+}
+
+// Is the server's text something to put in front of a shopper?
+//
+// Two kinds of 4xx text are NOT:
+//
+//   - A Joi validation failure. middleware/validate.js answers
+//     badRequest('Validation failed', [ '"items[0].weight_grams" must be an
+//     integer', ... ]) — developer text, and its `details` is an ARRAY, which
+//     is what tells it apart from a business refusal's details OBJECT.
+//   - A machine code rather than a sentence: the 409 is literally
+//     `shop_closed`. Codes are snake_case with no spaces; a refusal a human
+//     wrote has spaces in it.
+function showableServerText(err) {
+  const msg = err && err.message;
+  if (!msg || typeof msg !== 'string') return false;
+  if (Array.isArray(err.details)) return false;
+  if (/^[a-z0-9]+(_[a-z0-9]+)+$/.test(msg.trim())) return false;
+  if (/^Validation failed/i.test(msg)) return false;
+  return true;
+}
+
+// Why an order was refused, in the shopper's own language where we can manage
+// it, and in the server's words where we cannot.
+//
+// Placing an order is the screen where "Something in that was not right" costs
+// the most: it is the end of the flow, the shopper has chosen items and a
+// payment method, and the refusals are all things ONLY the server knows and the
+// shopper can act on — over their khata limit, under the delivery minimum, an
+// item the shop has since removed. friendlyError() flattens every one of those
+// to the same sentence, which tells them nothing to do next.
+//
+// The three that matter are recognised STRUCTURALLY, from the details object
+// the backend already sends, so they can be answered in the shopper's language:
+//
+//   credit_limit / family_sub_limit -> my.controller's khata limit gates
+//   delivery_min_order              -> the delivery minimum gate
+//   product_id                      -> buildLineItems: gone or deactivated
+//
+// Anything else falls through to the server's own sentence ("This shop does not
+// offer pickup.") which is English but specific, and only then to the authored
+// generic. `money` formats paise the way the rest of the screen does.
+export function orderRefusal(t, err, money) {
+  if (!err) return t('err.generic');
+  if (err.transport) return friendlyError(t, err);
+  const d = err.details;
+  if (d && !Array.isArray(d) && typeof d === 'object') {
+    if (d.credit_limit != null || d.family_sub_limit != null) return t('cart.khataFull');
+    if (d.delivery_min_order != null && typeof money === 'function') {
+      return t('cart.belowMin', { amt: money(d.delivery_min_order) });
+    }
+    if (d.product_id) return t('cart.itemGone');
+  }
+  return refusalError(t, err);
 }
 
 // True for a request we cancelled ourselves (a superseded search). The caller

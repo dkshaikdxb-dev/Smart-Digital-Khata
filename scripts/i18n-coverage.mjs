@@ -169,6 +169,17 @@ const FLOORS = {
   // 'upd.runtime' and 'upd.channel', whose VALUES are English Expo identifiers.
   // Nothing else in this file moved; hi/bn/mr/gu/ur keep their floors, and both
   // owner rows are untouched.
+  //
+  // Batch ORDER-REFUSAL added TWO consumer keys, 'cart.khataFull' and
+  // 'cart.itemGone', in English only — every language's percentage falls from
+  // 99.4 to 98.8 and the floors are unchanged, which is the honest record of a
+  // gap rather than a regression. They are the two answers a shopper gets when
+  // an order is refused, and no human translation of either exists anywhere in
+  // this codebase to reuse; machine-writing them into nine languages is exactly
+  // what the review process is for. Until they come back, those nine read the
+  // English — which is still strictly better than what they read before, which
+  // was a TRANSLATED sentence that told them nothing ("Something in that was
+  // not right") when the truth was "this is over your khata limit here".
   consumer: { hi: 341, bn: 341, ta: 341, te: 341, kn: 341, ml: 341, mr: 341, gu: 341, ur: 341 },
   //
   // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'

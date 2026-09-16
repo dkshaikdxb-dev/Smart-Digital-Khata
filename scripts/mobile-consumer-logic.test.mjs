@@ -487,6 +487,92 @@ section('consumer tabs');
     'a result opens the seller inside the Products tab rather than jumping tabs');
 }
 
+section('why an order was refused');
+{
+  // A shopper placed a 2,440-rupee order on khata and was told "Something in
+  // that was not right. Please check and try again." The real answer was that
+  // the order was over their khata limit at that shop — a thing they could act
+  // on in one tap by choosing Cash instead. Two defects stacked up:
+  //
+  //   1. consumerApi.normalizeError looked for `{ error: { message } }`. The
+  //      server sends `{ error: '<message>', details }`, so the reason was
+  //      dropped on EVERY http failure and err.message became axios's own
+  //      "Request failed with status code 422".
+  //   2. The cart then had nothing but the status, and friendlyError flattens
+  //      400/422 to one sentence.
+  const E = loadPure('mobile-app/src/consumer/lib/errorText.js',
+    ['friendlyError', 'refusalError', 'orderRefusal', 'canRetry']);
+  // A dictionary stand-in: returns the KEY, so an assertion names the string
+  // the shopper would read rather than its English text.
+  const t = (k, v) => (v && v.amt ? `${k}:${v.amt}` : k);
+  const money = (p) => `Rs${(p / 100).toFixed(2)}`;
+  const refuse = (status, message, details) => ({ status, message, details });
+
+  eq(E.orderRefusal(t, refuse(422, 'Credit limit exceeded', { credit_limit: 200000, current_balance: 80000, attempted: 244000 }), money),
+    'cart.khataFull',
+    'over the khata limit says so, in the shopper’s language');
+  eq(E.orderRefusal(t, refuse(422, 'Family sub-limit exceeded', { family_sub_limit: 100000 }), money),
+    'cart.khataFull',
+    'a family sub-limit is the same answer — the khata will not take it');
+  eq(E.orderRefusal(t, refuse(422, 'Minimum order for delivery is Rs200.00', { delivery_min_order: 20000, subtotal: 9000 }), money),
+    'cart.belowMin:Rs200.00',
+    'under the delivery minimum names the amount, from the server’s own number');
+  eq(E.orderRefusal(t, refuse(422, 'Product not available at this shop', { product_id: 'p1' }), money),
+    'cart.itemGone',
+    'an item the shop no longer sells says which action to take');
+
+  // A refusal with no structured details is still better as the server's own
+  // sentence than as the generic — it is English, but it is specific.
+  eq(E.orderRefusal(t, refuse(400, 'This shop does not offer pickup.', undefined), money),
+    'This shop does not offer pickup.',
+    'a refusal we do not recognise still reaches the shopper in words');
+
+  // ...but developer text never does. Joi answers with an ARRAY of details.
+  eq(E.orderRefusal(t, refuse(400, 'Validation failed', ['"items[0].weight_grams" must be an integer']), money),
+    'err.badRequest',
+    'a validation failure stays behind the authored sentence, not raw Joi text');
+
+  // The line above is caught by TWO guards (the details array, and the literal
+  // "Validation failed"), so on its own it pins neither. This one has an
+  // ordinary-looking message and can only be stopped by the array: field-level
+  // detail lists are developer text whatever sentence introduces them.
+  eq(E.orderRefusal(t, refuse(400, 'Some fields are wrong', ['"quantity" must be a number']), money),
+    'err.badRequest',
+    'any array of field details is developer text, whatever the message says');
+
+  // Nor does a machine code. The 409 is literally the string `shop_closed`;
+  // CartScreen answers that with shopClosedMessage before this is reached, but
+  // no code should ever be printable.
+  eq(E.orderRefusal(t, refuse(409, 'shop_closed', { reason: 'holiday' }), money),
+    'err.conflict',
+    'a snake_case code is never shown as if it were a sentence');
+  eq(E.refusalError(t, refuse(400, 'invalid_otp', null)), 'err.badRequest',
+    'and refusalError, which the OTP screens use, refuses codes too');
+
+  // Transport failures are not refusals: no signal must still read as no signal.
+  eq(E.orderRefusal(t, { transport: 'offline' }, money), 'err.offline',
+    'no signal is still no signal, not a refusal');
+  eq(E.orderRefusal(t, { transport: 'timeout' }, money), 'err.slow',
+    'and a slow network says so');
+
+  // The envelope fix itself. consumerApi imports axios and cannot run in this
+  // vm, so the shape it reads is asserted on the source.
+  const apiSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/consumerApi.js'), 'utf8');
+  ok(/typeof data\.error === 'string'/.test(apiSrc),
+    'the api client reads the envelope the server actually sends');
+  ok(/function serverMessage/.test(apiSrc),
+    'through one helper rather than an inline guess');
+
+  // And the cart uses the refusal mapper, not the flattener.
+  const cartSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/screens/CartScreen.js'), 'utf8');
+  ok(/orderRefusal\(t, err, money\)/.test(cartSrc), 'the cart asks why, and can print an amount');
+  // A CALL, not the word — the line above mentions friendlyError in a comment
+  // explaining why it is not used, and a bare /friendlyError/ matched that.
+  ok(!/friendlyError\s*\(/.test(cartSrc), 'and no longer flattens the refusal it was given');
+  ok(!/from '\.\.\/lib\/errorText'[^\n]*friendlyError/.test(cartSrc),
+    'nor imports the flattener any more');
+}
+
 console.log('');
 if (failures) {
   console.error(`${failures} of ${checks} checks FAILED`);

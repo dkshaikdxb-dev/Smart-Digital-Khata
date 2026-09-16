@@ -7,7 +7,7 @@ import { Card, Field, Button, ErrorBanner, Empty, Loading } from '../components'
 import ProductThumb from '../components/ProductThumb';
 import { money } from '../money';
 import { publicApi, my } from '../consumerApi';
-import { friendlyError } from '../lib/errorText';
+import { orderRefusal } from '../lib/errorText';
 import { useCart, lineTotalPaise } from '../CartContext';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen, shopClosedMessage } from '../../lib/shopOpen';
@@ -149,7 +149,11 @@ export default function CartScreen({ navigation }) {
       // verbatim (why it is shut, when it reopens). Everything else becomes an
       // authored sentence — never the server's own text, which on this screen
       // was the last thing standing between a shopper and a raw stack message.
-      setError(closed || friendlyError(t, err));
+      // orderRefusal, not friendlyError: this is the end of the flow, and every
+      // refusal here is something only the server knows and the shopper can act
+      // on. See lib/errorText.js — "Something in that was not right" was being
+      // shown for "you are over your khata limit at this shop".
+      setError(closed || orderRefusal(t, err, money));
       // Re-fetch the storefront so the banner and the disabled button below
       // match the refusal the server just gave.
       if (closed && activeShopId) {
