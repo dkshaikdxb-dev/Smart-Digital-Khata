@@ -1,10 +1,9 @@
 SMART DIGITAL KHATA — HINDI (hi) TRANSLATION PROMPT
 
 HOW TO USE
-  21 strings, split into 1 files under web-hi-parts/.
-  Upload ONE part per turn and paste everything below the line each time.
-  Do not upload all 21 at once: a model quietly stops near the end, and a
-  short reply looks exactly like a complete one.
+  This is part 1 of 1 (21 of 21 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
 
   1. web-hi-01.csv  — 21 strings (c.buyItAgain … stale.title)
 
@@ -15,7 +14,7 @@ kirana (grocery) shopkeepers and their customers in small towns and villages in
 India. It keeps a shop's khata — the running credit ledger of what each customer
 owes — and lets customers order from the shop.
 
-Translate the CSV rows in the attached file into Hindi, written in the Devanagari script.
+Translate the CSV rows included below into Hindi, written in the Devanagari script.
 
 Return a CSV with exactly two columns: key and translation. One row per input
 row, in the same order, keys copied exactly. Do not return the other columns. Do
@@ -27,7 +26,7 @@ speaks — not the way a newspaper, a bank form or a government notice is writte
 
 RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
 
-  Translate ONLY the rows in the attached CSV. Do not write your
+  Translate ONLY the rows given below. Do not write your
   own list of interface strings.
 
   Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
@@ -39,7 +38,7 @@ RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
       ROWS: <how many data rows it has>
       FIRST/LAST KEY: <the first key>, <the last key>
 
-  If you cannot open or read the attachment, say exactly that and stop.
+  If the rows below are missing or unreadable, say exactly that and stop.
   Do not produce a translation from the description of the app above. An
   invented list is worse than no answer: it looks like work and is silently
   discarded.
@@ -111,5 +110,30 @@ RULES, IN ORDER OF IMPORTANCE
 
 After the CSV, list separately: rows you were unsure about and why, and rows
 where the English itself is ambiguous.
+
+Here are the 21 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+c.buyItAgain,Buy it again,,Shopper: products
+c.clearRecent,Clear,,Shopper: products
+c.recentSearches,Recent searches,,Shopper: products
+c.shopByCategory,Shop by category,,Shopper: products
+c.voiceIn,Listens in {language},{language},Shopper: products
+err.accountStopped,This account has been stopped. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.signInRejected,"That number, email or password is not right. Please check and try again.",,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.suspended,This shop has been stopped by Smart Digital Khata. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+mod.pendingAria,{n} items waiting for review,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
 
 -------------------------------- TO HERE --------------------------------------

@@ -137,6 +137,23 @@ for (const [code, L] of Object.entries(LANGS)) {
   });
 
   const gloss = shippedGlossary(code);
+  // SELF-CONTAINED PASTE PACKS. The first real run came back as a wholly
+  // invented string list with its own key scheme: the model never read the
+  // attachment and answered from the description of the app instead. An
+  // attachment that silently fails to arrive is indistinguishable, in the reply,
+  // from one that arrived — so the rows are put INSIDE the prompt. A part is
+  // about 9KB of text; there is nothing to attach and nothing to fail.
+  parts.forEach((rows, i) => {
+    const nn = String(i + 1).padStart(2, '0');
+    const table = ['key,english,placeholders,where_it_appears']
+      .concat(rows.map((r) => [r[iKey], r[iEn], r[iPh], r[iWh]].map(cell).join(',')))
+      .join('\n');
+    const body = plainPrompt(code, L, all.length, parts, gloss, { part: i + 1, rows: rows.length })
+      .replace('-------------------------------- TO HERE --------------------------------------',
+        `Here are the ${rows.length} rows. Translate every one of them.\n\n${table}\n\n-------------------------------- TO HERE --------------------------------------`);
+    fs.writeFileSync(path.join(dir, `PASTE-${code}-${nn}.txt`), body, 'utf8');
+  });
+
   const brief = buildPrompt(code, L, all.length, parts, gloss);
   fs.writeFileSync(path.join(OUT, `PROMPT-${code}.md`), brief, 'utf8');
   // The same thing as plain text. The .md renders as a wall of asterisks and
@@ -175,6 +192,26 @@ columns. Do not add, drop, merge or reorder rows. Return nothing but the CSV.
 Who reads these words: someone with a cheap Android phone, a 2G connection and
 limited schooling. Many are not confident readers. Write the way such a person
 speaks — not the way a newspaper, a bank form or a government notice is written.
+
+### Rule zero — read the attached file, do not invent one
+
+Translate ONLY the rows in the attached CSV. Do not write your own list of
+interface strings.
+
+Every key in that file contains a **dot**: \`acc.language\`, \`cart.belowMin\`,
+\`sup.nav\`. If the keys you are about to write contain underscores
+(\`web_nav_tagline\`) or look like names you chose, you are not reading the file
+— stop and say so.
+
+Before the CSV, output these three lines so it is clear the file was read:
+
+    FILE: <the filename you were given>
+    ROWS: <how many data rows it has>
+    FIRST/LAST KEY: <the first key>, <the last key>
+
+If you cannot open or read the attachment, say exactly that and stop. Do not
+produce a translation from the description of the app above. An invented list is
+worse than no answer: it looks like work and is silently discarded.
 
 ### Rules, in order of importance
 
@@ -240,16 +277,20 @@ ${parts.map((p, i) => `- \`web-${code}-parts/web-${code}-${String(i + 1).padStar
 
 // The prompt with no markup at all: what you paste into Gemini, and nothing
 // else. Everything that is instruction-to-the-human lives in the .md.
-function plainPrompt(code, L, total, parts, gloss) {
+function plainPrompt(code, L, total, parts, gloss, inline) {
   const width = Math.max(...gloss.map(([en]) => en.length), 10);
   const glossLines = gloss.map(([en, tr]) => `    ${en.padEnd(width)}  ${tr}`).join('\n');
   return `SMART DIGITAL KHATA — ${L.name.toUpperCase()} (${code}) TRANSLATION PROMPT
 
 HOW TO USE
-  ${total} strings, split into ${parts.length} files under web-${code}-parts/.
+${inline
+  ? `  This is part ${inline.part} of ${parts.length} (${inline.rows} of ${total} strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.`
+  : `  ${total} strings, split into ${parts.length} files under web-${code}-parts/.
   Upload ONE part per turn and paste everything below the line each time.
   Do not upload all ${total} at once: a model quietly stops near the end, and a
-  short reply looks exactly like a complete one.
+  short reply looks exactly like a complete one.`}
 
 ${parts.map((p, i) => `  ${i + 1}. web-${code}-${String(i + 1).padStart(2, '0')}.csv  — ${p.length} strings (${p[0][0]} … ${p[p.length - 1][0]})`).join('\n')}
 
@@ -260,7 +301,7 @@ kirana (grocery) shopkeepers and their customers in small towns and villages in
 India. It keeps a shop's khata — the running credit ledger of what each customer
 owes — and lets customers order from the shop.
 
-Translate the attached CSV into ${L.name}, written in the ${L.script} script.
+Translate the CSV rows ${inline ? 'included below' : 'in the attached file'} into ${L.name}, written in the ${L.script} script.
 
 Return a CSV with exactly two columns: key and translation. One row per input
 row, in the same order, keys copied exactly. Do not return the other columns. Do
@@ -269,6 +310,25 @@ not add, drop, merge or reorder rows. Return nothing but the CSV.
 Who reads these words: someone with a cheap Android phone, a 2G connection and
 limited schooling. Many are not confident readers. Write the way such a person
 speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows ${inline ? 'given below' : 'in the attached CSV'}. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  ${inline ? 'If the rows below are missing or unreadable' : 'If you cannot open or read the attachment'}, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
 
 RULES, IN ORDER OF IMPORTANCE
 

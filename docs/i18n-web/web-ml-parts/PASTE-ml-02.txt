@@ -1,0 +1,227 @@
+SMART DIGITAL KHATA — MALAYALAM (ml) TRANSLATION PROMPT
+
+HOW TO USE
+  This is part 2 of 2 (108 of 232 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
+
+  1. web-ml-01.csv  — 124 strings (acc.language … oedit.wasNow)
+  2. web-ml-02.csv  — 108 strings (open.addClosure … voice.err.network)
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the CSV rows included below into Malayalam, written in the Malayalam script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows given below. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  If the rows below are missing or unreadable, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be Malayalam, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+    khata       ഖാത
+    order       ഓർഡർ
+    delivery    ഡെലിവറി
+    pickup      നിങ്ങൾ തന്നെ എടുക്കുക
+    balance     ബാക്കി
+    cash        പണം
+    pay         അടയ്ക്കുക
+    shop        കട
+    customer    ഉപഭോക്താവ്
+    credit      കടം
+    total       ആകെ
+    items       സാധനങ്ങൾ
+    paid        അടച്ചു
+    on khata    ഖാതയിൽ
+    pay online  ഓൺലൈൻ അടവ്
+    you owe     നിങ്ങൾ കൊടുക്കാനുള്ളത്
+    staff       ജീവനക്കാർ
+    free        സൗജന്യം
+    open        തുറന്നിരിക്കുന്നു
+    closed      അടച്ചിരിക്കുന്നു
+    add         ചേർക്കുക
+    remove      നീക്കുക
+    save        സേവ് ചെയ്യുക
+    cancel      റദ്ദാക്കുക
+    retry       വീണ്ടും ശ്രമിക്കുക
+    search      തിരയുക
+    close       അടയ്ക്കുക
+    payment     പേയ്‌മെന്റ്
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in Malayalam, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+Here are the 108 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+open.addClosure,Add date,,Shopkeeper: settings
+open.alwaysOpen,No daily hours set — open all day.,,Shopkeeper: settings
+open.bannerTitle,This shop is closed right now,,Shopper: cart; Shopper: shop/[shopId]
+open.browseOnly,You can look around — ordering opens again when the shop does.,,Shopper: shop/[shopId]
+open.cannotOrder,Closed — cannot order,,Shopper: cart; Shopper: shop/[shopId]
+open.cartBlocked,"This shop is closed right now, so the order cannot be placed. Your cart is saved.",,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.clearHours,Clear hours,,Shopkeeper: settings
+open.closeTime,Closes at,,Shopkeeper: settings
+open.closed,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.closedPill,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.closureDate,Date,,Shopkeeper: settings
+open.closureReason,Reason (optional),,Shopkeeper: settings
+open.closureReasonPlaceholder,Diwali,,Shopkeeper: settings
+open.closuresHelp,"Add the dates your shop will be shut — a festival, a wedding, anything. Customers see it before they order.",,Shopkeeper: settings
+open.closuresTitle,Holiday closures,,Shopkeeper: settings
+open.hoursHelp,"Set the daily opening and closing time, or leave both empty to stay open all day. A closing time earlier than the opening time means you stay open past midnight.",,Shopkeeper: settings
+open.hoursIncomplete,"Set both the opening and the closing time, or clear both.",,Shopkeeper: settings
+open.hoursTitle,Shop hours,,Shopkeeper: settings
+open.noClosures,No closures in the next 90 days.,,Shopkeeper: settings
+open.notTakingOrders,Customers cannot order right now.,,Shopkeeper: dashboard
+open.open,Open,,Shopkeeper: dashboard
+open.openTime,Opens at,,Shopkeeper: settings
+open.pause30,30 min,,Shopkeeper: dashboard
+open.pause60,1 hour,,Shopkeeper: dashboard
+open.pauseHelp,"Shutting for a bit? One tap, no time picker.",,Shopkeeper: dashboard
+open.pauseToday,Rest of today,,Shopkeeper: dashboard
+open.removeClosure,Remove,,Shopkeeper: settings
+open.resume,Resume now,,Shopkeeper: dashboard
+open.saveHours,Save hours,,Shopkeeper: settings
+open.stateClosed,Closed — you switched the shop off,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHoliday,Closed today — reopens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHolidayReason,Closed today ({reason}) — reopens {when},{reason} {when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.stateHours,Closed — opens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.statePaused,Paused — back {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.switchLabel,Shop is open,,Shopkeeper: dashboard
+open.takingOrders,You are taking orders right now.,,Shopkeeper: dashboard
+open.title,Shop availability,,Shopkeeper: dashboard
+open.todayAt,at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+open.tomorrowAt,tomorrow at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+orej.back,Back,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.confirm,Reject order,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.done,Order rejected.,,Shopkeeper: orders/[id]
+orej.help,Tell the customer why — it is sent to them with the cancellation.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.placeholder,Another reason (optional),,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.prepaidCredit,Paid online — the amount becomes credit for this customer at your shop. There is no refund.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r1,Out of stock,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r2,Too busy right now,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r3,Shop is closing,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.reject,Reject,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.title,Reject this order?,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+own.pause,Pause,,Shopkeeper: dashboard
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+rc.nav,Ref campaigns,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ref.activatedOf,{a} of {n} activated,{a} {n},Shopkeeper: account; Shopper: account
+ref.creditBalance,Your referral credit,,Shopkeeper: account; Shopper: account
+set.addPhoto,Add photo,,Shopkeeper: settings
+set.choosePhoto,Choose a photo,,Shopkeeper: settings
+set.photoLive,Live,,Shopkeeper: settings
+set.photoPending,Pending review,,Shopkeeper: settings
+set.photoRejected,Rejected,,Shopkeeper: settings
+set.photoUploadedPending,Photo added. It will show on your storefront once our team approves it.,,Shopkeeper: settings
+set.photosFull,You can add up to 3 photos. Remove one to add another.,,Shopkeeper: settings
+set.removePhoto,Remove photo,,Shopkeeper: settings
+set.savingPhoto,Saving…,,Shopkeeper: settings
+set.shopPhotos,Storefront photos,,Shopkeeper: settings
+set.shopPhotosDesc,Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.,,Shopkeeper: settings
+share.captionCopied,Caption copied.,,Shopkeeper: dashboard
+share.copyCaption,Copy caption,,Shopkeeper: dashboard
+share.downloadBtn,Download,,Shopkeeper: dashboard
+share.downloaded,Poster downloaded.,,Shopkeeper: dashboard
+share.err,Could not make the poster on this device.,,Shopkeeper: dashboard
+share.offerDefault,Visit our shop today!,,Shopkeeper: dashboard
+share.offerLabel,Today's offer or message,,Shopkeeper: dashboard
+share.offerPlaceholder,e.g. Fresh stock today! Special discount till evening.,,Shopkeeper: dashboard
+share.preset1,Fresh stock today!,,Shopkeeper: dashboard
+share.preset2,Special discount today,,Shopkeeper: dashboard
+share.preset3,Free home delivery,,Shopkeeper: dashboard
+share.scanCta,Scan to open our shop,,Shopkeeper: dashboard
+share.shareBtn,Share,,Shopkeeper: dashboard
+share.shared,Opening share…,,Shopkeeper: dashboard
+share.subtitle,"Make a poster with your offer and store QR, then post it to WhatsApp Status, Instagram or Facebook.",,Shopkeeper: dashboard
+share.title,Share your shop,,Shopkeeper: dashboard
+snl.auto,Auto,,Shopkeeper: settings
+snl.desc,Customers see your shop name in their own language. These are filled in automatically — edit any that need a fix.,,Shopkeeper: settings
+snl.english,English name,,Shopkeeper: settings
+snl.owner,Edited by you,,Shopkeeper: settings
+snl.review,Needs review,,Shopkeeper: settings
+snl.save,Save,,Shopkeeper: settings
+snl.title,Shop name in other languages,,Shopkeeper: settings
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stmt.totalAdjusted,Adjusted by shop,,Shopkeeper: customers/[id]; Shopper: account
+txn.adjustment,adjustment,,Shopkeeper: customers/[id]; Shopper: account
+type.adjustment,Adjustment,,Shopkeeper: transactions
+voice.err.denied,Allow microphone access to search by voice,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.empty,Didn’t catch that — tap the mic and speak,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.generic,Voice search didn’t work — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.ios,Voice search isn’t supported on iPhone yet — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.network,Voice search needs a connection,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+
+-------------------------------- TO HERE --------------------------------------

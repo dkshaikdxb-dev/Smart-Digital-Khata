@@ -24,6 +24,26 @@ Who reads these words: someone with a cheap Android phone, a 2G connection and
 limited schooling. Many are not confident readers. Write the way such a person
 speaks — not the way a newspaper, a bank form or a government notice is written.
 
+### Rule zero — read the attached file, do not invent one
+
+Translate ONLY the rows in the attached CSV. Do not write your own list of
+interface strings.
+
+Every key in that file contains a **dot**: `acc.language`, `cart.belowMin`,
+`sup.nav`. If the keys you are about to write contain underscores
+(`web_nav_tagline`) or look like names you chose, you are not reading the file
+— stop and say so.
+
+Before the CSV, output these three lines so it is clear the file was read:
+
+    FILE: <the filename you were given>
+    ROWS: <how many data rows it has>
+    FIRST/LAST KEY: <the first key>, <the last key>
+
+If you cannot open or read the attachment, say exactly that and stop. Do not
+produce a translation from the description of the app above. An invented list is
+worse than no answer: it looks like work and is silently discarded.
+
 ### Rules, in order of importance
 
 1. **Placeholders are code, not words.** Anything in curly braces — `{amount}`,

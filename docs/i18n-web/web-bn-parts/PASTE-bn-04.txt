@@ -1,0 +1,242 @@
+SMART DIGITAL KHATA — BENGALI (bn) TRANSLATION PROMPT
+
+HOW TO USE
+  This is part 4 of 5 (120 of 566 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
+
+  1. web-bn-01.csv  — 128 strings (acc.language … credits.title)
+  2. web-bn-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
+  3. web-bn-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
+  4. web-bn-04.csv  — 120 strings (ord.advanceCol … share.title)
+  5. web-bn-05.csv  — 71 strings (snl.auto … voice.err.network)
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the CSV rows included below into Bengali, written in the Bengali script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows given below. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  If the rows below are missing or unreadable, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be Bengali, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+    khata       খাতা
+    order       অর্ডার
+    delivery    ডেলিভারি
+    pickup      নিজে নিয়ে যান
+    balance     ব্যালেন্স
+    cash        নগদ
+    pay         পরিশোধ
+    shop        দোকান
+    customer    গ্রাহক
+    credit      ধার
+    total       মোট
+    items       জিনিস
+    paid        পরিশোধ হয়েছে
+    on khata    খাতায়
+    pay online  অনলাইনে পরিশোধ
+    you owe     আপনার দিতে হবে
+    staff       কর্মী
+    free        ফ্রি
+    open        খোলা
+    closed      বন্ধ
+    add         যোগ করুন
+    remove      সরান
+    save        সেভ করুন
+    cancel      বাতিল করুন
+    retry       আবার চেষ্টা করুন
+    search      খুঁজুন
+    close       বন্ধ করুন
+    payment     পরিশোধ
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in Bengali, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+Here are the 120 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+ord.advanceCol,Advance,,Shopkeeper: orders
+orej.back,Back,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.confirm,Reject order,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.done,Order rejected.,,Shopkeeper: orders/[id]
+orej.help,Tell the customer why — it is sent to them with the cancellation.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.placeholder,Another reason (optional),,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.prepaidCredit,Paid online — the amount becomes credit for this customer at your shop. There is no refund.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r1,Out of stock,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r2,Too busy right now,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.r3,Shop is closing,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.reject,Reject,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+orej.title,Reject this order?,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ostatus.cancelledNote,This order was cancelled.,,Shopper: orders/[id]
+ostatus.hint.ready_delivery,Ready — awaiting dispatch,,Shopkeeper: distributor/orders/[id]; Shopkeeper: orders; Shopkeeper: orders/[id]
+ostatus.hint.ready_pickup,Ready for pickup,,Shopkeeper: distributor/orders/[id]; Shopkeeper: orders; Shopkeeper: orders/[id]
+own.pause,Pause,,Shopkeeper: dashboard
+pay.cashOnDelivery,Cash on delivery,,Shopper: orders/[id]
+pay.cashOnPickup,Cash on pickup,,Shopper: orders/[id]
+pay.onKhata,On khata,,Shopper: orders/[id]
+pay.paid,Paid,,Shopper: orders/[id]
+pay.payOnline,Pay online,,Shopper: orders/[id]
+promo.balanceLabel,Your Khata Credits,,Shopkeeper: promote
+promo.clicks,Taps,,Shopkeeper: promote
+promo.costLabel,Cost,,Shopkeeper: promote
+promo.days,How many days,,Shopkeeper: promote
+promo.disabledNote,Shop promos are not available right now. Please check back later.,,Shopkeeper: promote
+promo.empty,No placements yet. Boost your shop above to appear to nearby shoppers.,,Shopkeeper: promote
+promo.freeBadge,Free,,Shopkeeper: promote
+promo.freeCap,"Up to {days} days, and {max} free promo running at a time.",{days} {max},Shopkeeper: promote
+promo.freeDisabledNote,Free promo requests are not available right now. Please check back later.,,Shopkeeper: promote
+promo.freeLimit,You already have a free promo pending or live. Wait for it to finish before requesting another.,,Shopkeeper: promote
+promo.freeSubmit,Request free promo,,Shopkeeper: promote
+promo.freeSubmitted,Request sent for review. It goes live once approved.,,Shopkeeper: promote
+promo.freeSubmitting,Requesting…,,Shopkeeper: promote
+promo.freeSubtitle,No Khata Credits needed. Our team reviews it before it goes live.,,Shopkeeper: promote
+promo.freeTitle,Request a free promo,,Shopkeeper: promote
+promo.freeUsed,You have {count} of {max} free promo(s) pending or live.,{count} {max},Shopkeeper: promote
+promo.impr,Views,,Shopkeeper: promote
+promo.loading,Loading…,,Shopkeeper: promote
+promo.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more credits.,,Shopkeeper: promote
+promo.myPlacements,My placements,,Shopkeeper: promote
+promo.nav,Boost,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+promo.offerPlaceholder,e.g. Fresh stock daily,,Shopkeeper: promote
+promo.offerText,Offer line (optional),,Shopkeeper: promote
+promo.paidBadge,Boosted,,Shopkeeper: promote
+promo.perDay,{amount} / day,{amount},Shopkeeper: promote
+promo.refundNote,"If a promo is rejected, your Khata Credits are refunded in full.",,Shopkeeper: promote
+promo.reviewNote,Review note,,Shopkeeper: promote
+promo.spent,Spent,,Shopkeeper: promote
+promo.stActive,Live,,Shopkeeper: promote
+promo.stDraft,Draft,,Shopkeeper: promote
+promo.stPaused,Paused,,Shopkeeper: promote
+promo.stPending,Pending review,,Shopkeeper: promote
+promo.stRejected,Rejected (refunded),,Shopkeeper: promote
+promo.submit,Boost for {amount},{amount},Shopkeeper: promote
+promo.submitted,Submitted for review. It goes live once approved.,,Shopkeeper: promote
+promo.submitting,Submitting…,,Shopkeeper: promote
+promo.subtitle,Spend your Khata Credits to feature your shop to nearby shoppers. A quick review keeps the marketplace clean before your promo goes live.,,Shopkeeper: promote
+promo.subtitleField,Subtitle (optional),,Shopkeeper: promote
+promo.subtitlePlaceholder,e.g. Visit us today,,Shopkeeper: promote
+promo.title,Boost my shop,,Shopkeeper: promote
+promo.window,Runs,,Shopkeeper: promote
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+rc.nav,Ref campaigns,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+ref.activatedOf,{a} of {n} activated,{a} {n},Shopkeeper: account; Shopper: account
+ref.creditBalance,Your referral credit,,Shopkeeper: account; Shopper: account
+set.addPhoto,Add photo,,Shopkeeper: settings
+set.choosePhoto,Choose a photo,,Shopkeeper: settings
+set.keySecret,Key Secret,,Shopkeeper: settings
+set.photoLive,Live,,Shopkeeper: settings
+set.photoPending,Pending review,,Shopkeeper: settings
+set.photoRejected,Rejected,,Shopkeeper: settings
+set.photoUploadedPending,Photo added. It will show on your storefront once our team approves it.,,Shopkeeper: settings
+set.photosFull,You can add up to 3 photos. Remove one to add another.,,Shopkeeper: settings
+set.pincode,Pincode,,Shopkeeper: settings
+set.razorpayKeyId,Razorpay Key ID,,Shopkeeper: settings
+set.removePhoto,Remove photo,,Shopkeeper: settings
+set.savingPhoto,Saving…,,Shopkeeper: settings
+set.shopPhotos,Storefront photos,,Shopkeeper: settings
+set.shopPhotosDesc,Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.,,Shopkeeper: settings
+set.village,Village,,Shopkeeper: settings
+set.webhookSecret,Webhook Secret,,Shopkeeper: settings
+sfaq.active,Show to customers,,Shopkeeper: settings
+sfaq.add,Add FAQ,,Shopkeeper: settings
+sfaq.answer,Answer,,Shopkeeper: settings
+sfaq.answerPlaceholder,e.g. We are open 8am–9pm every day.,,Shopkeeper: settings
+sfaq.delete,Delete,,Shopkeeper: settings
+sfaq.empty,No FAQs yet. Add your first question and answer below.,,Shopkeeper: settings
+sfaq.needBoth,Please write both a question and an answer.,,Shopkeeper: settings
+sfaq.order,Order,,Shopkeeper: settings
+sfaq.question,Question,,Shopkeeper: settings
+sfaq.questionPlaceholder,e.g. What are your shop timings?,,Shopkeeper: settings
+sfaq.save,Save,,Shopkeeper: settings
+sfaq.subtitle,"Write answers to common questions for your customers — timings, delivery, returns, offers. These show on each customer’s account page.",,Shopkeeper: settings
+sfaq.title,Store FAQ,,Shopkeeper: settings
+share.captionCopied,Caption copied.,,Shopkeeper: dashboard
+share.copyCaption,Copy caption,,Shopkeeper: dashboard
+share.downloadBtn,Download,,Shopkeeper: dashboard
+share.downloaded,Poster downloaded.,,Shopkeeper: dashboard
+share.err,Could not make the poster on this device.,,Shopkeeper: dashboard
+share.offerDefault,Visit our shop today!,,Shopkeeper: dashboard
+share.offerLabel,Today's offer or message,,Shopkeeper: dashboard
+share.offerPlaceholder,e.g. Fresh stock today! Special discount till evening.,,Shopkeeper: dashboard
+share.preset1,Fresh stock today!,,Shopkeeper: dashboard
+share.preset2,Special discount today,,Shopkeeper: dashboard
+share.preset3,Free home delivery,,Shopkeeper: dashboard
+share.scanCta,Scan to open our shop,,Shopkeeper: dashboard
+share.shareBtn,Share,,Shopkeeper: dashboard
+share.shared,Opening share…,,Shopkeeper: dashboard
+share.subtitle,"Make a poster with your offer and store QR, then post it to WhatsApp Status, Instagram or Facebook.",,Shopkeeper: dashboard
+share.title,Share your shop,,Shopkeeper: dashboard
+
+-------------------------------- TO HERE --------------------------------------

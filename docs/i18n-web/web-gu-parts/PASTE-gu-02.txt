@@ -1,0 +1,248 @@
+SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
+
+HOW TO USE
+  This is part 2 of 5 (126 of 566 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
+
+  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
+  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
+  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
+  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
+  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the CSV rows included below into Gujarati, written in the Gujarati script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows given below. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  If the rows below are missing or unreadable, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be Gujarati, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+    khata       ખાતું
+    order       ઓર્ડર
+    delivery    ડિલિવરી
+    pickup      જાતે લઈ જાઓ
+    balance     બેલેન્સ
+    cash        રોકડ
+    pay         ચૂકવો
+    shop        દુકાન
+    customer    ગ્રાહક
+    credit      ઉધાર
+    total       કુલ
+    items       સામાન
+    paid        ચૂકવાયું
+    on khata    ખાતામાં
+    pay online  ઓનલાઇન ચૂકવણી
+    you owe     તમારે આપવાના
+    staff       સ્ટાફ
+    free        મફત
+    open        ખુલ્લી
+    closed      બંધ
+    add         ઉમેરો
+    remove      દૂર કરો
+    save        સેવ કરો
+    cancel      રદ કરો
+    retry       ફરી પ્રયાસ કરો
+    search      શોધો
+    close       બંધ કરો
+    payment     ચૂકવણી
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in Gujarati, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+Here are the 126 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+csfaq.subtitle,"Answers your shops have shared — timings, delivery, returns and more.",,Shopper: account
+csfaq.title,Questions about your shops,,Shopper: account
+ctab.products,Products,,Shopper: account; Shopper: cart; Shopper: khata
+dem.addItem,Add item,,Shopkeeper: suppliers/demand
+dem.boardTitle,Demand board,,Shopkeeper: suppliers/demand
+dem.cancel,Cancel need,,Shopkeeper: suppliers/demand
+dem.cancelConfirm,Cancel this demand post?,,Shopkeeper: suppliers/demand
+dem.claim,Claim & make order,,Shopkeeper: distributor/demand
+dem.claimedBy,Claimed by {name},{name},Shopkeeper: suppliers/demand
+dem.claiming,Claiming…,,Shopkeeper: distributor/demand
+dem.distSubtitle,Upcoming needs from shops near you. Claim one to make an order.,,Shopkeeper: distributor/demand
+dem.myPosts,My posted needs,,Shopkeeper: suppliers/demand
+dem.nav,Demand board,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dem.nearYou,Needs near you,,Shopkeeper: distributor/demand
+dem.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/demand
+dem.neededBy,Needed by,,Shopkeeper: suppliers/demand
+dem.neededByOn,Needed by {when},{when},Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noDate,No date set,,Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noOpen,No open needs near you right now.,,Shopkeeper: distributor/demand
+dem.noPosts,You haven’t posted any needs yet.,,Shopkeeper: suppliers/demand
+dem.optionalNote,Note (optional),,Shopkeeper: suppliers/demand
+dem.ownerSubtitle,Post what you need soon. Nearby farmers claim it and make the order.,,Shopkeeper: suppliers/demand
+dem.post,Post need,,Shopkeeper: suppliers/demand
+dem.postNeed,Post a need,,Shopkeeper: suppliers/demand
+dem.posted,Need posted.,,Shopkeeper: suppliers/demand
+dem.posting,Posting…,,Shopkeeper: suppliers/demand
+dem.viewOrder,View order,,Shopkeeper: suppliers/demand
+dist.accountSubtitle,How shops in your city find you.,,Shopkeeper: distributor/account
+dist.accountTitle,My profile,,Shopkeeper: distributor/account
+dist.activeOff,Hidden,,Shopkeeper: distributor/account
+dist.activeOn,Active,,Shopkeeper: distributor/account
+dist.activeToggle,Listed to shops,,Shopkeeper: distributor/account
+dist.areYou,Are you a distributor? ,,Shopkeeper: login
+dist.area,Area,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.brand,Supplier,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.brands,Brands,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.businessName,Business name,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.cancel,Cancel order,,Shopkeeper: distributor/orders/[id]
+dist.cancelConfirm,Cancel this order?,,Shopkeeper: distributor/orders/[id]
+dist.categories,Categories,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.city,City,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.close,Close,,Shopkeeper: distributor/shops
+dist.confirm,Confirm order,,Shopkeeper: distributor/orders/[id]
+dist.confirmed,Order confirmed.,,Shopkeeper: distributor/orders/[id]
+dist.create,Create distributor account,,Shopkeeper: distributor/register
+dist.deliver,Mark delivered,,Shopkeeper: distributor/orders/[id]
+dist.deliverHint,Marking delivered posts this order to the shop’s ledger.,,Shopkeeper: distributor/orders/[id]
+dist.delivered,Order marked delivered.,,Shopkeeper: distributor/orders/[id]
+dist.dispatch,Mark dispatched,,Shopkeeper: distributor/orders/[id]
+dist.dispatched,Order marked dispatched.,,Shopkeeper: distributor/orders/[id]
+dist.email,Email (optional),,Shopkeeper: distributor/register
+dist.empty,No purchase orders yet.,,Shopkeeper: distributor/index
+dist.farmerBadge,🌾 Farmer,,Shopkeeper: distributor/account
+dist.freshHint,"As a farmer, you sell Fresh Produce with no minimum order.",,Shopkeeper: distributor/register
+dist.freshProduce,Fresh Produce,,Shopkeeper: distributor/register
+dist.haveAccount,Already registered? ,,Shopkeeper: distributor/register
+dist.iAm,I am a…,,Shopkeeper: distributor/register
+dist.itemsN,{n} item{s},{n} {s},Shopkeeper: distributor/index
+dist.kindDistributor,Distributor,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.kindFarmer,Farmer (Fresh Produce),,Shopkeeper: distributor/register
+dist.lineTotal,Total,,Shopkeeper: distributor/orders/[id]
+dist.listHint,Comma-separated.,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.minOrderRs,Minimum order (₹),,Shopkeeper: distributor/account
+dist.navAccount,Account,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.navHome,Orders,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.navShops,Shops,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dist.orderBack,Orders,,Shopkeeper: distributor/orders/[id]
+dist.password,Password,,Shopkeeper: distributor/register
+dist.payAmountRs,Amount received (₹),,Shopkeeper: distributor/shops
+dist.payFrom,Payment from {name},{name},Shopkeeper: distributor/shops
+dist.payMethod,Method,,Shopkeeper: distributor/shops
+dist.payNote,Note (optional),,Shopkeeper: distributor/shops
+dist.paySave,Save payment,,Shopkeeper: distributor/shops
+dist.paySaved,Payment recorded.,,Shopkeeper: distributor/shops
+dist.phone,Phone,,Shopkeeper: distributor/register
+dist.placedOn,Placed {when},{when},Shopkeeper: distributor/index
+dist.priceFirst,Set a price on every item before confirming.,,Shopkeeper: distributor/orders/[id]
+dist.pricesHint,Enter a unit price in ₹ for each item. The subtotal updates as you type.,,Shopkeeper: distributor/orders/[id]
+dist.pricesSaved,Prices saved.,,Shopkeeper: distributor/orders/[id]
+dist.recordPayment,Record payment,,Shopkeeper: distributor/shops
+dist.registerCta,Register,,Shopkeeper: login
+dist.registerSubtitle,List your business and start receiving orders from shops in your city.,,Shopkeeper: distributor/register
+dist.registerTitle,Register as a distributor,,Shopkeeper: distributor/register
+dist.savePrices,Save prices,,Shopkeeper: distributor/orders/[id]
+dist.setPrices,Set your prices,,Shopkeeper: distributor/orders/[id]
+dist.shop,Shop,,Shopkeeper: distributor/orders/[id]
+dist.shopsEmpty,No shops trade with you yet.,,Shopkeeper: distributor/shops
+dist.shopsSubtitle,Shops that order from you and what each owes.,,Shopkeeper: distributor/shops
+dist.shopsTitle,Shops,,Shopkeeper: distributor/shops
+dist.subtitle,"Purchase orders from shops. Price the items, confirm, and fulfil.",,Shopkeeper: distributor/index
+dist.terminal,This order is {s} — no further changes.,{s},Shopkeeper: distributor/orders/[id]
+dist.title,Incoming orders,,Shopkeeper: distributor/index
+dist.unitPriceRs,Unit price (₹),,Shopkeeper: distributor/orders/[id]
+dist.village,Village,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.whatsapp,WhatsApp number,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
+dist.yourName,Your name,,Shopkeeper: distributor/register
+dlv.activate,Activate,,Shopkeeper: delivery
+dlv.active,Active,,Shopkeeper: delivery
+dlv.activeDeliveries,{n} active,{n},Shopkeeper: delivery
+dlv.add,Add champion,,Shopkeeper: delivery
+dlv.addTitle,Add a champion,,Shopkeeper: delivery
+dlv.adding,Adding…,,Shopkeeper: delivery
+dlv.area,Area (optional),,Shopkeeper: delivery
+dlv.areaPlaceholder,e.g. Sector 5 / 560001,,Shopkeeper: delivery
+dlv.assign,Assign,,Shopkeeper: delivery
+dlv.assigning,Assigning…,,Shopkeeper: delivery
+dlv.champion,Champion,,Shopkeeper: delivery
+dlv.champions,Champions,,Shopkeeper: delivery
+dlv.copied,Copied!,,Shopkeeper: delivery
+dlv.copyLink,Copy link,,Shopkeeper: delivery
+dlv.deactivate,Deactivate,,Shopkeeper: delivery
+dlv.deliveredCount,{n} delivered,{n},Shopkeeper: delivery
+dlv.feeLabel,Incentive ₹ (optional),,Shopkeeper: delivery
+dlv.inactive,Inactive,,Shopkeeper: delivery
+dlv.name,Name,,Shopkeeper: delivery
+dlv.namePlaceholder,e.g. Ravi,,Shopkeeper: delivery
+dlv.needChampion,Pick a champion first.,,Shopkeeper: delivery
+dlv.noChampions,No champions yet. Add your first delivery agent above.,,Shopkeeper: delivery
+dlv.noOrders,No home-delivery orders yet.,,Shopkeeper: delivery
+dlv.orders,Delivery orders,,Shopkeeper: delivery
+dlv.phone,Phone (optional),,Shopkeeper: delivery
+dlv.phonePlaceholder,e.g. 98xxxxxxxx,,Shopkeeper: delivery
+dlv.pickChampion,Pick a champion,,Shopkeeper: delivery
+dlv.subtitle,Register your delivery agents and assign home-delivery orders to them. Each champion gets a no-login link to mark orders picked up and delivered.,,Shopkeeper: delivery
+dlv.title,Delivery Champions,,Shopkeeper: delivery
+dlv.unassigned,Not assigned,,Shopkeeper: delivery
+
+-------------------------------- TO HERE --------------------------------------

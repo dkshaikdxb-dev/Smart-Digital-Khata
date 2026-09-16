@@ -1,0 +1,250 @@
+SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
+
+HOW TO USE
+  This is part 1 of 5 (128 of 566 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
+
+  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
+  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
+  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
+  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
+  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the CSV rows included below into Gujarati, written in the Gujarati script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows given below. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  If the rows below are missing or unreadable, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be Gujarati, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+    khata       ખાતું
+    order       ઓર્ડર
+    delivery    ડિલિવરી
+    pickup      જાતે લઈ જાઓ
+    balance     બેલેન્સ
+    cash        રોકડ
+    pay         ચૂકવો
+    shop        દુકાન
+    customer    ગ્રાહક
+    credit      ઉધાર
+    total       કુલ
+    items       સામાન
+    paid        ચૂકવાયું
+    on khata    ખાતામાં
+    pay online  ઓનલાઇન ચૂકવણી
+    you owe     તમારે આપવાના
+    staff       સ્ટાફ
+    free        મફત
+    open        ખુલ્લી
+    closed      બંધ
+    add         ઉમેરો
+    remove      દૂર કરો
+    save        સેવ કરો
+    cancel      રદ કરો
+    retry       ફરી પ્રયાસ કરો
+    search      શોધો
+    close       બંધ કરો
+    payment     ચૂકવણી
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in Gujarati, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+Here are the 128 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+acc.language,Language,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+adfree.balanceLabel,Your Khata Credits,,Shopkeeper: settings
+adfree.buy,Remove for {amount},{amount},Shopkeeper: settings
+adfree.buying,Applying…,,Shopkeeper: settings
+adfree.costLabel,Cost,,Shopkeeper: settings
+adfree.days,How many days,,Shopkeeper: settings
+adfree.disabledNote,This option is not available right now. Please check back later.,,Shopkeeper: settings
+adfree.done,Done. Your storefront is ad-free for the chosen days.,,Shopkeeper: settings
+adfree.extend,Extend for {amount},{amount},Shopkeeper: settings
+adfree.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more credits.,,Shopkeeper: settings
+adfree.perDay,{amount} / day,{amount},Shopkeeper: settings
+adfree.statusActive,Ad-free until {date},{date},Shopkeeper: settings
+adfree.statusInactive,Sponsored slide may show,,Shopkeeper: settings
+adfree.subtitle,Shoppers may see one sponsored slide in your storefront photos. Spend Khata Credits to keep your storefront ad-free for a while. Branded Store shops are always ad-free.,,Shopkeeper: settings
+adfree.title,Remove sponsored slide from my storefront,,Shopkeeper: settings
+ask.answer.credits,Your Khata Credits reward balance is ₹{amount}.,{amount},Shopkeeper: dashboard
+ask.answer.custBalance,{name} owes you ₹{amount}.,{name} {amount},Shopkeeper: dashboard
+ask.answer.custNotFound,I could not find that customer — please say the name again.,,Shopkeeper: dashboard
+ask.answer.myPlan,Your current plan is {plan}.,{plan},Shopkeeper: dashboard
+ask.answer.notAvailable,That is not available right now — please try again.,,Shopkeeper: dashboard
+ask.answer.storeLink,Your store link is shown on screen.,,Shopkeeper: dashboard
+ask.answer.weekSummary,This week you have collected ₹{amount}.,{amount},Shopkeeper: dashboard
+brand.accentLabel,Accent colour,,Shopkeeper: promote
+brand.activate,Activate for {amount},{amount},Shopkeeper: promote
+brand.activated,Premium is live. Your storefront theme is now showing.,,Shopkeeper: promote
+brand.activating,Activating…,,Shopkeeper: promote
+brand.badge,Premium,,Shopper: shop/[shopId]
+brand.costLabel,Cost,,Shopkeeper: promote
+brand.days,How many days,,Shopkeeper: promote
+brand.disabledNote,Branded Store is not available right now. Please check back later.,,Shopkeeper: promote
+brand.extend,Extend for {amount},{amount},Shopkeeper: promote
+brand.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more credits.,,Shopkeeper: promote
+brand.perDay,{amount} / day,{amount},Shopkeeper: promote
+brand.save,Save theme,,Shopkeeper: promote
+brand.saved,Theme saved.,,Shopkeeper: promote
+brand.saving,Saving…,,Shopkeeper: promote
+brand.statusActive,Premium active until {date},{date},Shopkeeper: promote
+brand.statusInactive,Not active,,Shopkeeper: promote
+brand.subtitle,"Spend your Khata Credits to give your storefront a premium look — your own accent colour, a tagline, a ""Premium"" badge, and a small boost for your promos. Time-boxed and extendable.",,Shopkeeper: promote
+brand.taglineLabel,Tagline (optional),,Shopkeeper: promote
+brand.taglinePlaceholder,e.g. Your neighbourhood favourite,,Shopkeeper: promote
+brand.themeNote,Your accent colour and tagline show on your storefront while premium is active. You can set them anytime.,,Shopkeeper: promote
+brand.themeTitle,Your storefront theme,,Shopkeeper: promote
+brand.title,Branded Store,,Shopkeeper: promote
+c.addMoney,Add money / Pre-pay,,Shopper: khata
+c.advanceLabel,Advance: {amt},{amt},Shopper: khata
+c.appearance.title,Appearance,,Shopper: account; Shopper: cart; Shopper: khata
+c.atShop,at {shop},{shop},Shopper: products
+c.buyItAgain,Buy it again,,Shopper: products
+c.catAttaRice,Atta & Rice,,Shopper: products; Shopper: shops
+c.catCookingOils,Cooking Oils,,Shopper: products; Shopper: shops
+c.catDalPulses,Dal & Pulses,,Shopper: products; Shopper: shops
+c.catHousehold,Household,,Shopper: products; Shopper: shops
+c.catPersonalCare,Personal Care,,Shopper: products; Shopper: shops
+c.catSpices,Spices,,Shopper: products; Shopper: shops
+c.clearRecent,Clear,,Shopper: products
+c.enterAmount,Enter an amount to pay.,,Shopper: khata
+c.filterAll,All,,Shopper: shops
+c.layout.gaon,Gaon Bazaar,,Shopper: account; Shopper: cart; Shopper: khata
+c.layout.standard,Standard,,Shopper: account; Shopper: cart; Shopper: khata
+c.layout.title,Layout,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.cancel,Cancel,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.chip,Location,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.detect,Detect,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.detecting,Detecting…,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.pincode,Pincode,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.save,Save,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.set,Set location,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.title,Choose your location,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.town,Town,,Shopper: account; Shopper: cart; Shopper: khata
+c.loc.village,Village,,Shopper: account; Shopper: cart; Shopper: khata
+c.noProductsFound,No products found. Try another word.,,Shopper: products
+c.prepayHelper,"{due} clears your due, extra becomes advance",{due},Shopper: khata
+c.prepayHelperNoDue,{amt} becomes an advance you can spend later,{amt},Shopper: khata
+c.prepayMaxHint,You can pre-pay up to {amt} in advance,{amt},Shopper: khata
+c.prepayTooMuch,You can pay at most {amt} right now.,{amt},Shopper: khata
+c.productsTitle,Products,,Shopper: products; Shopper: shops
+c.promo.sponsored,Sponsored,,Shopper: shop/[shopId]; Shopper: shops
+c.recentSearches,Recent searches,,Shopper: products
+c.searchProductsAll,Search products across shops,,Shopper: products; Shopper: shops
+c.searching,Searching…,,Shopper: products
+c.settledLabel,Settled — nothing due,,Shopper: khata
+c.shopByCategory,Shop by category,,Shopper: products
+c.theme.dark,Dark,,Shopper: account; Shopper: cart; Shopper: khata
+c.theme.light,Light,,Shopper: account; Shopper: cart; Shopper: khata
+c.theme.title,Theme,,Shopper: account; Shopper: cart; Shopper: khata
+c.voiceIn,Listens in {language},{language},Shopper: products
+c.youOwe,You owe {amt},{amt},Shopper: khata
+cat.savePhoto,Save photo,,Shopkeeper: catalog
+cat.uploadingPhoto,Uploading…,,Shopkeeper: catalog
+champ.address,Deliver to,,Shopkeeper: d/[token]
+champ.call,Call,,Shopkeeper: d/[token]
+champ.doneMsg,Delivered. Thank you!,,Shopkeeper: d/[token]
+champ.greeting,Hi {name},{name},Shopkeeper: d/[token]
+champ.items,Items,,Shopkeeper: d/[token]
+champ.loadError,Could not load right now. Pull to refresh.,,Shopkeeper: d/[token]
+champ.loading,Loading…,,Shopkeeper: d/[token]
+champ.markDelivered,Mark delivered,,Shopkeeper: d/[token]
+champ.markPickedUp,Mark picked up,,Shopkeeper: d/[token]
+champ.none,No deliveries right now. Check back soon.,,Shopkeeper: d/[token]
+champ.notFound,This link is not valid or has expired.,,Shopkeeper: d/[token]
+champ.pickedBadge,Picked up,,Shopkeeper: d/[token]
+champ.refresh,Refresh,,Shopkeeper: d/[token]
+champ.subtitle,"Your assigned deliveries. Mark each one picked up, then delivered.",,Shopkeeper: d/[token]
+champ.title,My Deliveries,,Shopkeeper: d/[token]
+champ.total,Order total,,Shopkeeper: d/[token]
+champ.updating,Updating…,,Shopkeeper: d/[token]
+coedit.cash,Pay {now} when you collect — {amount} of items were taken off.,{now} {amount},Shopper: orders/[id]
+coedit.credit,{amount} has been taken off your khata at this shop.,{amount},Shopper: orders/[id]
+coedit.intro,{shop} could not supply everything you ordered.,{shop},Shopper: orders/[id]
+coedit.nowTotal,Your order now comes to {now}.,{now},Shopper: orders/[id]
+coedit.prepaid,You had already paid. {amount} is kept as credit at this shop — it comes off your next order here.,{amount},Shopper: orders/[id]
+coedit.reduced,{item} — {before} → {after},{item} {before} {after},Shopper: orders/[id]
+coedit.removed,{item} — removed,{item},Shopper: orders/[id]
+coedit.title,The shop adjusted your order,,Shopper: orders/[id]
+coedit.wasSubtotal,Original items total {was},{was},Shopper: orders/[id]
+common.refresh,Refresh,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+common.retry,Try again,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+content.nav,Content,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+credits.balanceLabel,Your Khata Credits,,Shopkeeper: account
+credits.bySource,By source,,Shopkeeper: account
+credits.earnedTitle,Earned so far,,Shopkeeper: account
+credits.empty,No credits yet — refer a shop to start earning,,Shopkeeper: account
+credits.kind.other,Adjustment,,Shopkeeper: account
+credits.pending,{amt} pending,{amt},Shopkeeper: account
+credits.recentTitle,Recent activity,,Shopkeeper: account
+credits.spendNote,"Spend on your subscription, promos and more",,Shopkeeper: account
+credits.title,Khata Credits,,Shopkeeper: account
+
+-------------------------------- TO HERE --------------------------------------

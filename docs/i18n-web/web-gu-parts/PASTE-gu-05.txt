@@ -1,0 +1,193 @@
+SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
+
+HOW TO USE
+  This is part 5 of 5 (71 of 566 strings).
+  Paste EVERYTHING between the two lines below into Gemini — the rows are
+  included, so there is nothing to attach. One part per conversation turn.
+
+  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
+  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
+  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
+  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
+  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the CSV rows included below into Gujarati, written in the Gujarati script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULE ZERO — READ THE ATTACHED FILE, DO NOT INVENT ONE
+
+  Translate ONLY the rows given below. Do not write your
+  own list of interface strings.
+
+  Every key in that file contains a DOT: acc.language, cart.belowMin, sup.nav.
+  If the keys you are about to write contain underscores (web_nav_tagline) or
+  look like names you chose, you are not reading the file — stop and say so.
+
+  Before the CSV, output these three lines so it is clear the file was read:
+      FILE: <the filename you were given>
+      ROWS: <how many data rows it has>
+      FIRST/LAST KEY: <the first key>, <the last key>
+
+  If the rows below are missing or unreadable, say exactly that and stop.
+  Do not produce a translation from the description of the app above. An
+  invented list is worse than no answer: it looks like work and is silently
+  discarded.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be Gujarati, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+    khata       ખાતું
+    order       ઓર્ડર
+    delivery    ડિલિવરી
+    pickup      જાતે લઈ જાઓ
+    balance     બેલેન્સ
+    cash        રોકડ
+    pay         ચૂકવો
+    shop        દુકાન
+    customer    ગ્રાહક
+    credit      ઉધાર
+    total       કુલ
+    items       સામાન
+    paid        ચૂકવાયું
+    on khata    ખાતામાં
+    pay online  ઓનલાઇન ચૂકવણી
+    you owe     તમારે આપવાના
+    staff       સ્ટાફ
+    free        મફત
+    open        ખુલ્લી
+    closed      બંધ
+    add         ઉમેરો
+    remove      દૂર કરો
+    save        સેવ કરો
+    cancel      રદ કરો
+    retry       ફરી પ્રયાસ કરો
+    search      શોધો
+    close       બંધ કરો
+    payment     ચૂકવણી
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in Gujarati, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+Here are the 71 rows. Translate every one of them.
+
+key,english,placeholders,where_it_appears
+snl.auto,Auto,,Shopkeeper: settings
+snl.desc,Customers see your shop name in their own language. These are filled in automatically — edit any that need a fix.,,Shopkeeper: settings
+snl.english,English name,,Shopkeeper: settings
+snl.owner,Edited by you,,Shopkeeper: settings
+snl.review,Needs review,,Shopkeeper: settings
+snl.save,Save,,Shopkeeper: settings
+snl.title,Shop name in other languages,,Shopkeeper: settings
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stmt.totalAdjusted,Adjusted by shop,,Shopkeeper: customers/[id]; Shopper: account
+sup.addItem,Add item,,Shopkeeper: suppliers/index
+sup.area,Area,,Shopkeeper: suppliers/index
+sup.brands,Brands,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.cancelConfirm,Cancel this purchase order?,,Shopkeeper: suppliers/orders/[id]
+sup.cancelOrder,Cancel order,,Shopkeeper: suppliers/orders/[id]
+sup.cancelled,This order was cancelled.,,Shopkeeper: suppliers/orders/[id]
+sup.carries,Carries,,Shopkeeper: suppliers/index
+sup.clearFilters,Clear filters,,Shopkeeper: suppliers/index
+sup.empty,No suppliers found for your city yet.,,Shopkeeper: suppliers/index
+sup.emptyHint,"Suppliers are matched to your shop’s city. Set your city in Settings, or check back soon.",,Shopkeeper: suppliers/index
+sup.entriesFor,Entries — {name},{name},Shopkeeper: suppliers/ledger
+sup.farmerBadge,🌾 Farmer,,Shopkeeper: suppliers/index
+sup.filterBrand,Brand,,Shopkeeper: suppliers/index
+sup.filterCategory,Category,,Shopkeeper: suppliers/index
+sup.filterEmpty,No suppliers match these filters.,,Shopkeeper: suppliers/index
+sup.freshFilter,🌾 Fresh from farmers,,Shopkeeper: suppliers/index
+sup.hideEntries,Hide entries,,Shopkeeper: suppliers/ledger
+sup.itemName,Item name,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.itemsN,{n} item{s},{n} {s},Shopkeeper: suppliers/orders
+sup.ledgerEmpty,You don’t owe any supplier right now.,,Shopkeeper: suppliers/ledger
+sup.ledgerTitle,What I owe suppliers,,Shopkeeper: suppliers/ledger
+sup.lineTotal,Total,,Shopkeeper: suppliers/orders/[id]
+sup.minOrder,Min order,,Shopkeeper: suppliers/index
+sup.nav,Suppliers,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+sup.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/index
+sup.newPO,New purchase order,,Shopkeeper: suppliers/index
+sup.noEntries,No entries yet.,,Shopkeeper: suppliers/ledger
+sup.noMinOrder,No minimum,,Shopkeeper: suppliers/index
+sup.noteOptional,Note (optional),,Shopkeeper: suppliers/index
+sup.orderBack,Purchase orders,,Shopkeeper: suppliers/orders/[id]
+sup.orderingFrom,Ordering from {name},{name},Shopkeeper: suppliers/index
+sup.ordersEmpty,No purchase orders yet.,,Shopkeeper: suppliers/orders; Shopkeeper: suppliers/orders/[id]
+sup.ordersTitle,My purchase orders,,Shopkeeper: suppliers/orders
+sup.placedOn,Placed {when},{when},Shopkeeper: suppliers/orders
+sup.poRef,PO,,Shopkeeper: suppliers/ledger
+sup.priceNote,You send items and quantities; the supplier sets the prices.,,Shopkeeper: suppliers/index
+sup.pricesPending,The supplier sets prices when they confirm this order.,,Shopkeeper: suppliers/orders/[id]
+sup.qty,Qty,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.reorder,Reorder from this supplier,,Shopkeeper: suppliers/index
+sup.searchCatalogue,Search my products…,,Shopkeeper: suppliers/index
+sup.send,Send order,,Shopkeeper: suppliers/index
+sup.sending,Sending…,,Shopkeeper: suppliers/index
+sup.sent,Order sent to {name}. They will price it and confirm.,{name},Shopkeeper: suppliers/index
+sup.subtitle,Distributors serving your city. Reorder stock in a few taps.,,Shopkeeper: suppliers/index
+sup.supplier,Supplier,,Shopkeeper: suppliers/orders/[id]
+sup.tabDiscover,Discover,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.tabLedger,What I owe,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.tabOrders,My orders,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.title,Suppliers near you,,Shopkeeper: suppliers/index
+sup.typePayment,Payment,,Shopkeeper: suppliers/ledger
+sup.typeSupply,Supply,,Shopkeeper: suppliers/ledger
+sup.unitPrice,Unit price,,Shopkeeper: suppliers/orders/[id]
+sup.viewEntries,View entries,,Shopkeeper: suppliers/ledger
+sup.village,Village,,Shopkeeper: suppliers/index
+txn.adjustment,adjustment,,Shopkeeper: customers/[id]; Shopper: account
+type.adjustment,Adjustment,,Shopkeeper: transactions
+voice.err.denied,Allow microphone access to search by voice,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.empty,Didn’t catch that — tap the mic and speak,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.generic,Voice search didn’t work — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.ios,Voice search isn’t supported on iPhone yet — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.network,Voice search needs a connection,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+
+-------------------------------- TO HERE --------------------------------------
