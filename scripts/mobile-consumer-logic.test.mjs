@@ -487,6 +487,50 @@ section('consumer tabs');
     'a result opens the seller inside the Products tab rather than jumping tabs');
 }
 
+section('a search result can be added without leaving the screen');
+{
+  // The row was ONE Pressable that opened the seller. A shopper who searched
+  // "dal", read four prices across two shops and picked one still had to open
+  // that shop and find the same item again in its catalogue — which is most of
+  // the value of a cross-shop search thrown away at the last step.
+  ok(/import \{ useCart \} from '\.\.\/CartContext'/.test(psearchSrc),
+    'the search screen can reach the cart');
+  ok(/cart\.addUnit\(shop\.id, shop\.name, p\)/.test(psearchSrc),
+    'Add puts the item in THAT result’s shop, not the last shop opened');
+  ok(/cart\.setQty\(p\.id, line\.quantity [-+] 1\)/.test(psearchSrc),
+    'and an item already in the cart shows the same stepper the shop page shows');
+
+  // The cart holds ONE shop. Search returns the same item from several shops,
+  // so a line matched by product id alone would show a stepper on rows whose
+  // shop is not the cart's — offering to change a quantity that is not there.
+  ok(/c\.shop_id !== shopId\) return null/.test(psearchSrc),
+    'a row only counts as "in cart" when its SHOP matches too');
+
+  // Weighed items are deliberately excluded: picking 250g or 1kg is picking
+  // what to pay, and those chips live on the shop page. A default weight chosen
+  // for someone is not a shortcut, it is a wrong order.
+  ok(/const canAdd = open && !p\.sold_by_weight/.test(psearchSrc),
+    'a weighed item gets no Add here — the weight is a money decision');
+  ok(/!line\.sold_by_weight \? line : null/.test(psearchSrc),
+    'and never renders a unit stepper over a weighed line');
+
+  // A closed shop disables Add on the shop page; it must not offer one here.
+  ok(/const canAdd = open &&/.test(psearchSrc),
+    'a closed shop offers no Add, matching the shop page');
+
+  // The row still opens the seller in every case.
+  ok(/onPress=\{\(\) => openShop\(shop\)\}/.test(psearchSrc),
+    'the row itself still opens the shop');
+
+  // The controls reuse the shop page's shapes, and its 44px targets: changing a
+  // quantity changes what someone pays.
+  const stepBtn = psearchSrc.match(/stepBtn: \{\s*width: (\d+), height: (\d+)/);
+  ok(stepBtn && Number(stepBtn[1]) >= 44 && Number(stepBtn[2]) >= 44,
+    'the quantity buttons are real targets (44px+)');
+  const addBtn = psearchSrc.match(/addBtn: \{[^}]*minHeight: (\d+)/);
+  ok(addBtn && Number(addBtn[1]) >= 44, 'and so is Add');
+}
+
 section('why an order was refused');
 {
   // A shopper placed a 2,440-rupee order on khata and was told "Something in

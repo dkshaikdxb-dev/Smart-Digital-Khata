@@ -12,6 +12,7 @@ import { useT, LANGUAGES } from '../i18n';
 import { useNativeVoice } from '../../lib/useNativeVoice';
 import { availabilityLine, isOpen } from '../../lib/shopOpen';
 import { CATEGORIES, categoryByKey } from '../lib/categories';
+import { useCart } from '../CartContext';
 import {
   loadRecentSearches, rememberSearch, clearRecentSearches,
 } from '../lib/recentSearchStorage';
@@ -75,6 +76,21 @@ function languageLabel(code) {
 
 export default function ProductSearchScreen({ route, navigation }) {
   const { t, lang } = useT();
+  const cart = useCart();
+
+  // Is THIS product, at THIS shop, already in the cart?
+  //
+  // The cart holds one shop at a time, so a line matching by product id alone
+  // would be a lie for every other seller in the results: search returns the
+  // same item from several shops, and showing a stepper on a row belonging to a
+  // shop whose cart was cleared would offer to change a quantity that is not
+  // there. The shop has to match before the product does.
+  const inCart = (shopId, productId) => {
+    const c = cart.cart;
+    if (!c || c.shop_id !== shopId) return null;
+    const line = c.items && c.items[productId];
+    return line && !line.sold_by_weight ? line : null;
+  };
   const params = route.params || {};
   const initialQ = params.q || '';
   const initialCategory = params.category || '';
@@ -475,6 +491,24 @@ export default function ProductSearchScreen({ route, navigation }) {
         const shop = p.shop || {};
         const open = isOpen(shop.availability);
         const place = [shop.area, shop.city].filter(Boolean).join(', ');
+        // A result a shopper can act on WITHOUT leaving the screen.
+        //
+        // This row used to be a single Pressable that opened the seller: a
+        // shopper who searched "dal", read four prices across two shops and
+        // picked one still had to open that shop and find the same item a
+        // second time in its catalogue. The whole point of a cross-shop search
+        // is to choose here.
+        //
+        // Three cases, and only the first gets a button:
+        //   - a unit item at an OPEN shop: Add, then the same stepper the shop
+        //     page uses, so the control does not change shape between screens;
+        //   - a WEIGHED item: no button. Choosing 250g or 1kg is choosing what
+        //     to pay, and those chips live on the shop page. Guessing a default
+        //     weight for someone is not a shortcut, it is a wrong order;
+        //   - a CLOSED shop: no button, exactly as the shop page disables Add.
+        // In every case the row itself still opens the seller.
+        const line = inCart(shop.id, p.id);
+        const canAdd = open && !p.sold_by_weight;
         return (
           <Pressable
             key={`${shop.id}:${p.id}`}
@@ -507,7 +541,38 @@ export default function ProductSearchScreen({ route, navigation }) {
                 </Text>
               ) : null}
             </View>
-            <Text style={styles.chev}>›</Text>
+            {line ? (
+              <View style={styles.stepper}>
+                <Pressable
+                  onPress={() => cart.setQty(p.id, line.quantity - 1)}
+                  style={styles.stepBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('cart.remove')}
+                >
+                  <Text style={styles.stepText}>−</Text>
+                </Pressable>
+                <Text style={styles.qty}>{line.quantity}</Text>
+                <Pressable
+                  onPress={() => cart.setQty(p.id, line.quantity + 1)}
+                  style={styles.stepBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('shopdetail.add')}
+                >
+                  <Text style={styles.stepText}>+</Text>
+                </Pressable>
+              </View>
+            ) : canAdd ? (
+              <Pressable
+                onPress={() => cart.addUnit(shop.id, shop.name, p)}
+                style={styles.addBtn}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('shopdetail.add')} · ${p.name}`}
+              >
+                <Text style={styles.addText}>{t('shopdetail.add')}</Text>
+              </Pressable>
+            ) : (
+              <Text style={styles.chev}>›</Text>
+            )}
           </Pressable>
         );
       })}
@@ -665,4 +730,23 @@ const styles = StyleSheet.create({
   meta: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
   closedHint: { color: colors.textMuted, fontSize: 13, marginTop: 6 },
   chev: { color: colors.textMuted, fontSize: 28, marginLeft: 8 },
+  // Deliberately the SAME shapes as ShopDetailScreen's add/stepper: a shopper
+  // meets this control on both screens and it must not change between them.
+  addBtn: {
+    backgroundColor: colors.accent,
+    minHeight: 44,
+    borderRadius: sizes.radius,
+    paddingHorizontal: 18,
+    marginLeft: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addText: { color: colors.onAccent, fontWeight: '800', fontSize: 15 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 8 },
+  stepBtn: {
+    width: 44, height: 44, borderRadius: 12, backgroundColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  stepText: { color: colors.text, fontSize: 22, fontWeight: '800' },
+  qty: { color: colors.text, fontSize: 18, fontWeight: '800', minWidth: 28, textAlign: 'center' },
 });
