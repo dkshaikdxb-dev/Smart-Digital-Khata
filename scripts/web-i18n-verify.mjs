@@ -129,6 +129,17 @@ const T = col('translation');
 const E = col('english', false);
 
 const known = new Set(getAllKeys());
+
+// Has every language that already ships this key left it exactly as the
+// English? Two or more must have an opinion before their agreement counts as
+// one — a single language matching is a coincidence, not a convention.
+const SHIPPED_LANGS = ['hi', 'ta', 'te', 'kn', 'ml', 'ur'];
+function englishIsTheAnswer(key) {
+  const en = staticValue('en', key);
+  if (!en) return false;
+  const have = SHIPPED_LANGS.map((l) => staticValue(l, key)).filter(Boolean);
+  return have.length >= 2 && have.every((v) => v === en);
+}
 // `{s}` is two different things in this dictionary, and only one of them is a
 // value the translation must carry:
 //
@@ -173,8 +184,16 @@ for (const r of rows) {
   // like "{item} — {before} → {after}" is placeholders and punctuation with no
   // words in it; returning it identical is the correct answer, not a skipped
   // row. Rejecting those told a translator to invent a difference.
-  // A brand key is correct BECAUSE it is English — see lib/i18n-brand-keys.mjs.
-  if (tr === en && !BRAND_KEYS.has(key) && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) {
+  // A brand key is correct BECAUSE it is English — see lib/i18n-brand-keys.mjs —
+  // and so is a key that EVERY language already shipping has left identical to
+  // the English. sup.poRef is "PO" in Hindi, Tamil, Telugu, Kannada, Malayalam
+  // and Urdu; a Bengali reply that also says "PO" is matching the convention
+  // this project already settled, not skipping a row. Derived per key rather
+  // than listed, because the answer is already in the dictionary: 15 of 1871
+  // keys qualify, and they are em-dashes, MRR, UPI, T0/T1/T2 and Razorpay's
+  // own labels.
+  if (tr === en && !BRAND_KEYS.has(key) && !englishIsTheAnswer(key)
+      && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) {
     rej('left in English'); continue;
   }
   if (tr.includes('�')) { rej('contains U+FFFD (mojibake)'); continue; }
@@ -214,7 +233,7 @@ for (const r of rows) {
   // translation with script characters, and demanding one would force a
   // translator to add something that is not there.
   const enHasWords = /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''));
-  if (enHasWords && !BRAND_KEYS.has(key) && !SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) {
+  if (enHasWords && !BRAND_KEYS.has(key) && !englishIsTheAnswer(key) && !SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) {
     rej('no character of this language’s own script'); continue;
   }
 
