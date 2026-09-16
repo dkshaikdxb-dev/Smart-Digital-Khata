@@ -1,0 +1,155 @@
+SHOP-NAME WORDS — BENGALI (bn)
+
+HOW TO USE
+  113 short entries. Paste everything between the two
+  lines below into Gemini in one go, and save the reply.
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+Smart Digital Khata shows a kirana shop's own name to customers in their
+language. A name like "Sri Balaji General Stores" or "Das Family Store" is
+rendered by looking up the recurring business words in a curated list and
+transliterating the rest, so the two lists below are what that lookup needs.
+
+Write each entry in Bengali, in the Bengali script.
+
+Return a CSV with exactly two columns: english and bn. One row per input
+row, same order, english copied exactly. Return nothing but the CSV.
+
+SECTION A — SHOP WORDS (43). These are TRANSLATED, not spelled out
+letter by letter: write what a shopkeeper in a Bengali-speaking town would
+actually paint on their board. Where the real word on the board is the English
+loanword (store, general, medical), write that loanword in Bengali rather
+than a pure word nobody uses.
+
+SECTION B — SURNAMES (70). These are TRANSLITERATED, not
+translated: a family name has no meaning to render, only a sound. Write each so
+that a Bengali reader saying it aloud produces the name its owner answers to.
+
+Rules for both:
+  - Every character in Bengali, with no Latin left in any answer.
+  - Lower case ASCII keys in the english column stay exactly as given.
+  - No entry should be left blank or marked "same as English".
+  - A Hindi column is included ONLY as a sense check of what each word means
+    in a shop; it is a different script, so never copy from it.
+
+After the CSV, list any entry you were unsure about.
+
+english,hi (meaning reference only),bn
+# SECTION A — shop words
+store,स्टोर,
+stores,स्टोर,
+kirana,किराना,
+general,जनरल,
+provision,प्रोविज़न,
+provisions,प्रोविज़न,
+traders,ट्रेडर्स,
+medical,मेडिकल,
+medicals,मेडिकल,
+mart,मार्ट,
+bakery,बेकरी,
+sweets,स्वीट्स,
+dairy,डेयरी,
+electronics,इलेक्ट्रॉनिक्स,
+hardware,हार्डवेयर,
+supermarket,सुपरमार्केट,
+enterprises,एंटरप्राइज़ेज़,
+agencies,एजेंसीज़,
+shop,शॉप,
+new,न्यू,
+sri,श्री,
+shri,श्री,
+super,सुपर,
+fresh,फ्रेश,
+cool,कूल,
+point,पॉइंट,
+center,सेंटर,
+centre,सेंटर,
+and,एंड,
+bazaar,बाज़ार,
+bazar,बाज़ार,
+bhandar,भंडार,
+market,मार्केट,
+grocery,ग्रोसरी,
+groceries,ग्रोसरीज़,
+corner,कॉर्नर,
+daily,डेली,
+needs,नीड्स,
+family,फैमिली,
+mini,मिनी,
+emporium,एम्पोरियम,
+collection,कलेक्शन,
+variety,वैरायटी,
+# SECTION B — surnames
+sharma,शर्मा,
+gupta,गुप्ता,
+patel,पटेल,
+reddy,रेड्डी,
+reddi,रेड्डी,
+khan,खान,
+singh,सिंह,
+iyer,अय्यर,
+ayyar,अय्यर,
+das,दास,
+mehta,मेहता,
+nair,नायर,
+kumar,कुमार,
+verma,वर्मा,
+varma,वर्मा,
+yadav,यादव,
+shah,शाह,
+rao,राव,
+naidu,नायडू,
+pillai,पिल्लई,
+menon,मेनन,
+bose,बोस,
+roy,रॉय,
+agarwal,अग्रवाल,
+aggarwal,अग्रवाल,
+jain,जैन,
+kapoor,कपूर,
+malhotra,मल्होत्रा,
+bhat,भट,
+bhatt,भट्ट,
+shetty,शेट्टी,
+hegde,हेगड़े,
+prasad,प्रसाद,
+mishra,मिश्रा,
+misra,मिश्रा,
+pandey,पांडे,
+tiwari,तिवारी,
+joshi,जोशी,
+desai,देसाई,
+chauhan,चौहान,
+nayak,नायक,
+sinha,सिन्हा,
+ghosh,घोष,
+banerjee,बनर्जी,
+chatterjee,चटर्जी,
+mukherjee,मुखर्जी,
+krishnan,कृष्णन,
+raman,रमन,
+subramanian,सुब्रमण्यन,
+chopra,चोपड़ा,
+saxena,सक्सेना,
+dubey,दुबे,
+thakur,ठाकुर,
+patil,पाटिल,
+kulkarni,कुलकर्णी,
+deshpande,देशपांडे,
+gowda,गौड़ा,
+ahmed,अहमद,
+ali,अली,
+hussain,हुसैन,
+sheikh,शेख़,
+syed,सैयद,
+ansari,अंसारी,
+qureshi,क़ुरैशी,
+siddiqui,सिद्दीक़ी,
+malik,मलिक,
+rahman,रहमान,
+farooqui,फ़ारूक़ी,
+hashmi,हाश्मी,
+usmani,उस्मानी,
+
+-------------------------------- TO HERE --------------------------------------
