@@ -139,6 +139,10 @@ for (const [code, L] of Object.entries(LANGS)) {
   const gloss = shippedGlossary(code);
   const brief = buildPrompt(code, L, all.length, parts, gloss);
   fs.writeFileSync(path.join(OUT, `PROMPT-${code}.md`), brief, 'utf8');
+  // The same thing as plain text. The .md renders as a wall of asterisks and
+  // pipes in anything that is not a markdown viewer, and this file exists to be
+  // opened and copied, not read in a repo browser.
+  fs.writeFileSync(path.join(OUT, `PROMPT-${code}.txt`), plainPrompt(code, L, all.length, parts, gloss), 'utf8');
   console.log(`${L.name.padEnd(10)} ${String(all.length).padStart(4)} strings  ->  ${parts.length} parts, ${gloss.length} glossary terms`);
 }
 
@@ -231,5 +235,82 @@ a replacement character.
 ## Parts
 
 ${parts.map((p, i) => `- \`web-${code}-parts/web-${code}-${String(i + 1).padStart(2, '0')}.csv\` — ${p.length} strings (${p[0][0]} … ${p[p.length - 1][0]})`).join('\n')}
+`;
+}
+
+// The prompt with no markup at all: what you paste into Gemini, and nothing
+// else. Everything that is instruction-to-the-human lives in the .md.
+function plainPrompt(code, L, total, parts, gloss) {
+  const width = Math.max(...gloss.map(([en]) => en.length), 10);
+  const glossLines = gloss.map(([en, tr]) => `    ${en.padEnd(width)}  ${tr}`).join('\n');
+  return `SMART DIGITAL KHATA — ${L.name.toUpperCase()} (${code}) TRANSLATION PROMPT
+
+HOW TO USE
+  ${total} strings, split into ${parts.length} files under web-${code}-parts/.
+  Upload ONE part per turn and paste everything below the line each time.
+  Do not upload all ${total} at once: a model quietly stops near the end, and a
+  short reply looks exactly like a complete one.
+
+${parts.map((p, i) => `  ${i + 1}. web-${code}-${String(i + 1).padStart(2, '0')}.csv  — ${p.length} strings (${p[0][0]} … ${p[p.length - 1][0]})`).join('\n')}
+
+------------------------------- PASTE FROM HERE -------------------------------
+
+You are translating the interface of Smart Digital Khata, an app used by small
+kirana (grocery) shopkeepers and their customers in small towns and villages in
+India. It keeps a shop's khata — the running credit ledger of what each customer
+owes — and lets customers order from the shop.
+
+Translate the attached CSV into ${L.name}, written in the ${L.script} script.
+
+Return a CSV with exactly two columns: key and translation. One row per input
+row, in the same order, keys copied exactly. Do not return the other columns. Do
+not add, drop, merge or reorder rows. Return nothing but the CSV.
+
+Who reads these words: someone with a cheap Android phone, a 2G connection and
+limited schooling. Many are not confident readers. Write the way such a person
+speaks — not the way a newspaper, a bank form or a government notice is written.
+
+RULES, IN ORDER OF IMPORTANCE
+
+1. Placeholders are code, not words. Anything in curly braces — {amount}, {name},
+   {n}, {shop} — is replaced with a real value when the app runs. Copy each one
+   exactly: same spelling, same braces, not translated, none added or dropped.
+   The placeholders column lists what that row must still contain. A missing
+   placeholder prints a broken sentence to a real shopkeeper.
+
+2. One script only. Every character must be ${L.script}, except placeholders,
+   numerals, and real brand names (UPI, WhatsApp, Razorpay, Smart Khata, PDF,
+   OTP, QR). Never leave a row in English. Never use another Indic script.
+
+3. Use the words this app already uses. These are not suggestions — they are what
+   the same person already sees in the mobile app, and the web must match:
+
+${glossLines}
+
+4. Money words carry direction, and getting one wrong is serious. This app tracks
+   credit. Money the customer OWES THE SHOP and money the customer HAS PAID or
+   holds IN ADVANCE are opposites. A word that can mean "deposit" or "amount in
+   your favour" must never be used for a debt. If a short English string is
+   ambiguous on its own, use the where_it_appears column to see which screen it
+   is on, choose the reading that fits, and say so at the end.
+
+5. Plain spoken register. Where the natural spoken word is an English loanword
+   people actually say — order, delivery, balance, online, message, mobile — use
+   it written in ${L.script}, rather than forcing a pure word nobody uses in a shop.
+
+6. Numerals stay Latin: 30, 1,250.00.
+
+7. Keep it short. These are buttons, labels and column headings on a small phone.
+   Stay within about 1.5x the English length; a long translation is cut off
+   mid-word on a 360px screen.
+
+8. Read where_it_appears. "Shopkeeper: settings" means the shop's owner is
+   reading it; "Shopper: cart" means their customer is. The politeness level and
+   the word for "you" often differ between the two.
+
+After the CSV, list separately: rows you were unsure about and why, and rows
+where the English itself is ambiguous.
+
+-------------------------------- TO HERE --------------------------------------
 `;
 }
