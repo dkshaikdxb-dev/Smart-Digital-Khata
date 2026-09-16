@@ -144,9 +144,9 @@ describe('demo seeders', () => {
     expect(hit).toBeDefined();
     expect(hit.shop.name).toBe(TA);
 
-    // 3. English is untouched on all three, and so are the three languages the
-    //    renderer deliberately does not cover (regression control).
-    for (const lang of ['en', 'bn', 'gu', 'mr']) {
+    // 3. English is untouched, and so are the two languages the renderer still
+    //    deliberately does not cover (regression control).
+    for (const lang of ['en', 'gu', 'mr']) {
       const dir = await request(app).get(`/api/public/shops?lang=${lang}&limit=50`);
       expect(dir.body.shops.find((s) => s.id === store01.id).name).toBe('Sharma Kirana Store');
       const sf = await request(app).get(`/api/public/shops/${store01.id}?lang=${lang}`);
@@ -154,6 +154,19 @@ describe('demo seeders', () => {
       const ps = await request(app).get(`/api/public/products/search?q=dal&lang=${lang}&limit=50`);
       expect(ps.body.products.find((p) => p.shop.id === store01.id).shop.name).toBe('Sharma Kirana Store');
     }
+
+    // 4. BENGALI, which used to be in the list above, now renders — and this is
+    //    the assertion worth having, because it goes through the three public
+    //    endpoints a shopper actually hits rather than through the localizer in
+    //    isolation. Every token of "Sharma Kirana Store" is a curated word or a
+    //    known surname, so the whole name is trusted and nothing was guessed.
+    const BN = 'শর্মা কিরানা স্টোর';
+    const bnDir = await request(app).get('/api/public/shops?lang=bn&limit=50');
+    expect(bnDir.body.shops.find((s) => s.id === store01.id).name).toBe(BN);
+    const bnSf = await request(app).get(`/api/public/shops/${store01.id}?lang=bn`);
+    expect(bnSf.body.shop.name).toBe(BN);
+    const bnPs = await request(app).get('/api/public/products/search?q=dal&lang=bn&limit=50');
+    expect(bnPs.body.products.find((p) => p.shop.id === store01.id).shop.name).toBe(BN);
   }, 120000);
 
   // The owner's own correction outranks the seeder, every time it runs.

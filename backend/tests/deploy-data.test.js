@@ -293,20 +293,33 @@ describe('npm run migrate seeds the localized shop names it can derive', () => {
     }
   }, 300000);
 
-  // Regression control (deliberately passing both before and after this batch).
-  // bn, gu and mr are EXCLUDED from the renderer on purpose: they have no script
-  // mapping and no curated lexicon yet, so there is nothing to render them with
-  // and English stays their fallback. A deploy-path backfill must not quietly
-  // invent rows for them.
-  it('writes nothing for bn, gu or mr — they are deliberately not rendered', async () => {
-    for (const lang of ['bn', 'gu', 'mr']) {
+  // gu and mr are EXCLUDED from the renderer on purpose: no curated lexicon yet,
+  // so there is nothing to render them with and English stays their fallback.
+  // A deploy-path backfill must not quietly invent rows for them.
+  it('writes nothing for gu or mr — they are deliberately not rendered yet', async () => {
+    // BENGALI MOVED. It was in this list because it had no curated lexicon, not
+    // because of anything about the script — the engine has always had a
+    // `bengali` scheme. The lexicon landed, so bn renders now and the backfill
+    // writes rows for it like any other render language.
+    //
+    // gu and mr are still here, and the assertion is deliberately about the
+    // REASON: a language earns a place by having a lexicon to render with, and
+    // until one exists, inventing rows for it would put transliterated rubbish
+    // ("Store" -> સ્તોરે) on a real shop's sign.
+    for (const lang of ['gu', 'mr']) {
       expect(RENDER_LANGS.includes(lang)).toBe(false);
       expect(localizeShopName(ENGLISH_NAME, lang).name).toBe(ENGLISH_NAME);
     }
-    const r = await pool.query(
-      "SELECT COUNT(*)::int AS n FROM shop_name_i18n WHERE lang IN ('bn','gu','mr')"
+    const none = await pool.query(
+      "SELECT COUNT(*)::int AS n FROM shop_name_i18n WHERE lang IN ('gu','mr')"
     );
-    expect(r.rows[0].n).toBe(0);
+    expect(none.rows[0].n).toBe(0);
+
+    expect(RENDER_LANGS.includes('bn')).toBe(true);
+    const bn = await pool.query(
+      "SELECT COUNT(*)::int AS n FROM shop_name_i18n WHERE lang = 'bn'"
+    );
+    expect(bn.rows[0].n).toBeGreaterThan(0);
   }, 300000);
 });
 

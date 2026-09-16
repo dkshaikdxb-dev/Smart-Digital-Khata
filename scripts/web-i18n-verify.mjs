@@ -79,6 +79,34 @@ if (!lang) { console.error('no language code in filename:', path.basename(file))
 //
 // A continuation line (a translation containing a newline) is appended to the
 // previous row rather than read as a keyless record.
+// A reply asked for two columns sometimes sends three, echoing the placeholder
+// list back:  c.youOwe,আপনার দিতে হবে {amt},{amt}
+//
+// Splitting at the first comma then keeps ",{amt}" inside the translation, and
+// it ships as "আপনার দিতে হবে {amt},{amt}" — the placeholder twice, with a stray
+// comma, on a line about money. The placeholder check does not see it either:
+// the extra {amt} is a placeholder the English HAS, so membership is satisfied.
+//
+// Cutting at the LAST comma would be wrong: credits.spendNote is
+// "সাবস্ক্রিপশন, প্রোমো এবং আরও কাজে ব্যবহার করুন" and the comma is the sentence's own.
+//
+// The discriminator is narrow: drop a trailing comma-segment only when it is
+// nothing but placeholders AND every one of them already appears earlier in the
+// value. A translation that genuinely ends "নাম, {name}" keeps its tail, because
+// {name} is not repeated.
+function dropEchoedPlaceholderColumn(value) {
+  const at = value.lastIndexOf(',');
+  if (at < 0) return value;
+  const head = value.slice(0, at);
+  const tail = value.slice(at + 1).trim();
+  if (!tail) return value;
+  const tailPlaceholders = tail.match(/\{[a-zA-Z0-9_]+\}/g) || [];
+  if (!tailPlaceholders.length) return value;
+  if (tail.replace(/\{[a-zA-Z0-9_]+\}/g, '').trim() !== '') return value;
+  if (!tailPlaceholders.every((ph) => head.includes(ph))) return value;
+  return head;
+}
+
 function parseKeyValue(text) {
   const out = [];
   for (const raw of text.split('\n')) {
@@ -100,7 +128,7 @@ function parseKeyValue(text) {
     if (t.length > 1 && t.startsWith('"') && t.endsWith('"')) {
       value = t.slice(1, -1).replace(/""/g, '"');
     }
-    out.push([line.slice(0, i).trim(), value]);
+    out.push([line.slice(0, i).trim(), dropEchoedPlaceholderColumn(value)]);
   }
   return out;
 }
@@ -208,8 +236,14 @@ for (const r of rows) {
 
   const optional = droppablePlural(en);
   const want = phOf(en), got = phOf(tr);
-  const missing = want.filter((p) => !got.includes(p) && !optional.has(p));
-  const extra = got.filter((p) => !want.includes(p));
+  // Compared as MULTISETS, not sets. A doubled placeholder — "{amt} … {amt}"
+  // where the English has one — satisfies membership and is still broken output.
+  const count = (list) => list.reduce((m, p) => m.set(p, (m.get(p) || 0) + 1), new Map());
+  const wantN = count(want), gotN = count(got);
+  const missing = [...wantN].flatMap(([p, n]) =>
+    Array((optional.has(p) ? 0 : Math.max(0, n - (gotN.get(p) || 0)))).fill(p));
+  const extra = [...gotN].flatMap(([p, n]) =>
+    Array(Math.max(0, n - (wantN.get(p) || 0))).fill(p));
   if (missing.length || extra.length) {
     const parts = [];
     if (missing.length) parts.push(`dropped ${missing.join(' ')}`);
