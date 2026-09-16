@@ -1,0 +1,13 @@
+key,english,placeholders,where_it_appears
+common.refresh,Refresh,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+common.retry,Try again,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+content.nav,Content,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+credits.balanceLabel,Your Khata Credits,,Shopkeeper: account
+credits.bySource,By source,,Shopkeeper: account
+credits.earnedTitle,Earned so far,,Shopkeeper: account
+credits.empty,No credits yet — refer a shop to start earning,,Shopkeeper: account
+credits.kind.other,Adjustment,,Shopkeeper: account
+credits.pending,{amt} pending,{amt},Shopkeeper: account
+credits.recentTitle,Recent activity,,Shopkeeper: account
+credits.spendNote,"Spend on your subscription, promos and more",,Shopkeeper: account
+credits.title,Khata Credits,,Shopkeeper: account

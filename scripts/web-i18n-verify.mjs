@@ -59,9 +59,46 @@ if (!file) { console.error('usage: node scripts/web-i18n-verify.mjs <file.csv> [
 const lang = path.basename(file).replace(/^web-/, '').replace(/-\d+$/, '').replace(/\.csv$/, '').replace(/-\d+$/, '');
 if (!SCRIPT[lang]) { console.error('unknown language in filename:', lang); process.exit(2); }
 
+// A key,translation reply, parsed by SPLITTING AT THE FIRST COMMA.
+//
+// General CSV parsing is wrong for this shape. A model returns a field like
+//   brand.subtitle,… premium look — colour, tagline, "Premium" badge …
+// unquoted, with commas AND quotes inside it, which a correct CSV parser is
+// obliged to mangle: the commas split the row and the quote flips it into
+// quoted mode. But the KEY can never contain a comma, and there are exactly two
+// columns, so the first comma is the only separator that matters and everything
+// after it is the translation, verbatim. A surrounding pair of quotes is
+// stripped only when it wraps the WHOLE value.
+//
+// A continuation line (a translation containing a newline) is appended to the
+// previous row rather than read as a keyless record.
+function parseKeyValue(text) {
+  const out = [];
+  for (const raw of text.split('\n')) {
+    const line = raw.replace(/\r$/, '');
+    if (line.trim() === '') continue;
+    const i = line.indexOf(',');
+    const looksLikeRecord = i > 0 && /^[A-Za-z][A-Za-z0-9_.]*$/.test(line.slice(0, i).trim());
+    if (!looksLikeRecord) {
+      if (out.length) out[out.length - 1][1] += '\n' + line;
+      continue;
+    }
+    let value = line.slice(i + 1).trim();
+    if (value.length > 1 && value.startsWith('"') && value.endsWith('"')) {
+      value = value.slice(1, -1).replace(/""/g, '"');
+    }
+    out.push([line.slice(0, i).trim(), value]);
+  }
+  return out;
+}
+
 const filePath = path.isAbsolute(file) ? file : path.join(ROOT, file);
-const rows = parseCsv(fs.readFileSync(filePath, 'utf8'));
-const head = rows.shift().map((h) => h.trim());
+const raw = fs.readFileSync(filePath, 'utf8');
+const firstLine = (raw.split('\n')[0] || '').trim();
+const twoCol = /^key\s*,\s*translation\s*$/i.test(firstLine);
+const rows = twoCol ? parseKeyValue(raw) : parseCsv(raw);
+const head = twoCol ? ['key', 'translation'] : rows.shift().map((h) => h.trim());
+if (twoCol && rows.length && rows[0][0] === 'key') rows.shift();
 const col = (name, required = true) => {
   const i = head.indexOf(name);
   if (i < 0 && required) { console.error('missing column:', name); process.exit(2); }
@@ -96,20 +133,49 @@ for (const r of rows) {
   // another language's file.
   if (E >= 0 && (r[E] || '') !== en) { rej('english no longer matches the repo — row may have shifted'); continue; }
   if (!tr) { blank++; continue; }
-  if (tr === en) { rej('left in English'); continue; }
+  // "Unchanged" is only a defect when there was something to change. A source
+  // like "{item} — {before} → {after}" is placeholders and punctuation with no
+  // words in it; returning it identical is the correct answer, not a skipped
+  // row. Rejecting those told a translator to invent a difference.
+  if (tr === en && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) { rej('left in English'); continue; }
   if (tr.includes('�')) { rej('contains U+FFFD (mojibake)'); continue; }
 
   const want = phOf(en), got = phOf(tr);
   if (want.join('|') !== got.join('|')) { rej(`placeholder drift: expected ${want.join(' ') || '(none)'} got ${got.join(' ') || '(none)'}`); continue; }
 
-  const stripped = tr.replace(/\{[a-zA-Z0-9_]+\}/g, ' ');
+  // Strip placeholders AND the shared Indic punctuation before asking which
+  // script this is. U+0964/U+0965 (danda, double danda) sit in the DEVANAGARI
+  // block but are the full stop in Bengali, Gujarati, Odia, Punjabi and more —
+  // so a correct Bengali sentence ending in "।" was being rejected as "written
+  // in Hindi". That was 30 good rows out of 116 on the first real reply, and
+  // exactly the kind of false positive that teaches people to ignore a gate.
+  const stripped = tr
+    .replace(/\{[a-zA-Z0-9_]+\}/g, ' ')
+    .replace(/[\u0964\u0965]/g, ' ');
   const foreign = OTHER[lang].filter((o) => SCRIPT[o].test(stripped));
   if (foreign.length) { rej(`written in the wrong script (${foreign.join('/')}) — bled from another file`); continue; }
-  if (!SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) { rej('no character of this language’s own script'); continue; }
+  // Same rule as above: a source with no WORDS in it cannot produce a
+  // translation with script characters, and demanding one would force a
+  // translator to add something that is not there.
+  const enHasWords = /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''));
+  if (enHasWords && !SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) {
+    rej('no character of this language’s own script'); continue;
+  }
 
   accepted[key] = tr;
 }
 
+// NOT CHECKED HERE: spelling drift inside one reply.
+//
+// The first good Bengali reply spelled "Premium" প্রিমিয়াম five times and
+// পিমিয়াম once, and transliterated "advance" two ways. Both are real, both read
+// as fluent text, and no check here sees them. An edit-distance heuristic was
+// written for exactly this and then removed: it flagged ordinary Bengali
+// inflection (দিয়ে/দিয়েই, পারে/পারেন) as suspect, and it MISSED the typo that
+// motivated it, because প্রিমিয়াম/পিমিয়াম differ by a conjunct — two codepoints,
+// not one. A noisy gate that fails on its own founding example teaches people
+// to ignore gates. This belongs to the native-speaker review, which is where a
+// reader who knows the language is the right instrument.
 const n = Object.keys(accepted).length;
 console.log(`${file}: ${rows.length} rows — ${n} accepted, ${rejected.length} rejected, ${blank} left blank`);
 
