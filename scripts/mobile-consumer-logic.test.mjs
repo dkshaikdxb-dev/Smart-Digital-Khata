@@ -531,6 +531,79 @@ section('a search result can be added without leaving the screen');
   ok(addBtn && Number(addBtn[1]) >= 44, 'and so is Add');
 }
 
+section('a balance can be heard, not only read');
+{
+  // The web PWA has spoken a khata balance for a while; the app — the thing
+  // most of these shoppers actually use — did not, although expo-speech was
+  // already wired up in useNativeVoice for the owner's order alert. On the one
+  // screen where someone who cannot read still has to know a number exactly.
+  const khataSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/screens/KhataScreen.js'), 'utf8');
+  const voiceSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/lib/useNativeVoice.js'), 'utf8');
+
+  ok(/useNativeVoice/.test(khataSrc), 'the khata screen can speak');
+  // WHICH WAY THE MONEY GOES. The web speaks "Balance of {name} is {amount}
+  // rupees" for every row, and a balance here has a direction: positive is owed
+  // to the shop, negative is an advance in the shopper's favour. Porting that
+  // sentence would tell someone who cannot read the screen — the one person
+  // this feature is for, and the one who never sees the green "In advance"
+  // label — that they owe money they have already paid.
+  const K = loadPure('mobile-app/src/consumer/money.js', ['spokenBalance', 'spokenRupees']);
+  const say = (k) => ({ 'khata.owe': 'You owe', 'khata.advance': 'In advance',
+                        'khata.settled': 'All settled', 'voice.rupees': 'rupees' }[k] || k);
+  eq(K.spokenBalance(say, { shop_name: 'Sharma Kirana Store', balance: 244000 }),
+    'Sharma Kirana Store. You owe 2440 rupees',
+    'money owed is spoken as owed');
+  eq(K.spokenBalance(say, { shop_name: 'Singh Mini Market', balance: -12500 }),
+    'Singh Mini Market. In advance 125 rupees',
+    'and an ADVANCE is never spoken as if it were a debt');
+  eq(K.spokenBalance(say, { shop_name: 'Gupta General Store', balance: 0 }),
+    'Gupta General Store. All settled',
+    'a settled shop says only that — not "All settled 0 rupees"');
+  ok(!/₹/.test(K.spokenBalance(say, { shop_name: 'X', balance: 100 })),
+    'and the rupee symbol never reaches the speech engine');
+  const moneySrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/money.js'), 'utf8');
+  ok(/t\('voice\.rupees'\)/.test(moneySrc),
+    'with the word "rupees" in the shopper’s own language, not baked in');
+
+  // A voice reading a balance out loud in a shop has to be stoppable. The web
+  // version cannot be, which was reported as a bug.
+  ok(/isSaying\(s\.shop_id\)\) \{ voice\.stopSpeaking\(\); setSpeakingId\(''\); return; \}/.test(khataSrc),
+    'tapping again STOPS it rather than queueing a second reading');
+  ok(/isSaying\(s\.shop_id\) \? '⏹' : '🔊'/.test(khataSrc),
+    'and the control says so while it is talking');
+  ok(/isSaying\(s\.shop_id\) \? t\('common\.stop'\)/.test(khataSrc),
+    'including for a screen reader');
+  // `voice.speaking` is ONE flag for the hook. Keyed off it alone, every row
+  // turned into Stop at once — so a shopper could not start the second shop
+  // without stopping the first, and three Stop buttons implied three voices.
+  ok(/const isSaying = \(shopId\) => voice\.speaking && speakingId === shopId/.test(khataSrc),
+    'only the row being READ shows Stop, not every row');
+
+  // TTS and STT are independent capabilities. Gating on `supported` (which is
+  // recognition) would hide the button on devices that can speak and show a
+  // dead one on devices that cannot.
+  ok(/const ttsSupported = !!Speech/.test(voiceSrc), 'the hook reports TTS support separately');
+  ok(/voice\.ttsSupported \?/.test(khataSrc), 'and the button gates on THAT, not on recognition');
+  ok(!/voice\.supported \?/.test(khataSrc), 'never on recognition support');
+
+  // Spoken money is not screen money.
+  const M = loadPure('mobile-app/src/consumer/money.js', ['money', 'spokenRupees', 'spokenBalance']);
+  eq(M.spokenRupees(123456789), '1234567.89', 'no grouping commas — a voice reads those as separate numbers');
+  eq(M.spokenRupees(244000), '2440', 'and no ".00", which is not how a balance is said');
+  eq(M.spokenRupees(9900), '99', 'whole rupees stay whole');
+  eq(M.spokenRupees(99), '0.99', 'under a rupee still says the paise');
+  eq(M.spokenRupees(-50000), '500', 'an advance is read as a number, with the screen saying which way it goes');
+  eq(M.spokenRupees(0), '0', 'and nothing owed is zero, not empty');
+  ok(!/₹/.test(M.spokenRupees(12345)), 'the rupee SYMBOL never reaches the speech engine');
+
+  // The four strings came from elsewhere in this codebase, already translated.
+  const dict = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/i18n.js'), 'utf8');
+  for (const key of ['voice.rupees', 'voice.speak', 'common.stop']) {
+    const n = (dict.match(new RegExp(`'${key.replace('.', '\\.')}':`, 'g')) || []).length;
+    ok(n >= 10, `${key} is present in every language (${n}/10)`);
+  }
+}
+
 section('why an order was refused');
 {
   // A shopper placed a 2,440-rupee order on khata and was told "Something in

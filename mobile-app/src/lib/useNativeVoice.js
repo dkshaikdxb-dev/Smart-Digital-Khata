@@ -378,6 +378,14 @@ export function useNativeVoice(lang = 'en') {
     };
   }, []);
 
+  // Can this device SPEAK? `supported` above answers a different question — it
+  // is recognition (STT) only, and the two are genuinely independent: expo-speech
+  // can be present where expo-speech-recognition is not, and Apple's recognizer
+  // can be a false positive where synthesis works fine. A read-aloud control
+  // gated on `supported` would therefore be hidden on devices that can speak and
+  // shown, dead, on devices that cannot. Mirrors the web hook's `ttsSupported`.
+  const ttsSupported = !!Speech;
+
   return {
     listen,
     stop,
@@ -387,6 +395,7 @@ export function useNativeVoice(lang = 'en') {
     listening,
     lastError,
     supported,
+    ttsSupported,
     localeSupported,
   };
 }

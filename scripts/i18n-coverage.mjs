@@ -180,7 +180,13 @@ const FLOORS = {
   // English — which is still strictly better than what they read before, which
   // was a TRANSLATED sentence that told them nothing ("Something in that was
   // not right") when the truth was "this is over your khata limit here".
-  consumer: { hi: 341, bn: 341, ta: 341, te: 341, kn: 341, ml: 341, mr: 341, gu: 341, ur: 341 },
+  //
+  // Batch READ-ALOUD added THREE more consumer keys and they ARE translated in
+  // every language, because none was authored here: 'voice.rupees' and
+  // 'voice.speak' are copied verbatim from the web consumer khata, which has
+  // spoken a balance for a while, and 'common.stop' from the owner app, whose
+  // order alert already offers exactly this Stop. Every language +3.
+  consumer: { hi: 344, bn: 344, ta: 344, te: 344, kn: 344, ml: 344, mr: 344, gu: 344, ur: 344 },
   //
   // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'
   // and 'more.transactions' — for the Staff / Suppliers / Transactions rows the

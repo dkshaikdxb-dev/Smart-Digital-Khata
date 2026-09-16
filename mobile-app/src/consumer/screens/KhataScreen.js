@@ -5,14 +5,45 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, sizes } from '../theme';
 import { Card, ErrorBanner, Loading, Empty } from '../components';
-import { money } from '../money';
+import { money, spokenBalance } from '../money';
 import { my } from '../consumerApi';
 import { useT } from '../i18n';
+import { useNativeVoice } from '../../lib/useNativeVoice';
 
 // Priority 2 (core value) — cross-shop khata from GET /my/khata.
 // balance is INTEGER PAISE: > 0 means the customer OWES, < 0 means advance.
 export default function KhataScreen({ navigation }) {
-  const { t } = useT();
+  const { t, lang } = useT();
+
+  // Read a balance out loud.
+  //
+  // This is the one screen where a shopper who cannot read still has to know a
+  // number exactly, and the web PWA has spoken it for a while (pages/c/khata.js)
+  // while the app — the thing most of them actually use — did not, even though
+  // expo-speech was already wired up in useNativeVoice for the owner's order
+  // alert. Same sentence, same dictionary keys, so a shopper hears the same
+  // words whichever surface they are on.
+  //
+  // It can be STOPPED. The web version cannot be, which was raised as a bug:
+  // a voice reading a balance out loud in a shop is something you need to be
+  // able to cut off immediately, and there is no way to do that if the only
+  // control starts it. While speaking, the button becomes Stop.
+  // WHICH row is being read, not merely THAT something is. `voice.speaking` is
+  // one flag for the whole hook, so keying the control off it alone turned every
+  // row's button into Stop at once: a shopper could not start reading the second
+  // shop without stopping the first, and three Stop buttons implied three things
+  // were talking. Only the row actually being read becomes Stop; the others stay
+  // Play, and tapping one of those switches to it (speak() replaces rather than
+  // queues, so nothing talks over anything).
+  const voice = useNativeVoice(lang);
+  const [speakingId, setSpeakingId] = useState('');
+  const isSaying = (shopId) => voice.speaking && speakingId === shopId;
+
+  const sayBalance = (s) => {
+    if (isSaying(s.shop_id)) { voice.stopSpeaking(); setSpeakingId(''); return; }
+    setSpeakingId(s.shop_id);
+    voice.speak(spokenBalance(t, s));
+  };
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -91,6 +122,21 @@ export default function KhataScreen({ navigation }) {
                 </View>
                 <View style={styles.shopRight}>
                   <Text style={[styles.shopBal, { color: tone }]}>{money(Math.abs(bal))}</Text>
+                  {/* Gated on ttsSupported, NOT `supported` — that one is
+                      speech RECOGNITION, a different capability. Hidden
+                      entirely when the device cannot speak, rather than
+                      offering a button that does nothing. */}
+                  {voice.ttsSupported ? (
+                    <Pressable
+                      onPress={() => sayBalance(s)}
+                      hitSlop={8}
+                      style={styles.speakBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={isSaying(s.shop_id) ? t('common.stop') : `${t('voice.speak')} · ${s.shop_name}`}
+                    >
+                      <Text style={styles.speakIcon}>{isSaying(s.shop_id) ? '⏹' : '🔊'}</Text>
+                    </Pressable>
+                  ) : null}
                   <Text style={styles.chev}>›</Text>
                 </View>
               </Pressable>
@@ -105,6 +151,14 @@ export default function KhataScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: sizes.pad },
+  // A real target: this sits inside a row that navigates, so a near-miss must
+  // not open the shop's statement instead of reading the balance.
+  speakBtn: {
+    width: 44, height: 44, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+    marginLeft: 4,
+  },
+  speakIcon: { fontSize: 20 },
   totalCard: { alignItems: 'center', paddingVertical: 22 },
   totalLabel: { color: colors.textMuted, fontSize: 15 },
   totalValue: { fontSize: sizes.big, fontWeight: '800', marginTop: 6 },
