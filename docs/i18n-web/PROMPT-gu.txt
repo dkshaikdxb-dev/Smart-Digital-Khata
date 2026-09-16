@@ -1,16 +1,14 @@
 SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
 
 HOW TO USE
-  566 strings, split into 5 files under web-gu-parts/.
+  370 strings, split into 3 files under web-gu-parts/.
   Upload ONE part per turn and paste everything below the line each time.
-  Do not upload all 566 at once: a model quietly stops near the end, and a
+  Do not upload all 370 at once: a model quietly stops near the end, and a
   short reply looks exactly like a complete one.
 
-  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
-  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
-  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
-  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
-  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+  1. web-gu-01.csv  — 121 strings (adfree.balanceLabel … dem.viewOrder)
+  2. web-gu-02.csv  — 139 strings (dist.accountSubtitle … promo.window)
+  3. web-gu-03.csv  — 110 strings (pub.khata.footer … voice.err.network)
 
 ------------------------------- PASTE FROM HERE -------------------------------
 

@@ -261,7 +261,13 @@ for (const r of rows) {
   const stripped = tr
     .replace(/\{[a-zA-Z0-9_]+\}/g, ' ')
     .replace(/[\u0964\u0965]/g, ' ');
-  const foreign = OTHER[lang].filter((o) => SCRIPT[o].test(stripped));
+  // Script that is ALSO in the English source is not a bleed, it is the string.
+  // alang.fLabel is "Native label (e.g. मराठी)" — the Devanagari is a worked
+  // example of what a native label looks like, and every language keeps it.
+  // Testing the translation without first removing what the English already
+  // contains rejects the only correct answer.
+  const enScripts = OTHER[lang].filter((o) => SCRIPT[o].test(en));
+  const foreign = OTHER[lang].filter((o) => !enScripts.includes(o) && SCRIPT[o].test(stripped));
   if (foreign.length) { rej(`written in the wrong script (${foreign.join('/')}) — bled from another file`); continue; }
   // Same rule as above: a source with no WORDS in it cannot produce a
   // translation with script characters, and demanding one would force a

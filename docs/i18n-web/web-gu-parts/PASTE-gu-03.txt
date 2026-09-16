@@ -1,15 +1,13 @@
 SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
 
 HOW TO USE
-  This is part 3 of 5 (121 of 566 strings).
+  This is part 3 of 3 (110 of 370 strings).
   Paste EVERYTHING between the two lines below into Gemini — the rows are
   included, so there is nothing to attach. One part per conversation turn.
 
-  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
-  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
-  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
-  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
-  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+  1. web-gu-01.csv  — 121 strings (adfree.balanceLabel … dem.viewOrder)
+  2. web-gu-02.csv  — 139 strings (dist.accountSubtitle … promo.window)
+  3. web-gu-03.csv  — 110 strings (pub.khata.footer … voice.err.network)
 
 ------------------------------- PASTE FROM HERE -------------------------------
 
@@ -115,129 +113,118 @@ RULES, IN ORDER OF IMPORTANCE
 After the CSV, list separately: rows you were unsure about and why, and rows
 where the English itself is ambiguous.
 
-Here are the 121 rows. Translate every one of them.
+Here are the 110 rows. Translate every one of them.
 
 key,english,placeholders,where_it_appears
-err.accountStopped,This account has been stopped. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.badRequest,Something in that was not right. Please check and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.conflict,That could not be done just now. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.generic,Something went wrong. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.notAllowed,You cannot open this.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.notFound,That is not available any more.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.offline,No internet right now. Check your connection and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.server,Something went wrong at our end. Please try again in a moment.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.signInRejected,"That number, email or password is not right. Please check and try again.",,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.signedOut,You have been signed out. Please sign in again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.slow,The network is too slow to finish that. Please try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.suspended,This shop has been stopped by Smart Digital Khata. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-err.tooMany,Too many tries. Please wait a minute and try again.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.accept,Accept,,Shopkeeper: orders
-eta.chipHour,~{n} hour,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.chipHourMin,~{h} hr {m} min,{h} {m},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.chipMin,~{n} min,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.late,Past the time you promised,,Shopkeeper: orders; Shopkeeper: orders/[id]
-eta.needMore,Need more time,,Shopkeeper: orders/[id]
-eta.needMoreHelp,Pick a new time — the customer is told straight away.,,Shopkeeper: orders/[id]
-eta.noPromise,No ready time promised,,Shopkeeper: orders/[id]
-eta.noTime,Accept without a time,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.notNow,Not now,,Shopkeeper: orders; Shopkeeper: orders/[id]
-eta.pickTime,Ready in about…,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.promisedBy,You promised ready by {time},{time},Shopkeeper: orders/[id]
-eta.readyBy,Ready by {time},{time},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.sent,The customer has been told the new time.,,Shopkeeper: orders/[id]
-eta.takingLonger,Taking a little longer,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-eta.takingLongerHelp,It was expected by {time}. It should not be much longer.,{time},Shopper: orders/[id]
-lang.betaSuffix, (beta),,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-mod.pendingAria,{n} items waiting for review,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-nav.delivery,Delivery,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.accept,Accept,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.decide,This keeps alerting until you accept or reject it.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.enableSound,Turn on sound,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.items,{n} items,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.more,+{n} more,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.mute30,Mute 30 min,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.open,Open,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.setClamped,The platform limits how often alerts may repeat — your value was adjusted to the nearest allowed one.,,Shopkeeper: settings
-oalert.setEnabled,Alert me about new orders,,Shopkeeper: settings
-oalert.setHelp,A new order keeps alerting you — here and on WhatsApp — until you ACCEPT it or REJECT it. Not now only quiets one order for a few minutes; it never stops the alert.,,Shopkeeper: settings
-oalert.setMaxRepeats,Stop after (repeats),,Shopkeeper: settings
-oalert.setMuteNow,Mute for 30 minutes,,Shopkeeper: settings
-oalert.setMutedUntil,Muted until {when},{when},Shopkeeper: settings
-oalert.setRepeat,Repeat every (minutes),,Shopkeeper: settings
-oalert.setTitle,Order alerts,,Shopkeeper: settings
-oalert.settings,Alert settings,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.snooze,Not now — {mins} min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.snoozedFor,Quiet for {mins} more min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.spoken,New order. {name}. {n} items. {amount} rupees.,{name} {n} {amount},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.stillWaiting,Still waiting — you have not answered this one yet.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.title,New order waiting,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.unmute,Unmute,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oalert.waiting,waiting {mins} min,{mins},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
-oedit.cancelInstead,You have taken off everything. Cancel the order instead.,,Shopkeeper: orders/[id]
-oedit.confirm,Confirm the new order,,Shopkeeper: orders/[id]
-oedit.feeMayChange,"If this takes the order under your free-delivery amount, the delivery fee is recalculated when you confirm.",,Shopkeeper: orders/[id]
-oedit.help,"Take off what you do not have. You can only REMOVE items or LOWER quantities — nothing here can add an item, raise a quantity or change a price.",,Shopkeeper: orders/[id]
-oedit.historyBy,"{who}, {when}",{who} {when},Shopkeeper: orders/[id]
-oedit.historyReduced,{item} — {before} → {after},{item} {before} {after},Shopkeeper: orders/[id]; Shopper: orders/[id]
-oedit.historyRemoved,{item} — removed,{item},Shopkeeper: orders/[id]; Shopper: orders/[id]
-oedit.historyTitle,What was taken off,,Shopkeeper: orders/[id]
-oedit.historyUnknownWho,the shop,,Shopkeeper: orders/[id]
-oedit.keep,Leave it as it was,,Shopkeeper: orders/[id]
-oedit.moneyCash,Collect {amount} less when you hand the order over.,{amount},Shopkeeper: orders/[id]
-oedit.moneyCredit,{amount} will come off this customer's khata.,{amount},Shopkeeper: orders/[id]
-oedit.moneyPrepaid,Already paid online — {amount} will be kept as credit at your shop for this customer.,{amount},Shopkeeper: orders/[id]
-oedit.noChange,Nothing has been changed yet.,,Shopkeeper: orders/[id]
-oedit.originalSubtotal,Original subtotal,,Shopkeeper: orders/[id]
-oedit.reducedBy,You are taking off {amount}.,{amount},Shopkeeper: orders/[id]
-oedit.remove,Remove,,Shopkeeper: orders/[id]
-oedit.removedTag,Removed,,Shopkeeper: orders/[id]
-oedit.restore,Put back,,Shopkeeper: orders/[id]
-oedit.saved,The order has been reduced. The customer has been told what changed.,,Shopkeeper: orders/[id]
-oedit.saving,Saving…,,Shopkeeper: orders/[id]
-oedit.start,Not everything in stock?,,Shopkeeper: orders/[id]
-oedit.startBtn,Reduce this order,,Shopkeeper: orders/[id]
-oedit.thenAccept,Now accept it and tell the customer when it will be ready.,,Shopkeeper: orders/[id]
-oedit.title,Reduce this order,,Shopkeeper: orders/[id]
-oedit.was,Was {was},{was},Shopkeeper: orders/[id]
-oedit.wasNow,Was {was} — now {now},{was} {now},Shopkeeper: orders/[id]
-open.addClosure,Add date,,Shopkeeper: settings
-open.alwaysOpen,No daily hours set — open all day.,,Shopkeeper: settings
-open.bannerTitle,This shop is closed right now,,Shopper: cart; Shopper: shop/[shopId]
-open.browseOnly,You can look around — ordering opens again when the shop does.,,Shopper: shop/[shopId]
-open.cannotOrder,Closed — cannot order,,Shopper: cart; Shopper: shop/[shopId]
-open.cartBlocked,"This shop is closed right now, so the order cannot be placed. Your cart is saved.",,Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.clearHours,Clear hours,,Shopkeeper: settings
-open.closeTime,Closes at,,Shopkeeper: settings
-open.closed,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.closedPill,Closed,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.closureDate,Date,,Shopkeeper: settings
-open.closureReason,Reason (optional),,Shopkeeper: settings
-open.closureReasonPlaceholder,Diwali,,Shopkeeper: settings
-open.closuresHelp,"Add the dates your shop will be shut — a festival, a wedding, anything. Customers see it before they order.",,Shopkeeper: settings
-open.closuresTitle,Holiday closures,,Shopkeeper: settings
-open.hoursHelp,"Set the daily opening and closing time, or leave both empty to stay open all day. A closing time earlier than the opening time means you stay open past midnight.",,Shopkeeper: settings
-open.hoursIncomplete,"Set both the opening and the closing time, or clear both.",,Shopkeeper: settings
-open.hoursTitle,Shop hours,,Shopkeeper: settings
-open.noClosures,No closures in the next 90 days.,,Shopkeeper: settings
-open.notTakingOrders,Customers cannot order right now.,,Shopkeeper: dashboard
-open.open,Open,,Shopkeeper: dashboard
-open.openTime,Opens at,,Shopkeeper: settings
-open.pause30,30 min,,Shopkeeper: dashboard
-open.pause60,1 hour,,Shopkeeper: dashboard
-open.pauseHelp,"Shutting for a bit? One tap, no time picker.",,Shopkeeper: dashboard
-open.pauseToday,Rest of today,,Shopkeeper: dashboard
-open.removeClosure,Remove,,Shopkeeper: settings
-open.resume,Resume now,,Shopkeeper: dashboard
-open.saveHours,Save hours,,Shopkeeper: settings
-open.stateClosed,Closed — you switched the shop off,,Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.stateHoliday,Closed today — reopens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.stateHolidayReason,Closed today ({reason}) — reopens {when},{reason} {when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.stateHours,Closed — opens {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.statePaused,Paused — back {when},{when},Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.switchLabel,Shop is open,,Shopkeeper: dashboard
-open.takingOrders,You are taking orders right now.,,Shopkeeper: dashboard
-open.title,Shop availability,,Shopkeeper: dashboard
-open.todayAt,at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
-open.tomorrowAt,tomorrow at {time},{time},Shopkeeper: dashboard; Shopper: cart; Shopper: products
+pub.khata.footer,"Read-only statement, updated live by {shop}. Questions? Contact the shop directly.",{shop},Shopkeeper: khata/[token]
+pub.khata.linkInvalid,This khata link is invalid or has been replaced by the shop.,,Shopkeeper: khata/[token]
+pub.khata.linkInvalidTitle,Link not valid,,Shopkeeper: khata/[token]
+pub.khata.recent,Recent entries,,Shopkeeper: khata/[token]
+pub.khata.titleOf,{name}’s khata,{name},Shopkeeper: khata/[token]
+pub.pay.awaiting,Awaiting payment,,Shopkeeper: pay/[orderId]
+pub.pay.notFound,Order not found,,Shopkeeper: pay/[orderId]
+pub.pay.paidAt,Paid at {when},{when},Shopkeeper: pay/[orderId]
+pub.pay.received,Payment received,,Shopkeeper: pay/[orderId]
+pub.pay.refreshHint,"If you paid moments ago, please refresh in a few seconds.",,Shopkeeper: pay/[orderId]
+rc.nav,Ref campaigns,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+set.addPhoto,Add photo,,Shopkeeper: settings
+set.choosePhoto,Choose a photo,,Shopkeeper: settings
+set.keySecret,Key Secret,,Shopkeeper: settings
+set.photoLive,Live,,Shopkeeper: settings
+set.photoPending,Pending review,,Shopkeeper: settings
+set.photoRejected,Rejected,,Shopkeeper: settings
+set.photoUploadedPending,Photo added. It will show on your storefront once our team approves it.,,Shopkeeper: settings
+set.photosFull,You can add up to 3 photos. Remove one to add another.,,Shopkeeper: settings
+set.pincode,Pincode,,Shopkeeper: settings
+set.razorpayKeyId,Razorpay Key ID,,Shopkeeper: settings
+set.removePhoto,Remove photo,,Shopkeeper: settings
+set.shopPhotos,Storefront photos,,Shopkeeper: settings
+set.shopPhotosDesc,Up to 3 photos shown at the top of your storefront. New photos are checked by our team before they go live.,,Shopkeeper: settings
+set.village,Village,,Shopkeeper: settings
+set.webhookSecret,Webhook Secret,,Shopkeeper: settings
+sfaq.active,Show to customers,,Shopkeeper: settings
+sfaq.add,Add FAQ,,Shopkeeper: settings
+sfaq.answer,Answer,,Shopkeeper: settings
+sfaq.answerPlaceholder,e.g. We are open 8am–9pm every day.,,Shopkeeper: settings
+sfaq.empty,No FAQs yet. Add your first question and answer below.,,Shopkeeper: settings
+sfaq.needBoth,Please write both a question and an answer.,,Shopkeeper: settings
+sfaq.question,Question,,Shopkeeper: settings
+sfaq.questionPlaceholder,e.g. What are your shop timings?,,Shopkeeper: settings
+sfaq.subtitle,"Write answers to common questions for your customers — timings, delivery, returns, offers. These show on each customer’s account page.",,Shopkeeper: settings
+sfaq.title,Store FAQ,,Shopkeeper: settings
+share.captionCopied,Caption copied.,,Shopkeeper: dashboard
+share.copyCaption,Copy caption,,Shopkeeper: dashboard
+share.downloadBtn,Download,,Shopkeeper: dashboard
+share.downloaded,Poster downloaded.,,Shopkeeper: dashboard
+share.err,Could not make the poster on this device.,,Shopkeeper: dashboard
+share.offerDefault,Visit our shop today!,,Shopkeeper: dashboard
+share.offerLabel,Today's offer or message,,Shopkeeper: dashboard
+share.offerPlaceholder,e.g. Fresh stock today! Special discount till evening.,,Shopkeeper: dashboard
+share.preset1,Fresh stock today!,,Shopkeeper: dashboard
+share.preset2,Special discount today,,Shopkeeper: dashboard
+share.preset3,Free home delivery,,Shopkeeper: dashboard
+share.scanCta,Scan to open our shop,,Shopkeeper: dashboard
+share.shareBtn,Share,,Shopkeeper: dashboard
+share.shared,Opening share…,,Shopkeeper: dashboard
+share.subtitle,"Make a poster with your offer and store QR, then post it to WhatsApp Status, Instagram or Facebook.",,Shopkeeper: dashboard
+share.title,Share your shop,,Shopkeeper: dashboard
+snl.auto,Auto,,Shopkeeper: settings
+snl.desc,Customers see your shop name in their own language. These are filled in automatically — edit any that need a fix.,,Shopkeeper: settings
+snl.english,English name,,Shopkeeper: settings
+snl.owner,Edited by you,,Shopkeeper: settings
+snl.review,Needs review,,Shopkeeper: settings
+snl.title,Shop name in other languages,,Shopkeeper: settings
+stale.line,These figures were last updated {when}. They may have changed since.,{when},Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+stale.title,Shown from this phone,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
+sup.addItem,Add item,,Shopkeeper: suppliers/index
+sup.brands,Brands,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.cancelConfirm,Cancel this purchase order?,,Shopkeeper: suppliers/orders/[id]
+sup.cancelled,This order was cancelled.,,Shopkeeper: suppliers/orders/[id]
+sup.carries,Carries,,Shopkeeper: suppliers/index
+sup.clearFilters,Clear filters,,Shopkeeper: suppliers/index
+sup.empty,No suppliers found for your city yet.,,Shopkeeper: suppliers/index
+sup.emptyHint,"Suppliers are matched to your shop’s city. Set your city in Settings, or check back soon.",,Shopkeeper: suppliers/index
+sup.entriesFor,Entries — {name},{name},Shopkeeper: suppliers/ledger
+sup.farmerBadge,🌾 Farmer,,Shopkeeper: suppliers/index
+sup.filterEmpty,No suppliers match these filters.,,Shopkeeper: suppliers/index
+sup.freshFilter,🌾 Fresh from farmers,,Shopkeeper: suppliers/index
+sup.hideEntries,Hide entries,,Shopkeeper: suppliers/ledger
+sup.itemName,Item name,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.itemsN,{n} item{s},{n} {s},Shopkeeper: suppliers/orders
+sup.ledgerEmpty,You don’t owe any supplier right now.,,Shopkeeper: suppliers/ledger
+sup.ledgerTitle,What I owe suppliers,,Shopkeeper: suppliers/ledger
+sup.minOrder,Min order,,Shopkeeper: suppliers/index
+sup.nav,Suppliers,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+sup.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/index
+sup.newPO,New purchase order,,Shopkeeper: suppliers/index
+sup.noMinOrder,No minimum,,Shopkeeper: suppliers/index
+sup.orderBack,Purchase orders,,Shopkeeper: suppliers/orders/[id]
+sup.orderingFrom,Ordering from {name},{name},Shopkeeper: suppliers/index
+sup.ordersEmpty,No purchase orders yet.,,Shopkeeper: suppliers/orders; Shopkeeper: suppliers/orders/[id]
+sup.ordersTitle,My purchase orders,,Shopkeeper: suppliers/orders
+sup.placedOn,Placed {when},{when},Shopkeeper: suppliers/orders
+sup.poRef,PO,,Shopkeeper: suppliers/ledger
+sup.priceNote,You send items and quantities; the supplier sets the prices.,,Shopkeeper: suppliers/index
+sup.pricesPending,The supplier sets prices when they confirm this order.,,Shopkeeper: suppliers/orders/[id]
+sup.qty,Qty,,Shopkeeper: distributor/orders/[id]; Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index
+sup.reorder,Reorder from this supplier,,Shopkeeper: suppliers/index
+sup.searchCatalogue,Search my products…,,Shopkeeper: suppliers/index
+sup.send,Send order,,Shopkeeper: suppliers/index
+sup.sent,Order sent to {name}. They will price it and confirm.,{name},Shopkeeper: suppliers/index
+sup.subtitle,Distributors serving your city. Reorder stock in a few taps.,,Shopkeeper: suppliers/index
+sup.supplier,Supplier,,Shopkeeper: suppliers/orders/[id]
+sup.tabDiscover,Discover,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.tabLedger,What I owe,,Shopkeeper: suppliers/demand; Shopkeeper: suppliers/index; Shopkeeper: suppliers/ledger
+sup.title,Suppliers near you,,Shopkeeper: suppliers/index
+sup.typeSupply,Supply,,Shopkeeper: suppliers/ledger
+sup.unitPrice,Unit price,,Shopkeeper: suppliers/orders/[id]
+sup.viewEntries,View entries,,Shopkeeper: suppliers/ledger
+sup.village,Village,,Shopkeeper: suppliers/index
+txn.adjustment,adjustment,,Shopkeeper: customers/[id]; Shopper: account
+voice.err.denied,Allow microphone access to search by voice,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.empty,Didn’t catch that — tap the mic and speak,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.generic,Voice search didn’t work — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.ios,Voice search isn’t supported on iPhone yet — please type,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
+voice.err.network,Voice search needs a connection,,Shopper: products; Shopper: shop/[shopId]; Shopper: shops
 
 -------------------------------- TO HERE --------------------------------------

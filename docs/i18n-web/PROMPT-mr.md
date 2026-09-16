@@ -1,8 +1,8 @@
 # Marathi (`mr`) — web console translation
 
-566 strings, split into 5 files under `web-mr-parts/`.
+370 strings, split into 3 files under `web-mr-parts/`.
 **Upload ONE part per conversation turn and paste the prompt below each time.**
-Asking for all 566 in one reply is where a model starts dropping rows near
+Asking for all 370 in one reply is where a model starts dropping rows near
 the end, and a short reply looks exactly like a complete one.
 
 ## The prompt
@@ -129,8 +129,6 @@ a replacement character.
 
 ## Parts
 
-- `web-mr-parts/web-mr-01.csv` — 128 strings (acc.language … credits.title)
-- `web-mr-parts/web-mr-02.csv` — 126 strings (csfaq.subtitle … dlv.unassigned)
-- `web-mr-parts/web-mr-03.csv` — 121 strings (err.accountStopped … open.tomorrowAt)
-- `web-mr-parts/web-mr-04.csv` — 120 strings (ord.advanceCol … share.title)
-- `web-mr-parts/web-mr-05.csv` — 71 strings (snl.auto … voice.err.network)
+- `web-mr-parts/web-mr-01.csv` — 121 strings (adfree.balanceLabel … dem.viewOrder)
+- `web-mr-parts/web-mr-02.csv` — 139 strings (dist.accountSubtitle … promo.window)
+- `web-mr-parts/web-mr-03.csv` — 110 strings (pub.khata.footer … voice.err.network)

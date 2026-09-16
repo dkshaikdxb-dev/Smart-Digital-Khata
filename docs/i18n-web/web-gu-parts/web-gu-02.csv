@@ -1,46 +1,13 @@
 key,english,placeholders,where_it_appears
-csfaq.subtitle,"Answers your shops have shared — timings, delivery, returns and more.",,Shopper: account
-csfaq.title,Questions about your shops,,Shopper: account
-ctab.products,Products,,Shopper: account; Shopper: cart; Shopper: khata
-dem.addItem,Add item,,Shopkeeper: suppliers/demand
-dem.boardTitle,Demand board,,Shopkeeper: suppliers/demand
-dem.cancel,Cancel need,,Shopkeeper: suppliers/demand
-dem.cancelConfirm,Cancel this demand post?,,Shopkeeper: suppliers/demand
-dem.claim,Claim & make order,,Shopkeeper: distributor/demand
-dem.claimedBy,Claimed by {name},{name},Shopkeeper: suppliers/demand
-dem.claiming,Claiming…,,Shopkeeper: distributor/demand
-dem.distSubtitle,Upcoming needs from shops near you. Claim one to make an order.,,Shopkeeper: distributor/demand
-dem.myPosts,My posted needs,,Shopkeeper: suppliers/demand
-dem.nav,Demand board,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
-dem.nearYou,Needs near you,,Shopkeeper: distributor/demand
-dem.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/demand
-dem.neededBy,Needed by,,Shopkeeper: suppliers/demand
-dem.neededByOn,Needed by {when},{when},Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
-dem.noDate,No date set,,Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
-dem.noOpen,No open needs near you right now.,,Shopkeeper: distributor/demand
-dem.noPosts,You haven’t posted any needs yet.,,Shopkeeper: suppliers/demand
-dem.optionalNote,Note (optional),,Shopkeeper: suppliers/demand
-dem.ownerSubtitle,Post what you need soon. Nearby farmers claim it and make the order.,,Shopkeeper: suppliers/demand
-dem.post,Post need,,Shopkeeper: suppliers/demand
-dem.postNeed,Post a need,,Shopkeeper: suppliers/demand
-dem.posted,Need posted.,,Shopkeeper: suppliers/demand
-dem.posting,Posting…,,Shopkeeper: suppliers/demand
-dem.viewOrder,View order,,Shopkeeper: suppliers/demand
 dist.accountSubtitle,How shops in your city find you.,,Shopkeeper: distributor/account
 dist.accountTitle,My profile,,Shopkeeper: distributor/account
-dist.activeOff,Hidden,,Shopkeeper: distributor/account
 dist.activeOn,Active,,Shopkeeper: distributor/account
 dist.activeToggle,Listed to shops,,Shopkeeper: distributor/account
 dist.areYou,Are you a distributor? ,,Shopkeeper: login
-dist.area,Area,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
 dist.brand,Supplier,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
 dist.brands,Brands,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
 dist.businessName,Business name,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
-dist.cancel,Cancel order,,Shopkeeper: distributor/orders/[id]
-dist.cancelConfirm,Cancel this order?,,Shopkeeper: distributor/orders/[id]
 dist.categories,Categories,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
-dist.city,City,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
-dist.close,Close,,Shopkeeper: distributor/shops
 dist.confirm,Confirm order,,Shopkeeper: distributor/orders/[id]
 dist.confirmed,Order confirmed.,,Shopkeeper: distributor/orders/[id]
 dist.create,Create distributor account,,Shopkeeper: distributor/register
@@ -59,21 +26,14 @@ dist.iAm,I am a…,,Shopkeeper: distributor/register
 dist.itemsN,{n} item{s},{n} {s},Shopkeeper: distributor/index
 dist.kindDistributor,Distributor,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
 dist.kindFarmer,Farmer (Fresh Produce),,Shopkeeper: distributor/register
-dist.lineTotal,Total,,Shopkeeper: distributor/orders/[id]
 dist.listHint,Comma-separated.,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
 dist.minOrderRs,Minimum order (₹),,Shopkeeper: distributor/account
 dist.navAccount,Account,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
-dist.navHome,Orders,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
-dist.navShops,Shops,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
-dist.orderBack,Orders,,Shopkeeper: distributor/orders/[id]
-dist.password,Password,,Shopkeeper: distributor/register
 dist.payAmountRs,Amount received (₹),,Shopkeeper: distributor/shops
 dist.payFrom,Payment from {name},{name},Shopkeeper: distributor/shops
 dist.payMethod,Method,,Shopkeeper: distributor/shops
-dist.payNote,Note (optional),,Shopkeeper: distributor/shops
 dist.paySave,Save payment,,Shopkeeper: distributor/shops
 dist.paySaved,Payment recorded.,,Shopkeeper: distributor/shops
-dist.phone,Phone,,Shopkeeper: distributor/register
 dist.placedOn,Placed {when},{when},Shopkeeper: distributor/index
 dist.priceFirst,Set a price on every item before confirming.,,Shopkeeper: distributor/orders/[id]
 dist.pricesHint,Enter a unit price in ₹ for each item. The subtotal updates as you type.,,Shopkeeper: distributor/orders/[id]
@@ -84,12 +44,9 @@ dist.registerSubtitle,List your business and start receiving orders from shops i
 dist.registerTitle,Register as a distributor,,Shopkeeper: distributor/register
 dist.savePrices,Save prices,,Shopkeeper: distributor/orders/[id]
 dist.setPrices,Set your prices,,Shopkeeper: distributor/orders/[id]
-dist.shop,Shop,,Shopkeeper: distributor/orders/[id]
 dist.shopsEmpty,No shops trade with you yet.,,Shopkeeper: distributor/shops
 dist.shopsSubtitle,Shops that order from you and what each owes.,,Shopkeeper: distributor/shops
-dist.shopsTitle,Shops,,Shopkeeper: distributor/shops
 dist.subtitle,"Purchase orders from shops. Price the items, confirm, and fulfil.",,Shopkeeper: distributor/index
-dist.terminal,This order is {s} — no further changes.,{s},Shopkeeper: distributor/orders/[id]
 dist.title,Incoming orders,,Shopkeeper: distributor/index
 dist.unitPriceRs,Unit price (₹),,Shopkeeper: distributor/orders/[id]
 dist.village,Village,,Shopkeeper: distributor/account; Shopkeeper: distributor/register
@@ -100,7 +57,6 @@ dlv.active,Active,,Shopkeeper: delivery
 dlv.activeDeliveries,{n} active,{n},Shopkeeper: delivery
 dlv.add,Add champion,,Shopkeeper: delivery
 dlv.addTitle,Add a champion,,Shopkeeper: delivery
-dlv.adding,Adding…,,Shopkeeper: delivery
 dlv.area,Area (optional),,Shopkeeper: delivery
 dlv.areaPlaceholder,e.g. Sector 5 / 560001,,Shopkeeper: delivery
 dlv.assign,Assign,,Shopkeeper: delivery
@@ -113,7 +69,6 @@ dlv.deactivate,Deactivate,,Shopkeeper: delivery
 dlv.deliveredCount,{n} delivered,{n},Shopkeeper: delivery
 dlv.feeLabel,Incentive ₹ (optional),,Shopkeeper: delivery
 dlv.inactive,Inactive,,Shopkeeper: delivery
-dlv.name,Name,,Shopkeeper: delivery
 dlv.namePlaceholder,e.g. Ravi,,Shopkeeper: delivery
 dlv.needChampion,Pick a champion first.,,Shopkeeper: delivery
 dlv.noChampions,No champions yet. Add your first delivery agent above.,,Shopkeeper: delivery
@@ -123,5 +78,63 @@ dlv.phone,Phone (optional),,Shopkeeper: delivery
 dlv.phonePlaceholder,e.g. 98xxxxxxxx,,Shopkeeper: delivery
 dlv.pickChampion,Pick a champion,,Shopkeeper: delivery
 dlv.subtitle,Register your delivery agents and assign home-delivery orders to them. Each champion gets a no-login link to mark orders picked up and delivered.,,Shopkeeper: delivery
-dlv.title,Delivery Champions,,Shopkeeper: delivery
 dlv.unassigned,Not assigned,,Shopkeeper: delivery
+err.accountStopped,This account has been stopped. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.signInRejected,"That number, email or password is not right. Please check and try again.",,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+err.suspended,This shop has been stopped by Smart Digital Khata. Please contact support.,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+mod.pendingAria,{n} items waiting for review,{n},Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.enableSound,Turn on sound,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.mute30,Mute 30 min,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.open,Open,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.setClamped,The platform limits how often alerts may repeat — your value was adjusted to the nearest allowed one.,,Shopkeeper: settings
+oalert.setMutedUntil,Muted until {when},{when},Shopkeeper: settings
+oalert.settings,Alert settings,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oalert.unmute,Unmute,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+oedit.historyBy,"{who}, {when}",{who} {when},Shopkeeper: orders/[id]
+oedit.moneyCredit,{amount} will come off this customer's khata.,{amount},Shopkeeper: orders/[id]
+open.closureDate,Date,,Shopkeeper: settings
+open.open,Open,,Shopkeeper: dashboard
+ord.advanceCol,Advance,,Shopkeeper: orders
+ostatus.cancelledNote,This order was cancelled.,,Shopper: orders/[id]
+own.pause,Pause,,Shopkeeper: dashboard
+pay.cashOnDelivery,Cash on delivery,,Shopper: orders/[id]
+pay.cashOnPickup,Cash on pickup,,Shopper: orders/[id]
+promo.balanceLabel,Your Khata Credits,,Shopkeeper: promote
+promo.clicks,Taps,,Shopkeeper: promote
+promo.costLabel,Cost,,Shopkeeper: promote
+promo.days,How many days,,Shopkeeper: promote
+promo.disabledNote,Shop promos are not available right now. Please check back later.,,Shopkeeper: promote
+promo.empty,No placements yet. Boost your shop above to appear to nearby shoppers.,,Shopkeeper: promote
+promo.freeCap,"Up to {days} days, and {max} free promo running at a time.",{days} {max},Shopkeeper: promote
+promo.freeDisabledNote,Free promo requests are not available right now. Please check back later.,,Shopkeeper: promote
+promo.freeLimit,You already have a free promo pending or live. Wait for it to finish before requesting another.,,Shopkeeper: promote
+promo.freeSubmit,Request free promo,,Shopkeeper: promote
+promo.freeSubmitted,Request sent for review. It goes live once approved.,,Shopkeeper: promote
+promo.freeSubmitting,Requesting…,,Shopkeeper: promote
+promo.freeSubtitle,No Khata Credits needed. Our team reviews it before it goes live.,,Shopkeeper: promote
+promo.freeTitle,Request a free promo,,Shopkeeper: promote
+promo.freeUsed,You have {count} of {max} free promo(s) pending or live.,{count} {max},Shopkeeper: promote
+promo.impr,Views,,Shopkeeper: promote
+promo.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more credits.,,Shopkeeper: promote
+promo.myPlacements,My placements,,Shopkeeper: promote
+promo.nav,Boost,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
+promo.offerPlaceholder,e.g. Fresh stock daily,,Shopkeeper: promote
+promo.offerText,Offer line (optional),,Shopkeeper: promote
+promo.paidBadge,Boosted,,Shopkeeper: promote
+promo.perDay,{amount} / day,{amount},Shopkeeper: promote
+promo.refundNote,"If a promo is rejected, your Khata Credits are refunded in full.",,Shopkeeper: promote
+promo.reviewNote,Review note,,Shopkeeper: promote
+promo.spent,Spent,,Shopkeeper: promote
+promo.stActive,Live,,Shopkeeper: promote
+promo.stDraft,Draft,,Shopkeeper: promote
+promo.stPaused,Paused,,Shopkeeper: promote
+promo.stPending,Pending review,,Shopkeeper: promote
+promo.stRejected,Rejected (refunded),,Shopkeeper: promote
+promo.submit,Boost for {amount},{amount},Shopkeeper: promote
+promo.submitted,Submitted for review. It goes live once approved.,,Shopkeeper: promote
+promo.submitting,Submitting…,,Shopkeeper: promote
+promo.subtitle,Spend your Khata Credits to feature your shop to nearby shoppers. A quick review keeps the marketplace clean before your promo goes live.,,Shopkeeper: promote
+promo.subtitleField,Subtitle (optional),,Shopkeeper: promote
+promo.subtitlePlaceholder,e.g. Visit us today,,Shopkeeper: promote
+promo.title,Boost my shop,,Shopkeeper: promote
+promo.window,Runs,,Shopkeeper: promote

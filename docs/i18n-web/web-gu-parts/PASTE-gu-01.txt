@@ -1,15 +1,13 @@
 SMART DIGITAL KHATA — GUJARATI (gu) TRANSLATION PROMPT
 
 HOW TO USE
-  This is part 1 of 5 (128 of 566 strings).
+  This is part 1 of 3 (121 of 370 strings).
   Paste EVERYTHING between the two lines below into Gemini — the rows are
   included, so there is nothing to attach. One part per conversation turn.
 
-  1. web-gu-01.csv  — 128 strings (acc.language … credits.title)
-  2. web-gu-02.csv  — 126 strings (csfaq.subtitle … dlv.unassigned)
-  3. web-gu-03.csv  — 121 strings (err.accountStopped … open.tomorrowAt)
-  4. web-gu-04.csv  — 120 strings (ord.advanceCol … share.title)
-  5. web-gu-05.csv  — 71 strings (snl.auto … voice.err.network)
+  1. web-gu-01.csv  — 121 strings (adfree.balanceLabel … dem.viewOrder)
+  2. web-gu-02.csv  — 139 strings (dist.accountSubtitle … promo.window)
+  3. web-gu-03.csv  — 110 strings (pub.khata.footer … voice.err.network)
 
 ------------------------------- PASTE FROM HERE -------------------------------
 
@@ -115,10 +113,9 @@ RULES, IN ORDER OF IMPORTANCE
 After the CSV, list separately: rows you were unsure about and why, and rows
 where the English itself is ambiguous.
 
-Here are the 128 rows. Translate every one of them.
+Here are the 121 rows. Translate every one of them.
 
 key,english,placeholders,where_it_appears
-acc.language,Language,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
 adfree.balanceLabel,Your Khata Credits,,Shopkeeper: settings
 adfree.buy,Remove for {amount},{amount},Shopkeeper: settings
 adfree.buying,Applying…,,Shopkeeper: settings
@@ -153,7 +150,6 @@ brand.lowBalance,Not enough Khata Credits for this. Reduce the days or earn more
 brand.perDay,{amount} / day,{amount},Shopkeeper: promote
 brand.save,Save theme,,Shopkeeper: promote
 brand.saved,Theme saved.,,Shopkeeper: promote
-brand.saving,Saving…,,Shopkeeper: promote
 brand.statusActive,Premium active until {date},{date},Shopkeeper: promote
 brand.statusInactive,Not active,,Shopkeeper: promote
 brand.subtitle,"Spend your Khata Credits to give your storefront a premium look — your own accent colour, a tagline, a ""Premium"" badge, and a small boost for your promos. Time-boxed and extendable.",,Shopkeeper: promote
@@ -165,56 +161,35 @@ brand.title,Branded Store,,Shopkeeper: promote
 c.addMoney,Add money / Pre-pay,,Shopper: khata
 c.advanceLabel,Advance: {amt},{amt},Shopper: khata
 c.appearance.title,Appearance,,Shopper: account; Shopper: cart; Shopper: khata
-c.atShop,at {shop},{shop},Shopper: products
-c.buyItAgain,Buy it again,,Shopper: products
-c.catAttaRice,Atta & Rice,,Shopper: products; Shopper: shops
-c.catCookingOils,Cooking Oils,,Shopper: products; Shopper: shops
-c.catDalPulses,Dal & Pulses,,Shopper: products; Shopper: shops
-c.catHousehold,Household,,Shopper: products; Shopper: shops
-c.catPersonalCare,Personal Care,,Shopper: products; Shopper: shops
-c.catSpices,Spices,,Shopper: products; Shopper: shops
-c.clearRecent,Clear,,Shopper: products
-c.enterAmount,Enter an amount to pay.,,Shopper: khata
 c.filterAll,All,,Shopper: shops
 c.layout.gaon,Gaon Bazaar,,Shopper: account; Shopper: cart; Shopper: khata
 c.layout.standard,Standard,,Shopper: account; Shopper: cart; Shopper: khata
 c.layout.title,Layout,,Shopper: account; Shopper: cart; Shopper: khata
-c.loc.cancel,Cancel,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.chip,Location,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.detect,Detect,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.detecting,Detecting…,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.pincode,Pincode,,Shopper: account; Shopper: cart; Shopper: khata
-c.loc.save,Save,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.set,Set location,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.title,Choose your location,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.town,Town,,Shopper: account; Shopper: cart; Shopper: khata
 c.loc.village,Village,,Shopper: account; Shopper: cart; Shopper: khata
-c.noProductsFound,No products found. Try another word.,,Shopper: products
 c.prepayHelper,"{due} clears your due, extra becomes advance",{due},Shopper: khata
 c.prepayHelperNoDue,{amt} becomes an advance you can spend later,{amt},Shopper: khata
 c.prepayMaxHint,You can pre-pay up to {amt} in advance,{amt},Shopper: khata
 c.prepayTooMuch,You can pay at most {amt} right now.,{amt},Shopper: khata
 c.productsTitle,Products,,Shopper: products; Shopper: shops
 c.promo.sponsored,Sponsored,,Shopper: shop/[shopId]; Shopper: shops
-c.recentSearches,Recent searches,,Shopper: products
-c.searchProductsAll,Search products across shops,,Shopper: products; Shopper: shops
-c.searching,Searching…,,Shopper: products
 c.settledLabel,Settled — nothing due,,Shopper: khata
-c.shopByCategory,Shop by category,,Shopper: products
 c.theme.dark,Dark,,Shopper: account; Shopper: cart; Shopper: khata
 c.theme.light,Light,,Shopper: account; Shopper: cart; Shopper: khata
 c.theme.title,Theme,,Shopper: account; Shopper: cart; Shopper: khata
-c.voiceIn,Listens in {language},{language},Shopper: products
-c.youOwe,You owe {amt},{amt},Shopper: khata
 cat.savePhoto,Save photo,,Shopkeeper: catalog
 cat.uploadingPhoto,Uploading…,,Shopkeeper: catalog
 champ.address,Deliver to,,Shopkeeper: d/[token]
 champ.call,Call,,Shopkeeper: d/[token]
 champ.doneMsg,Delivered. Thank you!,,Shopkeeper: d/[token]
 champ.greeting,Hi {name},{name},Shopkeeper: d/[token]
-champ.items,Items,,Shopkeeper: d/[token]
 champ.loadError,Could not load right now. Pull to refresh.,,Shopkeeper: d/[token]
-champ.loading,Loading…,,Shopkeeper: d/[token]
 champ.markDelivered,Mark delivered,,Shopkeeper: d/[token]
 champ.markPickedUp,Mark picked up,,Shopkeeper: d/[token]
 champ.none,No deliveries right now. Check back soon.,,Shopkeeper: d/[token]
@@ -225,15 +200,6 @@ champ.subtitle,"Your assigned deliveries. Mark each one picked up, then delivere
 champ.title,My Deliveries,,Shopkeeper: d/[token]
 champ.total,Order total,,Shopkeeper: d/[token]
 champ.updating,Updating…,,Shopkeeper: d/[token]
-coedit.cash,Pay {now} when you collect — {amount} of items were taken off.,{now} {amount},Shopper: orders/[id]
-coedit.credit,{amount} has been taken off your khata at this shop.,{amount},Shopper: orders/[id]
-coedit.intro,{shop} could not supply everything you ordered.,{shop},Shopper: orders/[id]
-coedit.nowTotal,Your order now comes to {now}.,{now},Shopper: orders/[id]
-coedit.prepaid,You had already paid. {amount} is kept as credit at this shop — it comes off your next order here.,{amount},Shopper: orders/[id]
-coedit.reduced,{item} — {before} → {after},{item} {before} {after},Shopper: orders/[id]
-coedit.removed,{item} — removed,{item},Shopper: orders/[id]
-coedit.title,The shop adjusted your order,,Shopper: orders/[id]
-coedit.wasSubtotal,Original items total {was},{was},Shopper: orders/[id]
 common.refresh,Refresh,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
 common.retry,Try again,,Shopkeeper: catalog; Shopkeeper: customers; Shopkeeper: customers/[id]
 content.nav,Content,,Shopkeeper: account; Shopkeeper: catalog; Shopkeeper: customers
@@ -241,10 +207,35 @@ credits.balanceLabel,Your Khata Credits,,Shopkeeper: account
 credits.bySource,By source,,Shopkeeper: account
 credits.earnedTitle,Earned so far,,Shopkeeper: account
 credits.empty,No credits yet — refer a shop to start earning,,Shopkeeper: account
-credits.kind.other,Adjustment,,Shopkeeper: account
 credits.pending,{amt} pending,{amt},Shopkeeper: account
 credits.recentTitle,Recent activity,,Shopkeeper: account
 credits.spendNote,"Spend on your subscription, promos and more",,Shopkeeper: account
 credits.title,Khata Credits,,Shopkeeper: account
+csfaq.subtitle,"Answers your shops have shared — timings, delivery, returns and more.",,Shopper: account
+csfaq.title,Questions about your shops,,Shopper: account
+ctab.products,Products,,Shopper: account; Shopper: cart; Shopper: khata
+dem.addItem,Add item,,Shopkeeper: suppliers/demand
+dem.boardTitle,Demand board,,Shopkeeper: suppliers/demand
+dem.cancel,Cancel need,,Shopkeeper: suppliers/demand
+dem.cancelConfirm,Cancel this demand post?,,Shopkeeper: suppliers/demand
+dem.claim,Claim & make order,,Shopkeeper: distributor/demand
+dem.claimedBy,Claimed by {name},{name},Shopkeeper: suppliers/demand
+dem.claiming,Claiming…,,Shopkeeper: distributor/demand
+dem.distSubtitle,Upcoming needs from shops near you. Claim one to make an order.,,Shopkeeper: distributor/demand
+dem.myPosts,My posted needs,,Shopkeeper: suppliers/demand
+dem.nav,Demand board,,Shopkeeper: distributor/account; Shopkeeper: distributor/demand; Shopkeeper: distributor/index
+dem.nearYou,Needs near you,,Shopkeeper: distributor/demand
+dem.needItem,Add at least one item with a quantity.,,Shopkeeper: suppliers/demand
+dem.neededBy,Needed by,,Shopkeeper: suppliers/demand
+dem.neededByOn,Needed by {when},{when},Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noDate,No date set,,Shopkeeper: distributor/demand; Shopkeeper: suppliers/demand
+dem.noOpen,No open needs near you right now.,,Shopkeeper: distributor/demand
+dem.noPosts,You haven’t posted any needs yet.,,Shopkeeper: suppliers/demand
+dem.ownerSubtitle,Post what you need soon. Nearby farmers claim it and make the order.,,Shopkeeper: suppliers/demand
+dem.post,Post need,,Shopkeeper: suppliers/demand
+dem.postNeed,Post a need,,Shopkeeper: suppliers/demand
+dem.posted,Need posted.,,Shopkeeper: suppliers/demand
+dem.posting,Posting…,,Shopkeeper: suppliers/demand
+dem.viewOrder,View order,,Shopkeeper: suppliers/demand
 
 -------------------------------- TO HERE --------------------------------------
