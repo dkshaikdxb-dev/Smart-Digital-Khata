@@ -56,8 +56,14 @@ function parseCsv(text) {
 const file = process.argv[2];
 const apply = process.argv.includes('--apply');
 if (!file) { console.error('usage: node scripts/web-i18n-verify.mjs <file.csv> [--apply]'); process.exit(2); }
-const lang = path.basename(file).replace(/^web-/, '').replace(/-\d+$/, '').replace(/\.csv$/, '').replace(/-\d+$/, '');
-if (!SCRIPT[lang]) { console.error('unknown language in filename:', lang); process.exit(2); }
+// The language is whichever segment of the filename IS a language code, rather
+// than whatever is left after stripping the suffixes I happened to think of.
+// Files arrive as web-bn.csv, web-bn-01.csv, web-bn-01b.csv, and whatever a
+// re-run gets called next; peeling suffixes one regex at a time fails on the
+// first shape nobody predicted, which is how `bn-01b` became an "unknown
+// language".
+const lang = path.basename(file, '.csv').split(/[-_.]/).find((seg) => SCRIPT[seg]);
+if (!lang) { console.error('no language code in filename:', path.basename(file)); process.exit(2); }
 
 // A key,translation reply, parsed by SPLITTING AT THE FIRST COMMA.
 //
