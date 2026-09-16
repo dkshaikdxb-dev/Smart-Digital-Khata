@@ -22,6 +22,7 @@
  * adding one is a decision somebody makes on purpose.
  */
 import fs from 'node:fs';
+import { BRAND_KEYS } from './lib/i18n-brand-keys.mjs';
 
 const RANGES = {
   hi: [[0x0900, 0x097f]], mr: [[0x0900, 0x097f]],            // Devanagari
@@ -43,10 +44,8 @@ const ALLOW_LATIN = new Set([
 // exactly as Razorpay's own console labels them: a shopkeeper copying a key
 // across is matching the words on the other screen, and translating them would
 // make that harder, not easier.
-const ALLOW_KEYS = new Set([
-  'app.name', 'app.shortName', 'title.dashboard',
-  'set.razorpayKeyId', 'set.keySecret', 'set.webhookSecret',
-]);
+// Shared with the web translation verifier — see scripts/lib/i18n-brand-keys.mjs.
+const ALLOW_KEYS = BRAND_KEYS;
 
 const FILES = [
   ['consumer', 'mobile-app/src/consumer/i18n.js'],

@@ -15,6 +15,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getAllKeys, staticValue } from '../admin-dashboard/src/lib/i18n.js';
+import { BRAND_KEYS } from './lib/i18n-brand-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -172,7 +173,10 @@ for (const r of rows) {
   // like "{item} — {before} → {after}" is placeholders and punctuation with no
   // words in it; returning it identical is the correct answer, not a skipped
   // row. Rejecting those told a translator to invent a difference.
-  if (tr === en && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) { rej('left in English'); continue; }
+  // A brand key is correct BECAUSE it is English — see lib/i18n-brand-keys.mjs.
+  if (tr === en && !BRAND_KEYS.has(key) && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) {
+    rej('left in English'); continue;
+  }
   if (tr.includes('�')) { rej('contains U+FFFD (mojibake)'); continue; }
 
   // NATIVE-SCRIPT DIGITS. The brief says numerals stay Latin, and they must:
@@ -210,7 +214,7 @@ for (const r of rows) {
   // translation with script characters, and demanding one would force a
   // translator to add something that is not there.
   const enHasWords = /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''));
-  if (enHasWords && !SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) {
+  if (enHasWords && !BRAND_KEYS.has(key) && !SCRIPT[lang].test(stripped) && !LATIN_OK.test(tr)) {
     rej('no character of this language’s own script'); continue;
   }
 
