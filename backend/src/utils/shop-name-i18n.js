@@ -56,6 +56,11 @@
 // deterministic, so ur never touches the engine (see NON_TRANSLIT_LANGS).
 const SCRIPT_BY_LANG = Object.freeze({
   hi: 'devanagari',
+  // Bengali joined once its curated lexicon existed, not before. The engine has
+  // had a `bengali` scheme all along — the blocker was never the script, it was
+  // that transliterating "Store" with no lexicon yields স্তোরে, which is the
+  // whole reason this module is a hybrid.
+  bn: 'bengali',
   ta: 'tamil',
   te: 'telugu',
   kn: 'kannada',
@@ -158,6 +163,23 @@ const BUSINESS_LEXICON = Object.freeze({
   }),
   // Urdu (Arabic script) — natural loanword spellings. Curated-only: these localize
   // the recurring shop words; unknown proper nouns stay Roman + needs_review.
+  // Bengali. Translated as shop words, not spelled out: these are what a
+  // shopkeeper in a Bengali-speaking town paints on the board, loanwords
+  // included where that is the real word. Every entry round-trips through the
+  // transliterator back to its English sound — see
+  // scripts/shopname-lexicon-verify.mjs, which caught কিসানা for "kirana".
+  bn: Object.freeze({
+    store: 'স্টোর', stores: 'স্টোরস', kirana: 'কিরানা', general: 'জেনারেল',
+    provision: 'প্রোভিশন', provisions: 'প্রোভিশনস', traders: 'ট্রেডার্স', medical: 'মেডিকেল',
+    medicals: 'মেডিকেলস', mart: 'মার্ট', bakery: 'বেকারি', sweets: 'সুইটস', dairy: 'ডেয়ারি',
+    electronics: 'ইলেকট্রনিক্স', hardware: 'হার্ডওয়্যার', supermarket: 'সুপারমার্কেট',
+    enterprises: 'এন্টারপ্রাইজ', agencies: 'এজেন্সিস', shop: 'শপ', new: 'নিউ', sri: 'শ্রী',
+    shri: 'শ্রী', super: 'সুপার', fresh: 'ফ্রেশ', cool: 'কুল', point: 'পয়েন্ট',
+    center: 'সেন্টার', centre: 'সেন্টার', and: 'অ্যান্ড', bazaar: 'বাজার', bazar: 'বাজার',
+    bhandar: 'ভান্ডার', market: 'মার্কেট', grocery: 'গ্রোসারি', groceries: 'গ্রোসারিস',
+    corner: 'কর্নার', daily: 'ডেইলি', needs: 'নিডস', family: 'ফ্যামিলি', mini: 'মিনি',
+    emporium: 'এম্পোরিয়াম', collection: 'কালেকশন', variety: 'ভ্যারাইটি',
+  }),
   ur: Object.freeze({
     store: 'اسٹور', stores: 'اسٹور', kirana: 'کریانہ', general: 'جنرل',
     provision: 'پرووژن', provisions: 'پرووژن', traders: 'ٹریڈرز',
@@ -280,6 +302,25 @@ const SURNAMES = Object.freeze({
   }),
   // Urdu (Arabic script) — same key set as the Indic blocks. Curated hits are
   // trusted (no review); every other token stays Roman + needs_review.
+  // Bengali surnames. TRANSLITERATED, not translated — a family name has only
+  // a sound to carry. Round-tripped the same way; নায়ায় for "nair" was caught
+  // and corrected to নায়ার.
+  bn: Object.freeze({
+    sharma: 'শর্মা', gupta: 'গুপ্তা', patel: 'প্যাটেল', reddy: 'রেড্ডি', reddi: 'রেড্ডি',
+    khan: 'খান', singh: 'সিং', iyer: 'আইয়ার', ayyar: 'আইয়ার', das: 'দাস', mehta: 'মেহতা',
+    nair: 'নায়ার', kumar: 'কুমার', verma: 'বর্মা', varma: 'বর্মা', yadav: 'যাদব', shah: 'শাহ',
+    rao: 'রাও', naidu: 'নাইডু', pillai: 'পিল্লাই', menon: 'মেনন', bose: 'বসু', roy: 'রায়',
+    agarwal: 'আগরওয়াল', aggarwal: 'আগরওয়াল', jain: 'জৈন', kapoor: 'কাপুর',
+    malhotra: 'মালহোত্রা', bhat: 'ভাট', bhatt: 'ভাট', shetty: 'শেট্টি', hegde: 'হেগড়ে',
+    prasad: 'প্রসাদ', mishra: 'মিশ্র', misra: 'মিশ্র', pandey: 'পান্ডে', tiwari: 'তিওয়ারি',
+    joshi: 'জোশী', desai: 'দেসাই', chauhan: 'চৌহান', nayak: 'নায়ক', sinha: 'সিনহা',
+    ghosh: 'ঘোষ', banerjee: 'ব্যানার্জি', chatterjee: 'চ্যাটার্জি', mukherjee: 'মুখার্জি',
+    krishnan: 'কৃষ্ণন', raman: 'রমন', subramanian: 'সুব্রহ্মণ্যন', chopra: 'চোপড়া',
+    saxena: 'সাকসেনা', dubey: 'দুবে', thakur: 'ঠাকুর', patil: 'পাটিল', kulkarni: 'কুলকার্নি',
+    deshpande: 'দেশপান্ডে', gowda: 'গৌড়া', ahmed: 'আহমেদ', ali: 'আলী', hussain: 'হোসেন',
+    sheikh: 'শেখ', syed: 'সৈয়দ', ansari: 'আনসারী', qureshi: 'কুরেশি', siddiqui: 'সিদ্দিকী',
+    malik: 'মালিক', rahman: 'রহমান', farooqui: 'ফারুকী', hashmi: 'হাশমি', usmani: 'উসমানি',
+  }),
   ur: Object.freeze({
     sharma: 'شرما', gupta: 'گپتا', patel: 'پٹیل', reddy: 'ریڈی', reddi: 'ریڈی',
     khan: 'خان', singh: 'سنگھ', iyer: 'آئیر', ayyar: 'آئیر', das: 'داس',

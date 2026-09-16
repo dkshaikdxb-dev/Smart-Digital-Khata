@@ -11,12 +11,46 @@ const {
 } = require('../src/utils/shop-name-i18n');
 
 describe('shop-name-i18n util', () => {
-  test('render set is hi/ta/te/kn/ml (translit) + ur (curated-only)', () => {
-    expect(RENDER_LANGS.slice().sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te', 'ur']);
-    // The transliteration engine still covers only the Indic scripts; ur is NOT here.
-    expect(Object.keys(SCRIPT_BY_LANG).sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te']);
+  test('render set is bn/hi/ta/te/kn/ml (translit) + ur (curated-only)', () => {
+    expect(RENDER_LANGS.slice().sort()).toEqual(['bn', 'hi', 'kn', 'ml', 'ta', 'te', 'ur']);
+    // The transliteration engine covers the Indic scripts; ur is NOT here.
+    expect(Object.keys(SCRIPT_BY_LANG).sort()).toEqual(['bn', 'hi', 'kn', 'ml', 'ta', 'te']);
     expect(RENDER_LANGS.includes('ur')).toBe(true);
     expect(SCRIPT_BY_LANG.ur).toBeUndefined();
+  });
+
+  // BENGALI joined once its curated lexicon existed, and not before. The engine
+  // has shipped a `bengali` scheme all along; what was missing was the human
+  // half, without which "Store" transliterates to স্তোরে. gu and mr are still
+  // out for exactly that reason — their lexicons have not come back yet — so
+  // this pins WHY they are absent, not merely that they are.
+  test('bengali renders from the lexicon, and gu/mr still fall back to English', () => {
+    const fromLexicon = localizeShopName('Sharma Kirana Store', 'bn');
+    expect(fromLexicon.name).toBe('শর্মা কিরানা স্টোর');
+    // Every token was a curated word or a known surname, so nothing was guessed.
+    expect(fromLexicon.needsReview).toBe(false);
+
+    // A proper noun the lexicon does not know still renders, and says so.
+    const withProperNoun = localizeShopName('Sri Balaji General Stores', 'bn');
+    expect(withProperNoun.name).toMatch(/[\u0980-\u09FF]/);
+    expect(withProperNoun.needsReview).toBe(true);
+
+    for (const lang of ['gu', 'mr']) {
+      expect(RENDER_LANGS.includes(lang)).toBe(false);
+      expect(localizeShopName('Sharma Kirana Store', lang).name).toBe('Sharma Kirana Store');
+    }
+  });
+
+  // The lexicon is only worth having if it is RIGHT, and a wrong letter reads
+  // as fluent Bengali: কিসানা for "kirana" came back in the first reply and was
+  // caught by round-tripping the native form back to Roman
+  // (scripts/shopname-lexicon-verify.mjs). These four were the corrections.
+  test('the lexicon entries that were wrong the first time are right now', () => {
+    const { BUSINESS_LEXICON, SURNAMES } = require('../src/utils/shop-name-i18n');
+    expect(BUSINESS_LEXICON.bn.kirana).toBe('কিরানা');      // was কিসানা — "kisana"
+    expect(BUSINESS_LEXICON.bn.collection).toBe('কালেকশন');  // was কলেশন — a dropped k
+    expect(BUSINESS_LEXICON.bn.corner).toBe('কর্নার');       // was কনার — a dropped r
+    expect(SURNAMES.bn.nair).toBe('নায়ার');                 // was নায়ায় — a final r as য়
   });
 
   test('the verified hybrid examples reproduce exactly (hi)', () => {
@@ -57,8 +91,13 @@ describe('shop-name-i18n util', () => {
   });
 
   test('a surname hit is trusted in every render language (needsReview=false)', () => {
-    const expected = { hi: 'शर्मा', ta: 'ஷர்மா', te: 'శర్మ', kn: 'ಶರ್ಮಾ', ml: 'ശർമ്മ', ur: 'شرما' };
+    const expected = {
+      hi: 'शर्मा', ta: 'ஷர்மா', te: 'శర్మ', kn: 'ಶರ್ಮಾ', ml: 'ശർമ്മ', ur: 'شرما', bn: 'শর্মা',
+    };
     for (const lang of RENDER_LANGS) {
+      // A language in RENDER_LANGS with no expectation here would pass
+      // startsWith(undefined) as false and look like a rendering bug; say so.
+      expect(expected[lang]).toBeDefined();
       const r = localizeShopName('Sharma Kirana Store', lang);
       expect(r.needsReview).toBe(false);
       expect(r.name.startsWith(expected[lang])).toBe(true);
@@ -125,7 +164,10 @@ describe('shop-name-i18n util', () => {
 
   test('en / non-render langs fall back to the English name verbatim', () => {
     // ur is NO LONGER a fallback lang — it renders via the curated dictionaries.
-    for (const lang of ['en', 'bn', 'gu', 'mr', 'xx', '', null, undefined]) {
+    // Nor is bn, since its lexicon landed. gu and mr still are, and will stay
+    // here until theirs do: a language is added to RENDER_LANGS by having a
+    // curated lexicon, not by having a script.
+    for (const lang of ['en', 'gu', 'mr', 'xx', '', null, undefined]) {
       const r = localizeShopName('New Bharat Provision', lang);
       expect(r).toEqual({ name: 'New Bharat Provision', needsReview: false });
     }
@@ -170,7 +212,7 @@ describe('shop-name-i18n util', () => {
 
   test('renderAllLangs covers every render language with the right shape', () => {
     const all = renderAllLangs('New Bharat Provision', RENDER_LANGS);
-    expect(Object.keys(all).sort()).toEqual(['hi', 'kn', 'ml', 'ta', 'te', 'ur']);
+    expect(Object.keys(all).sort()).toEqual(['bn', 'hi', 'kn', 'ml', 'ta', 'te', 'ur']);
     for (const lang of RENDER_LANGS) {
       expect(typeof all[lang].name).toBe('string');
       expect(all[lang].name.length).toBeGreaterThan(0);
