@@ -122,6 +122,24 @@ const T = col('translation');
 const E = col('english', false);
 
 const known = new Set(getAllKeys());
+// `{s}` is two different things in this dictionary, and only one of them is a
+// value the translation must carry:
+//
+//   "{n} item{s}"                 -> s: count > 1 ? 's' : ''   ENGLISH PLURAL
+//   "This order is {s} — …"       -> s: t('postatus.'+status)  A STATUS WORD
+//
+// Bengali does not mark plurals with a suffix, so keeping the first would print
+// "জিনিসs"; dropping it is the correct translation. Dropping the second loses
+// the only word that says what happened to the order. They are told apart by
+// what precedes them: a plural marker is GLUED to the word it pluralises
+// (item{s}), a value stands alone ( {s} ).
+//
+// The first real reply got both of these right and my checker rejected it for
+// the one it got right — which is how a gate ends up training people to ignore
+// it, or worse, to "fix" a correct translation to satisfy it.
+function droppablePlural(en) {
+  return new Set([...String(en).matchAll(/\w\{s\}/g)].map(() => '{s}'));
+}
 const phOf = (s) => [...String(s).matchAll(/\{[a-zA-Z0-9_]+\}/g)].map((m) => m[0]).sort();
 
 const accepted = {}; const rejected = []; let blank = 0;
@@ -146,8 +164,25 @@ for (const r of rows) {
   if (tr === en && /[A-Za-z]/.test(en.replace(/\{[a-zA-Z0-9_]+\}/g, ''))) { rej('left in English'); continue; }
   if (tr.includes('�')) { rej('contains U+FFFD (mojibake)'); continue; }
 
+  // NATIVE-SCRIPT DIGITS. The brief says numerals stay Latin, and they must:
+  // every amount, count and date the app renders comes from the code as
+  // 1,250.00 and 30, so a hand-written ৯৮ or ৫৬০০০১ inside a label sits next to
+  // Latin digits produced a line away. A phone-number example in Bengali digits
+  // is also a worked example of what NOT to type into the box below it.
+  const nativeDigits = [...tr].filter((c) => /\p{Nd}/u.test(c) && !/[0-9]/.test(c));
+  if (nativeDigits.length) { rej(`native-script digits (${[...new Set(nativeDigits)].join('')}) — numerals stay Latin`); continue; }
+
+  const optional = droppablePlural(en);
   const want = phOf(en), got = phOf(tr);
-  if (want.join('|') !== got.join('|')) { rej(`placeholder drift: expected ${want.join(' ') || '(none)'} got ${got.join(' ') || '(none)'}`); continue; }
+  const missing = want.filter((p) => !got.includes(p) && !optional.has(p));
+  const extra = got.filter((p) => !want.includes(p));
+  if (missing.length || extra.length) {
+    const parts = [];
+    if (missing.length) parts.push(`dropped ${missing.join(' ')}`);
+    if (extra.length) parts.push(`added ${extra.join(' ')}`);
+    rej(`placeholder drift: ${parts.join(', ')} (english has ${want.join(' ') || 'none'})`);
+    continue;
+  }
 
   // Strip placeholders AND the shared Indic punctuation before asking which
   // script this is. U+0964/U+0965 (danda, double danda) sit in the DEVANAGARI
