@@ -1,0 +1,61 @@
+{
+  "_comment": "Gujarati reconciliation decisions. A row with NO entry here is not touched, in either direction — there is no default. 'app' = take the app string, 'web' = keep the web string, 'review' = a Gujarati reader decides and nothing ships meanwhile.",
+
+  "app": {
+    "c.codePlaceholder":   { "reason": "The web writes ૬ — a Gujarati digit. Every number this app renders comes from the code in Latin, so a native digit sits beside Latin ones on the same screen. The app is right.", "confidence": "high", "native_review": false },
+    "dash.network.age0":   { "reason": "Gujarati digits ૦–૩૦ on the web; the app has 0–30. Same rule.", "confidence": "high", "native_review": false },
+    "dash.network.age30":  { "reason": "Gujarati digits on the web; the app has Latin. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_0_30":        { "reason": "Gujarati digits on the web; the app has Latin. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_31_60":       { "reason": "Gujarati digits on the web; the app has Latin. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_61_90":       { "reason": "Gujarati digits on the web; the app has Latin. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_90_plus":     { "reason": "Gujarati digits on the web; the app has Latin. Same rule.", "confidence": "high", "native_review": false }
+  },
+
+  "web": {
+    "chelp.e7.a": { "reason": "The app conflates two different things and misuses a money word. English: 'each order move from pending to approved'. The app renders APPROVED as સ્વીકાર્યો (accepted) — this product treats accept and approve as separate steps — and PENDING as બાકી, which in this app means money outstanding. The web has મંજૂર (approved) and પેન્ડિંગ (pending) and is correct.", "confidence": "high", "native_review": true }
+  },
+
+  "review": {
+    "_themes": "123 rows resolve to about eight decisions, not 123. A reader answers the theme and every row in it follows.",
+
+    "orthography_candra_o": {
+      "question": "ઑ (candra-O) or ઓ for English loanwords — ઑર્ડર/ઓર્ડર, ઑનલાઇન/ઓનલાઇન, લૉગ/લોગ?",
+      "why_not_mechanical": "The web is ALREADY split: 57 strings use ઑ and 84 use ઓ. The app is consistently ઓ. Aligning only the 13 divergent rows would move 13 of 57 and leave the web as mixed as before. This is one house-style decision over every Gujarati string, not thirteen alignments.",
+      "rows": 13, "confidence": "n/a", "native_review": true
+    },
+    "product_word": {
+      "question": "Is a product સામાન (app), ઉત્પાદન or વસ્તુ (web)?",
+      "why_not_mechanical": "સામાન is what a kirana shopkeeper says; ઉત્પાદન is the formal word; વસ્તુ is 'thing'. Around eight rows, and the answer should be one word used everywhere, chosen by someone who sells groceries in Gujarati.",
+      "rows": 8, "confidence": "n/a", "native_review": true
+    },
+    "catalogue_word": {
+      "question": "Is the catalogue કૅટલૉગ (web) or યાદી (app)?",
+      "why_not_mechanical": "યાદી means 'list' and loses what a catalogue is. The same question came up in Bengali and is still open there.",
+      "rows": 3, "confidence": "n/a", "native_review": true
+    },
+    "balance_vs_outstanding": {
+      "question": "common.balance and common.outstanding must be decided TOGETHER.",
+      "why_not_mechanical": "Web has balance=બાકી, outstanding=બાકી રકમ. App has balance=બેલેન્સ, outstanding=બાકી. Each is internally distinct, but taking one from each surface gives balance=બાકી AND outstanding=બાકી — two different English words rendering identically, on money. બાકી also asserts money is OWED, which 'Balance' does not: a balance can be an advance.",
+      "rows": 2, "confidence": "n/a", "native_review": true
+    },
+    "c.prepaid": {
+      "question": "Prepaid — અગાઉથી ચૂકવેલ (web, 'paid in advance') or ઓનલાઇન (app, 'online')?",
+      "why_not_mechanical": "The app names the mechanism rather than translating the word. Defensible for a payment-mode chip, and the identical question is open in Bengali.",
+      "rows": 1, "confidence": "n/a", "native_review": true
+    },
+    "cart_word": {
+      "question": "Is the cart કાર્ટ (web) or ટોપલી (app, 'basket')?",
+      "rows": 1, "confidence": "n/a", "native_review": true
+    },
+    "register_and_tense": {
+      "question": "The app tends to the continuous ('લોડ થઈ રહ્યું છે') where the web is plainer ('લોડ થાય છે'), and they differ on politeness in places.",
+      "why_not_mechanical": "Neither is wrong. It is a voice decision for the product, and applying it string by string is how a product ends up with two voices.",
+      "rows": 90, "confidence": "n/a", "native_review": true
+    },
+    "ref.shareLink": {
+      "question": "Share link — લિંક શેર કરો (web, imperative) or શેર લિંક (app, noun)?",
+      "why_not_mechanical": "It is a button. The same imperative-vs-noun question is open in Bengali for c.pay.",
+      "rows": 1, "confidence": "n/a", "native_review": true
+    }
+  }
+}
