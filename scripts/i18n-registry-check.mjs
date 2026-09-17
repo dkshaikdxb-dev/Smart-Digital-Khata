@@ -32,7 +32,11 @@ import fs from 'fs';
 import path from 'path';
 import { BRAND_TERMS, brandTermCasingErrors } from './lib/i18n-brand-keys.mjs';
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+// I18N_ROOT lets the mutation suite point this gate at a throwaway copy of the
+// dictionaries. A check nobody can test is a check nobody can trust — the hole
+// this override exposes (see i18n-registry-check.test.mjs) is exactly how a
+// LOCKED value drifting in the owner dictionary went unnoticed.
+const ROOT = process.env.I18N_ROOT || path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const APPS = ['mobile-app/src/consumer/i18n.js', 'mobile-app/src/i18n.js'];
 const DASHP = path.join(ROOT, 'admin-dashboard/src/lib/i18n.js');
 
@@ -53,13 +57,19 @@ const kvOf = (blk) => {
   for (const m of (blk || '').matchAll(/'([^']+)':\s*'((?:[^'\\]|\\.)*)'/g)) o[m[1]] = m[2].replace(/\\'/g, "'");
   return o;
 };
-const APP = {};
-for (const f of APPS) {
-  for (const [lang, blk] of Object.entries(appBlocks(f))) {
-    APP[lang] ||= {};
-    for (const [k, v] of Object.entries(kvOf(blk))) if (!(k in APP[lang])) APP[lang][k] = v;
-  }
-}
+// The two app dictionaries are kept SEPARATE, one entry per file. Merging them
+// and keeping the first hit is how a drift in mobile-app/src/i18n.js went
+// unseen for any key the consumer dictionary also has: the gate read the
+// consumer copy and reported OK. 35 gu keys live in both files and 4 of them
+// legitimately say different things, so "one app value" is not a thing that
+// exists. Every rule below walks APP_FILES and checks each copy on its own.
+const APP_FILES = APPS.map((f) => ({
+  id: f.includes('/consumer/') ? 'app/consumer' : 'app/owner',
+  langs: Object.fromEntries(Object.entries(appBlocks(f)).map(([lang, blk]) => [lang, kvOf(blk)])),
+}));
+const appCopies = (lang, key) => APP_FILES
+  .map((f) => ({ id: f.id, value: f.langs[lang]?.[key] }))
+  .filter((c) => c.value !== undefined);
 // en and hi live in the dashboard's own catalog, which is split across several
 // merged objects, so read every `  <lang>: {` block rather than the first.
 const DASH = {};
@@ -89,8 +99,9 @@ for (const [id, d] of Object.entries(registry.decisions)) {
         if (got !== undefined && got !== per.web) bad(id, `web ${lang} ${key}\n      want: ${per.web}\n      got:  ${got}`);
       }
       if (surfaces.has('app') && per.app !== undefined) {
-        const got = APP[lang]?.[key];
-        if (got !== undefined && got !== per.app) bad(id, `app ${lang} ${key}\n      want: ${per.app}\n      got:  ${got}`);
+        for (const c of appCopies(lang, key)) {
+          if (c.value !== per.app) bad(id, `${c.id} ${lang} ${key}\n      want: ${per.app}\n      got:  ${c.value}`);
+        }
       }
     }
   }
@@ -103,7 +114,7 @@ for (const [id, d] of Object.entries(registry.decisions)) {
                         .replace(/ઍ/g, 'એ').replace(/ૅ/g, 'ે');
   const corpus = [];
   for (const [k, v] of Object.entries(WEB.gu || {})) corpus.push(['web', k, v]);
-  for (const [k, v] of Object.entries(APP.gu || {})) corpus.push(['app', k, v]);
+  for (const f of APP_FILES) for (const [k, v] of Object.entries(f.langs.gu || {})) corpus.push([f.id, k, v]);
 
   // The RULE: any lemma written with a candra vowel anywhere must never appear
   // in its plain spelling. Built from the corpus itself, so a loanword nobody
@@ -134,7 +145,7 @@ for (const [id, d] of Object.entries(registry.decisions)) {
 /* 3 — protected brand terms keep their casing --------------------------- */
 const BRAND_EXCEPT = registry.decisions['brand-registry-split'].exceptions || {};
 for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(WEB).map(([l, o]) => [`web:${l}`, o])),
-                                          ...Object.fromEntries(Object.entries(APP).map(([l, o]) => [`app:${l}`, o])),
+                                          ...Object.fromEntries(APP_FILES.flatMap((f) => Object.entries(f.langs).map(([l, o]) => [`${f.id}:${l}`, o]))),
                                           ...Object.fromEntries(Object.entries(DASH).map(([l, o]) => [`dash:${l}`, o])) })) {
   for (const [key, v] of Object.entries(kv)) {
     if (key in BRAND_EXCEPT) continue;
@@ -148,7 +159,7 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
 {
   const DIGITS = { bn: /[০-৯]/, gu: /[૦-૯]/, mr: /[०-९]/, hi: /[०-९]/ };
   for (const [lang, re] of Object.entries(DIGITS)) {
-    for (const [src, kv] of [['web', WEB[lang]], ['app', APP[lang]], ['dash', DASH[lang]]]) {
+    for (const [src, kv] of [['web', WEB[lang]], ['dash', DASH[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
       for (const [k, v] of Object.entries(kv || {})) if (re.test(v)) bad('native-digits-latin', `${src} ${lang} ${k}: ${v}`);
     }
   }
@@ -157,15 +168,63 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
   // would be the cross-language analogy the registry forbids.
   const WA = /হোয়াট|વૉટ્સ|વોટ્સ|व्हॉट्स|वॉट्स|واٹس/;
   for (const lang of registry.decisions['whatsapp-latin'].scope.langs) {
-    for (const [src, kv] of [['web', WEB[lang]], ['app', APP[lang]], ['dash', DASH[lang]]]) {
+    for (const [src, kv] of [['web', WEB[lang]], ['dash', DASH[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
       for (const [k, v] of Object.entries(kv || {})) if (WA.test(v)) bad('whatsapp-latin', `${src} ${lang} ${k}: ${v}`);
     }
   }
 
   for (const lang of registry.decisions['balance-vs-outstanding'].scope.langs) {
-    for (const [src, get] of [['web', (k) => webValue(lang, k)], ['app', (k) => APP[lang]?.[k]]]) {
+    for (const [src, get] of [['web', (k) => webValue(lang, k)],
+                              ...APP_FILES.map((f) => [f.id, (k) => f.langs[lang]?.[k]])]) {
       const b = get('common.balance'), o = get('common.outstanding');
       if (b && o && b === o) bad('balance-vs-outstanding', `${src} ${lang}: both render "${b}"`);
+    }
+  }
+}
+
+/* 4b — product-item scope, resolved from the ENGLISH source -------------
+   The key list in product-item.values is the RESULT of the rule, not the rule.
+   Enforcing only that list is how chelp.e2.a and chelp.e3.a sat in UNDECIDED
+   while their English ("just say the item name", "add the items you want to
+   your cart") was squarely inside a LOCKED decision. This evaluates the rule
+   itself, against each surface's OWN English block, so a NEW countable-item
+   key cannot quietly render with the mass word.
+
+   One direction only, and deliberately: countable English must not use the
+   mass word. The converse is not a rule — "You have taken off everything" is
+   mass English that correctly uses neither word. */
+{
+  const d = registry.decisions['product-item'];
+  const COUNT = new RegExp(d.scope.english.count_markers.join('|'), 'i');
+  const MASS = new RegExp(d.scope.english.mass_markers.join('|'), 'i');
+  // mass_keys maps key -> why it is outside the countable rule. One list, and
+  // every entry has to say why: an exception nobody can read is how the
+  // catalogue decision nearly wrote "catalogue" into "hidden from lists".
+  const massKeys = new Set(Object.keys(d.scope.mass_keys || {}));
+  // The mass word as it appears in the locked values, derived rather than
+  // re-typed: it is whatever the mass_keys render that the count values do not.
+  const MASS_WORD = /સામાન(?!્ય)/;
+  const enOf = {
+    web: (k) => DASH.en?.[k],
+    ...Object.fromEntries(APP_FILES.map((f) => [f.id, (k) => f.langs.en?.[k]])),
+  };
+  for (const lang of d.scope.langs) {
+    for (const [src, kv] of [['web', WEB[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
+      for (const [key, v] of Object.entries(kv || {})) {
+        if (massKeys.has(key)) continue;
+        const en = (enOf[src]?.(key) || '').trim();
+        if (!en || !COUNT.test(en) || MASS.test(en)) continue;
+        if (MASS_WORD.test(v)) {
+          bad('product-item', `${src} ${lang} ${key} is countable in English but renders the mass word`
+            + `\n      en: ${en.slice(0, 90)}\n      ${lang}: ${v.slice(0, 90)}`
+            + `\n      -> add it to product-item.values, or declare it in scope.exclusions with a reason`);
+        }
+      }
+      for (const [key, v] of Object.entries(kv || {})) {
+        for (const dep of (d.deprecated_terms?.[lang] || [])) {
+          if (String(v).includes(dep)) bad('product-item', `${src} ${lang} ${key} still uses the deprecated term "${dep}"`);
+        }
+      }
     }
   }
 }
@@ -174,8 +233,10 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
 for (const [id, d] of Object.entries(registry.decisions)) {
   if (d.status !== 'REVIEW' || !d.current || !d.lang) continue;
   for (const [k, want] of Object.entries(d.current)) {
-    const got = webValue(d.lang, k) ?? APP[d.lang]?.[k];
-    if (got !== undefined && got !== want) bad(id, `REVIEW row changed without a decision: ${d.lang} ${k}\n      was:  ${want}\n      now:  ${got}`);
+    const seenAt = [['web', webValue(d.lang, k)], ...appCopies(d.lang, k).map((c) => [c.id, c.value])];
+    for (const [where, got] of seenAt) {
+      if (got !== undefined && got !== want) bad(id, `REVIEW row changed without a decision: ${where} ${d.lang} ${k}\n      was:  ${want}\n      now:  ${got}`);
+    }
   }
 }
 
@@ -186,8 +247,8 @@ for (const [id, d] of Object.entries(registry.decisions)) {
   for (const lang of ['bn', 'gu', 'mr']) {
     live.INTENTIONAL_DIVERGENCE[lang] = []; live.UNDECIDED[lang] = [];
     for (const [k, v] of Object.entries(WEB[lang] || {})) {
-      const a = APP[lang]?.[k];
-      if (a === undefined || a === v) continue;
+      const copies = appCopies(lang, k);
+      if (!copies.length || copies.every((c) => c.value === v)) continue;
       (KL[lang]?.[k] === 'web' ? live.INTENTIONAL_DIVERGENCE : live.UNDECIDED)[lang].push(k);
     }
   }

@@ -305,7 +305,7 @@
       "concept": "Gujarati: the count word for a product or a countable item; the mass word only for a mass or collective reading.",
       "rationale": "Scoped by what the ENGLISH says, the way the catalogue decision was: of nine Gujarati strings containing the word for 'list', only three were catalogue contexts.",
       "scope": {
-        "rule": "Read the English source. Mass/collective reading ('everything you ordered', 'Not everything in stock?', a rupee value of goods) -> the mass word. A product or a countable item -> the count word. Never a substitution over the Gujarati: each affected key carries an explicitly authored value below, so gender and number agree.",
+        "rule": "Read the English source. Mass/collective reading ('everything you ordered', 'Not everything in stock?', a rupee value of goods) -> the mass word. A product or a countable item -> the count word. Never a substitution over the Gujarati: each affected key carries an explicitly authored value below, so gender and number agree. Enforced by scope.english against each surface's OWN English source, not by this key list: a new countable-item key that renders with the mass word fails the gate whether or not anybody adds it here. mass_keys is the ONE declared-exception list and every entry states its reason; there is no second exclusion mechanism to drift from it.",
         "langs": [
           "gu"
         ],
@@ -313,16 +313,25 @@
           "web",
           "app"
         ],
-        "mass_keys": [
-          "coedit.intro",
-          "coedit.cash",
-          "oedit.start"
-        ],
+        "mass_keys": {
+          "coedit.intro": "English is 'everything you ordered' — the whole of the order as a body of goods, not a count of line items.",
+          "oedit.start": "English is 'Not everything in stock?' — same mass reading.",
+          "coedit.cash": "English says '{amount} of items were taken off', so the countable marker fires, but the reading is a rupee VALUE of goods — 'goods worth {amount}' — not a count of line items. Declared, not silently skipped."
+        },
         "excluded": {
           "langs": [
             "mr"
           ],
           "why": "Marathi already uses one word throughout and has no competing mass word in this sense — its mass word appears only in the category name for household goods. Nothing to decide; no term is introduced by analogy."
+        },
+        "english": {
+          "count_markers": [
+            "\\b(products?|items?)\\b"
+          ],
+          "mass_markers": [
+            "\\b(everything|goods|in stock)\\b"
+          ],
+          "direction": "ENFORCED ONE WAY ONLY: an English source that is countable must not render with the mass word. The reverse is NOT enforced — 'You have taken off everything' is mass English that correctly uses neither word, so requiring the mass word there would be a false positive."
         }
       },
       "values": {
@@ -347,7 +356,13 @@
           "cat.deleteTitle": "વસ્તુ કાઢી નાખો",
           "cat.missingName": "વસ્તુનું નામ દાખલ કરો",
           "cat.myProducts": "મારી વસ્તુઓ",
-          "oedit.help": "જે નથી તે કાઢી નાખો. અહીંથી ફક્ત વસ્તુઓ દૂર કરી શકાય કે જથ્થો ઘટાડી શકાય — નવી વસ્તુ ઉમેરવી, જથ્થો વધારવો કે ભાવ બદલવો અહીંથી થઈ શકતું નથી."
+          "oedit.help": "જે નથી તે કાઢી નાખો. અહીંથી ફક્ત વસ્તુઓ દૂર કરી શકાય કે જથ્થો ઘટાડી શકાય — નવી વસ્તુ ઉમેરવી, જથ્થો વધારવો કે ભાવ બદલવો અહીંથી થઈ શકતું નથી.",
+          "chelp.e2.a": {
+            "app": "ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો."
+          },
+          "chelp.e3.a": {
+            "app": "દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે."
+          }
         }
       },
       "decided_by": "owner",
@@ -367,8 +382,23 @@
           "on": "2026-09-17",
           "by": "owner",
           "reason": "Scope by English source/context, never by blind target-word replacement."
+        },
+        {
+          "from": "scope resolved to a hand-maintained key list",
+          "to": "scope resolved from each surface's English source, with chelp.e2.a and chelp.e3.a added",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "SCOPE COMPLETION OF Q5a, NOT A NEW TERMINOLOGY DECISION. Both keys' English is byte-identical on web and app and unambiguously countable — 'just say the item name' and 'add the items you want to your cart' — so the locked rule already covered them; only the key list had missed them. The consumer app is aligned to the locked value; the surrounding prose, which diverges from the web on purpose, is untouched."
         }
-      ]
+      ],
+      "deprecated_terms": {
+        "gu": [
+          "ઉત્પાદન"
+        ],
+        "mr": [
+          "उत्पादन"
+        ]
+      }
     },
     "product-item-grammar": {
       "type": "CORRECTNESS",

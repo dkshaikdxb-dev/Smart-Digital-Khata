@@ -86,6 +86,13 @@ jobs:
       # appears has to be recorded before it can ship.
       - name: i18n decision registry
         run: node scripts/i18n-registry-check.mjs
+      # And the gate itself is tested by breaking things. The first version of
+      # it passed this repo cleanly while being blind to the owner dictionary
+      # for every key the consumer one also had — a green run said nothing about
+      # that. This copies the dictionaries aside, violates each rule in turn,
+      # and fails if any violation is allowed through.
+      - name: i18n registry gate — mutation tests
+        run: node scripts/i18n-registry-check.test.mjs
       - name: Build
         working-directory: admin-dashboard
         env:
