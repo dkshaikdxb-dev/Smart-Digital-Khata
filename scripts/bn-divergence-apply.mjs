@@ -75,20 +75,36 @@ for (const key of Object.keys(bn)) {
 }
 
 // Decide.
-for (const r of A) { r.group = 'A'; r.decision = 'app'; r.why = 'wording variant — aligned mechanically'; }
-for (const r of B) {
-  r.group = 'B';
-  if (DECISIONS.keep_web[r.key]) { r.decision = 'web'; r.why = DECISIONS.keep_web[r.key]; }
-  else if (DECISIONS.review[r.key]) { r.decision = 'review'; r.why = DECISIONS.review[r.key]; }
-  else { r.decision = 'app'; r.why = DECISIONS.align_to_app_because[r.key] || 'no reason to prefer the web wording — aligned to the app'; }
+// EVERY row consults the decision file, group A included. The first version
+// hard-coded decision='app' for A on the theory that a wording variant needs no
+// decision — and the semantic audit then found five A rows that were not
+// wording variants at all (bare নিন for "Accept", a missing classifier in
+// "{n} items"). A row that has been reclassified must be honoured wherever it
+// happens to sit, or the reclassification is a comment rather than a change.
+function decide(r, group) {
+  r.group = group;
+  if (DECISIONS.keep_web[r.key]) { r.decision = 'web'; r.why = DECISIONS.keep_web[r.key]; return; }
+  if (DECISIONS.review[r.key]) { r.decision = 'review'; r.why = DECISIONS.review[r.key]; return; }
+  r.decision = 'app';
+  r.why = DECISIONS.align_to_app_because[r.key]
+    || (group === 'A' ? 'wording variant — aligned mechanically' : 'no reason to prefer the web wording — aligned to the app');
 }
+for (const r of A) decide(r, 'A');
+for (const r of B) decide(r, 'B');
+// A row named in the decision file is a decided row, whatever the overlap
+// heuristic called it. Report it where it was decided, not where it landed.
+const RECLASSIFIED = new Set(Object.keys(DECISIONS.keep_web)
+  .concat(Object.keys(DECISIONS.review), Object.keys(DECISIONS.align_to_app_because)));
+const movedFromA = A.filter((r) => RECLASSIFIED.has(r.key));
+for (const r of movedFromA) r.group = 'A->B';
 
 const all = [...A, ...B];
 const changing = all.filter((r) => r.decision === 'app');
 const keepingWeb = all.filter((r) => r.decision === 'web');
 const forReview = all.filter((r) => r.decision === 'review');
 
-console.log(`A (wording variants):        ${A.length}  -> all aligned to the app`);
+console.log(`A (wording variants):        ${A.length - movedFromA.length}  -> aligned to the app`);
+console.log(`A -> B (semantic audit):     ${movedFromA.length}  -> ${movedFromA.filter(r=>r.decision==='web').length} keep the web, ${movedFromA.filter(r=>r.decision==='app').length} aligned with a stated reason`);
 console.log(`B (word choices + money):    ${B.length}  -> ${B.filter(r=>r.decision==='app').length} aligned, ${keepingWeb.length} keep the web, ${forReview.length} for human review`);
 console.log(`C (correctness bugs, excluded):  ${groupC.length}`);
 console.log(`skipped (placeholders differ): ${skipped.length}`);

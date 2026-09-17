@@ -5,7 +5,12 @@
     "sfaq.order": "'Order' here is SEQUENCE — the position of an FAQ in a list. App reads অর্ডার, a purchase order, which is the wrong sense entirely.",
     "open.openTime": "'Opens at' labels a time field. App's কখন খোলে asks a question ('when does it open?'); web's খোলার সময় names the field.",
     "open.closeTime": "same as open.openTime.",
-    "oalert.spoken": "Bengali counts with a classifier. App's '{n} জিনিস' is missing it; web's '{n}টি জিনিস' is what a speech engine should say."
+    "oalert.spoken": "Bengali counts with a classifier. App's '{n} জিনিস' is missing it; web's '{n}টি জিনিস' is what a speech engine should say.",
+    "eta.accept": "AUDIT A->B. 'Accept' is an action button sitting beside Reject. The app reads নিন — bare 'take', which does not say what is being agreed to. The web's মেনে নিন is unambiguously 'accept'. Aligning made the weaker string live.",
+    "oalert.accept": "AUDIT A->B. Same button, same reason as eta.accept.",
+    "eta.noTime": "AUDIT A->B. 'Accept without a time' — the app's সময় না বলে নিন is the same bare 'take', and drops the word order. The web names the order and uses গ্রহণ করুন.",
+    "oalert.items": "AUDIT A->B. '{n} items' — Bengali counts with a classifier. The app's '{n} জিনিস' is missing it; the web's '{n}টি জিনিস' has it. Identical to the reason oalert.spoken already kept the web string, so aligning this one contradicted that.",
+    "open.title": "AUDIT A->B. 'Shop availability' is a section title. The app asks a question (দোকান খোলা আছে কি না, 'is the shop open?'); the web names the thing. Identical to the reason open.openTime and open.closeTime already kept the web string."
   },
   "review": {
     "c.pay": "app পরিশোধ (noun) vs web পরিশোধ করুন (imperative). It is a BUTTON, which argues for the imperative, but the glossary pins pay = পরিশোধ.",
@@ -28,10 +33,18 @@
     "oedit.reducedBy": "web writes {amount} টাকা beside an amount already carrying Rs, rendering 'Rs500.00 rupees'.",
     "coedit.cash": "same redundant currency word.",
     "coedit.credit": "same redundant currency word, and দোকান থেকে...খাতায় muddles which way the money moved.",
-    "coedit.prepaid": "same redundant currency word, plus a বাকি ('remaining') the English does not have."
+    "coedit.prepaid": "same redundant currency word, plus a বাকি ('remaining') the English does not have.",
+    "oalert.setHelp": "AUDIT A->B. Contains 'ACCEPT it or REJECT it'. The web read বাতিল (cancel) for REJECT — the same conflation as orej.*, and it reached this string without being noticed because the rest of the sentence matched.",
+    "orej.done": "AUDIT A->B. 'Order rejected.' The web read বাতিল (cancel). Aligned correctly, but as a wording variant rather than a decision.",
+    "orej.title": "AUDIT A->B. 'Reject this order?' Same as orej.done."
   },
   "_group_c": {
     "_comment": "Keys that are a CORRECTNESS bug, not a consistency one. Never auto-aligned in either direction: aligning A/B mechanically would propagate the wrong string to the surface that had it right, which is exactly what happened on the first run of this script.",
     "c.catDalPulses": "cat.dalPulses in the app and 'Dal & Pulses' in catalog-i18n.json both read ডাল ও কড়াই. কড়াই is a deep frying pan (and কড়াইশুঁটি is green peas); কলাই is the pulse. Not one of the twelve individual pulses in the shipped catalogue is called কড়াই — they are মসুর ডাল, মুগ ডাল, ছোলা, বিউলি. The web string is the correct one and the other two surfaces are fixed to match it."
+  },
+  "_audit_findings": {
+    "_comment": "Raised by the Group A semantic audit. Not fixed here: each needs a Bengali reader, and one is a pre-existing inconsistency inside the app itself.",
+    "orej.help": "THE APP CONTRADICTS ITSELF. It uses ফিরিয়ে (reject/send back) for the action in orej.confirm/reject/title/done, and বাতিল (cancel) for the notice in orej.help — 'বাতিলের সাথে এটা তাঁর কাছে যাবে'. So a shopkeeper rejects an order and is told a cancellation notice went out. Pre-existing in the shipped app, not introduced here.",
+    "oalert.setHelp vs fam.sendReminder": "WhatsApp is now হোয়াটসঅ্যাপে (transliterated) in oalert.setHelp and 'WhatsApp' (Latin) in fam.sendReminder, because one was aligned and the other is held for review. The translation brief says brand names stay Latin. Whichever way it goes, the two must agree."
   }
 }

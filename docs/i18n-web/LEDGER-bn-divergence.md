@@ -7,19 +7,48 @@ describe something other than what happened. Rebuild with
 | group | rows | outcome |
 |---|---|---|
 | A — wording variants | 135 | aligned to the app |
-| B — word choices and money | 78 | 63 aligned, 5 keep the web, 10 for review |
-| C — `c.catDalPulses` | 1 | correctness bug — excluded from A/B, fixed at source |
+| B — word choices and money | 78 | 62 aligned, 10 keep the web, 10 for review |
 | skipped | 0 | placeholders differ, not interchangeable |
 
-## Kept the web string — 5
+## Kept the web string — 10
 
 The web wording is closer to what the English actually says.
+
+### `eta.accept`  _(group A->B)_
+- en:  Accept
+- app: নিন
+- web: মেনে নিন
+- **web string kept** — AUDIT A->B. 'Accept' is an action button sitting beside Reject. The app reads নিন — bare 'take', which does not say what is being agreed to. The web's মেনে নিন is unambiguously 'accept'. Aligning made the weaker string live.
+
+### `oalert.accept`  _(group A->B)_
+- en:  Accept
+- app: নিন
+- web: মেনে নিন
+- **web string kept** — AUDIT A->B. Same button, same reason as eta.accept.
+
+### `oalert.items`  _(group A->B)_
+- en:  {n} items
+- app: {n} জিনিস
+- web: {n}টি জিনিস
+- **web string kept** — AUDIT A->B. '{n} items' — Bengali counts with a classifier. The app's '{n} জিনিস' is missing it; the web's '{n}টি জিনিস' has it. Identical to the reason oalert.spoken already kept the web string, so aligning this one contradicted that.
+
+### `open.title`  _(group A->B)_
+- en:  Shop availability
+- app: দোকান খোলা আছে কি না
+- web: দোকান খোলা/বন্ধের অবস্থা
+- **web string kept** — AUDIT A->B. 'Shop availability' is a section title. The app asks a question (দোকান খোলা আছে কি না, 'is the shop open?'); the web names the thing. Identical to the reason open.openTime and open.closeTime already kept the web string.
 
 ### `common.amountRs`  _(group B)_
 - en:  Amount (₹)
 - app: টাকা (₹)
 - web: পরিমাণ (₹)
 - **web string kept** — the field is labelled Amount (Rs). App's টাকা is 'money'; web's পরিমাণ is 'amount'. The label names a quantity, not a substance.
+
+### `eta.noTime`  _(group B)_
+- en:  Accept without a time
+- app: সময় না বলে নিন
+- web: সময় দেওয়া ছাড়াই অর্ডার গ্রহণ করুন
+- **web string kept** — AUDIT A->B. 'Accept without a time' — the app's সময় না বলে নিন is the same bare 'take', and drops the word order. The web names the order and uses গ্রহণ করুন.
 
 ### `oalert.spoken`  _(group B)_
 - en:  New order. {name}. {n} items. {amount} rupees.
@@ -170,7 +199,7 @@ These are not style calls — the web string lost content, confused two actions,
 - **web changes to the app string** — same as orej.confirm.
 
 
-## Aligned to the app (group B, no strong preference) — 54
+## Aligned to the app (group B, no strong preference) — 53
 
 Word choices where neither is more accurate, so the app wins as the default.
 
@@ -310,12 +339,6 @@ Word choices where neither is more accurate, so the app wins as the default.
 - en:  No ready time promised
 - app: তৈরির সময় বলা হয়নি
 - web: তৈরি হওয়ার কোনো নির্ধারিত সময় দেওয়া হয়নি
-- **web changes to the app string**
-
-### `eta.noTime`  _(group B)_
-- en:  Accept without a time
-- app: সময় না বলে নিন
-- web: সময় দেওয়া ছাড়াই অর্ডার গ্রহণ করুন
 - **web changes to the app string**
 
 ### `fam.combinedStatement`  _(group B)_
@@ -791,11 +814,11 @@ Inflection, politeness and word order.
 - web: অনেকবার চেষ্টা করা হয়েছে। এক মিনিট অপেক্ষা করে আবার চেষ্টা করুন।
 - **web changes to the app string**
 
-### `eta.accept`  _(group A)_
+### `eta.accept`  _(group A->B)_
 - en:  Accept
 - app: নিন
 - web: মেনে নিন
-- **web changes to the app string**
+- **web string kept**
 
 ### `eta.chipHourMin`  _(group A)_
 - en:  ~{h} hr {m} min
@@ -935,17 +958,17 @@ Inflection, politeness and word order.
 - web: {phone}-এ পাঠানো কোড লিখুন
 - **web changes to the app string**
 
-### `oalert.accept`  _(group A)_
+### `oalert.accept`  _(group A->B)_
 - en:  Accept
 - app: নিন
 - web: মেনে নিন
-- **web changes to the app string**
+- **web string kept**
 
-### `oalert.items`  _(group A)_
+### `oalert.items`  _(group A->B)_
 - en:  {n} items
 - app: {n} জিনিস
 - web: {n}টি জিনিস
-- **web changes to the app string**
+- **web string kept**
 
 ### `oalert.more`  _(group A)_
 - en:  +{n} more
@@ -953,7 +976,7 @@ Inflection, politeness and word order.
 - web: +{n}টি আরও
 - **web changes to the app string**
 
-### `oalert.setHelp`  _(group A)_
+### `oalert.setHelp`  _(group A->B)_
 - en:  A new order keeps alerting you — here and on WhatsApp — until you ACCEPT it or REJECT it. Not now only quiets one order for a few minutes; it never stops the alert.
 - app: নতুন অর্ডার আপনাকে বারবার জানাতে থাকবে — এখানে আর হোয়াটসঅ্যাপে — যতক্ষণ না আপনি সেটা নেন বা ফিরিয়ে দেন। “এখন নয়” শুধু একটা অর্ডারকে কয়েক মিনিটের জন্য চুপ করায়; অ্যালার্ট বন্ধ হয় না।
 - web: যতক্ষণ না আপনি এটি মেনে নিচ্ছেন বা বাতিল করছেন, ততক্ষণ নতুন অর্ডারের অ্যালার্ট (এখানে এবং WhatsApp-এ) বাজতে থাকবে। "এখন না" চাপলে কেবল কয়েক মিনিটের জন্য অ্যালার্ট থামে; স্থায়ীভাবে বন্ধ হয় না।
@@ -1139,11 +1162,11 @@ Inflection, politeness and word order.
 - web: এখন অর্ডার নেওয়া হচ্ছে।
 - **web changes to the app string**
 
-### `open.title`  _(group A)_
+### `open.title`  _(group A->B)_
 - en:  Shop availability
 - app: দোকান খোলা আছে কি না
 - web: দোকান খোলা/বন্ধের অবস্থা
-- **web changes to the app string**
+- **web string kept**
 
 ### `ord.empty`  _(group A)_
 - en:  No orders in this view yet.
@@ -1151,7 +1174,7 @@ Inflection, politeness and word order.
 - web: এই ভিউতে এখনো কোনো অর্ডার নেই।
 - **web changes to the app string**
 
-### `orej.done`  _(group A)_
+### `orej.done`  _(group A->B)_
 - en:  Order rejected.
 - app: অর্ডার ফিরিয়ে দেওয়া হয়েছে।
 - web: অর্ডার বাতিল করা হয়েছে।
@@ -1181,7 +1204,7 @@ Inflection, politeness and word order.
 - web: এখন খুব ব্যস্ত
 - **web changes to the app string**
 
-### `orej.title`  _(group A)_
+### `orej.title`  _(group A->B)_
 - en:  Reject this order?
 - app: এই অর্ডার ফিরিয়ে দেবেন?
 - web: এই অর্ডারটি বাতিল করবেন?
