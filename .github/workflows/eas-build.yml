@@ -68,7 +68,31 @@ jobs:
             echo "Using ${VARNAME}=${EAS_PROJECT_ID}"
             exit 0
           fi
-          echo "No ${VARNAME} variable set — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
+          # eas.json already carries the id, per build profile, in the env block the
+          # EAS worker reads. Prefer it over `eas init --force`, which can CREATE
+          # a new project when the slug does not resolve — and an APK built
+          # against the wrong project can never receive an update. Verified: this
+          # yields the same two ids the 2026-09-17 release published to.
+          pid=$(node -e "
+            const j=require('./eas.json');
+            const want=process.env.APP_FLAVOR;
+            const ids=new Set();
+            for (const p of Object.values(j.build||{})) {
+              const e=p.env||{};
+              if (e.APP_FLAVOR===want && e.EAS_PROJECT_ID) ids.add(e.EAS_PROJECT_ID);
+            }
+            if (ids.size===1) process.stdout.write([...ids][0]);
+            else if (ids.size>1) console.error('eas.json disagrees with itself for '+want+': '+[...ids].join(', '));
+          " 2>&1) || pid=""
+          case "$pid" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-*)
+              echo "EAS_PROJECT_ID=$pid" >> "$GITHUB_ENV"
+              echo "Using the '${APP_FLAVOR}' project id from eas.json: $pid"
+              exit 0 ;;
+            *)
+              [ -n "$pid" ] && echo "::warning::could not take the id from eas.json — $pid" ;;
+          esac
+          echo "No ${VARNAME} variable and no usable id in eas.json — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
           # 'eas init' creates or links the project for this flavor's owner+slug.
           # With a dynamic app config it cannot write the id back to the file, so
           # it prints the id — we capture it and hand it to the build step (and

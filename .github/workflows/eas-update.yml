@@ -86,7 +86,33 @@ jobs:
             echo "Using ${VARNAME}=${EAS_PROJECT_ID}"
             exit 0
           fi
-          echo "No ${VARNAME} variable set — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
+          # eas.json already carries the id, per build profile, in the env block the
+          # EAS worker reads — and that is the id the INSTALLED app was built
+          # against, so it is the one an update has to be published to. Prefer it
+          # over `eas init --force`, which can CREATE a new project when the slug
+          # does not resolve; an update published to a project no installed app
+          # points at reaches nobody, silently and with no error. Verified: this
+          # yields the same two ids the 2026-09-17 release published to.
+          pid=$(node -e "
+            const j=require('./eas.json');
+            const want=process.env.APP_FLAVOR;
+            const ids=new Set();
+            for (const p of Object.values(j.build||{})) {
+              const e=p.env||{};
+              if (e.APP_FLAVOR===want && e.EAS_PROJECT_ID) ids.add(e.EAS_PROJECT_ID);
+            }
+            if (ids.size===1) process.stdout.write([...ids][0]);
+            else if (ids.size>1) console.error('eas.json disagrees with itself for '+want+': '+[...ids].join(', '));
+          " 2>&1) || pid=""
+          case "$pid" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-*)
+              echo "EAS_PROJECT_ID=$pid" >> "$GITHUB_ENV"
+              echo "Using the '${APP_FLAVOR}' project id from eas.json: $pid"
+              exit 0 ;;
+            *)
+              [ -n "$pid" ] && echo "::warning::could not take the id from eas.json — $pid" ;;
+          esac
+          echo "No ${VARNAME} variable and no usable id in eas.json — creating/linking the '${APP_FLAVOR}' project on the account from app.config.js (owner field)."
           out=$(eas init --non-interactive --force 2>&1 | tee /dev/stderr) || true
           pid=$(printf '%s\n' "$out" | grep -oiE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1)
           if [ -z "$pid" ]; then
