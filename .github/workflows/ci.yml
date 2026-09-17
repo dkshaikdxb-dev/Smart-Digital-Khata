@@ -77,6 +77,15 @@ jobs:
       # the Telugu block and every other gate stays green.
       - name: Translation script integrity
         run: node scripts/i18n-script-check.mjs
+      # The decision registry is only worth having if it is binding. This checks
+      # that every LOCKED decision still describes what the dictionaries say,
+      # that the Gujarati loanword spelling holds as a corpus invariant rather
+      # than a token list, that protected brand terms keep their casing, and
+      # that the 34 intentional and 83 undecided web/app divergences are still
+      # exactly the sets somebody signed off — so a pair that converges or
+      # appears has to be recorded before it can ship.
+      - name: i18n decision registry
+        run: node scripts/i18n-registry-check.mjs
       - name: Build
         working-directory: admin-dashboard
         env:

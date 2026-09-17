@@ -1,0 +1,846 @@
+{
+  "version": 1,
+  "_readme": [
+    "The i18n decision registry. This file is the SOURCE OF TRUTH for what was",
+    "decided; the dictionaries are the result of applying it, not the record of it.",
+    "",
+    "It exists because the same decisions were reversed enough times that 'what was",
+    "decided' could no longer be reconstructed from the instruction stream. One",
+    "house-style reversal alone produced 117 A-to-B-to-A key changes, and one",
+    "reversal (bn c.deliverTo) happened entirely inside an uncommitted session, so",
+    "git cannot show it at all. That is what override_log is for.",
+    "",
+    "STATUSES",
+    "  LOCKED                 decided, applied, consistent. Tooling may not change it.",
+    "  REVIEW                 two valid readings; needs a native speaker. IMMUTABLE to",
+    "                         tooling. Does NOT block the freeze.",
+    "  INTENTIONAL_DIVERGENCE web and app deliberately differ. NOT a defect.",
+    "  UNDECIDED              web and app differ and nobody has ruled. NOT a defect,",
+    "                         and NOT to be auto-reconciled.",
+    "",
+    "RULES FOR ANY TOOL THAT READS THIS FILE",
+    "  - No default. No decision='app', no decision='web', no 'latest wins'. A key",
+    "    named by no decision is not touched, in either direction.",
+    "  - web != app is not, by itself, a defect signal.",
+    "  - A cross-language difference is not a defect unless a decision says the",
+    "    languages must match.",
+    "  - scope.rule is how affected keys are IDENTIFIED. A key list is the resolved",
+    "    result of a rule, never a substitute for one: listing examples is exactly how",
+    "    gu-orthography and gu-status under-scoped and had to be redone.",
+    "  - Terminology is applied as explicitly authored per-key values, never as a",
+    "    substitution over the target language. A blind target-word swap is what",
+    "    produced the vastu grammar defects repaired by product-item-grammar."
+  ],
+  "decisions": {
+    "razorpay-casing": {
+      "type": "HOUSE-STYLE",
+      "status": "LOCKED",
+      "concept": "The Razorpay credential terms are Latin and Title Case wherever they appear, including inside a translated sentence.",
+      "rationale": "The term is a proper noun the shopkeeper is hunting for on Razorpay's own dashboard, not an English common noun to be sentence-cased. Razorpay prints 'Key Secret'.",
+      "scope": {
+        "rule": "Every key whose value names a Razorpay credential. Resolved to the seven keys below. The term is Title Case in the label AND in the sentence; the surrounding sentence stays in its own language.",
+        "keys": [
+          "set.razorpayKeyId",
+          "set.keySecret",
+          "set.webhookSecret",
+          "set.noKeySecret",
+          "set.noWebhookSecret",
+          "set.keySecretSet",
+          "set.webhookSecretSet"
+        ],
+        "langs": [
+          "en",
+          "hi",
+          "bn",
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "excluded": {
+          "langs": [
+            "ta",
+            "te",
+            "kn",
+            "ml",
+            "ur"
+          ],
+          "why": "Not in the decision's stated scope. All five transliterate the term today, as hi did. Raised as razorpay-casing-other-languages; NOT applied by analogy."
+        }
+      },
+      "values": {
+        "en": {
+          "set.noKeySecret": "No Key Secret",
+          "set.noWebhookSecret": "No Webhook Secret",
+          "set.keySecretSet": "Key Secret set",
+          "set.webhookSecretSet": "Webhook Secret set"
+        },
+        "hi": {
+          "set.noKeySecret": "कोई Key Secret नहीं",
+          "set.noWebhookSecret": "कोई Webhook Secret नहीं",
+          "set.keySecretSet": "Key Secret सेट है",
+          "set.webhookSecretSet": "Webhook Secret सेट है"
+        },
+        "bn": {
+          "set.noKeySecret": "Key Secret নেই",
+          "set.noWebhookSecret": "Webhook Secret নেই",
+          "set.keySecretSet": "Key Secret দেওয়া আছে",
+          "set.webhookSecretSet": "Webhook Secret দেওয়া আছে"
+        },
+        "gu": {
+          "set.noKeySecret": "Key Secret નથી",
+          "set.noWebhookSecret": "Webhook Secret નથી",
+          "set.keySecretSet": "Key Secret આપેલું છે",
+          "set.webhookSecretSet": "Webhook Secret આપેલું છે"
+        },
+        "mr": {
+          "set.noKeySecret": "Key Secret नाही",
+          "set.noWebhookSecret": "Webhook Secret नाही",
+          "set.keySecretSet": "Key Secret दिलेले आहे",
+          "set.webhookSecretSet": "Webhook Secret दिलेले आहे"
+        }
+      },
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": "razorpay-casing-sentence-lowercase",
+      "override_log": [
+        {
+          "from": "fully translated (কোনো কী সিক্রেট নেই)",
+          "to": "Latin term, Title Case everywhere",
+          "on": "round-2",
+          "by": "owner",
+          "reason": "The shopkeeper must find the field on Razorpay's dashboard."
+        },
+        {
+          "from": "Title Case in sentences",
+          "to": "lower case in sentences",
+          "on": "round-3",
+          "by": "owner",
+          "reason": "Matched the English source, which sentence-cases the status strings."
+        },
+        {
+          "from": "lower case in sentences",
+          "to": "Title Case in sentences",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "The reversal was partial: it reached the web and the no-secret strings but not the app's SecretSet strings, leaving six rows in conflict. Resolved as a proper noun."
+        }
+      ]
+    },
+    "gu-status-form": {
+      "type": "HOUSE-STYLE",
+      "status": "LOCKED",
+      "concept": "Gujarati order/payment states: a standalone chip is bare and uninflected; a sentence or hint agrees in gender and number.",
+      "rationale": "A chip has no sentence subject to agree with. A hint is a sentence and does.",
+      "scope": {
+        "rule": "CHIP families (the value IS the state): ostatus.*, status.*, dash.orderStatus.*, pstatus.* -> bare. SENTENCE family: ostatus.hint.* -> agreeing with the subject, which is ordar (masculine). A sentence that merely MENTIONS a state (chelp.e7.a) is not in scope.",
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "values": {
+        "gu": {
+          "status.accepted": "સ્વીકારેલ",
+          "ostatus.preparing": "તૈયાર થાય છે",
+          "dash.orderStatus.preparing": "તૈયાર થાય છે",
+          "ostatus.cancelled": "રદ",
+          "ostatus.completed": "પૂર્ણ",
+          "pstatus.paid": "ચૂકવેલ",
+          "pstatus.failed": "નિષ્ફળ",
+          "ostatus.hint.cancelled": "ઑર્ડર રદ થયો",
+          "ostatus.hint.completed": "પૂરો થયો"
+        }
+      },
+      "carries_review": [
+        "gu-accepted-wording",
+        "gu-out-for-delivery-form"
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": null,
+      "override_log": [
+        {
+          "from": "two chips named as examples",
+          "to": "a rule over five states and four key families",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "Naming two chips left accepted bare and out_for_delivery inflected, each instructed, neither statement aware of the other."
+        }
+      ]
+    },
+    "mr-status-register": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "Marathi shopkeeper-facing status terminology uses the plain register, not the Sanskritic one.",
+      "rationale": "The audience is low-literacy readers on cheap phones. स्वीकारले and बाकी are what a shopkeeper says; स्वीकृत and प्रलंबित are bureaucratic.",
+      "scope": {
+        "rule": "The status-key families only (ostatus.*, status.*, dash.orderStatus.*, pstatus.*) — where the string IS the status term. A sentence that merely mentions a state is not in scope.",
+        "langs": [
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "values": {
+        "mr": {
+          "ostatus.accepted": "स्वीकारले",
+          "dash.orderStatus.accepted": "स्वीकारले",
+          "ostatus.pending": "बाकी"
+        }
+      },
+      "cross_language": {
+        "may_differ_from": [
+          "gu"
+        ],
+        "why": "Explicitly permitted: Marathi may differ from Gujarati where its own grammar or register requires. This difference must NOT be reported as a defect."
+      },
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": "mr-status-sanskritic",
+      "override_log": [
+        {
+          "from": "स्वीकारले",
+          "to": "स्वीकृत",
+          "on": "round-3",
+          "by": "owner",
+          "reason": "Applied in the same pass that moved Gujarati to સ્વીકારેલ."
+        },
+        {
+          "from": "स्वीकृत",
+          "to": "स्वीकारले",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "Register, not inflection: the Sanskritic form is wrong for this audience. Marathi is permitted to differ from Gujarati here."
+        }
+      ]
+    },
+    "gu-orthography": {
+      "type": "HOUSE-STYLE",
+      "status": "LOCKED",
+      "concept": "Gujarati keeps the candra vowel on English loanwords — candra-O (U+0A91 / U+0AC9) and candra-E (U+0A8D / U+0AC5).",
+      "rationale": "Candra marks the English open-o and ash vowels. Either convention is defensible in Gujarati print; what is not defensible is one word spelled two ways on two screens.",
+      "scope": {
+        "rule": "A CORPUS INVARIANT, not a token list: for any English loanword written with a candra vowel anywhere in gu, the plain-vowel spelling of that same lemma must appear NOWHERE, on either surface. A new loanword inherits the rule without a new instruction, and the gate fails on the first inconsistent spelling. loanword_lemmas below is the resolved set as of locking, used to seed the check — not the definition of the rule.",
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "loanword_lemmas": [
+        "અનબ્લૉક",
+        "ઑડિટ",
+        "ઑનલાઇન",
+        "ઑફલાઇન",
+        "ઑર્ડર",
+        "કૅટલૉગ",
+        "કૉપિ",
+        "નૉન",
+        "બૉક્સ",
+        "બ્લૉક",
+        "મૉડરેશન",
+        "લૉગ",
+        "લૉગિન",
+        "વૉઇસ",
+        "ઍપ",
+        "ચૅનલ",
+        "ટૅપ",
+        "ટૅબ",
+        "ટ્રૅક",
+        "પૅક",
+        "સ્કૅન"
+      ],
+      "values": {
+        "gu": {
+          "chelp.e7.q": "મારો ઑર્ડર કેવી રીતે ટ્રૅક કરવો?",
+          "upd.embedded": "ઍપ સાથે આવેલું વર્ઝન — ક્યારેય અપડેટ થયું નથી",
+          "upd.reloading": "નવું વર્ઝન ડાઉનલોડ થયું. ઍપ ફરી ચાલુ થાય છે…",
+          "stmt.exportOnWebSub": "ફાઇલ સેવ કરવા અને પ્રિન્ટ માટે વેબ ઍપ જોઈએ. આ તેને સાઇન ઇન કરેલું ખોલી આપશે.",
+          "admin.body": "આ ઍપ દુકાન માલિકો માટે છે. પ્લેટફોર્મ ચલાવવા માટે વેબ એડમિન કન્સોલ વાપરો.",
+          "chelp.e7.a": {
+            "app": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડર બાકીથી સ્વીકાર્યો, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક તબક્કે તમને અપડેટ મળે છે."
+          }
+        }
+      },
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": "gu-orthography-plain",
+      "override_log": [
+        {
+          "from": "candra",
+          "to": "plain",
+          "on": "0effe8e",
+          "by": "owner",
+          "reason": "Stated as two example words; implemented as a token list."
+        },
+        {
+          "from": "plain",
+          "to": "candra",
+          "on": "d57a353",
+          "by": "owner",
+          "reason": "Reversed. Between them these two flips produced 117 of the 135 keys that changed more than once."
+        },
+        {
+          "from": "candra-O only, as a token list",
+          "to": "both candra vowels, as a corpus invariant",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "Candra-E was never mentioned, so three lemmas drifted into two spellings. A token list cannot prevent the next one."
+        }
+      ]
+    },
+    "product-item": {
+      "type": "TERMINOLOGY",
+      "status": "LOCKED",
+      "concept": "Gujarati: the count word for a product or a countable item; the mass word only for a mass or collective reading.",
+      "rationale": "Scoped by what the ENGLISH says, the way the catalogue decision was: of nine Gujarati strings containing the word for 'list', only three were catalogue contexts.",
+      "scope": {
+        "rule": "Read the English source. Mass/collective reading ('everything you ordered', 'Not everything in stock?', a rupee value of goods) -> the mass word. A product or a countable item -> the count word. Never a substitution over the Gujarati: each affected key carries an explicitly authored value below, so gender and number agree.",
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "mass_keys": [
+          "coedit.intro",
+          "coedit.cash",
+          "oedit.start"
+        ],
+        "excluded": {
+          "langs": [
+            "mr"
+          ],
+          "why": "Marathi already uses one word throughout and has no competing mass word in this sense — its mass word appears only in the category name for household goods. Nothing to decide; no term is introduced by analogy."
+        }
+      },
+      "values": {
+        "gu": {
+          "common.items": "વસ્તુઓ",
+          "champ.items": "વસ્તુઓ",
+          "ord.items": "વસ્તુઓ",
+          "cat.products": "વસ્તુઓ",
+          "shops.itemsCount": "{n} વસ્તુ",
+          "orders.itemsCount": "{n} વસ્તુ",
+          "oalert.items": "{n} વસ્તુ",
+          "oalert.spoken": "નવો ઑર્ડર. {name}. {n} વસ્તુ. {amount} રૂપિયા.",
+          "shopdetail.noItems": "આ દુકાને હજી વસ્તુઓ ઉમેરી નથી.",
+          "shopdetail.noResults": "મળતી કોઈ વસ્તુ નથી.",
+          "ord.noItems": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી.",
+          "coedit.wasSubtotal": "પહેલાંની વસ્તુઓનું કુલ {was}",
+          "psearch.title": "વસ્તુ શોધો",
+          "psearch.placeholder": "બધી દુકાનોમાં વસ્તુઓ શોધો",
+          "psearch.start": "કોઈ વસ્તુ શોધો અને જુઓ કે નજીકની કઈ દુકાનમાં તે મળે છે.",
+          "c.searchProductsAll": "બધી દુકાનોમાં વસ્તુઓ શોધો",
+          "chelp.e2.q": "વસ્તુ કેવી રીતે શોધવી?",
+          "cat.deleteTitle": "વસ્તુ કાઢી નાખો",
+          "cat.missingName": "વસ્તુનું નામ દાખલ કરો",
+          "cat.myProducts": "મારી વસ્તુઓ",
+          "oedit.help": "જે નથી તે કાઢી નાખો. અહીંથી ફક્ત વસ્તુઓ દૂર કરી શકાય કે જથ્થો ઘટાડી શકાય — નવી વસ્તુ ઉમેરવી, જથ્થો વધારવો કે ભાવ બદલવો અહીંથી થઈ શકતું નથી."
+        }
+      },
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": "product-item-blind-substitution",
+      "override_log": [
+        {
+          "from": "the older product word",
+          "to": "the count word",
+          "on": "d57a353",
+          "by": "owner",
+          "reason": "Applied as a bare target-word substitution with no English scoping — the one terminology decision applied the way catalogue explicitly was not. It produced the defects repaired by product-item-grammar."
+        },
+        {
+          "from": "bare substitution",
+          "to": "English-source scope with authored per-key values",
+          "on": "2026-09-17",
+          "by": "owner",
+          "reason": "Scope by English source/context, never by blind target-word replacement."
+        }
+      ]
+    },
+    "product-item-grammar": {
+      "type": "CORRECTNESS",
+      "status": "LOCKED",
+      "concept": "Repair the grammatical damage the bare product-word substitution did. Wrong under every candidate terminology answer.",
+      "rationale": "The old nouns were neuter; the new ones are feminine. The nouns were replaced and the agreeing words around them were not. The Marathi oblique stem was not in the substitution list, so an oblique form became a vowel sign after a long vowel, which is not a legal Marathi word form.",
+      "scope": {
+        "rule": "Every string where the substituted noun left a disagreeing determiner, verb or case ending. Resolved by inspection to the ten rows below.",
+        "langs": [
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web"
+        ]
+      },
+      "values": {
+        "gu": {
+          "cat.added": "વસ્તુ ઉમેરાઈ.",
+          "cat.updated": "વસ્તુ અપડેટ થઈ.",
+          "cat.rangeEmpty": "તમારી પાસે હજી કોઈ વસ્તુ નથી. નીચેના કૅટલૉગમાંથી વસ્તુઓ ઉમેરો."
+        },
+        "mr": {
+          "cat.added": "वस्तू जोडली.",
+          "cat.updated": "वस्तू अपडेट झाली.",
+          "cat.productName": "वस्तूचे नाव",
+          "cat.morePagesHint": "एका वस्तूचे अधिक आकार पुढील पेजवर असू शकतात — अधिक लोड करा वापरा.",
+          "help.e6.a": "एका वस्तूला वजनावर विक्री म्हणून चिन्हांकित करा आणि प्रति किलो किंमत ठेवा. निवडलेल्या वजनाची किंमत तुमच्यासाठी मोजली जाते.",
+          "insight.activation_gap.detail": "साइन अप केले पण अजून कोणत्याही वस्तू किंवा व्यवहार नाहीत.",
+          "cat.rangeEmpty": "तुमच्याकडे अजून कोणतीही वस्तू नाही. खालील कॅटलॉगमधून वस्तू जोडा."
+        }
+      },
+      "carries_review": [
+        "rangeEmpty-rewording"
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": null,
+      "override_log": []
+    },
+    "whatsapp-latin": {
+      "type": "HOUSE-STYLE",
+      "status": "LOCKED",
+      "concept": "WhatsApp is written in Latin in every language; the postposition stays in the language.",
+      "scope": {
+        "rule": "Every occurrence of the product name, any key, any surface.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr",
+          "hi"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "verified": "Zero transliterated renderings remain in any language on either surface.",
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "native-digits-latin": {
+      "type": "HOUSE-STYLE",
+      "status": "LOCKED",
+      "concept": "Digits are Latin. A code-length hint in a native digit on a screen whose keypad gives Latin digits is unreadable.",
+      "scope": {
+        "rule": "No codepoint in any language's native digit block appears in any value.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr",
+          "hi"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "verified": "Zero native digits remain in bn, gu, mr or hi on either surface.",
+      "decided_by": "owner",
+      "decided_on": "round-3",
+      "supersedes": null,
+      "override_log": []
+    },
+    "balance-vs-outstanding": {
+      "type": "SEMANTIC-RULE",
+      "status": "LOCKED",
+      "concept": "Balance and Outstanding are different things and may never render alike.",
+      "scope": {
+        "rule": "common.balance and common.outstanding must differ within every language.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "verified": "Anti-collision holds in all three languages.",
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "catalogue-loanword": {
+      "type": "TERMINOLOGY",
+      "status": "LOCKED",
+      "concept": "The catalogue loanword, only where the English says catalog.",
+      "scope": {
+        "rule": "English source contains 'catalog'. Of nine strings containing the word for 'list', only three qualified; the rest said 'List my shop so nearby customers can find you'.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "reject-not-cancel": {
+      "type": "SEMANTIC-RULE",
+      "status": "LOCKED",
+      "concept": "Reject and Cancel are different actions and may not share a word.",
+      "scope": {
+        "rule": "The shop refusing an order is not the shopper withdrawing it.",
+        "langs": [
+          "bn"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "approve-not-accept": {
+      "type": "SEMANTIC-RULE",
+      "status": "LOCKED",
+      "concept": "The shopkeeper APPROVES an order; the word is not the same as accepting a delivery.",
+      "scope": {
+        "rule": "chelp.e7.a keeps the web wording in gu and mr.",
+        "langs": [
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web"
+        ]
+      },
+      "decided_by": "owner",
+      "decided_on": "round-3",
+      "supersedes": null,
+      "override_log": []
+    },
+    "unit-counter": {
+      "type": "TERMINOLOGY",
+      "status": "LOCKED",
+      "concept": "The selling counter, not the measurement dimension.",
+      "scope": {
+        "rule": "c.unit and common.unit only. cat.unitPlaceholder ('Unit (kg, piece…)') and ord.unitPrice are the measurement sense and are excluded.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "prepaid-mechanism": {
+      "type": "TERMINOLOGY",
+      "status": "LOCKED",
+      "concept": "Prepaid names the mechanism the shopper used, not an abstract state.",
+      "scope": {
+        "rule": "c.prepaid and pmode.prepaid.",
+        "langs": [
+          "bn",
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "decided_by": "owner",
+      "decided_on": "round-2",
+      "supersedes": null,
+      "override_log": []
+    },
+    "brand-registry-split": {
+      "type": "TOOLING",
+      "status": "LOCKED",
+      "concept": "Two sets, not one: BRAND_KEYS are keys whose WHOLE value is English; BRAND_TERMS are English substrings that are protected wherever they appear.",
+      "rationale": "The old single set was written for bare labels. The Latin-retention decision then extended the requirement to four sentences containing those labels, and nobody added them, so the gates did not protect the exact rows that later went into conflict.",
+      "scope": {
+        "rule": "BRAND_TERMS is a CASING check, not a translation requirement: if a value contains a protected term case-insensitively, it must contain it with exactly this casing. A language that has not adopted the Latin term is not failed by it. Keys in exceptions are skipped, with the reason stated.",
+        "surfaces": [
+          "web",
+          "app"
+        ]
+      },
+      "brand_keys": [
+        "app.name",
+        "app.shortName",
+        "title.dashboard",
+        "set.razorpayKeyId",
+        "set.keySecret",
+        "set.webhookSecret"
+      ],
+      "brand_terms": [
+        "Razorpay Key ID",
+        "Key Secret",
+        "Webhook Secret",
+        "WhatsApp",
+        "UPI"
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-17",
+      "supersedes": "brand-keys-single-set",
+      "override_log": [],
+      "exceptions": {
+        "txn.upi": "Lower case ON PURPOSE. txn.* is a family of inline words used mid-sentence — purchase, cash, upi, credit — parallel to status.pending. The Title Case label for the same thing is type.upi ('UPI'). The casing check found this on its first run; it is a false positive, recorded here rather than 'fixed', because changing it would break the family and read wrong in the sentence it sits in."
+      }
+    },
+    "gu-accepted-wording": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "Is the current Gujarati word for 'Accepted' the right one?",
+      "why_review": "It appears in NEITHER surface's prior history — it is a word a decision introduced, and no native speaker has read it. The FORM rule (bare in chips) is locked; the WORDING is not.",
+      "current": {
+        "ostatus.accepted": "સ્વીકારેલ",
+        "dash.orderStatus.accepted": "સ્વીકારેલ",
+        "status.accepted": "સ્વીકારેલ"
+      },
+      "alternatives": [
+        "સ્વીકાર્યું",
+        "સ્વીકાર્યો"
+      ],
+      "immutable": true,
+      "lang": "gu"
+    },
+    "gu-out-for-delivery-form": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "'Out for delivery' has no bare Gujarati form in the corpus — one candidate is masculine, the other neuter, neither is uninflected.",
+      "why_review": "Applying the bare-chip rule here would mean inventing a word, which is what produced gu-accepted-wording. Left as it stands rather than invented.",
+      "current": {
+        "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+        "dash.orderStatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+        "status.out_for_delivery": "ડિલિવરી માટે નીકળ્યું"
+      },
+      "immutable": true,
+      "lang": "gu"
+    },
+    "status-mentions-in-prose": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "chelp.e7.a names order states inside a sentence, and the words it uses do not match the chips.",
+      "why_review": "The gu web prose uses a Latin loan where the chip uses the Gujarati word; the mr prose uses the Sanskritic form that mr-status-register just replaced in the chips. Rewriting prose is not the same decision as fixing a chip, and neither gu-status-form nor mr-status-register claims it.",
+      "immutable": true
+    },
+    "rangeEmpty-rewording": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "cat.rangeEmpty needed a rewrite, not a word swap, because the substituted noun left a phrase that did not parse.",
+      "why_review": "The repair in product-item-grammar is a judgement about what 'Your range is empty' should say in gu and mr, not a mechanical fix. Applied to clear the defect; the wording still wants a native speaker.",
+      "immutable": true
+    },
+    "razorpay-casing-other-languages": {
+      "type": "HOUSE-STYLE",
+      "status": "REVIEW",
+      "concept": "ta, te, kn, ml and ur all transliterate the Razorpay credential terms, as hi did before this round.",
+      "why_review": "Out of the stated scope of razorpay-casing. Applying it by cross-language analogy is exactly the implicit override the freeze forbids.",
+      "immutable": true
+    },
+    "native-speaker-queue": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "The ~20 open wording questions across bn, gu and mr — 218 rows.",
+      "why_review": "Both readings are valid in each case; these need a speaker, not more analysis. Catalogued in bn-divergence-decisions.json, gu-reconcile-decisions.json and mr-reconcile-decisions.json.",
+      "does_not_block_freeze": true,
+      "immutable": true
+    },
+    "whatsapp-latin-urdu": {
+      "type": "HOUSE-STYLE",
+      "status": "REVIEW",
+      "concept": "Urdu renders WhatsApp in the Urdu script in two login strings.",
+      "why_review": "whatsapp-latin scopes itself to bn, gu, mr and hi. Extending it to ur by analogy is the implicit override the freeze forbids — and Urdu is right-to-left, so an embedded Latin word is a typographic decision, not just a spelling one.",
+      "immutable": true,
+      "keys": {
+        "ur": [
+          "login.otpHint",
+          "login.heroSub"
+        ]
+      }
+    }
+  },
+  "divergences": {
+    "_note": [
+      "Same-key web/app pairs that render differently. NEITHER set is a defect list,",
+      "and NOTHING in either may be auto-reconciled — not by web preference, app",
+      "preference, majority, recency, similarity or any other default. A tool that",
+      "treats web != app as a failure signal raises 34 false alarms on the first set",
+      "alone.",
+      "",
+      "INTENTIONAL_DIVERGENCE: a decision said keep the web wording. The divergence",
+      "IS the decision.",
+      "UNDECIDED: web and app differ and nobody has ever ruled. Some are not even",
+      "the same sentence in English (cat.added is 'Product added.' on the web and",
+      "'Added' in the app). They stay as they are until somebody decides."
+    ],
+    "INTENTIONAL_DIVERGENCE": {
+      "status": "INTENTIONAL_DIVERGENCE",
+      "source": "scripts/keylevel-decisions.json, decision=web",
+      "count": 34,
+      "keys": {
+        "bn": [
+          "oedit.originalSubtotal",
+          "open.todayAt",
+          "open.tomorrowAt"
+        ],
+        "gu": [
+          "cat.loadMore",
+          "common.subtotal",
+          "ins.activeCustomers",
+          "ins.outstandingByAge",
+          "num.confirm",
+          "ord.terminal",
+          "ref.referredCount",
+          "ref.shareLink",
+          "set.customerNotifications",
+          "set.discovery",
+          "set.leaveBlank",
+          "set.paymentSaved",
+          "stmt.allShops",
+          "stmt.combined",
+          "stmt.rangeError",
+          "stmt.title"
+        ],
+        "mr": [
+          "cat.addFromCatalogue",
+          "cat.loadMore",
+          "ord.terminal",
+          "ostatus.cancelled",
+          "ref.noneYet",
+          "ref.referredCount",
+          "ref.shareLink",
+          "set.customerNotifications",
+          "set.discovery",
+          "set.paymentSaved",
+          "stmt.allShops",
+          "stmt.closing",
+          "stmt.loadError",
+          "stmt.subtitle",
+          "stmt.title"
+        ]
+      }
+    },
+    "UNDECIDED": {
+      "status": "UNDECIDED",
+      "count": 83,
+      "keys": {
+        "bn": [
+          "cat.active",
+          "cat.added",
+          "cat.deleteConfirm",
+          "cat.hidden",
+          "cat.unitPlaceholder",
+          "eta.accept",
+          "eta.noTime",
+          "fam.empty",
+          "ins.collections",
+          "ins.newCustomers",
+          "ins.purchases",
+          "num.newHint",
+          "oalert.accept",
+          "oalert.items",
+          "oalert.mute30",
+          "oalert.setClamped",
+          "oalert.spoken",
+          "oalert.unmute",
+          "oedit.moneyCredit",
+          "open.closeTime",
+          "open.closureDate",
+          "open.openTime",
+          "open.stateClosed",
+          "open.title",
+          "ord.cancelConfirm",
+          "ostatus.completed",
+          "ostatus.pending",
+          "pmode.credit",
+          "pstatus.failed",
+          "pstatus.paid",
+          "pstatus.pending",
+          "set.listShop",
+          "set.webhookHint",
+          "txn.adjustment",
+          "txn.cash",
+          "txn.purchase",
+          "txn.upi"
+        ],
+        "gu": [
+          "cat.active",
+          "cat.added",
+          "cat.deleteConfirm",
+          "cat.hidden",
+          "cat.unitPlaceholder",
+          "chelp.e2.a",
+          "chelp.e3.a",
+          "chelp.e5.a",
+          "chelp.e6.a",
+          "chelp.e6.q",
+          "chelp.e7.a",
+          "fam.empty",
+          "ins.collections",
+          "ins.newCustomers",
+          "ins.purchases",
+          "num.newHint",
+          "open.stateClosed",
+          "ord.empty",
+          "pmode.credit",
+          "pstatus.not_required",
+          "set.listShop",
+          "set.webhookHint",
+          "txn.cash",
+          "txn.upi"
+        ],
+        "mr": [
+          "cat.active",
+          "cat.added",
+          "cat.deleteConfirm",
+          "cat.hidden",
+          "cat.unitPlaceholder",
+          "chelp.e2.a",
+          "chelp.e7.a",
+          "fam.empty",
+          "ins.collections",
+          "ins.newCustomers",
+          "ins.purchases",
+          "num.newHint",
+          "open.stateClosed",
+          "ord.cancelConfirm",
+          "ostatus.completed",
+          "pmode.credit",
+          "pstatus.failed",
+          "pstatus.not_required",
+          "set.listShop",
+          "set.webhookHint",
+          "txn.cash",
+          "txn.upi"
+        ]
+      }
+    }
+  }
+}

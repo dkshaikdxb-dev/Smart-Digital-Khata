@@ -1,5 +1,14 @@
 # Decision Freeze & Conflict Audit — READ-ONLY ARTEFACT
 
+> **RESOLVED 2026-09-17.** Every question in section 9 was answered by the owner
+> and the answers are now in `scripts/i18n-decisions.json`, enforced by
+> `scripts/i18n-registry-check.mjs` in CI. This file is kept as the record of
+> what was found, not as an open list — read the registry for what is true now.
+> Two figures below were wrong and are corrected in the registry: the four-state
+> split is 55 rows where web = app and 99 adopt-app rows the app has no key for
+> (transposed here), and the Gujarati loanword scope is 23 inflected forms across
+> 14 lemmas, not 21 tokens.
+
 **Nothing in this audit changed a translation, a dictionary, a ledger, a script,
 or the OTA.** It records what is decided, what is in conflict, and what only a
 person can settle. It is evidence, not a change.
