@@ -1,0 +1,37 @@
+{
+  "_comment": "Group B decisions. 'web' = keep the web string (demonstrably closer to the English), 'app' = align the web to the app, 'review' = neither ships until a Bengali reader answers. Everything not listed here defaults to 'app'.",
+  "keep_web": {
+    "common.amountRs": "the field is labelled Amount (Rs). App's টাকা is 'money'; web's পরিমাণ is 'amount'. The label names a quantity, not a substance.",
+    "sfaq.order": "'Order' here is SEQUENCE — the position of an FAQ in a list. App reads অর্ডার, a purchase order, which is the wrong sense entirely.",
+    "open.openTime": "'Opens at' labels a time field. App's কখন খোলে asks a question ('when does it open?'); web's খোলার সময় names the field.",
+    "open.closeTime": "same as open.openTime.",
+    "oalert.spoken": "Bengali counts with a classifier. App's '{n} জিনিস' is missing it; web's '{n}টি জিনিস' is what a speech engine should say."
+  },
+  "review": {
+    "c.pay": "app পরিশোধ (noun) vs web পরিশোধ করুন (imperative). It is a BUTTON, which argues for the imperative, but the glossary pins pay = পরিশোধ.",
+    "c.unit": "app টি is the natural counter in 'Rs50/টি'; web একক is the literal word for 'unit' and reads technical.",
+    "oedit.originalSubtotal": "app আসল উপ-মোট keeps 'sub'; web আগের মোট দাম loses it but reads naturally. Which matters more is a call for a reader.",
+    "set.noKeySecret": "app keeps 'Key secret' in Latin, matching Razorpay's own dashboard and the BRAND_KEYS rule; web translates it. The three Razorpay labels should agree, and which way is the open question in REVIEW-bn-notes.md.",
+    "set.noWebhookSecret": "same as set.noKeySecret.",
+    "fam.sendReminder": "app transliterates WhatsApp as হোয়াটসঅ্যাপ; web keeps it Latin, which is what the translation brief asks for. The app is inconsistent with its own rule here.",
+    "c.deliverTo": "app এখানে পৌঁছে দিন: is imperative; web যেখানে ডেলিভারি: is a label. It precedes an address, which argues for a label.",
+    "open.todayAt": "app '{time}-এ' vs web '{time} টায়'. টায় is the idiomatic way to say a clock time.",
+    "open.tomorrowAt": "same as open.todayAt.",
+    "nav.catalog": "app তালিকা means 'list'; web ক্যাটালগ is the loanword. তালিকা is less precise, ক্যাটালগ less Bengali."
+  },
+  "align_to_app_because": {
+    "open.hoursHelp": "CONTENT LOSS: the web string dropped a whole sentence — that a closing time earlier than the opening time means the shop stays open past midnight.",
+    "oedit.help": "CONTENT LOSS: the English forbids adding an item, RAISING A QUANTITY, or changing a price. The web string dropped the quantity clause.",
+    "orej.confirm": "REJECT is not CANCEL. This app treats them as different actions and a shopkeeper must not confuse them; web reads বাতিল (cancel).",
+    "orej.reject": "same as orej.confirm.",
+    "oalert.decide": "same reject/cancel conflation inside the sentence.",
+    "oedit.reducedBy": "web writes {amount} টাকা beside an amount already carrying Rs, rendering 'Rs500.00 rupees'.",
+    "coedit.cash": "same redundant currency word.",
+    "coedit.credit": "same redundant currency word, and দোকান থেকে...খাতায় muddles which way the money moved.",
+    "coedit.prepaid": "same redundant currency word, plus a বাকি ('remaining') the English does not have."
+  },
+  "_group_c": {
+    "_comment": "Keys that are a CORRECTNESS bug, not a consistency one. Never auto-aligned in either direction: aligning A/B mechanically would propagate the wrong string to the surface that had it right, which is exactly what happened on the first run of this script.",
+    "c.catDalPulses": "cat.dalPulses in the app and 'Dal & Pulses' in catalog-i18n.json both read ডাল ও কড়াই. কড়াই is a deep frying pan (and কড়াইশুঁটি is green peas); কলাই is the pulse. Not one of the twelve individual pulses in the shipped catalogue is called কড়াই — they are মসুর ডাল, মুগ ডাল, ছোলা, বিউলি. The web string is the correct one and the other two surfaces are fixed to match it."
+  }
+}

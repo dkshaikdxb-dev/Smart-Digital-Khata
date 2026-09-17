@@ -1025,7 +1025,7 @@ const bn = {
   // catalogue translations (backend/src/data/catalog-i18n.json), which is the
   // same human-written text a shopper already sees naming these very shelves
   // inside the catalogue.
-  'cat.dalPulses': 'ডাল ও কড়াই',
+  'cat.dalPulses': 'ডাল ও কলাই',
   'cat.spices': 'মশলা',
   'cat.cookingOils': 'রান্নার তেল',
   'cat.household': 'গৃহস্থালি',
