@@ -1,0 +1,43 @@
+{
+  "_comment": "Marathi reconciliation decisions. A row with NO entry here is untouched, in either direction — the apply step has no default.",
+
+  "app": {
+    "c.codePlaceholder": { "reason": "The web writes ६ — a Devanagari digit — for a code LENGTH, on a screen whose keypad produces Latin digits. Every number this app renders comes from the code in Latin.", "confidence": "high", "native_review": false },
+    "dash.network.age0":  { "reason": "Devanagari digits ०–३० on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false },
+    "dash.network.age30": { "reason": "Devanagari digits on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_0_30":       { "reason": "Devanagari digits on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_31_60":      { "reason": "Devanagari digits on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_61_90":      { "reason": "Devanagari digits on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false },
+    "ins.age_90_plus":    { "reason": "Devanagari digits on the web, Latin in the app. Same rule.", "confidence": "high", "native_review": false }
+  },
+
+  "web": {
+    "chelp.e7.a": { "reason": "'each order move from pending to approved'. The app renders APPROVED as स्वीकारले — accepted — and this product treats accept and approve as separate steps in the same sentence that lists them as separate steps. The web has मंजूर (approved) and is correct. Marathi's app does get PENDING right (प्रलंबित), unlike Gujarati's, so this is the only wrong word in the row.", "confidence": "high", "native_review": true }
+  },
+
+  "review": {
+    "_themes": "84 rows resolve to about nine decisions.",
+
+    "outstanding_word": {
+      "question": "Is Outstanding बाकी (web) or उधारी (app)?",
+      "why_not_mechanical": "MONEY. उधारी is specifically credit given on udhaar — arguably more precise for a khata app; बाकी is the neutral 'remaining'. Six rows including common.outstanding, common.totalOutstanding and two customers-with-dues labels. The answer must be one word, and it must not collide with whatever 'Balance' (शिल्लक) becomes.",
+      "rows": 6, "native_review": true
+    },
+    "pay_verb": {
+      "question": "Is pay भरणे (app) or देणे (web)?",
+      "why_not_mechanical": "Both are ordinary Marathi for paying. The app is consistent on भर-, the web on दे-. It runs through the FAQ answers and c.payOnline, and a product should use one verb for one action.",
+      "rows": 5, "native_review": true
+    },
+    "product_word": {
+      "question": "Is a product उत्पादन (web) or वस्तू (app)?",
+      "why_not_mechanical": "उत्पादन is the formal word; वस्तू is 'thing/article'. The identical question is open in Gujarati and Bengali.",
+      "rows": 3, "native_review": true
+    },
+    "c.prepaid": { "question": "Prepaid — आगाऊ भरलेले (web, 'paid in advance') or ऑनलाइन (app, 'online')?", "why_not_mechanical": "The app names the mechanism rather than the word. Open in Bengali and Gujarati too; answer all three together.", "rows": 1, "native_review": true },
+    "c.unit": { "question": "unit — एकक (web, literal) or नग (app, the counter a shopkeeper says)?", "why_not_mechanical": "Same question as Bengali's টি vs একক.", "rows": 1, "native_review": true },
+    "nav.catalog": { "question": "Catalog — कॅटलॉग (web) or यादी (app, 'list')?", "why_not_mechanical": "यादी loses what a catalogue is. Open in Bengali and Gujarati.", "rows": 1, "native_review": true },
+    "set.noKeySecret": { "question": "Keep 'Key secret' in Latin (app) or translate it (web)?", "why_not_mechanical": "scripts/lib/i18n-brand-keys.mjs says the Razorpay labels stay English so they match that dashboard. This is the same question already open in Bengali, and the three labels must agree.", "rows": 1, "native_review": true },
+    "c.locationNotSet": { "question": "Location not set — स्थान सेट केलेले नाही (web) or लोकेशन नाही (app)?", "why_not_mechanical": "The app drops 'set' and uses the loanword. Shorter is better on a chip, but 'no location' and 'location not set' are not the same statement.", "rows": 1, "native_review": true },
+    "register_and_tense": { "question": "The two surfaces differ in register and in how they inflect status labels ('रद्द' vs 'रद्द केले').", "why_not_mechanical": "Neither is wrong; it is one voice decision for the product, and applying it string by string is how a product ends up with two voices.", "rows": 65, "native_review": true }
+  }
+}
