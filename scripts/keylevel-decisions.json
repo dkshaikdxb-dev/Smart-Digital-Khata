@@ -1,0 +1,87 @@
+{
+  "_comment": "Per-key decisions from the owner's Bengali / Gujarati / Marathi breakdowns. 'app' = take the app string. 'web' = keep what the web has (no change). Anything else is an explicit string the decision supplied, used verbatim. A key absent here is untouched.",
+  "_orthography": { "gu": "candra-O to plain O (ઑ -> ઓ) across every Gujarati string, per the structural determination" },
+
+  "bn": {
+    "c.deliverTo": "web", "c.pay": "web", "c.unit": "app", "fam.sendReminder": "web",
+    "nav.catalog": "web", "oedit.originalSubtotal": "web", "open.todayAt": "web",
+    "open.tomorrowAt": "web",
+    "set.noKeySecret": "Key secret নেই", "set.noWebhookSecret": "Webhook secret নেই"
+  },
+
+  "gu": {
+    "common.balance": "બેલેન્સ", "common.outstanding": "web",
+    "stmt.opening": "app", "stmt.closing": "app", "stmt.subtitle": "app", "stmt.title": "web",
+    "stmt.combined": "web", "stmt.allShops": "web", "stmt.noData": "app", "stmt.rangeError": "web",
+    "stmt.pickShop": "app", "common.creditLimit": "web", "ins.outstandingByAge": "web",
+    "ins.collectionRate": "app", "tx.empty": "app",
+
+    "nav.catalog": "web", "cat.addFromCatalogue": "web", "c.loadingCatalog": "web",
+    "cat.addProduct": "વસ્તુ ઉમેરો", "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
+    "cat.noResults": "web", "common.items": "web", "ord.emptyItems": "web",
+    "chelp.e2.q": "web", "c.unit": "app",
+
+    "c.yourCart": "web", "c.cartEmpty": "web", "c.payOnline": "web", "c.prepaid": "app",
+    "c.placeOrder": "app", "ctab.orders": "app", "dash.kpi.orders": "app", "dl.orders": "app",
+    "nav.orders": "app", "ord.order": "app", "c.myOrders": "app", "dl.myOrders": "app",
+    "ord.cancelOrder": "app", "ord.cancelConfirm": "app",
+    "chelp.e4.a": "app", "chelp.e4.q": "app", "common.remove": "app", "staff.remove": "app",
+    "common.subtotal": "web", "cat.loadMore": "web", "mod.loadMore": "web", "ref.shareLink": "web",
+
+    "c.cancelling": "app", "c.loadingOrder": "app", "c.loadingShops": "app", "c.opening": "app",
+    "c.placing": "app", "c.sending": "app", "num.sending": "app", "c.verifying": "app",
+    "num.changing": "app", "pin.saving": "app",
+
+    "ord.mark": "app", "ord.marked": "app", "ord.terminal": "web",
+
+    "set.keySecretSet": "app", "set.webhookSecretSet": "app",
+    "set.customerNotifications": "web", "set.discovery": "web", "set.free": "web",
+    "dash.revenue.free": "web", "dash.revenue.family": "app", "set.paymentSaved": "web",
+    "set.leaveBlank": "web",
+
+    "acc.dob": "web", "acc.genderUnset": "app", "acc.loadError": "app", "ref.loadError": "app",
+    "stmt.loadError": "app", "acc.logout": "app", "nav.logout": "app", "acc.optional": "app",
+    "cat.descOptional": "app", "common.noteOptional": "app", "acc.phoneReadonly": "app",
+    "c.locationNotSet": "app", "c.enterCodeSentTo": "app", "num.enterCode": "app",
+    "c.verifyContinue": "app", "c.notePlaceholderArrival": "app", "c.noShops": "web",
+    "dash.customersWithDues": "app", "ins.customersWithDues": "app", "dl.customers": "web",
+    "nav.customers": "web", "ins.activeCustomers": "web", "fam.combinedStatement": "app",
+    "fam.removeConfirm": "app", "log.signIn": "app", "nav.insights": "web", "nav.settings": "web",
+    "num.changed": "app", "num.confirm": "web", "ref.referredCount": "web", "ref.subtitle": "app",
+    "ref.title": "app", "ref.type.owner": "app"
+  },
+
+  "mr": {
+    "common.outstanding": "app", "common.totalOutstanding": "app",
+    "dash.customersWithDues": "app", "ins.customersWithDues": "app",
+    "fam.combinedOutstanding": "app", "ins.outstandingByAge": "app",
+    "chelp.e5.a": "app", "chelp.e6.a": "app",
+    "stmt.closing": "web", "stmt.subtitle": "web", "stmt.title": "web", "stmt.allShops": "web",
+    "fam.combinedStatement": "web", "stmt.loadError": "web", "stmt.noData": "app",
+    "stmt.pickShop": "app", "stmt.rangeError": "app", "ins.collectionRate": "app",
+
+    "nav.catalog": "web", "cat.addFromCatalogue": "web", "c.loadingCatalog": "web",
+    "cat.addProduct": "app", "cat.empty": "app", "cat.loadMore": "web", "mod.loadMore": "web",
+    "c.unit": "app", "c.size": "app", "cat.descOptional": "web",
+
+    "c.yourCart": "web", "c.cartEmpty": "web", "c.payOnline": "web", "c.prepaid": "app",
+    "chelp.e5.q": "app", "chelp.e3.a": "app", "chelp.e4.a": "app", "chelp.e4.q": "app",
+    "c.placing": "app", "ord.empty": "app", "ord.mark": "app", "ord.marked": "app",
+    "ord.terminal": "web", "dash.orderStatus.cancelled": "web", "ostatus.cancelled": "web",
+    "common.subtotal": "app", "c.deliverTo": "web",
+
+    "fam.sendReminder": "web", "set.keySecretSet": "app", "set.noKeySecret": "Key secret नाही",
+    "set.webhookSecretSet": "app", "set.noWebhookSecret": "Webhook secret नाही",
+    "set.customerNotifications": "web", "set.paymentSaved": "web", "set.free": "web",
+    "dash.revenue.free": "web", "dash.revenue.family": "app", "set.discovery": "web",
+
+    "acc.genderFemale": "app", "acc.genderPreferNot": "app", "acc.genderUnset": "app",
+    "acc.phoneReadonly": "web", "c.locationNotSet": "web", "c.enterCodeSentTo": "app",
+    "num.enterCode": "app", "c.verifyContinue": "app", "c.noShops": "web", "c.noteColon": "web",
+    "common.note": "web", "common.noteOptional": "web", "c.notePlaceholderArrival": "app",
+    "fam.removeConfirm": "web", "help.title": "app", "log.signIn": "app", "nav.insights": "web",
+    "nav.settings": "web", "num.changed": "app", "ref.noneYet": "web",
+    "ref.referredByLabel": "app", "ref.referredCount": "web", "ref.shareLink": "web",
+    "ref.subtitle": "app", "ref.title": "app", "ref.type.owner": "app"
+  }
+}

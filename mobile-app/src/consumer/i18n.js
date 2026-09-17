@@ -3473,7 +3473,7 @@ const gu = {
   // this app's English for the same key, so the app and the web read alike.
   'tab.cart': 'કાર્ટ',
   'voice.listening': 'સાંભળું છું…',
-  'cart.belowMin': 'ડિલિવરી માટે ન્યૂનતમ ઑર્ડર {amt} છે',
+  'cart.belowMin': 'ડિલિવરી માટે ન્યૂનતમ ઓર્ડર {amt} છે',
   'account.moreOnWeb': 'વધુ',
   'account.dataSaver': 'ડેટા સેવર',
   'cart.switchShopConfirm': 'બીજી દુકાનમાં તમારી અધૂરી કાર્ટ છે. તેને સાફ કરી અહીં નવી કાર્ટ શરૂ કરવી?',
@@ -3592,7 +3592,7 @@ const gu = {
   'cart.address': 'ડિલિવરી સરનામું',
   'cart.addressPlaceholder': 'ઘર નં, શેરી, વિસ્તાર, નિશાની',
   'cart.note': 'દુકાન માટે નોંધ',
-  'cart.notePlaceholder': 'દા.ત. પહોંચીને કૉલ કરો',
+  'cart.notePlaceholder': 'દા.ત. પહોંચીને કોલ કરો',
   'cart.deliveryFee': 'ડિલિવરી ચાર્જ',
   'cart.freeDelivery': 'મફત',
   'cart.placeOrder': 'ઓર્ડર કરો',
