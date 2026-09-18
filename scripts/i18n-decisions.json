@@ -533,26 +533,64 @@
       "status": "LOCKED",
       "concept": "Reject and Cancel are different actions and may not share a word.",
       "scope": {
-        "rule": "The shop refusing an order is not the shopper withdrawing it.",
+        "rule": "The ORDER-REJECTION workflow only: the shop refusing an order (orej.*, oalert.*) is not the shopper withdrawing it (cancel). Resolved to the six keys below, which are the six the Bengali reconciliation ledger changed for this reason. Not every English occurrence of \"reject\": promo and photo moderation are a different act and are declared out of scope.",
         "langs": [
           "bn"
         ],
         "surfaces": [
           "web",
           "app"
-        ]
+        ],
+        "keys": [
+          "orej.reject",
+          "orej.confirm",
+          "orej.title",
+          "orej.done",
+          "oalert.decide",
+          "oalert.setHelp"
+        ],
+        "exclusions": {
+          "promo.refundNote": "Promo moderation. An admin rejecting a promo submission is not a shop refusing an order, and the bn value reads বাতিল. Left as it is; in scope for no decision.",
+          "promo.stRejected": "Promo moderation, same as promo.refundNote.",
+          "set.photoRejected": "Shop-photo moderation, same act, same reason.",
+          "orej.help": "IN the order-rejection family but deliberately NOT pinned: its ENGLISH says \"cancellation\" on a reject screen, so the Bengali বাতিল is a faithful translation of a defective source. Pinning it would freeze the wrong word. See english_source_defect below."
+        }
       },
       "decided_by": "owner",
       "decided_on": "round-2",
       "supersedes": null,
-      "override_log": []
+      "override_log": [],
+      "values": {
+        "bn": {
+          "orej.reject": "ফিরিয়ে দিন",
+          "orej.confirm": "অর্ডার ফিরিয়ে দিন",
+          "orej.title": "এই অর্ডার ফিরিয়ে দেবেন?",
+          "orej.done": "অর্ডার ফিরিয়ে দেওয়া হয়েছে।",
+          "oalert.decide": "আপনি না নেওয়া বা ফিরিয়ে না দেওয়া পর্যন্ত এটা বেজেই যাবে।",
+          "oalert.setHelp": "নতুন অর্ডার আপনাকে বারবার জানাতে থাকবে — এখানে আর WhatsApp-এ — যতক্ষণ না আপনি সেটা নেন বা ফিরিয়ে দেন। “এখন নয়” শুধু একটা অর্ডারকে কয়েক মিনিটের জন্য চুপ করায়; অ্যালার্ট বন্ধ হয় না।"
+        }
+      },
+      "values_note": "Read off the dictionaries, not authored: these are the strings the bn reconciliation produced when it aligned the web to the app for this exact reason. web and app/owner are identical for all six; the consumer app has no reject flow. No translation was created.",
+      "english_source_defect": {
+        "key": "orej.help",
+        "en": "Tell the customer why — it is sent to them with the cancellation.",
+        "problem": "The reject screen tells the shopkeeper a CANCELLATION notice went out. The English contradicts the action it sits under, so every language that translates it faithfully inherits the contradiction — bn reads বাতিলের (of the cancellation) beside ফিরিয়ে দিন (reject).",
+        "status": "OPEN — English source defect, not a translation decision.",
+        "recorded_in": "scripts/bn-divergence-decisions.json._audit_findings[\"orej.help\"]",
+        "note": "Raised by the Bengali semantic audit and pre-existing in the shipped app. Fixing it means changing the English and re-translating every language, which is a separate change; this decision only records why the key is excluded from the pin."
+      },
+      "provenance": {
+        "ledger": "scripts/bn-divergence-decisions.json",
+        "entry": "align_to_app_because",
+        "quote": "REJECT is not CANCEL. This app treats them as different actions and a shopkeeper must not confuse them; web reads বাতিল (cancel)."
+      }
     },
     "approve-not-accept": {
       "type": "SEMANTIC-RULE",
       "status": "LOCKED",
       "concept": "The shopkeeper APPROVES an order; the word is not the same as accepting a delivery.",
       "scope": {
-        "rule": "chelp.e7.a keeps the web wording in gu and mr.",
+        "rule": "A CONSTRAINT on an open review, not a value pin. chelp.e7.a on the gu and mr web keeps naming the approved state with the approve-word; the native reviewer who answers status-mentions-in-prose may revise that prose, but may not settle the prose/chip mismatch by collapsing the approve-word into the accept-word.",
         "langs": [
           "gu",
           "mr"
@@ -564,7 +602,33 @@
       "decided_by": "owner",
       "decided_on": "round-3",
       "supersedes": null,
-      "override_log": []
+      "override_log": [],
+      "owns_no_values": "Deliberate. status-mentions-in-prose (REVIEW) owns the exact strings and stays authoritative for them; this decision would be a competing owner if it pinned them, and a LOCKED pin would also end a question parked for a native speaker. It constrains the ANSWER, not the value.",
+      "constrains": {
+        "decision": "status-mentions-in-prose",
+        "langs": [
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web"
+        ],
+        "keys": [
+          "chelp.e7.a"
+        ],
+        "permits": "Any revision of the sentence, including a different approve-word.",
+        "forbids": "Rendering the approved state with the accept-word — the word the ostatus.accepted chip uses. That collapse is what makes the shopkeeper's approval and a delivery being accepted the same act, which this decision exists to prevent.",
+        "forbidden_stems": {
+          "gu": "સ્વીકાર",
+          "mr": "स्वीकार"
+        },
+        "forbidden_stems_source": "The shared stem of ostatus.accepted (gu સ્વીકારેલ, mr स्वीकारले) and the app copy of chelp.e7.a (gu સ્વીકાર્યો, mr स्वीकारले).",
+        "current_approve_word": {
+          "gu": "મંજૂર",
+          "mr": "मंजूर"
+        },
+        "current_approve_word_note": "Recorded as evidence of what the constraint currently permits. It is NOT required: the reviewer may choose another approve-word."
+      }
     },
     "unit-counter": {
       "type": "TERMINOLOGY",

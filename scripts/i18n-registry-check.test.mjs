@@ -85,8 +85,22 @@ const editRegistry = (fn) => {
   fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n', 'utf8');
 };
 
-// Gujarati strings used below, by codepoint so this file stays readable in any editor.
+// Strings used below, by codepoint so this file stays readable in any editor.
+const BN = {
+  // The cancel word, as bn already writes it in ostatus.cancelled — the exact
+  // conflation reject-not-cancel exists to prevent, not a new translation.
+  cancelWord: 'বাতিল',
+};
+const MR = {
+  // The mr chelp.e7.a sentence with the approve-word swapped for the accept-word
+  // the ostatus.accepted chip uses. Every other word is the live string.
+  e7CollapsedToAccept: 'ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबितपासून स्वीकारले, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते.',
+  // A revision that changes the prose but keeps the approve-word: permitted by
+  // approve-not-accept, still refused by the REVIEW owner of the string.
+  e7RevisedKeepingApprove: 'ऑर्डर टॅब उघडा. प्रत्येक ऑर्डर प्रलंबितपासून मंजूर, मग तयार किंवा पूर्ण होते.',
+};
 const GU = {
+  e7CollapsedToAccept: 'ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી સ્વીકારેલ, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે.',
   cancelledInflected: 'રદ થયો',
   preparingAgreeing: 'તૈયાર થઈ રહ્યો છે',
   massAddProduct: 'સામાન ઉમેરો',
@@ -233,6 +247,30 @@ const cases = [
   ['the same shape in the other decision that uses it (product-item, gu chelp.e2.a)',
    () => appSet(CONSUMER, 'gu', 'chelp.e2.a', 'કંઈક સાવ જુદું.'), 'product-item', 'app/consumer gu chelp.e2.a'],
 
+  // --- reject-not-cancel now owns its twelve values -------------------------
+  // The decision said "Reject and Cancel may not share a word" and named nothing,
+  // so the conflation it was made to end could come back: swapping the four
+  // orej.* strings to the cancel word on BOTH surfaces left this gate reporting
+  // OK, because the divergence check only sees a change when the surfaces
+  // disagree. Every one of the twelve is generated below rather than sampled.
+  ...['orej.reject', 'orej.confirm', 'orej.title', 'orej.done', 'oalert.decide', 'oalert.setHelp']
+    .flatMap((key) => [
+      [`reject-not-cancel holds ${key} on the web`,
+       () => webSet('bn', key, BN.cancelWord), 'reject-not-cancel', `web bn ${key}`],
+      [`reject-not-cancel holds ${key} in the owner app`,
+       () => appSet(OWNER, 'bn', key, BN.cancelWord), 'reject-not-cancel', `app/owner bn ${key}`],
+    ]),
+
+  // --- approve-not-accept constrains an open review without owning it -------
+  // It pins no value: status-mentions-in-prose owns the exact strings and a
+  // native speaker may still rewrite them. What it rules out is settling the
+  // prose/chip mismatch by collapsing the approve-word into the accept-word.
+  ['the gu FAQ prose may not collapse the approve-word into the accept-word',
+   () => webSet('gu', 'chelp.e7.a', GU.e7CollapsedToAccept), 'approve-not-accept', 'web gu chelp.e7.a'],
+
+  ['the same in Marathi',
+   () => webSet('mr', 'chelp.e7.a', MR.e7CollapsedToAccept), 'approve-not-accept', 'web mr chelp.e7.a'],
+
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
      j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
@@ -281,6 +319,37 @@ for (const [name, mutate, expectRule, expectWhere] of cases) {
     console.log(`                   gate said: ${r.ok ? 'OK' : r.out.split('\n').filter(Boolean).slice(0, 4).join(' / ')}`);
   }
 }
+// --- what a rule must NOT claim ------------------------------------------
+// A scope is two statements: what is inside it and what is not. The cases above
+// prove the first. These mutate a row the decision explicitly excludes and
+// assert the gate never reports it under that decision — whether the gate
+// passes or fails for some other reason is not the point.
+const nonAttribution = [
+  ['promo moderation is outside reject-not-cancel',
+   () => webSet('bn', 'promo.stRejected', 'ফিরিয়ে দেওয়া হয়েছে'), 'reject-not-cancel'],
+
+  ['photo moderation is outside it too',
+   () => webSet('bn', 'set.photoRejected', 'ফিরিয়ে দেওয়া হয়েছে'), 'reject-not-cancel'],
+
+  ['orej.help is excluded pending the ENGLISH fix, so its cancel word is not a violation',
+   () => webSet('bn', 'orej.help', 'গ্রাহককে কারণ জানান — বাতিলের সাথে এটা যাবে।'), 'reject-not-cancel'],
+
+  ['a revision that KEEPS the approve-word is not an approve-not-accept violation',
+   // Still refused — status-mentions-in-prose owns the string — but by that
+   // decision, not this one. The constraint bounds the answer; it is not a pin.
+   () => webSet('mr', 'chelp.e7.a', MR.e7RevisedKeepingApprove), 'approve-not-accept'],
+];
+for (const [name, mutate, mustNotFire] of nonAttribution) {
+  restore();
+  try { mutate(); } catch (e) { console.log(`  SETUP FAILED  ${name}\n                ${e.message}`); fail++; continue; }
+  const r = gate();
+  if (r.out.includes(`--- ${mustNotFire} `)) {
+    fail++;
+    console.log(`  *** CLAIMED ***  ${name}`);
+    console.log(`                   ${mustNotFire} reported a row it declares out of scope`);
+  } else { pass++; console.log(`  not claimed  ${name}`); }
+}
+
 restore();
 if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
 
@@ -343,6 +412,46 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
         return Object.keys(r.value_at_retirement || {})
           .every((sfc) => (sfc === 'web' ? spec.web !== undefined : spec.app !== undefined));
       })],
+    // approve-not-accept constrains a review without becoming a competing owner.
+    ['approve-not-accept owns no values and does not take the rows from its REVIEW owner', () => {
+      const a = reg.decisions['approve-not-accept'];
+      if (a.status !== 'LOCKED') return false;
+      if (a.values && Object.keys(a.values).length) return false;          // never a value owner
+      const c = a.constrains;
+      if (!c || c.decision !== 'status-mentions-in-prose') return false;    // says what it constrains
+      const owner = reg.decisions[c.decision];
+      if (owner.status !== 'REVIEW') return false;
+      // the rows it names are still pinned by that REVIEW decision, on its surface
+      return c.langs.every((l) => c.keys.every((k) => c.surfaces
+        .every((sfc) => owner.protected?.[sfc]?.[l]?.[k] !== undefined)));
+    }],
+    ['the constraint records what it forbids, in terms taken from live strings', () => {
+      const c = reg.decisions['approve-not-accept'].constrains;
+      const chip = { gu: 'ostatus.accepted', mr: 'ostatus.accepted' };
+      // the forbidden stem must actually be the stem of the accept-word in use,
+      // or the constraint is about a word this product does not say
+      return c.langs.every((l) => {
+        const live = reg.decisions['mr-status-register'].values?.[l]?.[chip[l]]
+          ?? reg.decisions['gu-accepted-wording'].protected?.web?.[l]?.[chip[l]];
+        return typeof c.forbidden_stems?.[l] === 'string' && live && live.startsWith(c.forbidden_stems[l]);
+      });
+    }],
+    ['reject-not-cancel names its six keys and declares what it excludes', () => {
+      const d = reg.decisions['reject-not-cancel'];
+      const KEYS = ['orej.reject', 'orej.confirm', 'orej.title', 'orej.done', 'oalert.decide', 'oalert.setHelp'];
+      const EXCLUDED = ['promo.refundNote', 'promo.stRejected', 'set.photoRejected', 'orej.help'];
+      const inScope = KEYS.every((k) => d.scope.keys.includes(k) && d.values.bn[k] !== undefined);
+      const outOfScope = EXCLUDED.every((k) => typeof d.scope.exclusions?.[k] === 'string'
+        && !d.scope.keys.includes(k) && d.values.bn[k] === undefined);
+      // every key it claims is in the order-rejection families and nowhere else
+      const domain = d.scope.keys.every((k) => k.startsWith('orej.') || k.startsWith('oalert.'));
+      return inScope && outOfScope && domain;
+    }],
+    ['the orej.help ENGLISH defect is recorded, and recorded as an English one', () => {
+      const e = reg.decisions['reject-not-cancel'].english_source_defect;
+      return e?.key === 'orej.help' && /English source defect/i.test(e.status)
+        && !reg.decisions['reject-not-cancel'].values.bn['orej.help'];
+    }],
     ['the three rule-based decisions pin exactly the 14 values, and nothing else does', () => {
       const RULE_BASED = ['unit-counter', 'catalogue-loanword', 'prepaid-mechanism'];
       const pinned = Object.values(reg.decisions)
@@ -367,13 +476,11 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
         .flatMap((d) => d.superseded_rows || [])
         .filter((r) => r.value_at_retirement && Object.keys(r.value_at_retirement).length)
         .map((r) => r.answered_by));
-      // Two are still only descriptive, and both need a judgement this repo has
-      // not made — which keys carry "reject" and "cancel" in Bengali, and
-      // whether approve-not-accept adds anything now that the gu string is
-      // LOCKED by gu-orthography and the mr one sits in REVIEW. They are named
-      // here so the list cannot grow quietly: a NEW valueless LOCKED decision
-      // fails this check.
-      const KNOWN_DESCRIPTIVE = ['reject-not-cancel', 'approve-not-accept'];
+      // Empty, and it has to stay empty. The last two descriptive decisions were
+      // resolved by a human: reject-not-cancel now names its six keys, and
+      // approve-not-accept is evaluated as a constraint. A NEW valueless LOCKED
+      // decision fails this check rather than joining a list.
+      const KNOWN_DESCRIPTIVE = [];
       const unenforced = Object.entries(reg.decisions)
         .filter(([id, d]) => d.status === 'LOCKED'
           && !(d.values && Object.keys(d.values).length)

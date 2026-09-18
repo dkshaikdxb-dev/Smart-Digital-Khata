@@ -20,7 +20,9 @@
 //      drifted into web/app conflict because the old single set only covered
 //      bare labels.
 //   4. The standing invariants: no native digits, no transliterated WhatsApp,
-//      Balance and Outstanding never collide.
+//      Balance and Outstanding never collide, and the one decision that is a
+//      CONSTRAINT rather than an owner — a native review of the gu/mr FAQ prose
+//      may revise it but may not collapse the approve-word into the accept-word.
 //   5. REVIEW rows are IMMUTABLE. Where the registry recorded the current
 //      value, it must still be the current value — a REVIEW row that something
 //      silently "fixed" has been decided by a tool instead of a person.
@@ -208,6 +210,36 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
                               ...APP_FILES.map((f) => [f.id, (k) => f.langs[lang]?.[k]])]) {
       const b = get('common.balance'), o = get('common.outstanding');
       if (b && o && b === o) bad('balance-vs-outstanding', `${src} ${lang}: both render "${b}"`);
+    }
+  }
+
+  // approve-not-accept is a CONSTRAINT on an open review, not a value pin, and
+  // this is the shape that lets it be one. status-mentions-in-prose owns the
+  // exact gu/mr web chelp.e7.a strings and stays authoritative for them; a
+  // native speaker may rewrite that prose however they read it, including with a
+  // different approve-word. What they may not do is settle the prose/chip
+  // mismatch by collapsing the approve-word into the accept-word, because that
+  // makes the shopkeeper approving an order and a delivery being accepted the
+  // same act. The stem, not a whole word, because the accept-word inflects:
+  // the chip reads સ્વીકારેલ and the app prose સ્વીકાર્યો.
+  //
+  // It owns no values, so it appears in neither lockedValues nor governedStatus
+  // and cannot compete for ownership. It only says what an answer may not be.
+  {
+    const c = registry.decisions['approve-not-accept'].constrains;
+    for (const lang of c.langs) {
+      const stem = c.forbidden_stems[lang];
+      for (const surface of c.surfaces) {
+        for (const key of c.keys) {
+          const v = surface === 'web' ? webValue(lang, key) : APP_FILES.find((f) => f.id === surface)?.langs[lang]?.[key];
+          if (v !== undefined && stem && v.includes(stem)) {
+            bad('approve-not-accept', `${surface} ${lang} ${key} renders the approved state with the accept-word`
+              + `\n      found: ${stem}  in: ${v}`
+              + `\n      -> the wording is owned by ${c.decision} (REVIEW) and may be revised;`
+              + `\n         collapsing it into the accept-word is what this decision rules out.`);
+          }
+        }
+      }
     }
   }
 }
