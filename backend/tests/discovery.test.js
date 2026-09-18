@@ -297,6 +297,94 @@ describe('GET /public/shops', () => {
     expect(ids).toContain(listedA.id);
     expect(ids).not.toContain(listedB.id);
   });
+});
+
+// Searching the name the shopper is actually LOOKING AT.
+//
+// The directory renders COALESCE(sn.name, s.name), so a Telugu shopper reads
+// the Telugu name — and until this was fixed, that was the one name the search
+// would not match: the filter ran on the canonical English s.name alone. Speak
+// the shop name the screen just showed you and the app answered "no shops
+// found". These lock in both halves: the localized name is searchable, and the
+// canonical one still is.
+describe('GET /public/shops?search — localized shop names (shop_name_i18n)', () => {
+  // Real scripts, because the whole point is that a non-Latin term now matches.
+  const LOCALIZED = {
+    te: 'గుప్తా స్టోర్',
+    gu: 'ગુપ્તા સ્ટોર',
+    mr: 'गुप्ता स्टोअर',
+  };
+
+  beforeAll(async () => {
+    for (const [lang, name] of Object.entries(LOCALIZED)) {
+      await pool.query(
+        `INSERT INTO shop_name_i18n (shop_id, lang, name, source)
+         VALUES ($1, $2, $3, 'owner')
+         ON CONFLICT (shop_id, lang) DO UPDATE SET name = EXCLUDED.name`,
+        [listedA.id, lang, name]
+      );
+    }
+  });
+
+  const idsFor = async (qs) => {
+    const res = await request(app).get(`/api/public/shops?city=${CITY}&${qs}`);
+    expect(res.status).toBe(200);
+    return res.body.shops.map((s) => s.id);
+  };
+
+  it('English search still finds the English shop name', async () => {
+    expect(await idsFor('search=DiscA')).toContain(listedA.id);
+  });
+
+  it('Telugu search finds the Telugu localized name', async () => {
+    const ids = await idsFor(`lang=te&search=${encodeURIComponent(LOCALIZED.te)}`);
+    expect(ids).toContain(listedA.id);
+    expect(ids).not.toContain(listedB.id);
+  });
+
+  it('Gujarati search finds the Gujarati localized name', async () => {
+    const ids = await idsFor(`lang=gu&search=${encodeURIComponent(LOCALIZED.gu)}`);
+    expect(ids).toContain(listedA.id);
+    expect(ids).not.toContain(listedB.id);
+  });
+
+  it('Marathi search finds the Marathi localized name', async () => {
+    const ids = await idsFor(`lang=mr&search=${encodeURIComponent(LOCALIZED.mr)}`);
+    expect(ids).toContain(listedA.id);
+    expect(ids).not.toContain(listedB.id);
+  });
+
+  it('the canonical English name still matches while the UI is localized', async () => {
+    // A shopkeeper reading the English name off a sign, with the app in Telugu.
+    expect(await idsFor('lang=te&search=DiscA')).toContain(listedA.id);
+  });
+
+  it('stays case-insensitive on both the canonical and the localized name', async () => {
+    expect(await idsFor('lang=te&search=disca')).toContain(listedA.id);
+    // Indic scripts are caseless, so the localized half is asserted via a
+    // partial term: ILIKE must still match a substring, not only the whole name.
+    const part = LOCALIZED.te.split(' ')[0];
+    expect(await idsFor(`lang=te&search=${encodeURIComponent(part)}`)).toContain(listedA.id);
+  });
+
+  it('returns no duplicate shops because of the localized join', async () => {
+    const ids = await idsFor(`lang=te&search=${encodeURIComponent(LOCALIZED.te)}`);
+    expect(ids).toHaveLength(new Set(ids).size);
+  });
+
+  it('a shop with no localized name is still findable by its canonical name', async () => {
+    // Signup auto-seeds a row for every render language, so "no localized name"
+    // has to be made true rather than assumed: this is the shop whose owner
+    // opted out, or whose language was added after they signed up. Without the
+    // s.name half of the predicate it would vanish from search entirely.
+    await pool.query('DELETE FROM shop_name_i18n WHERE shop_id = $1', [listedB.id]);
+    const { rows } = await pool.query(
+      'SELECT 1 FROM shop_name_i18n WHERE shop_id = $1 LIMIT 1',
+      [listedB.id]
+    );
+    expect(rows).toHaveLength(0);
+    expect(await idsFor('lang=te&search=DiscB')).toContain(listedB.id);
+  });
 
   it('filters by city', async () => {
     const res = await request(app).get(`/api/public/shops?city=${CITY}xyz`);

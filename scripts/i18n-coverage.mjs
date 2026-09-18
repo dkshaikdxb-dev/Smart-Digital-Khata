@@ -186,7 +186,13 @@ const FLOORS = {
   // 'voice.speak' are copied verbatim from the web consumer khata, which has
   // spoken a balance for a while, and 'common.stop' from the owner app, whose
   // order alert already offers exactly this Stop. Every language +3.
-  consumer: { hi: 344, bn: 344, ta: 344, te: 344, kn: 344, ml: 344, mr: 344, gu: 344, ur: 344 },
+  // Batch FAQ-VOICE added one CONSUMER key, 'help.listen', for the read-aloud
+  // button the web FAQ has had and this screen did not. Not authored here: it
+  // is the label the web already shows, copied verbatim in all ten languages
+  // (admin-dashboard's dictionary for en/hi, regional-i18n.json for the rest),
+  // so both surfaces say the same word and nothing new needs review. Every
+  // language gains it, so every consumer floor moves together.
+  consumer: { hi: 345, bn: 345, ta: 345, te: 345, kn: 345, ml: 345, mr: 345, gu: 345, ur: 345 },
   //
   // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'
   // and 'more.transactions' — for the Staff / Suppliers / Transactions rows the
