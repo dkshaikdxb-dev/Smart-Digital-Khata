@@ -42,9 +42,59 @@ function registry() {
   return cache;
 }
 
+export const APP_SURFACES = ['app/consumer', 'app/owner'];
+export const SURFACES = ['web', ...APP_SURFACES];
+
+// Which surfaces a decision's `values` entry actually claims.
+//
+// A value is either one string — the decision says the same thing everywhere it
+// applies — or {web, app}, where the two surfaces deliberately differ and the
+// decision may name only ONE of them. gu chelp.e7.a is {app: …}: gu-orthography
+// respelled the app's loanword and says nothing about the web string, which is a
+// different sentence. `scope.surfaces` narrows either shape.
+//
+// Reading this as "the key is locked" rather than "this surface of the key is
+// locked" is the bug this function exists to remove: it made the guard report
+// LOCKED for a web string no rule checks, so the snapshot skipped pinning it and
+// gu web chelp.e7.a ended up governed by nothing at all.
+function claimedSurfaces(decision, spec) {
+  const scoped = new Set(decision.scope?.surfaces ?? ['web', 'app']);
+  const named = typeof spec === 'string'
+    ? { web: spec, app: spec }
+    : spec;
+  const out = [];
+  if (scoped.has('web') && named.web !== undefined) out.push(['web', named.web]);
+  if (scoped.has('app') && named.app !== undefined) for (const sid of APP_SURFACES) out.push([sid, named.app]);
+  return out;
+}
+
+/**
+ * Every value a LOCKED decision governs, resolved to one row per SURFACE:
+ * { decision, surface, lang, key, want, source }.
+ *
+ * `source` is 'values' for the ordinary case and 'rule' for the three decisions
+ * that state a rule and name no values — unit-counter, catalogue-loanword and
+ * prepaid-mechanism — whose strings are pinned by the queue rows they retired.
+ * One definition of "a LOCKED string", read by the gate, the snapshot and the
+ * write guard, so the three cannot disagree about what is settled.
+ */
+export function lockedValues(reg = registry()) {
+  const out = [];
+  for (const [id, d] of Object.entries(reg.decisions)) {
+    if (d.status !== 'LOCKED' || !d.values) continue;
+    for (const [lang, kv] of Object.entries(d.values)) {
+      for (const [key, spec] of Object.entries(kv)) {
+        for (const [surface, want] of claimedSurfaces(d, spec)) out.push({ decision: id, surface, lang, key, want, source: 'values' });
+      }
+    }
+  }
+  out.push(...ruleLockedRows(reg));
+  return out;
+}
+
 /**
  * Every value a RULE-BASED LOCKED decision governs, as
- * { decision, surface, lang, key, want }.
+ * { decision, surface, lang, key, want, source: 'rule' }.
  *
  * Most LOCKED decisions carry a `values` map and the gate checks that directly.
  * Three of them — unit-counter, catalogue-loanword, prepaid-mechanism — state a
@@ -74,7 +124,7 @@ export function ruleLockedRows(reg = registry()) {
         // A row names one key per surface: the web and the app often spell the
         // same string under different names — web c.unit is app shopdetail.unit.
         const key = row.key ?? (surface === 'web' ? row.web : row.app);
-        if (key) out.push({ decision: row.answered_by, surface, lang: row.lang, key, want });
+        if (key) out.push({ decision: row.answered_by, surface, lang: row.lang, key, want, source: 'rule' });
       }
     }
   }
@@ -82,27 +132,49 @@ export function ruleLockedRows(reg = registry()) {
 }
 
 /**
- * The governance status of one (lang, key), or null when nothing governs it.
- * LOCKED wins over REVIEW wins over the divergence sets, because that is the
- * order in which a human decided something about the row.
+ * The governance status of one (lang, surface, key), or null when nothing
+ * governs it. LOCKED wins over REVIEW wins over the divergence sets, because
+ * that is the order in which a human decided something about the row.
+ *
+ * LOCKED is matched PER SURFACE, exactly as the gate checks it: a decision that
+ * locks only the app copy of a key leaves the web copy open, and saying
+ * otherwise subtracts protection — the snapshot skips a row it believes settled,
+ * and nothing is left holding it.
+ *
+ * REVIEW is matched on ANY surface, deliberately. `protected` is surface-keyed
+ * and the gate checks it per surface, but this guard runs at the moment a script
+ * rewrites a dictionary, where the conservative answer is the right one: 20 rows
+ * are pinned on one surface and present on another, and a sweep that rewrites
+ * the unpinned copy of a string somebody is still reading is exactly what this
+ * refuses. Being stricter than the gate here costs nothing; being looser would
+ * quietly widen what a tool may rewrite.
  */
-export function governedStatus(lang, key) {
+export function governedStatus(lang, surface, key) {
+  if (key === undefined) throw new Error('governedStatus(lang, surface, key): surface is required — LOCKED is per-surface');
   const reg = registry();
-  for (const r of ruleLockedRows(reg)) {
-    if (r.lang === lang && r.key === key) return { status: 'LOCKED', decision: r.decision };
+  for (const r of lockedValues(reg)) {
+    if (r.lang === lang && r.key === key && r.surface === surface) return { status: 'LOCKED', decision: r.decision };
   }
   for (const [id, d] of Object.entries(reg.decisions)) {
-    if (d.status === 'LOCKED' && d.values?.[lang]?.[key] !== undefined) return { status: 'LOCKED', decision: id };
     if (d.status === 'REVIEW' && d.protected) {
       for (const byLang of Object.values(d.protected)) {
         if (byLang?.[lang]?.[key] !== undefined) return { status: 'REVIEW', decision: id };
       }
     }
   }
+  // The divergence sets describe a PAIR of surfaces, not one of them, so they
+  // are not surface-filtered: an undecided web/app difference governs both sides.
   const div = reg.divergences || {};
   if ((div.INTENTIONAL_DIVERGENCE?.keys?.[lang] || []).includes(key)) return { status: 'INTENTIONAL_DIVERGENCE', decision: 'divergences' };
   if ((div.UNDECIDED?.keys?.[lang] || []).includes(key)) return { status: 'UNDECIDED', decision: 'divergences' };
   return null;
+}
+
+/** Which surface a dictionary file IS. guardedWrite knows the file, so it knows the surface. */
+export function surfaceOf(file) {
+  if (file.includes('/mobile-app/src/consumer/')) return 'app/consumer';
+  if (file.includes('/mobile-app/src/')) return 'app/owner';
+  return 'web';  // regional-i18n.json and the dashboard catalog are both the web
 }
 
 // Values are written with either quote style — a string containing an apostrophe
@@ -166,13 +238,17 @@ export function guardedWrite(file, content, opts = {}) {
     ...(opts.allow || []),
     ...String(process.env.I18N_ALLOW_GOVERNED_WRITE || '').split(',').map((s) => s.trim()).filter(Boolean),
   ]);
+  // The file IS the surface, so the guard always knows which one it is asking
+  // about. It used to ask key-level and got back "LOCKED" for a surface the
+  // decision never claimed.
+  const surface = surfaceOf(file);
   const refused = [];
   for (const row of changedRows(file, before, content)) {
-    const g = governedStatus(row.lang, row.key);
-    if (g && !allowed.has(g.status)) refused.push({ ...row, ...g });
+    const g = governedStatus(row.lang, surface, row.key);
+    if (g && !allowed.has(g.status)) refused.push({ ...row, ...g, surface });
   }
   if (refused.length) {
-    const lines = refused.slice(0, 15).map((r) => `    ${r.status.padEnd(22)} ${r.lang} ${r.key}   (${r.decision})`);
+    const lines = refused.slice(0, 15).map((r) => `    ${r.status.padEnd(22)} ${r.surface} ${r.lang} ${r.key}   (${r.decision})`);
     const more = refused.length > 15 ? `\n    … ${refused.length - 15} more` : '';
     throw new Error(
       `REFUSED to write ${label}: ${refused.length} governed row(s) would change.\n${lines.join('\n')}${more}\n`

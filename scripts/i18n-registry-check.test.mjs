@@ -217,6 +217,22 @@ const cases = [
   ['a rule-based LOCKED string DISAPPEARING is caught, not only changing',
    () => appDelete(CONSUMER, 'mr', 'shopdetail.unit'), 'LOCKED row disappeared', 'unit-counter'],
 
+  // --- LOCKED is per SURFACE, because `values` can be per surface -----------
+  // gu chelp.e7.a is the one value in the registry written as {app: …}:
+  // gu-orthography respelled the app's loanword and says nothing about the web
+  // sentence. The guard read that key-level and answered LOCKED for BOTH
+  // surfaces, so the snapshot skipped pinning the web row as already settled and
+  // the string ended up held by nothing — a rewrite of it passed this gate
+  // cleanly until 2026-09-18.
+  ['the APP surface of an app-only LOCKED value is still held',
+   () => appSet(CONSUMER, 'gu', 'chelp.e7.a', 'કંઈક સાવ જુદું.'), 'gu-orthography', 'app/consumer gu chelp.e7.a'],
+
+  ['the WEB surface of that same key is held too — by the decision that does claim it',
+   () => webSet('gu', 'chelp.e7.a', 'ઑર્ડર ટૅબ ખોલો — કંઈક સાવ જુદું.'), 'status-mentions-in-prose', 'web gu chelp.e7.a'],
+
+  ['the same shape in the other decision that uses it (product-item, gu chelp.e2.a)',
+   () => appSet(CONSUMER, 'gu', 'chelp.e2.a', 'કંઈક સાવ જુદું.'), 'product-item', 'app/consumer gu chelp.e2.a'],
+
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
      j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
@@ -306,6 +322,27 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     // drop a superseded_rows entry and the string it pinned goes back to being
     // governed by nothing. Nothing else covers it — web bn c.unit has no app
     // twin under that name, so even the divergence check cannot see it.
+    // The bug, stated directly: ownership is (surface, lang, key), not (lang, key).
+    ['an app-only LOCKED value does not claim the web surface', () => {
+      const spec = reg.decisions['gu-orthography'].values.gu['chelp.e7.a'];
+      const appOnly = typeof spec === 'object' && spec.app !== undefined && spec.web === undefined;
+      const webPinned = reg.decisions['status-mentions-in-prose'].protected?.web?.gu?.['chelp.e7.a'] !== undefined;
+      const appPinnedAsReview = reg.decisions['status-mentions-in-prose'].protected?.['app/consumer']?.gu?.['chelp.e7.a'] !== undefined;
+      // app side LOCKED and therefore NOT also REVIEW; web side REVIEW because no
+      // LOCKED decision names it. Both halves have to hold, or the fix is half done.
+      return appOnly && webPinned && !appPinnedAsReview;
+    }],
+    ['a superseded row records only the surfaces its LOCKED decision claims', () => Object.values(reg.decisions)
+      .flatMap((d) => d.superseded_rows || [])
+      .every((r) => {
+        const owner = reg.decisions[r.answered_by];
+        if (!owner?.values) return true;              // rule-based: every surface it recorded
+        const spec = owner.values[r.lang]?.[r.key ?? r.web] ?? owner.values[r.lang]?.[r.app];
+        if (typeof spec !== 'object' || spec === null) return true;
+        // {app: …} may not carry a web value_at_retirement, and vice versa.
+        return Object.keys(r.value_at_retirement || {})
+          .every((sfc) => (sfc === 'web' ? spec.web !== undefined : spec.app !== undefined));
+      })],
     ['the three rule-based decisions pin exactly the 14 values, and nothing else does', () => {
       const RULE_BASED = ['unit-counter', 'catalogue-loanword', 'prepaid-mechanism'];
       const pinned = Object.values(reg.decisions)

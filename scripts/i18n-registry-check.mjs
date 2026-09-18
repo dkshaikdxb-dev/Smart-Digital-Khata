@@ -34,7 +34,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BRAND_TERMS, brandTermCasingErrors } from './lib/i18n-brand-keys.mjs';
-import { ruleLockedRows } from './lib/i18n-governed-keys.mjs';
+import { lockedValues } from './lib/i18n-governed-keys.mjs';
 
 // I18N_ROOT lets the mutation suite point this gate at a throwaway copy of the
 // dictionaries. A check nobody can test is a check nobody can trust — the hole
@@ -92,23 +92,23 @@ const fail = [];
 const bad = (rule, detail) => fail.push({ rule, detail });
 
 /* 1 — every LOCKED decision still holds -------------------------------- */
-for (const [id, d] of Object.entries(registry.decisions)) {
-  if (d.status !== 'LOCKED' || !d.values) continue;
-  const surfaces = new Set(d.scope?.surfaces ?? ['web', 'app']);
-  for (const [lang, kv] of Object.entries(d.values)) {
-    for (const [key, spec] of Object.entries(kv)) {
-      const per = typeof spec === 'string' ? { web: spec, app: spec } : spec;
-      if (surfaces.has('web') && per.web !== undefined) {
-        const got = webValue(lang, key);
-        if (got !== undefined && got !== per.web) bad(id, `web ${lang} ${key}\n      want: ${per.web}\n      got:  ${got}`);
-      }
-      if (surfaces.has('app') && per.app !== undefined) {
-        for (const c of appCopies(lang, key)) {
-          if (c.value !== per.app) bad(id, `${c.id} ${lang} ${key}\n      want: ${per.app}\n      got:  ${c.value}`);
-        }
-      }
-    }
-  }
+// `lockedValues` resolves each decision's values to one row PER SURFACE, honouring
+// scope.surfaces and the {web, app} shape — gu chelp.e7.a is {app: …}, so it
+// claims the two app dictionaries and says nothing about the web string. The
+// guard and the snapshot read the same function, so the three cannot disagree
+// about which surface of a key is settled.
+//
+// A missing string is not a violation HERE: a decision may name a key one
+// surface does not carry. Rule 1b is stricter, because there the recorded value
+// is the only record the string ever had.
+const LOCKED_ROWS = lockedValues(registry);
+const surfaceValue = (surface, lang, key) => (surface === 'web'
+  ? webValue(lang, key)
+  : APP_FILES.find((f) => f.id === surface)?.langs[lang]?.[key]);
+for (const r of LOCKED_ROWS) {
+  if (r.source !== 'values') continue;
+  const got = surfaceValue(r.surface, r.lang, r.key);
+  if (got !== undefined && got !== r.want) bad(r.decision, `${r.surface} ${r.lang} ${r.key}\n      want: ${r.want}\n      got:  ${got}`);
 }
 
 /* 1b — the LOCKED decisions that state a rule and name no values ---------
@@ -125,8 +125,9 @@ for (const [id, d] of Object.entries(registry.decisions)) {
    same kind of block, reported against the LOCKED decision that owns it. No
    translation was invented to close this and no decision was re-scoped: the
    rule semantics are untouched, they are simply checkable now. */
-for (const r of ruleLockedRows(registry)) {
-  const got = r.surface === 'web' ? webValue(r.lang, r.key) : APP_FILES.find((f) => f.id === r.surface)?.langs[r.lang]?.[r.key];
+for (const r of LOCKED_ROWS) {
+  if (r.source !== 'rule') continue;
+  const got = surfaceValue(r.surface, r.lang, r.key);
   if (got === undefined) {
     bad(r.decision, `LOCKED row disappeared: ${r.surface} ${r.lang} ${r.key}\n      was:  ${r.want}`
       + `\n      -> this decision states a rule and names no values; the string is pinned by its`
@@ -291,17 +292,17 @@ for (const [id, d] of Object.entries(registry.decisions)) {
    the same string. The snapshot now leaves LOCKED rows alone and records them
    as `superseded_rows`; this makes that hold rather than describe it. */
 {
+  // Per surface, for the same reason rule 1 is: gu chelp.e7.a is LOCKED on the
+  // app and open on the web, and calling the web row settled is what left it
+  // held by nothing.
   const lockedBy = new Map();
-  for (const [id, d] of Object.entries(registry.decisions)) {
-    if (d.status !== 'LOCKED' || !d.values) continue;
-    for (const [lang, kv] of Object.entries(d.values)) for (const key of Object.keys(kv)) lockedBy.set(`${lang}|${key}`, id);
-  }
+  for (const r of LOCKED_ROWS) lockedBy.set(`${r.surface}|${r.lang}|${r.key}`, r.decision);
   for (const [id, d] of Object.entries(registry.decisions)) {
     if (d.status !== 'REVIEW' || !d.protected) continue;
     for (const [surface, byLang] of Object.entries(d.protected)) {
       for (const [lang, kv] of Object.entries(byLang)) {
         for (const key of Object.keys(kv)) {
-          const owner = lockedBy.get(`${lang}|${key}`);
+          const owner = lockedBy.get(`${surface}|${lang}|${key}`);
           if (owner) {
             bad(id, `${surface} ${lang} ${key} is pinned as REVIEW and LOCKED by ${owner}`
               + `\n      -> LOCKED is authoritative. Move the row to ${id}.superseded_rows and re-run scripts/i18n-review-snapshot.mjs`);

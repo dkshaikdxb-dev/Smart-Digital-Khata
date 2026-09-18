@@ -48,7 +48,7 @@
 //   node scripts/i18n-review-snapshot.mjs --apply    # write
 import fs from 'fs';
 import path from 'path';
-import { ruleLockedRows } from './lib/i18n-governed-keys.mjs';
+import { lockedValues } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REGP = path.join(ROOT, 'scripts/i18n-decisions.json');
@@ -90,17 +90,12 @@ const DASH = {};
 const webValue = (lang, key) => (WEB[lang] && key in WEB[lang] ? WEB[lang][key] : DASH[lang]?.[key]);
 const valueOn = (surface, lang, key) => (surface === 'web' ? webValue(lang, key) : APP[surface][lang]?.[key]);
 
-// Every (lang, key) a LOCKED decision holds a value for. These are settled;
-// REVIEW may not also claim them. Three of those decisions state a rule and
-// name no values of their own, and their strings are pinned by the queue rows
-// they retired — same source the gate checks, so the two cannot disagree about
-// which rows are settled.
-const LOCKED = new Set();
-for (const d of Object.values(registry.decisions)) {
-  if (d.status !== 'LOCKED' || !d.values) continue;
-  for (const [lang, kv] of Object.entries(d.values)) for (const key of Object.keys(kv)) LOCKED.add(`${lang}|${key}`);
-}
-for (const r of ruleLockedRows(registry)) LOCKED.add(`${r.lang}|${r.key}`);
+// Every (surface, lang, key) a LOCKED decision holds a value for. These are
+// settled; REVIEW may not also claim them. Read from the same function the gate
+// checks, so the two cannot disagree about which rows are settled — including
+// the surface, which matters: gu chelp.e7.a is LOCKED on the app and open on the
+// web, and skipping the web row as settled left it held by nothing at all.
+const LOCKED = new Set(lockedValues(registry).map((r) => `${r.surface}|${r.lang}|${r.key}`));
 
 let rows = 0;
 let lockedSkips = 0;
@@ -129,7 +124,7 @@ for (const [id, d] of Object.entries(registry.decisions)) {
   const prot = {};
   let skipped = 0;
   for (const { surface, lang, key } of wanted.values()) {
-    if (LOCKED.has(`${lang}|${key}`)) { skipped += 1; lockedSkips += 1; continue; }
+    if (LOCKED.has(`${surface}|${lang}|${key}`)) { skipped += 1; lockedSkips += 1; continue; }
     (prot[surface] ||= {})[lang] ||= {};
     prot[surface][lang][key] = valueOn(surface, lang, key);
     rows += 1;

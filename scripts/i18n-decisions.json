@@ -759,6 +759,9 @@
       },
       "protected": {
         "web": {
+          "gu": {
+            "chelp.e7.a": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે."
+          },
           "mr": {
             "chelp.e7.a": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबितपासून मंजूर, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
           }
@@ -774,14 +777,14 @@
           "lang": "gu",
           "key": "chelp.e7.a",
           "answered_by": "gu-orthography",
-          "note": "LOCKED is authoritative: the string is still immutable, under that decision rather than this one. Kept here as provenance so the open wording question is not lost.",
+          "note": "LOCKED is authoritative on the surface it claims: gu-orthography records an APP-ONLY value for this key ({app: …}), so the app/consumer string is immutable under that decision. The web string is a different sentence, is named by no LOCKED decision, and stays protected here.",
           "value_at_retirement": {
-            "web": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે.",
             "app/consumer": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડર બાકીથી સ્વીકાર્યો, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક તબક્કે તમને અપડેટ મળે છે."
-          }
+          },
+          "surface": "app/consumer"
         }
       ],
-      "protects_note": "gu-orthography records the whole gu value, because respelling its loanword rewrote the string. The mr row is untouched and still carries the question."
+      "protects_note": "gu-orthography records the gu APP value, because respelling its loanword rewrote that string; it says nothing about the gu web sentence, which this decision still protects. The mr rows are untouched and still carry the question."
     },
     "rangeEmpty-rewording": {
       "type": "LINGUISTIC",
@@ -1041,7 +1044,7 @@
     "native-speaker-queue-gu": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Gujarati wording questions from the web/app ledger — 110 rows.",
+      "concept": "The open Gujarati wording questions from the web/app ledger — 112 rows.",
       "why_review": "Both readings are valid in each case; these need a Gujarati speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-gu-reconcile.md",
@@ -1206,6 +1209,16 @@
             "lang": "gu",
             "web": "cat.noResults",
             "app": "shopdetail.noResults"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e2.a",
+            "app": "chelp.e2.a"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e3.a",
+            "app": "chelp.e3.a"
           },
           {
             "lang": "gu",
@@ -1629,17 +1642,6 @@
         },
         {
           "lang": "gu",
-          "web": "chelp.e2.a",
-          "app": "chelp.e2.a",
-          "answered_by": "product-item",
-          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
-          "value_at_retirement": {
-            "web": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
-            "app/consumer": "ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો."
-          }
-        },
-        {
-          "lang": "gu",
           "web": "chelp.e2.q",
           "app": "chelp.e2.q",
           "answered_by": "product-item",
@@ -1647,17 +1649,6 @@
           "value_at_retirement": {
             "web": "વસ્તુ કેવી રીતે શોધવી?",
             "app/consumer": "વસ્તુ કેવી રીતે શોધવી?"
-          }
-        },
-        {
-          "lang": "gu",
-          "web": "chelp.e3.a",
-          "app": "chelp.e3.a",
-          "answered_by": "product-item",
-          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
-          "value_at_retirement": {
-            "web": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
-            "app/consumer": "દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે."
           }
         },
         {
@@ -1797,6 +1788,8 @@
             "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
             "cat.loadMore": "વધુ લોડ કરો",
             "cat.noResults": "મળતી કોઈ વસ્તુ નથી.",
+            "chelp.e2.a": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
+            "chelp.e3.a": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
             "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
             "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
             "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
