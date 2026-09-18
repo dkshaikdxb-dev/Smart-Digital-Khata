@@ -715,6 +715,99 @@
         "txn.upi": "Lower case ON PURPOSE. txn.* is a family of inline words used mid-sentence — purchase, cash, upi, credit — parallel to status.pending. The Title Case label for the same thing is type.upi ('UPI'). The casing check found this on its first run; it is a false positive, recorded here rather than 'fixed', because changing it would break the family and read wrong in the sentence it sits in."
       }
     },
+    "bn-native-review-1": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "The six open Bengali wording questions, answered by a Bengali speaker.",
+      "scope": {
+        "rule": "The six rows native-speaker-queue-bn held, and nothing else. Answers are PER SURFACE: three converge the two surfaces, one keeps them deliberately different, and two adopt a wording neither surface had. The web and the app key four of these differently, so both key names are named.",
+        "langs": [
+          "bn"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "c.deliverTo",
+          "orderdetail.deliverTo",
+          "c.pay",
+          "khata.pay",
+          "fam.sendReminder",
+          "famd.sendReminder",
+          "oedit.originalSubtotal",
+          "open.todayAt",
+          "open.tomorrowAt"
+        ]
+      },
+      "values": {
+        "bn": {
+          "c.deliverTo": "যেখানে পৌঁছে দিতে হবে:",
+          "orderdetail.deliverTo": "এখানে পৌঁছে দিন:",
+          "c.pay": "পরিশোধ করুন",
+          "khata.pay": "পরিশোধ করুন",
+          "fam.sendReminder": "WhatsApp রিমাইন্ডার পাঠান",
+          "famd.sendReminder": "WhatsApp রিমাইন্ডার পাঠান",
+          "oedit.originalSubtotal": "আগের মোট দাম",
+          "open.todayAt": "{time}-এ",
+          "open.tomorrowAt": "আগামীকাল {time}-এ"
+        }
+      },
+      "rows": [
+        {
+          "web": "c.deliverTo",
+          "app": "orderdetail.deliverTo",
+          "web_value": "যেখানে পৌঁছে দিতে হবে:",
+          "app_value": "এখানে পৌঁছে দিন:",
+          "converges": false,
+          "note": "The surfaces stay different ON PURPOSE. The web names the thing it precedes (an address); the app tells the shopper to deliver here. The web string is new — neither surface had it — because the old one, \"যেখানে ডেলিভারি:\", used the English loanword where Bengali has a verb."
+        },
+        {
+          "web": "c.pay",
+          "app": "khata.pay",
+          "web_value": "পরিশোধ করুন",
+          "app_value": "পরিশোধ করুন",
+          "converges": true,
+          "note": "The imperative wins: it is a button. The glossary noun পরিশোধ stays the term, with করুন making it an instruction."
+        },
+        {
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "web_value": "WhatsApp রিমাইন্ডার পাঠান",
+          "app_value": "WhatsApp রিমাইন্ডার পাঠান",
+          "converges": true,
+          "note": "The web wording, on both surfaces. This also settles the audit finding that the app transliterated WhatsApp in one string and not another — the brand name is Latin here, as whatsapp-latin requires."
+        },
+        {
+          "web": "oedit.originalSubtotal",
+          "app": "oedit.originalSubtotal",
+          "web_value": "আগের মোট দাম",
+          "app_value": "আগের মোট দাম",
+          "converges": true,
+          "note": "The natural phrase over the literal one: \"আসল উপ-মোট\" keeps the English \"sub-\" and reads like a calculation."
+        },
+        {
+          "web": "open.todayAt",
+          "app": "open.todayAt",
+          "web_value": "{time}-এ",
+          "app_value": "{time}-এ",
+          "converges": true,
+          "note": "The app form. -এ is the ordinary locative; টায় is the clock-time idiom and reads heavier on a chip."
+        },
+        {
+          "web": "open.tomorrowAt",
+          "app": "open.tomorrowAt",
+          "web_value": "আগামীকাল {time}-এ",
+          "app_value": "আগামীকাল {time}-এ",
+          "converges": true,
+          "note": "Neither surface had this: the web's আগামীকাল (the full word for tomorrow) with the app's -এ. কাল alone is ambiguous in Bengali — it means yesterday as readily as tomorrow."
+        }
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-18",
+      "supersedes": "native-speaker-queue-bn (all six rows), and the INTENTIONAL_DIVERGENCE on oedit.originalSubtotal, open.todayAt and open.tomorrowAt, which this review converges.",
+      "override_log": []
+    },
     "gu-accepted-wording": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
@@ -987,7 +1080,7 @@
     "native-speaker-queue-bn": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Bengali wording questions from the web/app ledger — 6 rows.",
+      "concept": "The open Bengali wording questions from the web/app ledger — 0 rows. All six were answered by a Bengali speaker on 2026-09-18 and are now LOCKED under bn-native-review-1.",
       "why_review": "Both readings are valid in each case; these need a Bengali speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-bn-divergence.md",
@@ -997,48 +1090,10 @@
       "does_not_block_freeze": true,
       "immutable": true,
       "protects": {
-        "rows": [
-          {
-            "lang": "bn",
-            "web": "c.deliverTo",
-            "app": "orderdetail.deliverTo"
-          },
-          {
-            "lang": "bn",
-            "web": "c.pay",
-            "app": "khata.pay"
-          },
-          {
-            "lang": "bn",
-            "web": "fam.sendReminder",
-            "app": "famd.sendReminder"
-          },
-          {
-            "lang": "bn",
-            "web": "oedit.originalSubtotal",
-            "app": "oedit.originalSubtotal"
-          },
-          {
-            "lang": "bn",
-            "web": "open.todayAt",
-            "app": "open.todayAt"
-          },
-          {
-            "lang": "bn",
-            "web": "open.tomorrowAt",
-            "app": "open.tomorrowAt"
-          }
-        ]
+        "rows": []
       },
-      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
-      "open_themes": [
-        "c.pay",
-        "oedit.originalSubtotal",
-        "fam.sendReminder",
-        "c.deliverTo",
-        "open.todayAt",
-        "open.tomorrowAt"
-      ],
+      "protects_note": "Empty, deliberately. Every row this decision held has been read by a Bengali speaker and moved to bn-native-review-1; they are recorded in resolved_rows with the reasoning. The decision is kept rather than deleted so the questions, and the fact that they were answered rather than dropped, stay on the record. It protects nothing because there is nothing left to protect.",
+      "open_themes": [],
       "superseded_rows": [
         {
           "lang": "bn",
@@ -1083,35 +1138,52 @@
           }
         }
       ],
-      "protected": {
-        "web": {
-          "bn": {
-            "c.deliverTo": "যেখানে ডেলিভারি:",
-            "c.pay": "পরিশোধ করুন",
-            "fam.sendReminder": "WhatsApp রিমাইন্ডার পাঠান",
-            "oedit.originalSubtotal": "আগের মোট দাম",
-            "open.todayAt": "{time} টায়",
-            "open.tomorrowAt": "আগামীকাল {time} টায়"
-          }
+      "protected": {},
+      "superseded_note": "value_at_retirement is the string each row carried when it left the queue. It is provenance, not a protection: the LOCKED decision named in answered_by is what governs these strings now. Three of those decisions — unit-counter, catalogue-loanword and prepaid-mechanism — state a rule and carry no value map, and the gate does not evaluate them, so 14 of these values are currently held by a rule nothing checks. Recording them here is what a check would need.",
+      "resolved_rows": [
+        {
+          "lang": "bn",
+          "web": "c.deliverTo",
+          "app": "orderdetail.deliverTo",
+          "answered_by": "bn-native-review-1",
+          "note": "The surfaces stay different ON PURPOSE. The web names the thing it precedes (an address); the app tells the shopper to deliver here. The web string is new — neither surface had it — because the old one, \"যেখানে ডেলিভারি:\", used the English loanword where Bengali has a verb."
         },
-        "app/consumer": {
-          "bn": {
-            "orderdetail.deliverTo": "এখানে পৌঁছে দিন:",
-            "khata.pay": "পরিশোধ",
-            "open.todayAt": "{time}-এ",
-            "open.tomorrowAt": "কাল {time}-এ"
-          }
+        {
+          "lang": "bn",
+          "web": "c.pay",
+          "app": "khata.pay",
+          "answered_by": "bn-native-review-1",
+          "note": "The imperative wins: it is a button. The glossary noun পরিশোধ stays the term, with করুন making it an instruction."
         },
-        "app/owner": {
-          "bn": {
-            "famd.sendReminder": "WhatsApp-এ মনে করিয়ে দিন",
-            "oedit.originalSubtotal": "আসল উপ-মোট",
-            "open.todayAt": "{time}-এ",
-            "open.tomorrowAt": "কাল {time}-এ"
-          }
+        {
+          "lang": "bn",
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "answered_by": "bn-native-review-1",
+          "note": "The web wording, on both surfaces. This also settles the audit finding that the app transliterated WhatsApp in one string and not another — the brand name is Latin here, as whatsapp-latin requires."
+        },
+        {
+          "lang": "bn",
+          "web": "oedit.originalSubtotal",
+          "app": "oedit.originalSubtotal",
+          "answered_by": "bn-native-review-1",
+          "note": "The natural phrase over the literal one: \"আসল উপ-মোট\" keeps the English \"sub-\" and reads like a calculation."
+        },
+        {
+          "lang": "bn",
+          "web": "open.todayAt",
+          "app": "open.todayAt",
+          "answered_by": "bn-native-review-1",
+          "note": "The app form. -এ is the ordinary locative; টায় is the clock-time idiom and reads heavier on a chip."
+        },
+        {
+          "lang": "bn",
+          "web": "open.tomorrowAt",
+          "app": "open.tomorrowAt",
+          "answered_by": "bn-native-review-1",
+          "note": "Neither surface had this: the web's আগামীকাল (the full word for tomorrow) with the app's -এ. কাল alone is ambiguous in Bengali — it means yesterday as readily as tomorrow."
         }
-      },
-      "superseded_note": "value_at_retirement is the string each row carried when it left the queue. It is provenance, not a protection: the LOCKED decision named in answered_by is what governs these strings now. Three of those decisions — unit-counter, catalogue-loanword and prepaid-mechanism — state a rule and carry no value map, and the gate does not evaluate them, so 14 of these values are currently held by a rule nothing checks. Recording them here is what a check would need."
+      ]
     },
     "native-speaker-queue-gu": {
       "type": "LINGUISTIC",
@@ -2901,16 +2973,13 @@
     "INTENTIONAL_DIVERGENCE": {
       "status": "INTENTIONAL_DIVERGENCE",
       "source": "scripts/keylevel-decisions.json decision=web, OR a decision in this file that declares the key intentionally app-specific (consumer-faq-app-variants)",
-      "count": 46,
+      "count": 43,
       "keys": {
         "bn": [
           "chelp.e1.a",
           "chelp.e8.a",
           "chelp.e9.a",
-          "chelp.e9.q",
-          "oedit.originalSubtotal",
-          "open.todayAt",
-          "open.tomorrowAt"
+          "chelp.e9.q"
         ],
         "gu": [
           "cat.loadMore",
@@ -2960,7 +3029,20 @@
         "ta": [],
         "te": [],
         "ur": []
-      }
+      },
+      "resolved": [
+        {
+          "on": "2026-09-18",
+          "by": "bn-native-review-1",
+          "lang": "bn",
+          "keys": [
+            "oedit.originalSubtotal",
+            "open.todayAt",
+            "open.tomorrowAt"
+          ],
+          "note": "A Bengali speaker read these three and gave one answer for both surfaces, so the difference they recorded no longer exists. Removed from the intentional set because the decision that made them intentional has been superseded by one that reads the strings."
+        }
+      ]
     },
     "UNDECIDED": {
       "status": "UNDECIDED",

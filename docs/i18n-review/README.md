@@ -1,6 +1,6 @@
 # Native-speaker review
 
-288 questions, covering the 464 strings the registry holds under REVIEW.
+282 questions, covering the 450 strings the registry holds under REVIEW.
 Nothing in this repository can change one of them without a decision behind it — that
 part is finished and enforced in CI. What it cannot do is tell you whether any of them is
 the right thing to say to a shopkeeper in Bengali, Gujarati or Marathi. That is what these
@@ -8,7 +8,7 @@ files are for.
 
 | file | what it holds | questions |
 |---|---|---|
-| [`bn-queue.md`](bn-queue.md) | Bengali queue | 6 |
+| [`bn-queue.md`](bn-queue.md) | Bengali — answered | 0 |
 | [`gu-queue.md`](gu-queue.md) | Gujarati queue | 112 |
 | [`mr-queue.md`](mr-queue.md) | Marathi queue | 76 |
 | [`other-questions.md`](other-questions.md) | 7 cross-cutting decisions | 94 |
@@ -22,7 +22,7 @@ reading, is how an undecided question gets settled by whoever happened to be loo
 which is the failure this whole apparatus exists to prevent. If you notice one and think it
 is wrong, say so separately; it needs its own decision.
 
-**The 46 intentional divergences.** The web and the app say
+**The 43 intentional divergences.** The web and the app say
 different things there on purpose, and each one is recorded with a reason.
 
 **Anything LOCKED.** Already decided by a person. `scripts/i18n-decisions.json` has them.

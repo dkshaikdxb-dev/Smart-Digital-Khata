@@ -186,16 +186,33 @@ const cases = [
    () => webSet('ta', 'set.noKeySecret', 'Key Secret illai'), 'razorpay-casing-other-languages', 'web'],
 
   ['a native-speaker-queue row cannot be resolved by a tool',
-   () => webSet('bn', 'c.pay', 'পে করুন'), 'native-speaker-queue-bn', 'web'],
+   // Gujarati, because Bengali's queue is answered: a Bengali speaker read all
+   // six rows on 2026-09-18 and they are LOCKED now. The cases below cover that.
+   () => webSet('gu', 'acc.dob', 'જન્મ તારીખ'), 'native-speaker-queue-gu', 'web gu acc.dob'],
+
+  // --- a landed native review is LOCKED, and holds both key names -----------
+  // This is what the queue was FOR. The answers arrived per surface — three
+  // converge the two, one keeps them deliberately apart — and each side is held
+  // under the key name that surface actually uses.
+  ['an answered review is LOCKED, not still under review',
+   () => webSet('bn', 'c.pay', 'পে করুন'), 'bn-native-review-1', 'web bn c.pay'],
+
+  ['the app side of an answered review is held under its OWN key name',
+   () => appSet(CONSUMER, 'bn', 'khata.pay', 'পে করুন'), 'bn-native-review-1', 'app/consumer bn khata.pay'],
+
+  ['an answer that keeps the surfaces DIFFERENT holds each one separately',
+   // c.deliverTo names the thing; orderdetail.deliverTo instructs. The reviewer
+   // kept both, so changing either is a violation of the same decision.
+   () => appSet(CONSUMER, 'bn', 'orderdetail.deliverTo', 'যেখানে পৌঁছে দিতে হবে:'), 'bn-native-review-1', 'app/consumer bn orderdetail.deliverTo'],
+
+  ['a converged answer cannot drift apart again',
+   () => appSet(OWNER, 'bn', 'open.tomorrowAt', 'কাল {time}-এ'), 'bn-native-review-1', 'app/owner bn open.tomorrowAt'],
 
   // --- the queue is a row list now, not a key/lang rectangle ---------------
   // The app side of a queued row usually lives under a DIFFERENT key name. The
   // rectangle could not express that, so it pinned the web string of a question
   // and left the app string — the thing the question was actually about —
   // writable by anything. These four passed silently until 2026-09-18.
-  ['the APP side of a queued row is pinned under its own key name (bn c.pay -> khata.pay)',
-   () => appSet(CONSUMER, 'bn', 'khata.pay', 'পে করুন'), 'native-speaker-queue-bn', 'app/consumer'],
-
   ['the same where the app key shares nothing with the web key (mr c.locationNotSet -> shops.noLocation)',
    () => appSet(CONSUMER, 'mr', 'shops.noLocation', 'लोकेशन दिलेले नाही'), 'native-speaker-queue-mr', 'app/consumer'],
 
@@ -365,9 +382,31 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
       && Object.values(d.protected).some((byLang) => byLang[lang]?.[key] !== undefined))
     .map(([id]) => id);
   const claims = [
-    ['the Bengali question IS pinned in Bengali', () => pinnedBy('bn', 'c.pay').length === 1],
-    ['a Bengali question is NOT pinned in Gujarati', () => pinnedBy('gu', 'c.pay').length === 0],
-    ['a Bengali question is NOT pinned in Marathi', () => pinnedBy('mr', 'c.pay').length === 0],
+    // acc.dob is queued in Gujarati and nowhere else — 60 of the open rows are
+    // like that. Under the old rectangle every one of them was pinned in all
+    // three languages, which is the shape this replaced.
+    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'acc.dob').length === 1],
+    ['and NOT in the other two', () => pinnedBy('bn', 'acc.dob').length === 0 && pinnedBy('mr', 'acc.dob').length === 0],
+    // What a landed review looks like from the registry's side.
+    ['an answered queue holds no rows and keeps every answer as provenance', () => {
+      const q = reg.decisions['native-speaker-queue-bn'];
+      const d = reg.decisions['bn-native-review-1'];
+      if (q.protects.rows.length !== 0) return false;                    // nothing left to review
+      if (!q.resolved_rows || q.resolved_rows.length !== 6) return false;  // and nothing dropped
+      if (d.status !== 'LOCKED') return false;
+      // every answered row is named on BOTH its key names, and each has a value
+      return q.resolved_rows.every((r) => r.answered_by === 'bn-native-review-1'
+        && d.values.bn[r.web] !== undefined
+        && d.values.bn[r.app] !== undefined);
+    }],
+    ['converging a divergence removed it from the intentional set, on the record', () => {
+      const d = reg.divergences.INTENTIONAL_DIVERGENCE;
+      const resolved = (d.resolved || []).find((x) => x.by === 'bn-native-review-1');
+      if (!resolved) return false;
+      // it is gone from the live set, and the count moved with it
+      return resolved.keys.every((k) => !(d.keys.bn || []).includes(k))
+        && d.count === Object.values(d.keys).reduce((n, ks) => n + ks.length, 0);
+    }],
     ['the FAQ decision pins app/consumer only', () => {
       const s = Object.keys(reg.decisions['consumer-faq-app-variants'].protected);
       return s.length === 1 && s[0] === 'app/consumer';

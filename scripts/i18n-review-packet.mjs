@@ -84,6 +84,36 @@ for (const lang of ['bn', 'gu', 'mr']) {
   if (!d) continue;
   const name = LANG_NAME[lang];
   const body = [];
+
+  // An answered queue keeps its file. Deleting it would make the work look like
+  // it never happened, and the next reviewer of another language should be able
+  // to see what a finished one looks like.
+  if (!d.protects.rows.length) {
+    const answered = d.resolved_rows || [];
+    body.push(`# ${name} — answered`);
+    body.push('');
+    body.push(`Nothing is waiting. All ${answered.length} rows were read by a ${name} speaker and are`);
+    body.push('now LOCKED: no script can change them, and any future change goes through the registry.');
+    body.push('');
+    for (const a of answered) {
+      const by = registry.decisions[a.answered_by];
+      const v = by?.rows?.find((x) => x.web === a.web);
+      body.push(`### \`${a.web}\`${a.app && a.app !== a.web ? `  ·  app key \`${a.app}\`` : ''}`);
+      const en = enWeb(a.web) || enApp('app/consumer', a.app) || enApp('app/owner', a.app);
+      if (en) body.push(`- **English** — ${esc(en)}`);
+      if (v) {
+        body.push(`- web — ${esc(v.web_value)}`);
+        body.push(`- app — ${esc(v.app_value)}${v.converges ? '' : '  _(kept different on purpose)_'}`);
+      }
+      if (a.note) body.push(`- ${esc(a.note)}`);
+      body.push('');
+    }
+    body.push(`_Recorded as \`${answered[0]?.answered_by || '(see the registry)'}\` in \`scripts/i18n-decisions.json\`._`);
+    files.set(`${lang}-queue.md`, body.join('\n'));
+    summary.push([`${lang}-queue.md`, `${name} — answered`, 0]);
+    continue;
+  }
+
   body.push(`# ${name} — strings waiting for you`);
   body.push('');
   body.push(`${d.protects.rows.length} rows. Every one of them is a string a ${name} speaker has not read.`);

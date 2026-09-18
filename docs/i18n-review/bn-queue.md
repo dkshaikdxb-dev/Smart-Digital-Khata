@@ -1,65 +1,42 @@
-# Bengali — strings waiting for you
+# Bengali — answered
 
-6 rows. Every one of them is a string a Bengali speaker has not read.
-
-Each row shows the English it was translated from and what each surface says today.
-The web is khata.dadashaik.com; app/consumer is the shopper's phone app and app/owner
-the shopkeeper's. Where the two surfaces differ, that is the question — but they are
-**allowed** to differ, and often should: a chip on a phone and a sentence on a page are
-not the same thing. Say what each one should read.
-
-Write your answer on the **Your answer** line. "web is right", "app is right", or a better
-string — all three are useful answers. "I would not say this at all" is also an answer.
-
-## The questions underneath these rows
-
-Recorded in `scripts/bn-divergence-decisions.json`. Most rows are one of these, and answering the question
-answers every row in it — you do not have to rule on each line separately.
-
-- `c.pay`
-- `oedit.originalSubtotal`
-- `fam.sendReminder`
-- `c.deliverTo`
-- `open.todayAt`
-- `open.tomorrowAt`
-
-## Rows
+Nothing is waiting. All 6 rows were read by a Bengali speaker and are
+now LOCKED: no script can change them, and any future change goes through the registry.
 
 ### `c.deliverTo`  ·  app key `orderdetail.deliverTo`
 - **English** — Deliver to:
-- web — যেখানে ডেলিভারি:
-- app/consumer — এখানে পৌঁছে দিন:
-- **Your answer:** 
+- web — যেখানে পৌঁছে দিতে হবে:
+- app — এখানে পৌঁছে দিন:  _(kept different on purpose)_
+- The surfaces stay different ON PURPOSE. The web names the thing it precedes (an address); the app tells the shopper to deliver here. The web string is new — neither surface had it — because the old one, "যেখানে ডেলিভারি:", used the English loanword where Bengali has a verb.
 
 ### `c.pay`  ·  app key `khata.pay`
 - **English** — Pay
 - web — পরিশোধ করুন
-- app/consumer — পরিশোধ
-- **Your answer:** 
+- app — পরিশোধ করুন
+- The imperative wins: it is a button. The glossary noun পরিশোধ stays the term, with করুন making it an instruction.
 
 ### `fam.sendReminder`  ·  app key `famd.sendReminder`
 - **English** — Send WhatsApp reminder
 - web — WhatsApp রিমাইন্ডার পাঠান
-- app/owner — WhatsApp-এ মনে করিয়ে দিন
-- **Your answer:** 
+- app — WhatsApp রিমাইন্ডার পাঠান
+- The web wording, on both surfaces. This also settles the audit finding that the app transliterated WhatsApp in one string and not another — the brand name is Latin here, as whatsapp-latin requires.
 
 ### `oedit.originalSubtotal`
 - **English** — Original subtotal
 - web — আগের মোট দাম
-- app/owner — আসল উপ-মোট
-- **Your answer:** 
+- app — আগের মোট দাম
+- The natural phrase over the literal one: "আসল উপ-মোট" keeps the English "sub-" and reads like a calculation.
 
 ### `open.todayAt`
 - **English** — at {time}
-- web — {time} টায়
-- app/consumer — {time}-এ
-- app/owner — {time}-এ
-- **Your answer:** 
+- web — {time}-এ
+- app — {time}-এ
+- The app form. -এ is the ordinary locative; টায় is the clock-time idiom and reads heavier on a chip.
 
 ### `open.tomorrowAt`
 - **English** — tomorrow at {time}
-- web — আগামীকাল {time} টায়
-- app/consumer — কাল {time}-এ
-- app/owner — কাল {time}-এ
-- **Your answer:** 
+- web — আগামীকাল {time}-এ
+- app — আগামীকাল {time}-এ
+- Neither surface had this: the web's আগামীকাল (the full word for tomorrow) with the app's -এ. কাল alone is ambiguous in Bengali — it means yesterday as readily as tomorrow.
 
+_Recorded as `bn-native-review-1` in `scripts/i18n-decisions.json`._

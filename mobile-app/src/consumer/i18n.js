@@ -1107,7 +1107,7 @@ const bn = {
   'khata.advance': 'অগ্রিম',
   'khata.settled': 'পুরো মিটেছে',
   'khata.limitSuffix': ' · সীমা {amt}',
-  'khata.pay': 'পরিশোধ',
+  'khata.pay': 'পরিশোধ করুন',
   'khata.opening': 'খুলছে…',
 
   'shopkhata.title': 'দোকানের খাতা',
@@ -1273,7 +1273,7 @@ const bn = {
   'open.closed': 'বন্ধ',
   'open.closedPill': 'বন্ধ',
   'open.todayAt': '{time}-এ',
-  'open.tomorrowAt': 'কাল {time}-এ',
+  'open.tomorrowAt': 'আগামীকাল {time}-এ',
   'open.stateClosed': 'বন্ধ — দোকান এখন বন্ধ করে রাখা আছে',
   'open.statePaused': 'কিছুক্ষণ বন্ধ — {when} খুলবে',
   'open.stateHoliday': 'আজ বন্ধ — {when} আবার খুলবে',
