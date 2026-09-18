@@ -253,6 +253,36 @@ for (const [id, d] of Object.entries(registry.decisions)) {
   }
 }
 
+/* 5b — one row, one status ----------------------------------------------
+   A value cannot be both settled and waiting to be read. The queue was built
+   before the terminology rounds, so rows it raised were later answered by a
+   LOCKED decision — and the snapshot went on pinning them as REVIEW, leaving 12
+   values claiming two statuses at once. Nothing broke, because guardedWrite
+   resolves LOCKED first, but the registry asserted two different things about
+   the same string. The snapshot now leaves LOCKED rows alone and records them
+   as `superseded_rows`; this makes that hold rather than describe it. */
+{
+  const lockedBy = new Map();
+  for (const [id, d] of Object.entries(registry.decisions)) {
+    if (d.status !== 'LOCKED' || !d.values) continue;
+    for (const [lang, kv] of Object.entries(d.values)) for (const key of Object.keys(kv)) lockedBy.set(`${lang}|${key}`, id);
+  }
+  for (const [id, d] of Object.entries(registry.decisions)) {
+    if (d.status !== 'REVIEW' || !d.protected) continue;
+    for (const [surface, byLang] of Object.entries(d.protected)) {
+      for (const [lang, kv] of Object.entries(byLang)) {
+        for (const key of Object.keys(kv)) {
+          const owner = lockedBy.get(`${lang}|${key}`);
+          if (owner) {
+            bad(id, `${surface} ${lang} ${key} is pinned as REVIEW and LOCKED by ${owner}`
+              + `\n      -> LOCKED is authoritative. Move the row to ${id}.superseded_rows and re-run scripts/i18n-review-snapshot.mjs`);
+          }
+        }
+      }
+    }
+  }
+}
+
 /* 6 — the divergence sets are still what the registry records ------------ */
 {
   const KL = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/keylevel-decisions.json'), 'utf8'));

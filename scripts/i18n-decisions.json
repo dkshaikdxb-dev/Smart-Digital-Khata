@@ -673,8 +673,7 @@
         "web": {
           "gu": {
             "ostatus.accepted": "સ્વીકારેલ",
-            "dash.orderStatus.accepted": "સ્વીકારેલ",
-            "status.accepted": "સ્વીકારેલ"
+            "dash.orderStatus.accepted": "સ્વીકારેલ"
           }
         },
         "app/consumer": {
@@ -687,7 +686,19 @@
             "ostatus.accepted": "સ્વીકારેલ"
           }
         }
-      }
+      },
+      "superseded_rows": [
+        {
+          "lang": "gu",
+          "key": "status.accepted",
+          "answered_by": "gu-status-form",
+          "note": "LOCKED is authoritative: the string is still immutable, under that decision rather than this one. Kept here as provenance so the open wording question is not lost.",
+          "value_at_retirement": {
+            "web": "સ્વીકારેલ"
+          }
+        }
+      ],
+      "protects_note": "gu-status-form locks the FORM of this chip (bare, not inflected). The open question here is the WORD, and it stays open on the two rows that decision does not name."
     },
     "gu-out-for-delivery-form": {
       "type": "LINGUISTIC",
@@ -748,22 +759,29 @@
       },
       "protected": {
         "web": {
-          "gu": {
-            "chelp.e7.a": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે."
-          },
           "mr": {
             "chelp.e7.a": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबितपासून मंजूर, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
           }
         },
         "app/consumer": {
-          "gu": {
-            "chelp.e7.a": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડર બાકીથી સ્વીકાર્યો, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક તબક્કે તમને અપડેટ મળે છે."
-          },
           "mr": {
             "chelp.e7.a": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबित पासून स्वीकारले, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
           }
         }
-      }
+      },
+      "superseded_rows": [
+        {
+          "lang": "gu",
+          "key": "chelp.e7.a",
+          "answered_by": "gu-orthography",
+          "note": "LOCKED is authoritative: the string is still immutable, under that decision rather than this one. Kept here as provenance so the open wording question is not lost.",
+          "value_at_retirement": {
+            "web": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે.",
+            "app/consumer": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડર બાકીથી સ્વીકાર્યો, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક તબક્કે તમને અપડેટ મળે છે."
+          }
+        }
+      ],
+      "protects_note": "gu-orthography records the whole gu value, because respelling its loanword rewrote the string. The mr row is untouched and still carries the question."
     },
     "rangeEmpty-rewording": {
       "type": "LINGUISTIC",
@@ -780,16 +798,28 @@
           "mr"
         ]
       },
-      "protected": {
-        "web": {
-          "gu": {
-            "cat.rangeEmpty": "તમારી પાસે હજી કોઈ વસ્તુ નથી. નીચેના કૅટલૉગમાંથી વસ્તુઓ ઉમેરો."
-          },
-          "mr": {
-            "cat.rangeEmpty": "तुमच्याकडे अजून कोणतीही वस्तू नाही. खालील कॅटलॉगमधून वस्तू जोडा."
+      "protected": {},
+      "superseded_rows": [
+        {
+          "lang": "gu",
+          "key": "cat.rangeEmpty",
+          "answered_by": "product-item-grammar",
+          "note": "LOCKED is authoritative: the string is still immutable, under that decision rather than this one. Kept here as provenance so the open wording question is not lost.",
+          "value_at_retirement": {
+            "web": "તમારી પાસે હજી કોઈ વસ્તુ નથી. નીચેના કૅટલૉગમાંથી વસ્તુઓ ઉમેરો."
+          }
+        },
+        {
+          "lang": "mr",
+          "key": "cat.rangeEmpty",
+          "answered_by": "product-item-grammar",
+          "note": "LOCKED is authoritative: the string is still immutable, under that decision rather than this one. Kept here as provenance so the open wording question is not lost.",
+          "value_at_retirement": {
+            "web": "तुमच्याकडे अजून कोणतीही वस्तू नाही. खालील कॅटलॉगमधून वस्तू जोडा."
           }
         }
-      }
+      ],
+      "protects_note": "Both rows are LOCKED by product-item-grammar, which repaired the determiner the terminology change left behind. This decision therefore protects nothing of its own: the strings cannot move, and the rewording question is still unanswered. It stays REVIEW so the question keeps a home, and it is deliberately empty rather than accidentally so."
     },
     "razorpay-casing-other-languages": {
       "type": "HOUSE-STYLE",
@@ -879,122 +909,1700 @@
         }
       }
     },
-    "native-speaker-queue": {
+    "native-speaker-queue-bn": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The ~20 open wording questions across bn, gu and mr — 218 rows.",
-      "why_review": "Both readings are valid in each case; these need a speaker, not more analysis. Catalogued in bn-divergence-decisions.json, gu-reconcile-decisions.json and mr-reconcile-decisions.json.",
+      "concept": "The open Bengali wording questions from the web/app ledger — 6 rows.",
+      "why_review": "Both readings are valid in each case; these need a Bengali speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
+      "source": {
+        "ledger": "docs/i18n-web/LEDGER-bn-divergence.md",
+        "themes": "scripts/bn-divergence-decisions.json",
+        "note": "The themes file groups these rows into questions and records no key list; the ledger records every row, with the app-side key. The rows below come from the ledger."
+      },
       "does_not_block_freeze": true,
       "immutable": true,
       "protects": {
-        "keys": [
-          "c.pay",
-          "c.unit",
-          "oedit.originalSubtotal",
-          "set.noKeySecret",
-          "set.noWebhookSecret",
-          "fam.sendReminder",
-          "c.deliverTo",
-          "open.todayAt",
-          "open.tomorrowAt",
-          "nav.catalog",
-          "c.prepaid",
-          "ref.shareLink",
-          "c.locationNotSet"
-        ],
-        "langs": [
-          "bn",
-          "gu",
-          "mr"
+        "rows": [
+          {
+            "lang": "bn",
+            "web": "c.deliverTo",
+            "app": "orderdetail.deliverTo"
+          },
+          {
+            "lang": "bn",
+            "web": "c.pay",
+            "app": "khata.pay"
+          },
+          {
+            "lang": "bn",
+            "web": "fam.sendReminder",
+            "app": "famd.sendReminder"
+          },
+          {
+            "lang": "bn",
+            "web": "oedit.originalSubtotal",
+            "app": "oedit.originalSubtotal"
+          },
+          {
+            "lang": "bn",
+            "web": "open.todayAt",
+            "app": "open.todayAt"
+          },
+          {
+            "lang": "bn",
+            "web": "open.tomorrowAt",
+            "app": "open.tomorrowAt"
+          }
         ]
       },
-      "protects_note": "The ledgers record THEMES as well as keys; a theme has no single value, so only the dotted key names are pinned here. Per language: bn 10, gu 2, mr 5.",
+      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
+      "open_themes": [
+        "c.pay",
+        "oedit.originalSubtotal",
+        "fam.sendReminder",
+        "c.deliverTo",
+        "open.todayAt",
+        "open.tomorrowAt"
+      ],
+      "superseded_rows": [
+        {
+          "web": "c.unit",
+          "app": "shopdetail.unit",
+          "answered_by": "unit-counter",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "টি",
+            "app/consumer": "টি"
+          }
+        },
+        {
+          "web": "nav.catalog",
+          "app": "tab.catalog",
+          "answered_by": "catalogue-loanword",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "ক্যাটালগ",
+            "app/owner": "ক্যাটালগ"
+          }
+        },
+        {
+          "web": "set.noKeySecret",
+          "app": null,
+          "answered_by": "razorpay-casing",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "Key Secret নেই"
+          }
+        },
+        {
+          "web": "set.noWebhookSecret",
+          "app": null,
+          "answered_by": "razorpay-casing",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "Webhook Secret নেই"
+          }
+        }
+      ],
       "protected": {
         "web": {
           "bn": {
-            "c.pay": "পরিশোধ করুন",
-            "c.unit": "টি",
-            "oedit.originalSubtotal": "আগের মোট দাম",
-            "set.noKeySecret": "Key Secret নেই",
-            "set.noWebhookSecret": "Webhook Secret নেই",
-            "fam.sendReminder": "WhatsApp রিমাইন্ডার পাঠান",
             "c.deliverTo": "যেখানে ডেলিভারি:",
+            "c.pay": "পরিশোধ করুন",
+            "fam.sendReminder": "WhatsApp রিমাইন্ডার পাঠান",
+            "oedit.originalSubtotal": "আগের মোট দাম",
             "open.todayAt": "{time} টায়",
-            "open.tomorrowAt": "আগামীকাল {time} টায়",
-            "nav.catalog": "ক্যাটালগ",
-            "c.prepaid": "অনলাইন",
-            "ref.shareLink": "শেয়ার লিংক",
-            "c.locationNotSet": "লোকেশন নেই"
-          },
-          "gu": {
-            "c.pay": "ચૂકવો",
-            "c.unit": "નંગ",
-            "oedit.originalSubtotal": "મૂળ ઉપ-કુલ",
-            "set.noKeySecret": "Key Secret નથી",
-            "set.noWebhookSecret": "Webhook Secret નથી",
-            "fam.sendReminder": "WhatsApp રિમાઇન્ડર મોકલો",
-            "c.deliverTo": "અહીં પહોંચાડો:",
-            "open.todayAt": "{time} વાગ્યે",
-            "open.tomorrowAt": "આવતીકાલે {time} વાગ્યે",
-            "nav.catalog": "કૅટલૉગ",
-            "c.prepaid": "ઑનલાઇન",
-            "ref.shareLink": "લિંક શેર કરો",
-            "c.locationNotSet": "સ્થાન સેટ નથી"
-          },
-          "mr": {
-            "c.pay": "भरा",
-            "c.unit": "नग",
-            "oedit.originalSubtotal": "मूळ उप-बेरीज",
-            "set.noKeySecret": "Key Secret नाही",
-            "set.noWebhookSecret": "Webhook Secret नाही",
-            "fam.sendReminder": "WhatsApp रिमाइंडर पाठवा",
-            "c.deliverTo": "इथे पोहोचवा:",
-            "open.todayAt": "{time} वाजता",
-            "open.tomorrowAt": "उद्या {time} वाजता",
-            "nav.catalog": "कॅटलॉग",
-            "c.prepaid": "ऑनलाइन",
-            "ref.shareLink": "लिंक शेअर करा",
-            "c.locationNotSet": "लोकेशन सेट केलेले नाही"
-          }
-        },
-        "app/owner": {
-          "bn": {
-            "oedit.originalSubtotal": "আসল উপ-মোট",
-            "set.noKeySecret": "Key Secret নেই",
-            "set.noWebhookSecret": "Webhook Secret নেই",
-            "open.todayAt": "{time}-এ",
-            "open.tomorrowAt": "কাল {time}-এ"
-          },
-          "gu": {
-            "oedit.originalSubtotal": "મૂળ ઉપ-કુલ",
-            "set.noKeySecret": "Key Secret નથી",
-            "set.noWebhookSecret": "Webhook Secret નથી",
-            "open.todayAt": "{time} વાગ્યે",
-            "open.tomorrowAt": "આવતીકાલે {time} વાગ્યે"
-          },
-          "mr": {
-            "oedit.originalSubtotal": "मूळ उप-बेरीज",
-            "set.noKeySecret": "Key Secret नाही",
-            "set.noWebhookSecret": "Webhook Secret नाही",
-            "open.todayAt": "{time} वाजता",
-            "open.tomorrowAt": "उद्या {time} वाजता"
+            "open.tomorrowAt": "আগামীকাল {time} টায়"
           }
         },
         "app/consumer": {
           "bn": {
+            "orderdetail.deliverTo": "এখানে পৌঁছে দিন:",
+            "khata.pay": "পরিশোধ",
             "open.todayAt": "{time}-এ",
-            "open.tomorrowAt": "কাল {time}-এ",
-            "ref.shareLink": "শেয়ার লিংক"
+            "open.tomorrowAt": "কাল {time}-এ"
+          }
+        },
+        "app/owner": {
+          "bn": {
+            "famd.sendReminder": "WhatsApp-এ মনে করিয়ে দিন",
+            "oedit.originalSubtotal": "আসল উপ-মোট",
+            "open.todayAt": "{time}-এ",
+            "open.tomorrowAt": "কাল {time}-এ"
+          }
+        }
+      },
+      "superseded_note": "value_at_retirement is the string each row carried when it left the queue. It is provenance, not a protection: the LOCKED decision named in answered_by is what governs these strings now. Three of those decisions — unit-counter, catalogue-loanword and prepaid-mechanism — state a rule and carry no value map, and the gate does not evaluate them, so 14 of these values are currently held by a rule nothing checks. Recording them here is what a check would need."
+    },
+    "native-speaker-queue-gu": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "The open Gujarati wording questions from the web/app ledger — 110 rows.",
+      "why_review": "Both readings are valid in each case; these need a Gujarati speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
+      "source": {
+        "ledger": "docs/i18n-web/LEDGER-gu-reconcile.md",
+        "themes": "scripts/gu-reconcile-decisions.json",
+        "note": "The themes file groups these rows into questions and records no key list; the ledger records every row, with the app-side key. The rows below come from the ledger."
+      },
+      "does_not_block_freeze": true,
+      "immutable": true,
+      "protects": {
+        "rows": [
+          {
+            "lang": "gu",
+            "web": "acc.dob",
+            "app": "account.dob"
           },
+          {
+            "lang": "gu",
+            "web": "acc.genderUnset",
+            "app": "account.genderUnset"
+          },
+          {
+            "lang": "gu",
+            "web": "acc.loadError",
+            "app": "account.loadError"
+          },
+          {
+            "lang": "gu",
+            "web": "acc.logout",
+            "app": "account.logout"
+          },
+          {
+            "lang": "gu",
+            "web": "acc.optional",
+            "app": "account.optional"
+          },
+          {
+            "lang": "gu",
+            "web": "acc.phoneReadonly",
+            "app": "account.phoneReadonly"
+          },
+          {
+            "lang": "gu",
+            "web": "c.cancelling",
+            "app": "orderdetail.cancelling"
+          },
+          {
+            "lang": "gu",
+            "web": "c.cartEmpty",
+            "app": "cart.empty"
+          },
+          {
+            "lang": "gu",
+            "web": "c.enterCodeSentTo",
+            "app": "login.enterCode"
+          },
+          {
+            "lang": "gu",
+            "web": "c.loadingCatalog",
+            "app": "shopdetail.loading"
+          },
+          {
+            "lang": "gu",
+            "web": "c.loadingOrder",
+            "app": "orderdetail.loading"
+          },
+          {
+            "lang": "gu",
+            "web": "c.loadingShops",
+            "app": "shops.loading"
+          },
+          {
+            "lang": "gu",
+            "web": "c.locationNotSet",
+            "app": "shops.noLocation"
+          },
+          {
+            "lang": "gu",
+            "web": "c.myOrders",
+            "app": "orders.title"
+          },
+          {
+            "lang": "gu",
+            "web": "c.noShops",
+            "app": "shops.none"
+          },
+          {
+            "lang": "gu",
+            "web": "c.notePlaceholderArrival",
+            "app": "cart.notePlaceholder"
+          },
+          {
+            "lang": "gu",
+            "web": "c.opening",
+            "app": "khata.opening"
+          },
+          {
+            "lang": "gu",
+            "web": "c.payOnline",
+            "app": "cart.payOnline"
+          },
+          {
+            "lang": "gu",
+            "web": "c.placeOrder",
+            "app": "cart.placeOrder"
+          },
+          {
+            "lang": "gu",
+            "web": "c.placing",
+            "app": "cart.placing"
+          },
+          {
+            "lang": "gu",
+            "web": "c.sending",
+            "app": "login.sending"
+          },
+          {
+            "lang": "gu",
+            "web": "c.unit",
+            "app": "shopdetail.unit"
+          },
+          {
+            "lang": "gu",
+            "web": "c.verifyContinue",
+            "app": "login.verify"
+          },
+          {
+            "lang": "gu",
+            "web": "c.verifying",
+            "app": "login.verifying"
+          },
+          {
+            "lang": "gu",
+            "web": "c.yourCart",
+            "app": "cart.title"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.addFromCatalogue",
+            "app": "cat.addFromCatalogue"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.addProduct",
+            "app": "cat.addProduct"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.descOptional",
+            "app": "cat.descPlaceholder"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.empty",
+            "app": "cat.empty"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.loadMore",
+            "app": "cat.loadMore"
+          },
+          {
+            "lang": "gu",
+            "web": "cat.noResults",
+            "app": "shopdetail.noResults"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e3.q",
+            "app": "chelp.e3.q"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e4.a",
+            "app": "chelp.e4.a"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e4.q",
+            "app": "chelp.e4.q"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e5.a",
+            "app": "chelp.e5.a"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e5.q",
+            "app": "chelp.e5.q"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e6.a",
+            "app": "chelp.e6.a"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.e6.q",
+            "app": "chelp.e6.q"
+          },
+          {
+            "lang": "gu",
+            "web": "chelp.subtitle",
+            "app": "chelp.subtitle"
+          },
+          {
+            "lang": "gu",
+            "web": "common.balance",
+            "app": "khata.balance"
+          },
+          {
+            "lang": "gu",
+            "web": "common.creditLimit",
+            "app": "custd.creditLimit"
+          },
+          {
+            "lang": "gu",
+            "web": "common.noteOptional",
+            "app": "addtx.note"
+          },
+          {
+            "lang": "gu",
+            "web": "common.outstanding",
+            "app": "ins.outstanding"
+          },
+          {
+            "lang": "gu",
+            "web": "common.remove",
+            "app": "cart.remove"
+          },
+          {
+            "lang": "gu",
+            "web": "common.subtotal",
+            "app": "common.subtotal"
+          },
+          {
+            "lang": "gu",
+            "web": "ctab.orders",
+            "app": "tab.orders"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.customersWithDues",
+            "app": "dash.customersWithDues"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.kpi.orders",
+            "app": "tab.orders"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.orderStatus.accepted",
+            "app": "ostatus.accepted"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.orderStatus.cancelled",
+            "app": "ostatus.cancelled"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.orderStatus.out_for_delivery",
+            "app": "ostatus.out_for_delivery"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.revenue.family",
+            "app": "title.family"
+          },
+          {
+            "lang": "gu",
+            "web": "dash.revenue.free",
+            "app": "cart.freeDelivery"
+          },
+          {
+            "lang": "gu",
+            "web": "dl.customers",
+            "app": "tab.customers"
+          },
+          {
+            "lang": "gu",
+            "web": "dl.myOrders",
+            "app": "orders.title"
+          },
+          {
+            "lang": "gu",
+            "web": "dl.orders",
+            "app": "tab.orders"
+          },
+          {
+            "lang": "gu",
+            "web": "fam.combinedStatement",
+            "app": "famd.combinedStatement"
+          },
+          {
+            "lang": "gu",
+            "web": "fam.removeConfirm",
+            "app": "famd.removeConfirm"
+          },
+          {
+            "lang": "gu",
+            "web": "fam.sendReminder",
+            "app": "famd.sendReminder"
+          },
+          {
+            "lang": "gu",
+            "web": "ins.activeCustomers",
+            "app": "ins.activeCustomers"
+          },
+          {
+            "lang": "gu",
+            "web": "ins.collectionRate",
+            "app": "ins.collectionRate"
+          },
+          {
+            "lang": "gu",
+            "web": "ins.customersWithDues",
+            "app": "dash.customersWithDues"
+          },
+          {
+            "lang": "gu",
+            "web": "ins.outstandingByAge",
+            "app": "ins.outstandingByAge"
+          },
+          {
+            "lang": "gu",
+            "web": "log.signIn",
+            "app": "login.title"
+          },
+          {
+            "lang": "gu",
+            "web": "mod.loadMore",
+            "app": "cat.loadMore"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.catalog",
+            "app": "tab.catalog"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.customers",
+            "app": "tab.customers"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.insights",
+            "app": "title.insights"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.logout",
+            "app": "account.logout"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.orders",
+            "app": "tab.orders"
+          },
+          {
+            "lang": "gu",
+            "web": "nav.settings",
+            "app": "title.settings"
+          },
+          {
+            "lang": "gu",
+            "web": "num.changed",
+            "app": "num.changed"
+          },
+          {
+            "lang": "gu",
+            "web": "num.changing",
+            "app": "num.changing"
+          },
+          {
+            "lang": "gu",
+            "web": "num.confirm",
+            "app": "num.confirm"
+          },
+          {
+            "lang": "gu",
+            "web": "num.enterCode",
+            "app": "login.enterCode"
+          },
+          {
+            "lang": "gu",
+            "web": "num.sending",
+            "app": "login.sending"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.cancelConfirm",
+            "app": "orderdetail.cancelConfirm"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.cancelOrder",
+            "app": "orderdetail.cancel"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.empty",
+            "app": "ord.empty"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.emptyItems",
+            "app": "ord.noItems"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.mark",
+            "app": "ord.mark"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.marked",
+            "app": "ord.marked"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.order",
+            "app": "orderdetail.title"
+          },
+          {
+            "lang": "gu",
+            "web": "ord.terminal",
+            "app": "ord.terminal"
+          },
+          {
+            "lang": "gu",
+            "web": "ostatus.accepted",
+            "app": "ostatus.accepted"
+          },
+          {
+            "lang": "gu",
+            "web": "ostatus.out_for_delivery",
+            "app": "ostatus.out_for_delivery"
+          },
+          {
+            "lang": "gu",
+            "web": "pin.saving",
+            "app": "account.saving"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.loadError",
+            "app": "ref.loadError"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.referredCount",
+            "app": "ref.referredCount"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.shareLink",
+            "app": "ref.shareLink"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.subtitle",
+            "app": "ref.subtitle"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.title",
+            "app": "ref.title"
+          },
+          {
+            "lang": "gu",
+            "web": "ref.type.owner",
+            "app": "ref.type.owner"
+          },
+          {
+            "lang": "gu",
+            "web": "set.customerNotifications",
+            "app": "set.customerNotifications"
+          },
+          {
+            "lang": "gu",
+            "web": "set.discovery",
+            "app": "set.discovery"
+          },
+          {
+            "lang": "gu",
+            "web": "set.free",
+            "app": "cart.freeDelivery"
+          },
+          {
+            "lang": "gu",
+            "web": "set.leaveBlank",
+            "app": "set.leaveBlank"
+          },
+          {
+            "lang": "gu",
+            "web": "set.paymentSaved",
+            "app": "set.paymentSaved"
+          },
+          {
+            "lang": "gu",
+            "web": "staff.remove",
+            "app": "cart.remove"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.allShops",
+            "app": "stmt.allShops"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.closing",
+            "app": "stmt.closing"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.combined",
+            "app": "stmt.combined"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.loadError",
+            "app": "stmt.loadError"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.noData",
+            "app": "stmt.noData"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.opening",
+            "app": "stmt.opening"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.pickShop",
+            "app": "stmt.pickShop"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.rangeError",
+            "app": "stmt.rangeError"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.subtitle",
+            "app": "stmt.subtitle"
+          },
+          {
+            "lang": "gu",
+            "web": "stmt.title",
+            "app": "stmt.title"
+          },
+          {
+            "lang": "gu",
+            "web": "tx.empty",
+            "app": "custd.noTransactions"
+          }
+        ]
+      },
+      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
+      "open_themes": [
+        "orthography_candra_o",
+        "product_word",
+        "catalogue_word",
+        "balance_vs_outstanding",
+        "cart_word",
+        "register_and_tense",
+        "ref.shareLink"
+      ],
+      "superseded_rows": [
+        {
+          "web": "c.prepaid",
+          "app": "pmode.prepaid",
+          "answered_by": "prepaid-mechanism",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "ઑનલાઇન",
+            "app/consumer": "ઑનલાઇન",
+            "app/owner": "ઑનલાઇન"
+          }
+        },
+        {
+          "web": "chelp.e2.a",
+          "app": "chelp.e2.a",
+          "answered_by": "product-item",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
+            "app/consumer": "ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો."
+          }
+        },
+        {
+          "web": "chelp.e2.q",
+          "app": "chelp.e2.q",
+          "answered_by": "product-item",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "વસ્તુ કેવી રીતે શોધવી?",
+            "app/consumer": "વસ્તુ કેવી રીતે શોધવી?"
+          }
+        },
+        {
+          "web": "chelp.e3.a",
+          "app": "chelp.e3.a",
+          "answered_by": "product-item",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
+            "app/consumer": "દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે."
+          }
+        },
+        {
+          "web": "chelp.e7.q",
+          "app": "chelp.e7.q",
+          "answered_by": "gu-orthography",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "મારો ઑર્ડર કેવી રીતે ટ્રૅક કરવો?",
+            "app/consumer": "મારો ઑર્ડર કેવી રીતે ટ્રૅક કરવો?"
+          }
+        },
+        {
+          "web": "common.items",
+          "app": "common.items",
+          "answered_by": "product-item",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "વસ્તુઓ",
+            "app/consumer": "વસ્તુઓ"
+          }
+        },
+        {
+          "web": "dash.orderStatus.preparing",
+          "app": "ostatus.preparing",
+          "answered_by": "gu-status-form",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "તૈયાર થાય છે",
+            "app/consumer": "તૈયાર થાય છે",
+            "app/owner": "તૈયાર થાય છે"
+          }
+        },
+        {
+          "web": "ostatus.cancelled",
+          "app": "ostatus.cancelled",
+          "answered_by": "gu-status-form",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "રદ",
+            "app/consumer": "રદ",
+            "app/owner": "રદ"
+          }
+        },
+        {
+          "web": "ostatus.preparing",
+          "app": "ostatus.preparing",
+          "answered_by": "gu-status-form",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "તૈયાર થાય છે",
+            "app/consumer": "તૈયાર થાય છે",
+            "app/owner": "તૈયાર થાય છે"
+          }
+        },
+        {
+          "web": "set.keySecretSet",
+          "app": "set.keySecretSet",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Key Secret આપેલું છે",
+            "app/owner": "Key Secret આપેલું છે"
+          }
+        },
+        {
+          "web": "set.noKeySecret",
+          "app": "set.noKeySecret",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Key Secret નથી",
+            "app/owner": "Key Secret નથી"
+          }
+        },
+        {
+          "web": "set.noWebhookSecret",
+          "app": "set.noWebhookSecret",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Webhook Secret નથી",
+            "app/owner": "Webhook Secret નથી"
+          }
+        },
+        {
+          "web": "set.webhookSecretSet",
+          "app": "set.webhookSecretSet",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Webhook Secret આપેલું છે",
+            "app/owner": "Webhook Secret આપેલું છે"
+          }
+        }
+      ],
+      "protected": {
+        "web": {
           "gu": {
-            "open.todayAt": "{time} વાગ્યે",
-            "open.tomorrowAt": "આવતીકાલે {time} વાગ્યે",
-            "ref.shareLink": "શેર લિંક"
+            "acc.dob": "જન્મતારીખ",
+            "acc.genderUnset": "સેટ નથી",
+            "acc.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નહીં.",
+            "acc.logout": "લૉગ આઉટ",
+            "acc.optional": "મરજિયાત",
+            "acc.phoneReadonly": "ફોન એ તમારો લૉગિન આઈડી છે અને અહીં બદલી શકાતો નથી.",
+            "c.cancelling": "રદ થાય છે…",
+            "c.cartEmpty": "તમારી કાર્ટ ખાલી છે.",
+            "c.enterCodeSentTo": "{phone} પર મોકલેલો કોડ લખો",
+            "c.loadingCatalog": "કૅટલૉગ લોડ થાય છે…",
+            "c.loadingOrder": "ઑર્ડર લોડ થાય છે…",
+            "c.loadingShops": "દુકાનો લોડ થાય છે…",
+            "c.locationNotSet": "સ્થાન સેટ નથી",
+            "c.myOrders": "મારા ઑર્ડર",
+            "c.noShops": "કોઈ દુકાન મળી નથી. બીજી રીતે શોધો.",
+            "c.notePlaceholderArrival": "દા.ત. પહોંચતાં ફોન કરો",
+            "c.opening": "ખૂલે છે…",
+            "c.payOnline": "ઑનલાઇન ચૂકવો",
+            "c.placeOrder": "ઑર્ડર કરો",
+            "c.placing": "ઑર્ડર થાય છે…",
+            "c.sending": "મોકલાય છે…",
+            "c.unit": "નંગ",
+            "c.verifyContinue": "ચકાસો અને આગળ વધો",
+            "c.verifying": "ચકાસાય છે…",
+            "c.yourCart": "તમારી કાર્ટ",
+            "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
+            "cat.addProduct": "વસ્તુ ઉમેરો",
+            "cat.descOptional": "વર્ણન (મરજિયાત)",
+            "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
+            "cat.loadMore": "વધુ લોડ કરો",
+            "cat.noResults": "મળતી કોઈ વસ્તુ નથી.",
+            "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
+            "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
+            "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
+            "chelp.e5.a": "તમે ખાતા (ઉધાર) પર, ઑનલાઇન, કે રોકડમાં ચૂકવી શકો છો. ખાતા પર લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકતે કરી શકો.",
+            "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
+            "chelp.e6.a": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી રકમ એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, તેથી તમને હંમેશાં તમારી બાકી ખબર રહે છે, અને વિગત જોઈ કે ડાઉનલોડ કરી શકો છો.",
+            "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે?",
+            "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
+            "common.balance": "બેલેન્સ",
+            "common.creditLimit": "ઉધાર મર્યાદા",
+            "common.noteOptional": "નોંધ (મરજિયાત)",
+            "common.outstanding": "બાકી રકમ",
+            "common.remove": "દૂર કરો",
+            "common.subtotal": "પેટા-કુલ",
+            "ctab.orders": "ઑર્ડર",
+            "dash.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
+            "dash.kpi.orders": "ઑર્ડર",
+            "dash.orderStatus.accepted": "સ્વીકારેલ",
+            "dash.orderStatus.cancelled": "રદ",
+            "dash.orderStatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+            "dash.revenue.family": "ફેમિલી",
+            "dash.revenue.free": "ફ્રી",
+            "dl.customers": "ગ્રાહકો",
+            "dl.myOrders": "મારા ઑર્ડર",
+            "dl.orders": "ઑર્ડર",
+            "fam.combinedStatement": "સંયુક્ત સ્ટેટમેન્ટ",
+            "fam.removeConfirm": "{name}ને આ પરિવારમાંથી કાઢવા?",
+            "fam.sendReminder": "WhatsApp રિમાઇન્ડર મોકલો",
+            "ins.activeCustomers": "સક્રિય ગ્રાહકો",
+            "ins.collectionRate": "વસૂલીનો દર",
+            "ins.customersWithDues": "બાકીવાળા ગ્રાહકો",
+            "ins.outstandingByAge": "સમય પ્રમાણે બાકી",
+            "log.signIn": "સાઇન ઇન",
+            "mod.loadMore": "વધુ લોડ કરો",
+            "nav.catalog": "કૅટલૉગ",
+            "nav.customers": "ગ્રાહકો",
+            "nav.insights": "માહિતી",
+            "nav.logout": "લૉગ આઉટ",
+            "nav.orders": "ઑર્ડર",
+            "nav.settings": "સેટિંગ્સ",
+            "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
+            "num.changing": "બદલાઈ રહ્યું છે…",
+            "num.confirm": "બદલાવ પાકો કરો",
+            "num.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
+            "num.sending": "મોકલાઈ રહ્યું છે…",
+            "ord.cancelConfirm": "આ ઑર્ડર રદ કરવો? આ પાછું નહીં આવે.",
+            "ord.cancelOrder": "ઑર્ડર રદ કરો",
+            "ord.empty": "આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી.",
+            "ord.emptyItems": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી.",
+            "ord.mark": "{s} તરીકે નોંધો",
+            "ord.marked": "ઑર્ડર {s} નોંધાયો.",
+            "ord.order": "ઑર્ડર",
+            "ord.terminal": "આ ઑર્ડર {s} છે — વધુ કોઈ ફેરફાર નહીં.",
+            "ostatus.accepted": "સ્વીકારેલ",
+            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+            "pin.saving": "સેવ થાય છે…",
+            "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
+            "ref.referredCount": "તમે અત્યાર સુધી {n}ને રેફર કર્યા છે.",
+            "ref.shareLink": "લિંક શેર કરો",
+            "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
+            "ref.title": "આમંત્રણ આપો ને કમાઓ",
+            "ref.type.owner": "દુકાન માલિક",
+            "set.customerNotifications": "ગ્રાહક નોટિફિકેશન",
+            "set.discovery": "ડિસ્કવરી (તમારી દુકાન યાદીમાં મૂકો)",
+            "set.free": "ફ્રી",
+            "set.leaveBlank": "હાલનું રાખવા ખાલી છોડો",
+            "set.paymentSaved": "ચૂકવણી સેટિંગ્સ સેવ થઈ.",
+            "staff.remove": "કાઢો",
+            "stmt.allShops": "બધી દુકાનો (સંયુક્ત)",
+            "stmt.closing": "છેલ્લું બેલેન્સ",
+            "stmt.combined": "સંયુક્ત કુલ",
+            "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
+            "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
+            "stmt.opening": "શરૂઆતનું બેલેન્સ",
+            "stmt.pickShop": "દુકાન પસંદ કરો",
+            "stmt.rangeError": "'થી' તારીખ 'સુધી' તારીખની બરાબર કે પહેલાં હોવી જોઈએ.",
+            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ.",
+            "stmt.title": "ખાતાનું સ્ટેટમેન્ટ",
+            "tx.empty": "હજી કોઈ વ્યવહાર નથી."
+          }
+        },
+        "app/consumer": {
+          "gu": {
+            "account.dob": "જન્મ તારીખ",
+            "account.genderUnset": "આપ્યું નથી",
+            "account.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નથી.",
+            "account.logout": "લૉગ આઉટ",
+            "account.optional": "વૈકલ્પિક",
+            "account.phoneReadonly": "ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી.",
+            "orderdetail.cancelling": "રદ થઈ રહ્યો છે…",
+            "cart.empty": "તમારી ટોપલી ખાલી છે.",
+            "login.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
+            "shopdetail.loading": "યાદી લોડ થઈ રહી છે…",
+            "orderdetail.loading": "ઑર્ડર લોડ થઈ રહ્યો છે…",
+            "shops.loading": "દુકાનો લોડ થઈ રહી છે…",
+            "shops.noLocation": "લોકેશન નથી",
+            "orders.title": "મારા ઑર્ડર",
+            "shops.none": "કોઈ દુકાન મળી નહીં. બીજી શોધ કરો.",
+            "cart.notePlaceholder": "દા.ત. પહોંચીને કોલ કરો",
+            "khata.opening": "ખૂલી રહ્યું છે…",
+            "cart.payOnline": "ઑનલાઇન ચૂકવણી",
+            "cart.placeOrder": "ઑર્ડર કરો",
+            "cart.placing": "ઑર્ડર થઈ રહ્યો છે…",
+            "login.sending": "મોકલાઈ રહ્યું છે…",
+            "shopdetail.unit": "નંગ",
+            "login.verify": "ચકાસીને આગળ વધો",
+            "login.verifying": "ચકાસાઈ રહ્યું છે…",
+            "cart.title": "તમારી ટોપલી",
+            "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
+            "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
+            "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
+            "chelp.e5.a": "તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય.",
+            "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
+            "chelp.e6.a": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો.",
+            "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે?",
+            "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
+            "khata.balance": "બેલેન્સ",
+            "cart.remove": "દૂર કરો",
+            "common.subtotal": "ઉપ-કુલ",
+            "tab.orders": "ઑર્ડર",
+            "ostatus.accepted": "સ્વીકારેલ",
+            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+            "cart.freeDelivery": "મફત",
+            "login.title": "સાઇન ઇન કરો",
+            "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
+            "num.changing": "બદલાઈ રહ્યું છે…",
+            "num.confirm": "ફેરફારની ખાતરી કરો",
+            "orderdetail.cancelConfirm": "આ ઑર્ડર રદ કરવો?",
+            "orderdetail.cancel": "ઑર્ડર રદ કરો",
+            "orderdetail.title": "ઑર્ડર",
+            "account.saving": "સેવ થઈ રહ્યું છે…",
+            "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
+            "ref.referredCount": "અત્યાર સુધી તમે {n} ને રેફર કર્યા છે.",
+            "ref.shareLink": "શેર લિંક",
+            "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
+            "ref.title": "આમંત્રણ આપો ને કમાઓ",
+            "ref.type.owner": "દુકાન માલિક",
+            "stmt.allShops": "બધી દુકાનો (સાથે)",
+            "stmt.closing": "છેલ્લું બેલેન્સ",
+            "stmt.combined": "બધું મળીને કુલ",
+            "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
+            "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
+            "stmt.opening": "શરૂઆતનું બેલેન્સ",
+            "stmt.pickShop": "દુકાન પસંદ કરો",
+            "stmt.rangeError": "\"થી\" તારીખ \"સુધી\" તારીખ પહેલાંની કે એ જ હોવી જોઈએ.",
+            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ.",
+            "stmt.title": "ખાતાનું વિવરણ"
+          }
+        },
+        "app/owner": {
+          "gu": {
+            "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
+            "cat.addProduct": "વસ્તુ ઉમેરો",
+            "cat.descPlaceholder": "વર્ણન (વૈકલ્પિક)",
+            "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
+            "cat.loadMore": "વધુ જુઓ",
+            "custd.creditLimit": "ઉધારની મર્યાદા",
+            "addtx.note": "નોંધ (વૈકલ્પિક)",
+            "ins.outstanding": "બાકી",
+            "tab.orders": "ઑર્ડર",
+            "dash.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
+            "ostatus.accepted": "સ્વીકારેલ",
+            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+            "title.family": "પરિવાર",
+            "tab.customers": "ગ્રાહક",
+            "famd.combinedStatement": "સંયુક્ત હિસાબ",
+            "famd.removeConfirm": "{name} ને આ પરિવારમાંથી દૂર કરવા?",
+            "famd.sendReminder": "WhatsApp પર યાદ કરાવો",
+            "ins.activeCustomers": "સક્રિય ગ્રાહક",
+            "ins.collectionRate": "વસૂલીનો દર",
+            "ins.outstandingByAge": "કેટલા દિવસની બાકી",
+            "tab.catalog": "કૅટલૉગ",
+            "title.insights": "વિશ્લેષણ",
+            "title.settings": "સેટિંગ",
+            "ord.empty": "અહીં હજી કોઈ ઑર્ડર નથી.",
+            "ord.mark": "{s} તરીકે નોંધો",
+            "ord.marked": "ઑર્ડર {s} નોંધાયો.",
+            "ord.terminal": "આ ઑર્ડર {s} — હવે કોઈ ફેરફાર નહીં.",
+            "set.customerNotifications": "ગ્રાહકનાં નોટિફિકેશન",
+            "set.discovery": "શોધ (તમારી દુકાન યાદીમાં મૂકો)",
+            "set.leaveBlank": "હાલનું રાખવા ખાલી રાખો",
+            "set.paymentSaved": "ચૂકવણી સેટિંગ સેવ થયું.",
+            "custd.noTransactions": "હજી કોઈ લેવડદેવડ નથી."
+          }
+        }
+      }
+    },
+    "native-speaker-queue-mr": {
+      "type": "LINGUISTIC",
+      "status": "REVIEW",
+      "concept": "The open Marathi wording questions from the web/app ledger — 76 rows.",
+      "why_review": "Both readings are valid in each case; these need a Marathi speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
+      "source": {
+        "ledger": "docs/i18n-web/LEDGER-mr-reconcile.md",
+        "themes": "scripts/mr-reconcile-decisions.json",
+        "note": "The themes file groups these rows into questions and records no key list; the ledger records every row, with the app-side key. The rows below come from the ledger."
+      },
+      "does_not_block_freeze": true,
+      "immutable": true,
+      "protects": {
+        "rows": [
+          {
+            "lang": "mr",
+            "web": "acc.genderFemale",
+            "app": "account.genderFemale"
           },
+          {
+            "lang": "mr",
+            "web": "acc.genderPreferNot",
+            "app": "account.genderPreferNot"
+          },
+          {
+            "lang": "mr",
+            "web": "acc.genderUnset",
+            "app": "account.genderUnset"
+          },
+          {
+            "lang": "mr",
+            "web": "acc.phoneReadonly",
+            "app": "account.phoneReadonly"
+          },
+          {
+            "lang": "mr",
+            "web": "c.cartEmpty",
+            "app": "cart.empty"
+          },
+          {
+            "lang": "mr",
+            "web": "c.deliverTo",
+            "app": "orderdetail.deliverTo"
+          },
+          {
+            "lang": "mr",
+            "web": "c.enterCodeSentTo",
+            "app": "login.enterCode"
+          },
+          {
+            "lang": "mr",
+            "web": "c.loadingCatalog",
+            "app": "shopdetail.loading"
+          },
+          {
+            "lang": "mr",
+            "web": "c.locationNotSet",
+            "app": "shops.noLocation"
+          },
+          {
+            "lang": "mr",
+            "web": "c.noShops",
+            "app": "shops.none"
+          },
+          {
+            "lang": "mr",
+            "web": "c.noteColon",
+            "app": "orderdetail.note"
+          },
+          {
+            "lang": "mr",
+            "web": "c.notePlaceholderArrival",
+            "app": "cart.notePlaceholder"
+          },
+          {
+            "lang": "mr",
+            "web": "c.payOnline",
+            "app": "cart.payOnline"
+          },
+          {
+            "lang": "mr",
+            "web": "c.placing",
+            "app": "cart.placing"
+          },
+          {
+            "lang": "mr",
+            "web": "c.size",
+            "app": "shopdetail.size"
+          },
+          {
+            "lang": "mr",
+            "web": "c.verifyContinue",
+            "app": "login.verify"
+          },
+          {
+            "lang": "mr",
+            "web": "c.yourCart",
+            "app": "cart.title"
+          },
+          {
+            "lang": "mr",
+            "web": "cat.addFromCatalogue",
+            "app": "cat.addFromCatalogue"
+          },
+          {
+            "lang": "mr",
+            "web": "cat.addProduct",
+            "app": "cat.addProduct"
+          },
+          {
+            "lang": "mr",
+            "web": "cat.descOptional",
+            "app": "cat.descPlaceholder"
+          },
+          {
+            "lang": "mr",
+            "web": "cat.empty",
+            "app": "cat.empty"
+          },
+          {
+            "lang": "mr",
+            "web": "cat.loadMore",
+            "app": "cat.loadMore"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e2.a",
+            "app": "chelp.e2.a"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e3.a",
+            "app": "chelp.e3.a"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e4.a",
+            "app": "chelp.e4.a"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e4.q",
+            "app": "chelp.e4.q"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e5.a",
+            "app": "chelp.e5.a"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e5.q",
+            "app": "chelp.e5.q"
+          },
+          {
+            "lang": "mr",
+            "web": "chelp.e6.a",
+            "app": "chelp.e6.a"
+          },
+          {
+            "lang": "mr",
+            "web": "common.note",
+            "app": "ord.note"
+          },
+          {
+            "lang": "mr",
+            "web": "common.noteOptional",
+            "app": "addtx.note"
+          },
+          {
+            "lang": "mr",
+            "web": "common.outstanding",
+            "app": "ins.outstanding"
+          },
+          {
+            "lang": "mr",
+            "web": "common.subtotal",
+            "app": "common.subtotal"
+          },
+          {
+            "lang": "mr",
+            "web": "common.totalOutstanding",
+            "app": "dash.totalOutstanding"
+          },
+          {
+            "lang": "mr",
+            "web": "dash.customersWithDues",
+            "app": "dash.customersWithDues"
+          },
+          {
+            "lang": "mr",
+            "web": "dash.orderStatus.cancelled",
+            "app": "ostatus.cancelled"
+          },
+          {
+            "lang": "mr",
+            "web": "dash.revenue.family",
+            "app": "title.family"
+          },
+          {
+            "lang": "mr",
+            "web": "dash.revenue.free",
+            "app": "cart.freeDelivery"
+          },
+          {
+            "lang": "mr",
+            "web": "fam.combinedOutstanding",
+            "app": "famd.combinedOutstanding"
+          },
+          {
+            "lang": "mr",
+            "web": "fam.combinedStatement",
+            "app": "famd.combinedStatement"
+          },
+          {
+            "lang": "mr",
+            "web": "fam.removeConfirm",
+            "app": "famd.removeConfirm"
+          },
+          {
+            "lang": "mr",
+            "web": "fam.sendReminder",
+            "app": "famd.sendReminder"
+          },
+          {
+            "lang": "mr",
+            "web": "help.title",
+            "app": "chelp.title"
+          },
+          {
+            "lang": "mr",
+            "web": "ins.collectionRate",
+            "app": "ins.collectionRate"
+          },
+          {
+            "lang": "mr",
+            "web": "ins.customersWithDues",
+            "app": "dash.customersWithDues"
+          },
+          {
+            "lang": "mr",
+            "web": "ins.outstandingByAge",
+            "app": "ins.outstandingByAge"
+          },
+          {
+            "lang": "mr",
+            "web": "log.signIn",
+            "app": "login.title"
+          },
+          {
+            "lang": "mr",
+            "web": "mod.loadMore",
+            "app": "cat.loadMore"
+          },
+          {
+            "lang": "mr",
+            "web": "nav.insights",
+            "app": "title.insights"
+          },
+          {
+            "lang": "mr",
+            "web": "nav.settings",
+            "app": "title.settings"
+          },
+          {
+            "lang": "mr",
+            "web": "num.changed",
+            "app": "num.changed"
+          },
+          {
+            "lang": "mr",
+            "web": "num.enterCode",
+            "app": "login.enterCode"
+          },
+          {
+            "lang": "mr",
+            "web": "ord.empty",
+            "app": "ord.empty"
+          },
+          {
+            "lang": "mr",
+            "web": "ord.mark",
+            "app": "ord.mark"
+          },
+          {
+            "lang": "mr",
+            "web": "ord.marked",
+            "app": "ord.marked"
+          },
+          {
+            "lang": "mr",
+            "web": "ord.terminal",
+            "app": "ord.terminal"
+          },
+          {
+            "lang": "mr",
+            "web": "ostatus.cancelled",
+            "app": "ostatus.cancelled"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.noneYet",
+            "app": "ref.noneYet"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.referredByLabel",
+            "app": "ref.referredByLabel"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.referredCount",
+            "app": "ref.referredCount"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.shareLink",
+            "app": "ref.shareLink"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.subtitle",
+            "app": "ref.subtitle"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.title",
+            "app": "ref.title"
+          },
+          {
+            "lang": "mr",
+            "web": "ref.type.owner",
+            "app": "ref.type.owner"
+          },
+          {
+            "lang": "mr",
+            "web": "set.customerNotifications",
+            "app": "set.customerNotifications"
+          },
+          {
+            "lang": "mr",
+            "web": "set.discovery",
+            "app": "set.discovery"
+          },
+          {
+            "lang": "mr",
+            "web": "set.free",
+            "app": "cart.freeDelivery"
+          },
+          {
+            "lang": "mr",
+            "web": "set.paymentSaved",
+            "app": "set.paymentSaved"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.allShops",
+            "app": "stmt.allShops"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.closing",
+            "app": "stmt.closing"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.loadError",
+            "app": "stmt.loadError"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.noData",
+            "app": "stmt.noData"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.pickShop",
+            "app": "stmt.pickShop"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.rangeError",
+            "app": "stmt.rangeError"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.subtitle",
+            "app": "stmt.subtitle"
+          },
+          {
+            "lang": "mr",
+            "web": "stmt.title",
+            "app": "stmt.title"
+          }
+        ]
+      },
+      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
+      "open_themes": [
+        "outstanding_word",
+        "pay_verb",
+        "product_word",
+        "c.locationNotSet",
+        "register_and_tense"
+      ],
+      "superseded_rows": [
+        {
+          "web": "c.prepaid",
+          "app": "pmode.prepaid",
+          "answered_by": "prepaid-mechanism",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "ऑनलाइन",
+            "app/consumer": "ऑनलाइन",
+            "app/owner": "ऑनलाइन"
+          }
+        },
+        {
+          "web": "c.unit",
+          "app": "shopdetail.unit",
+          "answered_by": "unit-counter",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "नग",
+            "app/consumer": "नग"
+          }
+        },
+        {
+          "web": "nav.catalog",
+          "app": "tab.catalog",
+          "answered_by": "catalogue-loanword",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "कॅटलॉग",
+            "app/owner": "कॅटलॉग"
+          }
+        },
+        {
+          "web": "set.keySecretSet",
+          "app": "set.keySecretSet",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Key Secret दिलेले आहे",
+            "app/owner": "Key Secret दिलेले आहे"
+          }
+        },
+        {
+          "web": "set.noKeySecret",
+          "app": "set.noKeySecret",
+          "answered_by": "razorpay-casing",
+          "note": "The ledger queued this as a wording question; a LOCKED decision has since answered it. Kept as provenance — the question was real and this records how it was settled — but it is no longer an active REVIEW protection.",
+          "value_at_retirement": {
+            "web": "Key Secret नाही",
+            "app/owner": "Key Secret नाही"
+          }
+        },
+        {
+          "web": "set.noWebhookSecret",
+          "app": "set.noWebhookSecret",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Webhook Secret नाही",
+            "app/owner": "Webhook Secret नाही"
+          }
+        },
+        {
+          "web": "set.webhookSecretSet",
+          "app": "set.webhookSecretSet",
+          "answered_by": "razorpay-casing",
+          "note": "Every value this row covers is named by a LOCKED decision. LOCKED is authoritative: the strings are still immutable, under that decision rather than this one.",
+          "value_at_retirement": {
+            "web": "Webhook Secret दिलेले आहे",
+            "app/owner": "Webhook Secret दिलेले आहे"
+          }
+        }
+      ],
+      "protected": {
+        "web": {
           "mr": {
-            "open.todayAt": "{time} वाजता",
-            "open.tomorrowAt": "उद्या {time} वाजता",
-            "ref.shareLink": "शेअर लिंक"
+            "acc.genderFemale": "स्त्री",
+            "acc.genderPreferNot": "सांगू इच्छित नाही",
+            "acc.genderUnset": "सेट केलेले नाही",
+            "acc.phoneReadonly": "फोन हा तुमचा लॉगिन आयडी आहे आणि इथे बदलता येत नाही.",
+            "c.cartEmpty": "तुमची कार्ट रिकामी आहे.",
+            "c.deliverTo": "इथे पोहोचवा:",
+            "c.enterCodeSentTo": "{phone} वर पाठवलेला कोड लिहा",
+            "c.loadingCatalog": "कॅटलॉग लोड होत आहे…",
+            "c.locationNotSet": "लोकेशन सेट केलेले नाही",
+            "c.noShops": "कोणतेही दुकान सापडले नाही. वेगळ्या प्रकारे शोधा.",
+            "c.noteColon": "नोंद:",
+            "c.notePlaceholderArrival": "उदा. पोहोचल्यावर फोन करा",
+            "c.payOnline": "ऑनलाइन भरा",
+            "c.placing": "ऑर्डर करत आहे…",
+            "c.size": "आकार",
+            "c.verifyContinue": "पडताळा आणि पुढे जा",
+            "c.yourCart": "तुमची कार्ट",
+            "cat.addFromCatalogue": "कॅटलॉगमधून जोडा",
+            "cat.addProduct": "वस्तू जोडा",
+            "cat.descOptional": "वर्णन (ऐच्छिक)",
+            "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
+            "cat.loadMore": "अधिक लोड करा",
+            "chelp.e2.a": "वरच्या सर्च बारचा वापर करा, किंवा कॅटेगरीत पाहा. बोलून शोधायला 🎤 माइक दाबा आणि वस्तूचे नाव सांगा.",
+            "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
+            "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
+            "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
+            "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
+            "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
+            "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
+            "common.note": "नोंद",
+            "common.noteOptional": "नोंद (ऐच्छिक)",
+            "common.outstanding": "उधारी",
+            "common.subtotal": "उप-बेरीज",
+            "common.totalOutstanding": "एकूण बाकी",
+            "dash.customersWithDues": "उधारी असलेले ग्राहक",
+            "dash.orderStatus.cancelled": "रद्द",
+            "dash.revenue.family": "फॅमिली",
+            "dash.revenue.free": "फ्री",
+            "fam.combinedOutstanding": "एकत्रित बाकी",
+            "fam.combinedStatement": "एकत्रित विवरण",
+            "fam.removeConfirm": "{name} यांना या कुटुंबातून काढायचे?",
+            "fam.sendReminder": "WhatsApp रिमाइंडर पाठवा",
+            "help.title": "मदत आणि सामान्य प्रश्न",
+            "ins.collectionRate": "वसुलीचा दर",
+            "ins.customersWithDues": "बाकी असलेले ग्राहक",
+            "ins.outstandingByAge": "किती दिवसांची उधारी",
+            "log.signIn": "साइन इन",
+            "mod.loadMore": "अधिक लोड करा",
+            "nav.insights": "माहिती",
+            "nav.settings": "सेटिंग्ज",
+            "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
+            "num.enterCode": "{phone} वर पाठवलेला कोड टाका",
+            "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
+            "ord.mark": "{s} म्हणून नोंदवा",
+            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
+            "ord.terminal": "हा ऑर्डर {s} आहे — पुढे कोणताही बदल नाही.",
+            "ostatus.cancelled": "रद्द",
+            "ref.noneYet": "अजून कोणतेही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
+            "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
+            "ref.referredCount": "तुम्ही आतापर्यंत {n} जणांना रेफर केले आहे.",
+            "ref.shareLink": "लिंक शेअर करा",
+            "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
+            "ref.title": "निमंत्रण द्या आणि कमवा",
+            "ref.type.owner": "दुकान मालक",
+            "set.customerNotifications": "ग्राहक नोटिफिकेशन",
+            "set.discovery": "डिस्कव्हरी (तुमचे दुकान यादीत टाका)",
+            "set.free": "फ्री",
+            "set.paymentSaved": "भरणा सेटिंग्ज सेव्ह झाल्या.",
+            "stmt.allShops": "सर्व दुकाने (एकत्रित)",
+            "stmt.closing": "अखेरची शिल्लक",
+            "stmt.loadError": "विवरण लोड होऊ शकले नाही.",
+            "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
+            "stmt.pickShop": "दुकान निवडा",
+            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी.",
+            "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीसाठी तारखेनुसार नोंदी, आणि अखेरची शिल्लक.",
+            "stmt.title": "खात्याचे विवरण"
+          }
+        },
+        "app/consumer": {
+          "mr": {
+            "account.genderFemale": "महिला",
+            "account.genderPreferNot": "सांगायचे नाही",
+            "account.genderUnset": "दिलेले नाही",
+            "account.phoneReadonly": "फोन हीच तुमची लॉगिन आयडी आहे, इथे बदलता येत नाही.",
+            "cart.empty": "तुमची टोपली रिकामी आहे.",
+            "orderdetail.deliverTo": "येथे पोहोचवा:",
+            "login.enterCode": "{phone} वर पाठवलेला कोड टाका",
+            "shopdetail.loading": "यादी लोड होत आहे…",
+            "shops.noLocation": "लोकेशन नाही",
+            "shops.none": "कोणतीही दुकान मिळाली नाही. वेगळा शोध करा.",
+            "orderdetail.note": "सूचना:",
+            "cart.notePlaceholder": "उदा. पोहोचल्यावर कॉल करा",
+            "cart.payOnline": "ऑनलाइन भरणा",
+            "cart.placing": "ऑर्डर होत आहे…",
+            "shopdetail.size": "साइज",
+            "login.verify": "पडताळून पुढे जा",
+            "cart.title": "तुमची टोपली",
+            "chelp.e2.a": "वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला.",
+            "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
+            "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
+            "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
+            "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
+            "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
+            "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
+            "common.subtotal": "उप-बेरीज",
+            "ostatus.cancelled": "रद्द केले",
+            "cart.freeDelivery": "मोफत",
+            "chelp.title": "मदत आणि नेहमीचे प्रश्न",
+            "login.title": "साइन इन करा",
+            "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
+            "ref.noneYet": "अजून कोणताही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
+            "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
+            "ref.referredCount": "आतापर्यंत तुम्ही {n} जणांना रेफर केले आहे.",
+            "ref.shareLink": "शेअर लिंक",
+            "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
+            "ref.title": "निमंत्रण द्या आणि कमवा",
+            "ref.type.owner": "दुकान मालक",
+            "stmt.allShops": "सर्व दुकाने (एकत्र)",
+            "stmt.closing": "शेवटची शिल्लक",
+            "stmt.loadError": "तपशील लोड होऊ शकला नाही.",
+            "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
+            "stmt.pickShop": "दुकान निवडा",
+            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी.",
+            "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीतील तारखेनुसार नोंदी, आणि शेवटची शिल्लक.",
+            "stmt.title": "खात्याचा तपशील"
+          }
+        },
+        "app/owner": {
+          "mr": {
+            "cat.addFromCatalogue": "कॅटलॉगतून जोडा",
+            "cat.addProduct": "वस्तू जोडा",
+            "cat.descPlaceholder": "तपशील (ऐच्छिक)",
+            "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
+            "cat.loadMore": "अधिक पाहा",
+            "ord.note": "सूचना",
+            "addtx.note": "सूचना (ऐच्छिक)",
+            "ins.outstanding": "उधारी",
+            "dash.totalOutstanding": "एकूण उधारी",
+            "dash.customersWithDues": "उधारी असलेले ग्राहक",
+            "ostatus.cancelled": "रद्द केले",
+            "title.family": "कुटुंब",
+            "famd.combinedOutstanding": "एकत्रित उधारी",
+            "famd.combinedStatement": "एकत्रित हिशेब",
+            "famd.removeConfirm": "{name} ला या कुटुंबातून काढायचे?",
+            "famd.sendReminder": "WhatsApp वर आठवण पाठवा",
+            "ins.collectionRate": "वसुलीचा दर",
+            "ins.outstandingByAge": "किती दिवसांची उधारी",
+            "title.insights": "विश्लेषण",
+            "title.settings": "सेटिंग",
+            "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
+            "ord.mark": "{s} म्हणून नोंदवा",
+            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
+            "ord.terminal": "हा ऑर्डर {s} — आता बदल नाही.",
+            "set.customerNotifications": "ग्राहकांचे नोटिफिकेशन",
+            "set.discovery": "शोध (तुमचे दुकान यादीत द्या)",
+            "set.paymentSaved": "भरणा सेटिंग सेव्ह झाले."
           }
         }
       }
@@ -1115,71 +2723,12 @@
           "mr",
           "gu",
           "ur"
+        ],
+        "surfaces": [
+          "app/consumer"
         ]
       },
       "protected": {
-        "web": {
-          "en": {
-            "chelp.e1.a": "Use the search box to type a shop name or your city. Tap “Use my location” to see shops near you. You can also filter to show only shops that do pickup or delivery.",
-            "chelp.e8.a": "Tap the language switch at the top to pick your language — the app remembers it on this device. Many screens also read aloud, and you can search by voice with the 🎤 microphone.",
-            "chelp.e9.q": "How do I switch between light and dark mode?",
-            "chelp.e9.a": "Tap the sun/moon button to switch between light and dark. Dark is easier on the eyes at night; your choice is saved on this device."
-          },
-          "hi": {
-            "chelp.e1.a": "सर्च बॉक्स में दुकान का नाम या अपना शहर लिखें। “मेरा स्थान इस्तेमाल करें” दबाकर पास की दुकानें देखें। सिर्फ़ पिकअप या डिलीवरी वाली दुकानें दिखाने के लिए फ़िल्टर भी लगा सकते हैं।",
-            "chelp.e8.a": "ऊपर भाषा स्विच दबाकर अपनी भाषा चुनें — ऐप इसे इस डिवाइस पर याद रखता है। कई स्क्रीन पढ़कर भी सुनाती हैं, और आप 🎤 माइक से बोलकर खोज सकते हैं।",
-            "chelp.e9.q": "लाइट और डार्क मोड कैसे बदलें?",
-            "chelp.e9.a": "सूरज/चाँद बटन दबाकर लाइट और डार्क के बीच बदलें। रात में डार्क आंखों के लिए आसान है; आपकी पसंद इस डिवाइस पर सेव रहती है।"
-          },
-          "bn": {
-            "chelp.e1.a": "সার্চ বক্সে দোকানের নাম বা আপনার শহর লিখুন। “আমার লোকেশন ব্যবহার করুন” চাপলে কাছের দোকান দেখা যাবে। শুধু পিকআপ বা ডেলিভারি করে এমন দোকান দেখাতে ফিল্টারও দিতে পারেন।",
-            "chelp.e8.a": "উপরের ভাষা সুইচ চেপে আপনার ভাষা বেছে নিন — অ্যাপ এই ডিভাইসে সেটা মনে রাখে। অনেক স্ক্রিন পড়েও শোনায়, আর 🎤 মাইক দিয়ে বলে খুঁজতে পারেন।",
-            "chelp.e9.q": "লাইট আর ডার্ক মোড কীভাবে বদলাব?",
-            "chelp.e9.a": "সূর্য/চাঁদ বোতাম চেপে লাইট আর ডার্কের মধ্যে বদলান। রাতে ডার্ক চোখের জন্য আরাম; আপনার পছন্দ এই ডিভাইসে সেভ থাকে।"
-          },
-          "ta": {
-            "chelp.e1.a": "தேடல் பெட்டியில் கடையின் பெயரையோ உங்கள் ஊரையோ தட்டச்சு செய்யுங்கள். “என் இருப்பிடத்தைப் பயன்படுத்து” என்பதை அழுத்தி அருகிலுள்ள கடைகளைப் பாருங்கள். பிக்அப் அல்லது டெலிவரி செய்யும் கடைகளை மட்டும் காட்ட வடிகட்டவும் முடியும்.",
-            "chelp.e8.a": "மேலே உள்ள மொழி மாற்றியை அழுத்தி உங்கள் மொழியைத் தேர்ந்தெடுங்கள் — ஆப் அதை இந்தச் சாதனத்தில் நினைவில் வைக்கும். பல திரைகள் வாசித்தும் காட்டும், 🎤 மைக்கால் குரலில் தேடலாம்.",
-            "chelp.e9.q": "லைட் மற்றும் டார்க் பயன்முறையை எப்படி மாற்றுவது?",
-            "chelp.e9.a": "சூரியன்/நிலவு பொத்தானை அழுத்தி லைட் மற்றும் டார்க் இடையே மாற்றுங்கள். இரவில் டார்க் கண்களுக்கு எளிது; உங்கள் தேர்வு இந்தச் சாதனத்தில் சேமிக்கப்படும்."
-          },
-          "te": {
-            "chelp.e1.a": "సెర్చ్ బాక్స్‌లో దుకాణం పేరు లేదా మీ నగరం టైప్ చేయండి. “నా లొకేషన్ ఉపయోగించు” నొక్కి మీ దగ్గరి దుకాణాలను చూడండి. పికప్ లేదా డెలివరీ చేసే దుకాణాలను మాత్రమే చూపడానికి ఫిల్టర్ కూడా పెట్టవచ్చు.",
-            "chelp.e8.a": "పైన ఉన్న భాషా స్విచ్ నొక్కి మీ భాషను ఎంచుకోండి — యాప్ దాన్ని ఈ పరికరంలో గుర్తుంచుకుంటుంది. చాలా స్క్రీన్లు చదివి కూడా వినిపిస్తాయి, 🎤 మైక్‌తో మాట్లాడి వెతకవచ్చు.",
-            "chelp.e9.q": "లైట్, డార్క్ మోడ్ మధ్య ఎలా మారాలి?",
-            "chelp.e9.a": "సూర్యుడు/చంద్రుడు బటన్ నొక్కి లైట్, డార్క్ మధ్య మారండి. రాత్రి డార్క్ కళ్లకు హాయిగా ఉంటుంది; మీ ఎంపిక ఈ పరికరంలో సేవ్ అవుతుంది."
-          },
-          "kn": {
-            "chelp.e1.a": "ಸರ್ಚ್ ಬಾಕ್ಸ್‌ನಲ್ಲಿ ಅಂಗಡಿಯ ಹೆಸರು ಅಥವಾ ನಿಮ್ಮ ಊರನ್ನು ಟೈಪ್ ಮಾಡಿ. “ನನ್ನ ಸ್ಥಳ ಬಳಸು” ಒತ್ತಿ ಹತ್ತಿರದ ಅಂಗಡಿಗಳನ್ನು ನೋಡಿ. ಪಿಕಪ್ ಅಥವಾ ಡೆಲಿವರಿ ಮಾಡುವ ಅಂಗಡಿಗಳನ್ನು ಮಾತ್ರ ತೋರಿಸಲು ಫಿಲ್ಟರ್ ಸಹ ಹಾಕಬಹುದು.",
-            "chelp.e8.a": "ಮೇಲಿನ ಭಾಷಾ ಸ್ವಿಚ್ ಒತ್ತಿ ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ — ಆ್ಯಪ್ ಅದನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ನೆನಪಿಡುತ್ತದೆ. ಹಲವು ಪರದೆಗಳು ಓದಿಯೂ ಕೇಳಿಸುತ್ತವೆ, 🎤 ಮೈಕ್‌ನಿಂದ ಧ್ವನಿಯಿಂದ ಹುಡುಕಬಹುದು.",
-            "chelp.e9.q": "ಲೈಟ್ ಮತ್ತು ಡಾರ್ಕ್ ಮೋಡ್ ನಡುವೆ ಹೇಗೆ ಬದಲಾಯಿಸುವುದು?",
-            "chelp.e9.a": "ಸೂರ್ಯ/ಚಂದ್ರ ಬಟನ್ ಒತ್ತಿ ಲೈಟ್ ಮತ್ತು ಡಾರ್ಕ್ ನಡುವೆ ಬದಲಾಯಿಸಿ. ರಾತ್ರಿಯಲ್ಲಿ ಡಾರ್ಕ್ ಕಣ್ಣಿಗೆ ಹಿತ; ನಿಮ್ಮ ಆಯ್ಕೆ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಯುತ್ತದೆ."
-          },
-          "ml": {
-            "chelp.e1.a": "സെർച്ച് ബോക്സിൽ കടയുടെ പേരോ നിങ്ങളുടെ നഗരമോ ടൈപ്പ് ചെയ്യുക. “എന്റെ ലൊക്കേഷൻ ഉപയോഗിക്കുക” അമർത്തി അടുത്തുള്ള കടകൾ കാണുക. പിക്കപ്പ് അല്ലെങ്കിൽ ഡെലിവറി ചെയ്യുന്ന കടകൾ മാത്രം കാണിക്കാൻ ഫിൽട്ടറും ഇടാം.",
-            "chelp.e8.a": "മുകളിലുള്ള ഭാഷാ സ്വിച്ച് അമർത്തി നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക — ആപ്പ് അത് ഈ ഉപകരണത്തിൽ ഓർത്തുവെക്കും. പല സ്ക്രീനുകളും വായിച്ചും കേൾപ്പിക്കും, 🎤 മൈക്ക് ഉപയോഗിച്ച് ശബ്ദത്തിലൂടെ തിരയാം.",
-            "chelp.e9.q": "ലൈറ്റ്, ഡാർക്ക് മോഡ് എങ്ങനെ മാറ്റും?",
-            "chelp.e9.a": "സൂര്യൻ/ചന്ദ്രൻ ബട്ടൺ അമർത്തി ലൈറ്റും ഡാർക്കും തമ്മിൽ മാറുക. രാത്രിയിൽ ഡാർക്ക് കണ്ണിന് സുഖം; നിങ്ങളുടെ തിരഞ്ഞെടുപ്പ് ഈ ഉപകരണത്തിൽ സേവ് ചെയ്യും."
-          },
-          "mr": {
-            "chelp.e1.a": "सर्च बॉक्समध्ये दुकानाचे नाव किंवा तुमचे शहर लिहा. “माझे लोकेशन वापरा” दाबून जवळची दुकाने पाहा. फक्त पिकअप किंवा डिलिव्हरी करणारी दुकाने दाखवायला फिल्टरही लावू शकता.",
-            "chelp.e8.a": "वर भाषा स्विच दाबून तुमची भाषा निवडा — ॲप ती या डिव्हाइसवर लक्षात ठेवते. बऱ्याच स्क्रीन वाचूनही ऐकवतात, आणि 🎤 माइकने बोलून शोधू शकता.",
-            "chelp.e9.q": "लाइट आणि डार्क मोडमध्ये कसे बदलायचे?",
-            "chelp.e9.a": "सूर्य/चंद्र बटण दाबून लाइट आणि डार्कमध्ये बदला. रात्री डार्क डोळ्यांना सोपे; तुमची निवड या डिव्हाइसवर सेव्ह राहते."
-          },
-          "gu": {
-            "chelp.e1.a": "સર્ચ બૉક્સમાં દુકાનનું નામ કે તમારું શહેર લખો. “મારું લોકેશન વાપરો” દબાવીને નજીકની દુકાનો જુઓ. ફક્ત પિકઅપ કે ડિલિવરી કરતી દુકાનો બતાવવા ફિલ્ટર પણ લગાવી શકો છો.",
-            "chelp.e8.a": "ઉપર ભાષા સ્વિચ દબાવીને તમારી ભાષા પસંદ કરો — ઍપ એને આ ડિવાઇસ પર યાદ રાખે છે. ઘણી સ્ક્રીન વાંચીને પણ સંભળાવે છે, અને 🎤 માઇકથી બોલીને શોધી શકો છો.",
-            "chelp.e9.q": "લાઇટ અને ડાર્ક મોડ વચ્ચે કેવી રીતે બદલવું?",
-            "chelp.e9.a": "સૂરજ/ચંદ્ર બટન દબાવીને લાઇટ અને ડાર્ક વચ્ચે બદલો. રાત્રે ડાર્ક આંખો માટે સહેલું છે; તમારી પસંદ આ ડિવાઇસ પર સેવ રહે છે."
-          },
-          "ur": {
-            "chelp.e1.a": "سرچ باکس میں دکان کا نام یا اپنا شہر لکھیں۔ “میرا مقام استعمال کریں” دبا کر قریبی دکانیں دیکھیں۔ صرف پک اپ یا ڈیلیوری والی دکانیں دکھانے کے لیے فلٹر بھی لگا سکتے ہیں۔",
-            "chelp.e8.a": "اوپر زبان سوئچ دبا کر اپنی زبان چنیں — ایپ اسے اس ڈیوائس پر یاد رکھتا ہے۔ کئی اسکرین پڑھ کر بھی سناتی ہیں، اور آپ 🎤 مائیک سے بول کر تلاش کر سکتے ہیں۔",
-            "chelp.e9.q": "لائٹ اور ڈارک موڈ کیسے بدلوں؟",
-            "chelp.e9.a": "سورج/چاند بٹن دبا کر لائٹ اور ڈارک کے درمیان بدلیں۔ رات میں ڈارک آنکھوں کے لیے آسان ہے؛ آپ کی پسند اس ڈیوائس پر محفوظ رہتی ہے۔"
-          }
-        },
         "app/consumer": {
           "en": {
             "chelp.e1.a": "Open the Shops tab and type a shop name or your city in the search box. If you see the 🎤 microphone, tap it and say the name instead of typing.",
@@ -1242,7 +2791,8 @@
             "chelp.e9.a": "ایپ ہر جگہ ایک ہی گہری اسکرین استعمال کرتا ہے، اس لیے بدلنے کے لیے کچھ نہیں۔ اگر آپ کا کنیکشن سست یا مہنگا ہے تو اکاؤنٹ ٹیب کھول کر ڈیٹا سیور آن کریں؛ تاکہ اضافی تصویریں لوڈ نہ ہوں۔"
           }
         }
-      }
+      },
+      "protects_note": "app/consumer only. scope.surfaces has always said [\"app\"]; the snapshot used to pin the 40 web values too, which made a REVIEW decision immutable over 40 rows it does not claim. The four en values are the APPROVED English source and are pinned alongside the 36 translations, because the app dictionary is where they live."
     }
   },
   "divergences": {

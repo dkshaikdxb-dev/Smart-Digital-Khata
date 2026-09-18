@@ -8,6 +8,35 @@
 // exactly two decisions out of eight. The 36 machine-authored FAQ translations,
 // the loudest thing in the queue, had no record at all.
 //
+// A decision says what it protects in one of two shapes:
+//
+//   protects: { keys: [...], langs: [...] }   a rectangle — every key in every
+//                                             language. Right when the decision
+//                                             really is that shape, as the FAQ
+//                                             one is: four keys, ten languages.
+//
+//   protects: { rows: [{lang, web, app}] }    an explicit list. The native review
+//                                             queue is NOT a rectangle: the three
+//                                             ledgers queued different keys in
+//                                             different languages, and the app
+//                                             side of a row usually lives under a
+//                                             DIFFERENT key name — web c.pay is
+//                                             app khata.pay, web c.locationNotSet
+//                                             is app shops.noLocation. A rectangle
+//                                             pinned 36 values nobody had queued
+//                                             and missed 11 that were the actual
+//                                             subject of the question.
+//
+// `protects.surfaces` narrows either shape to the surfaces the decision is
+// about. consumer-faq-app-variants gives the native app its own FAQ answers; the
+// web strings it diverges FROM were never part of that decision, and pinning
+// them made a REVIEW decision immutable over 40 rows it does not claim.
+//
+// A value that a LOCKED decision already names is never snapshotted. Status is
+// not additive: a row cannot both be settled and be waiting to be read, and
+// LOCKED is the one that was decided by a person. Where a queued row has since
+// been answered, the row lives on in `superseded_rows` as provenance.
+//
 // This writes ONLY the `protected` blocks. It never touches a dictionary, a
 // decision's status, its scope, or any other field — run it, and `git diff`
 // should show scripts/i18n-decisions.json and nothing else.
@@ -58,31 +87,56 @@ const DASH = {};
   }
 }
 const webValue = (lang, key) => (WEB[lang] && key in WEB[lang] ? WEB[lang][key] : DASH[lang]?.[key]);
+const valueOn = (surface, lang, key) => (surface === 'web' ? webValue(lang, key) : APP[surface][lang]?.[key]);
+
+// Every (lang, key) a LOCKED decision names an explicit value for. These are
+// settled; REVIEW may not also claim them.
+const LOCKED = new Set();
+for (const d of Object.values(registry.decisions)) {
+  if (d.status !== 'LOCKED' || !d.values) continue;
+  for (const [lang, kv] of Object.entries(d.values)) for (const key of Object.keys(kv)) LOCKED.add(`${lang}|${key}`);
+}
 
 let rows = 0;
+let lockedSkips = 0;
 const report = [];
 for (const [id, d] of Object.entries(registry.decisions)) {
   if (d.status !== 'REVIEW') continue;
   const scope = d.protects;
-  if (!scope || !scope.keys || !scope.langs) { report.push(`  ${id}: no 'protects' scope — skipped`); continue; }
-  const prot = { };
-  for (const lang of scope.langs) {
-    for (const key of scope.keys) {
-      const w = webValue(lang, key);
-      if (w !== undefined) { (prot.web ||= {})[lang] ||= {}; prot.web[lang][key] = w; rows += 1; }
-      for (const [sid] of APPS) {
-        const v = APP[sid][lang]?.[key];
-        if (v !== undefined) { (prot[sid] ||= {})[lang] ||= {}; prot[sid][lang][key] = v; rows += 1; }
-      }
+  const rectangular = scope && scope.keys && scope.langs;
+  if (!scope || (!rectangular && !scope.rows)) { report.push(`  ${id}: no 'protects' scope — skipped`); continue; }
+
+  // Both shapes reduce to the same thing: a list of (surface, lang, key) to pin.
+  // Deduplicated, because one app key can be the app side of several web keys —
+  // gu tab.orders answers ctab.orders, dash.kpi.orders, dl.orders and nav.orders.
+  const wanted = new Map();
+  const want = (surface, lang, key) => { if (valueOn(surface, lang, key) !== undefined) wanted.set(`${surface}|${lang}|${key}`, { surface, lang, key }); };
+  const surfaces = scope.surfaces || ['web', ...APPS.map(([sid]) => sid)];
+  if (rectangular) {
+    for (const lang of scope.langs) for (const key of scope.keys) for (const s of surfaces) want(s, lang, key);
+  } else {
+    for (const r of scope.rows) {
+      if (surfaces.includes('web')) want('web', r.lang, r.web);
+      for (const [sid] of APPS) if (surfaces.includes(sid)) want(sid, r.lang, r.app);
     }
+  }
+
+  const prot = {};
+  let skipped = 0;
+  for (const { surface, lang, key } of wanted.values()) {
+    if (LOCKED.has(`${lang}|${key}`)) { skipped += 1; lockedSkips += 1; continue; }
+    (prot[surface] ||= {})[lang] ||= {};
+    prot[surface][lang][key] = valueOn(surface, lang, key);
+    rows += 1;
   }
   const n = Object.values(prot).reduce((s, byLang) => s + Object.values(byLang).reduce((t, kv) => t + Object.keys(kv).length, 0), 0);
   d.protected = prot;
-  report.push(`  ${id.padEnd(32)} ${String(n).padStart(4)} values across ${Object.keys(prot).join(', ') || '(none found)'}`);
+  report.push(`  ${id.padEnd(32)} ${String(n).padStart(4)} values across ${Object.keys(prot).join(', ') || '(none found)'}`
+    + (skipped ? `   (${skipped} left to a LOCKED decision)` : ''));
 }
 
 console.log(report.join('\n'));
-console.log(`\n${rows} REVIEW values snapshotted.`);
+console.log(`\n${rows} REVIEW values snapshotted${lockedSkips ? `, ${lockedSkips} left to a LOCKED decision` : ''}.`);
 if (!process.argv.includes('--apply')) { console.log('preview only — pass --apply to write'); process.exit(0); }
 fs.writeFileSync(REGP, JSON.stringify(registry, null, 2) + '\n', 'utf8');
 console.log('written to scripts/i18n-decisions.json');

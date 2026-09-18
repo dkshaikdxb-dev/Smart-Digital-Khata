@@ -108,7 +108,12 @@ const cases = [
    () => webSet('gu', 'set.noKeySecret', 'Key secret નથી'), 'razorpay-casing', null],
 
   ['REVIEW cannot be overwritten on the web',
-   () => webSet('gu', 'status.accepted', 'સ્વીકાર્યું'), 'gu-accepted-wording', null],
+   // dash.orderStatus.accepted, not status.accepted: the latter turned out to be
+   // LOCKED by gu-status-form as well, and a row may now hold only one status.
+   () => webSet('gu', 'dash.orderStatus.accepted', 'સ્વીકાર્યું'), 'gu-accepted-wording', null],
+
+  ['a row that moved from REVIEW to LOCKED is still refused, under the LOCKED decision',
+   () => webSet('gu', 'status.accepted', 'સ્વીકાર્યું'), 'gu-status-form', null],
 
   ['INTENTIONAL_DIVERGENCE cannot be reconciled from the web side',
    () => webSet('gu', 'stmt.title', 'ખાતાનું વિવરણ'), 'divergences', null],
@@ -152,7 +157,28 @@ const cases = [
    () => webSet('ta', 'set.noKeySecret', 'Key Secret illai'), 'razorpay-casing-other-languages', 'web'],
 
   ['a native-speaker-queue row cannot be resolved by a tool',
-   () => webSet('bn', 'c.pay', 'পে করুন'), 'native-speaker-queue', 'web'],
+   () => webSet('bn', 'c.pay', 'পে করুন'), 'native-speaker-queue-bn', 'web'],
+
+  // --- the queue is a row list now, not a key/lang rectangle ---------------
+  // The app side of a queued row usually lives under a DIFFERENT key name. The
+  // rectangle could not express that, so it pinned the web string of a question
+  // and left the app string — the thing the question was actually about —
+  // writable by anything. These four passed silently until 2026-09-18.
+  ['the APP side of a queued row is pinned under its own key name (bn c.pay -> khata.pay)',
+   () => appSet(CONSUMER, 'bn', 'khata.pay', 'পে করুন'), 'native-speaker-queue-bn', 'app/consumer'],
+
+  ['the same where the app key shares nothing with the web key (mr c.locationNotSet -> shops.noLocation)',
+   () => appSet(CONSUMER, 'mr', 'shops.noLocation', 'लोकेशन दिलेले नाही'), 'native-speaker-queue-mr', 'app/consumer'],
+
+  ['a row that has since CONVERGED is still protected — converging is not approval',
+   // gu acc.logout / account.logout now reads the same on both surfaces, so no
+   // divergence check covers it any more. Nobody Gujarati has read it either.
+   () => appSet(CONSUMER, 'gu', 'account.logout', 'બહાર નીકળો'), 'native-speaker-queue-gu', 'app/consumer'],
+
+  ['a value cannot be claimed by REVIEW and LOCKED at once',
+   () => editRegistry((j) => {
+     j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
+   }), 'pinned as REVIEW and LOCKED', null],
 
   ['deleting a REVIEW row is caught, not only changing it',
    () => { const p = path.join(box, CONSUMER); const s2 = fs.readFileSync(p, 'utf8');
@@ -199,8 +225,45 @@ for (const [name, mutate, expectRule, expectWhere] of cases) {
 }
 restore();
 if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
+
+// --- what the registry must NOT claim ------------------------------------
+// The cases above all prove a refusal. Narrowing a scope is the opposite claim
+// — that a value is no longer pinned — and a mutation test cannot show it,
+// because "the gate said OK" is also what a hole looks like. These read the
+// registry directly and assert the shape.
+{
+  const reg = JSON.parse(fs.readFileSync(path.join(box, 'scripts/i18n-decisions.json'), 'utf8'));
+  const pinnedBy = (lang, key) => Object.entries(reg.decisions)
+    .filter(([, d]) => d.status === 'REVIEW' && d.protected
+      && Object.values(d.protected).some((byLang) => byLang[lang]?.[key] !== undefined))
+    .map(([id]) => id);
+  const claims = [
+    ['the Bengali question IS pinned in Bengali', () => pinnedBy('bn', 'c.pay').length === 1],
+    ['a Bengali question is NOT pinned in Gujarati', () => pinnedBy('gu', 'c.pay').length === 0],
+    ['a Bengali question is NOT pinned in Marathi', () => pinnedBy('mr', 'c.pay').length === 0],
+    ['the FAQ decision pins app/consumer only', () => {
+      const s = Object.keys(reg.decisions['consumer-faq-app-variants'].protected);
+      return s.length === 1 && s[0] === 'app/consumer';
+    }],
+    ['the FAQ decision does not pin the web strings it diverges from', () => {
+      const d = reg.decisions['consumer-faq-app-variants'].protected;
+      return d.web === undefined;
+    }],
+    ['the queue is split per language and none of them is rectangular', () => ['bn', 'gu', 'mr'].every((l) => {
+      const d = reg.decisions[`native-speaker-queue-${l}`];
+      return d && d.status === 'REVIEW' && Array.isArray(d.protects?.rows) && !d.protects.keys;
+    })],
+    ['every superseded row names the LOCKED decision that answered it', () => Object.values(reg.decisions)
+      .flatMap((d) => d.superseded_rows || [])
+      .every((r) => reg.decisions[r.answered_by]?.status === 'LOCKED')],
+  ];
+  for (const [name, ok] of claims) {
+    if (ok()) { pass++; console.log(`  holds    ${name}`); }
+    else { fail++; console.log(`  *** BROKEN ***  ${name}`); }
+  }
+}
 fs.rmSync(box, { recursive: true, force: true });
 
-console.log(`\n${pass} refused, ${fail} allowed.`);
+console.log(`\n${pass} checks passed, ${fail} failed.`);
 if (fail) { console.error('the gate does not refuse everything it claims to.'); process.exit(1); }
 console.log('Every rule the registry claims to enforce was proven by breaking it.');

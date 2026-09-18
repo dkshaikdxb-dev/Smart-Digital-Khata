@@ -84,7 +84,9 @@ jobs:
       # that the 46 intentional and 274 undecided web/app divergences are still
       # exactly the sets somebody signed off — so a pair that converges or
       # appears has to be recorded before it can ship. Every language the web
-      # carries is compared, not only the three that were reconciled first.
+      # carries is compared, not only the three that were reconciled first. It
+      # also holds one row to one status: a string a LOCKED decision settles
+      # cannot also be pinned as waiting for a native speaker to read it.
       - name: i18n decision registry
         run: node scripts/i18n-registry-check.mjs
       # And the gate itself is tested by breaking things. The first version of
