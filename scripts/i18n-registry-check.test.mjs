@@ -63,6 +63,21 @@ const appSet = (rel, lang, key, v) => {
   if (!re.test(blk)) throw new Error(`no ${lang} ${key} in ${rel}`);
   fs.writeFileSync(p, s.slice(0, a) + blk.replace(re, `$1'${v}'`) + s.slice(end), 'utf8');
 };
+// Delete a key from ONE language block. The blunt global replace used for the
+// chelp.e9.q case below hits whichever block comes first, which is fine there
+// and wrong here: these keys exist in several languages and only one is pinned.
+const appDelete = (rel, lang, key) => {
+  const p = path.join(box, rel);
+  const s = fs.readFileSync(p, 'utf8');
+  const a = s.indexOf(`\nconst ${lang} = {`);
+  if (a < 0) throw new Error(`no ${lang} block in ${rel}`);
+  const b = s.indexOf('\nconst ', a + 10);
+  const end = b > 0 ? b : s.length;
+  const blk = s.slice(a, end);
+  const re = new RegExp(`\\n\\s*'${key.replace(/\./g, '\\.')}':\\s*'(?:[^'\\\\]|\\\\.)*',`);
+  if (!re.test(blk)) throw new Error(`no ${lang} ${key} in ${rel}`);
+  fs.writeFileSync(p, s.slice(0, a) + blk.replace(re, '') + s.slice(end), 'utf8');
+};
 const editRegistry = (fn) => {
   const p = path.join(box, 'scripts/i18n-decisions.json');
   const j = JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -175,6 +190,33 @@ const cases = [
    // divergence check covers it any more. Nobody Gujarati has read it either.
    () => appSet(CONSUMER, 'gu', 'account.logout', 'બહાર નીકળો'), 'native-speaker-queue-gu', 'app/consumer'],
 
+  // --- the three LOCKED decisions that state a rule and name no values -----
+  // unit-counter, catalogue-loanword and prepaid-mechanism each settled a
+  // terminology question and recorded no values, so rule 1 skipped them
+  // entirely: 14 strings a LOCKED decision claimed to hold, that any sweep
+  // could rewrite with every gate green. Each case below passed silently until
+  // 2026-09-18.
+  ['unit-counter holds its web string, though the decision names no values',
+   () => webSet('bn', 'c.unit', 'একক'), 'unit-counter', 'web bn c.unit'],
+
+  ['unit-counter holds the app string too, under the app\'s own key name',
+   () => appSet(CONSUMER, 'mr', 'shopdetail.unit', 'एकक'), 'unit-counter', 'app/consumer mr shopdetail.unit'],
+
+  ['catalogue-loanword holds its web string',
+   () => webSet('mr', 'nav.catalog', 'यादी'), 'catalogue-loanword', 'web mr nav.catalog'],
+
+  ['catalogue-loanword holds the owner app\'s tab label',
+   () => appSet(OWNER, 'bn', 'tab.catalog', 'তালিকা'), 'catalogue-loanword', 'app/owner bn tab.catalog'],
+
+  ['prepaid-mechanism holds its web string',
+   () => webSet('gu', 'c.prepaid', 'અગાઉથી ચૂકવેલ'), 'prepaid-mechanism', 'web gu c.prepaid'],
+
+  ['prepaid-mechanism holds BOTH app copies, not whichever is read first',
+   () => appSet(OWNER, 'mr', 'pmode.prepaid', 'आगाऊ भरलेले'), 'prepaid-mechanism', 'app/owner mr pmode.prepaid'],
+
+  ['a rule-based LOCKED string DISAPPEARING is caught, not only changing',
+   () => appDelete(CONSUMER, 'mr', 'shopdetail.unit'), 'LOCKED row disappeared', 'unit-counter'],
+
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
      j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
@@ -256,6 +298,55 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     ['every superseded row names the LOCKED decision that answered it', () => Object.values(reg.decisions)
       .flatMap((d) => d.superseded_rows || [])
       .every((r) => reg.decisions[r.answered_by]?.status === 'LOCKED')],
+    // The point of the exercise: LOCKED has to mean the same thing for all of
+    // them. A decision is enforceable if rule 1 can check its values, if this
+    // gate names it and evaluates its rule directly, or if the rows it retired
+    // pinned its strings. Three of the fifteen had none of those.
+    // The provenance IS the enforcement for these three, so it is load-bearing:
+    // drop a superseded_rows entry and the string it pinned goes back to being
+    // governed by nothing. Nothing else covers it — web bn c.unit has no app
+    // twin under that name, so even the divergence check cannot see it.
+    ['the three rule-based decisions pin exactly the 14 values, and nothing else does', () => {
+      const RULE_BASED = ['unit-counter', 'catalogue-loanword', 'prepaid-mechanism'];
+      const pinned = Object.values(reg.decisions)
+        .flatMap((d) => d.superseded_rows || [])
+        .filter((r) => RULE_BASED.includes(r.answered_by))
+        .flatMap((r) => Object.keys(r.value_at_retirement || {}));
+      const claimedElsewhere = Object.values(reg.decisions)
+        .filter((d) => d.status === 'REVIEW' && d.protected)
+        .flatMap((d) => Object.values(d.protected))
+        .flatMap((byLang) => Object.entries(byLang))
+        .flatMap(([lang, kv]) => Object.keys(kv).map((k) => `${lang}|${k}`));
+      const ours = Object.values(reg.decisions)
+        .flatMap((d) => d.superseded_rows || [])
+        .filter((r) => RULE_BASED.includes(r.answered_by))
+        .flatMap((r) => Object.keys(r.value_at_retirement || {})
+          .map((sfc) => `${r.lang}|${r.key ?? (sfc === 'web' ? r.web : r.app)}`));
+      return pinned.length === 14 && ours.every((x) => !claimedElsewhere.includes(x));
+    }],
+    ['every LOCKED decision is enforceable by something', () => {
+      const gateSrc = fs.readFileSync(GATE, 'utf8');
+      const pinned = new Set(Object.values(reg.decisions)
+        .flatMap((d) => d.superseded_rows || [])
+        .filter((r) => r.value_at_retirement && Object.keys(r.value_at_retirement).length)
+        .map((r) => r.answered_by));
+      // Two are still only descriptive, and both need a judgement this repo has
+      // not made — which keys carry "reject" and "cancel" in Bengali, and
+      // whether approve-not-accept adds anything now that the gu string is
+      // LOCKED by gu-orthography and the mr one sits in REVIEW. They are named
+      // here so the list cannot grow quietly: a NEW valueless LOCKED decision
+      // fails this check.
+      const KNOWN_DESCRIPTIVE = ['reject-not-cancel', 'approve-not-accept'];
+      const unenforced = Object.entries(reg.decisions)
+        .filter(([id, d]) => d.status === 'LOCKED'
+          && !(d.values && Object.keys(d.values).length)
+          && !gateSrc.includes(`'${id}'`)
+          && !pinned.has(id))
+        .map(([id]) => id);
+      const unexpected = unenforced.filter((id) => !KNOWN_DESCRIPTIVE.includes(id));
+      if (unexpected.length) console.log(`                   newly unenforced: ${unexpected.join(', ')}`);
+      return unexpected.length === 0;
+    }],
   ];
   for (const [name, ok] of claims) {
     if (ok()) { pass++; console.log(`  holds    ${name}`); }

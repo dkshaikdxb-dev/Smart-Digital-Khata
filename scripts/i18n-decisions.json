@@ -966,6 +966,7 @@
       ],
       "superseded_rows": [
         {
+          "lang": "bn",
           "web": "c.unit",
           "app": "shopdetail.unit",
           "answered_by": "unit-counter",
@@ -976,6 +977,7 @@
           }
         },
         {
+          "lang": "bn",
           "web": "nav.catalog",
           "app": "tab.catalog",
           "answered_by": "catalogue-loanword",
@@ -986,6 +988,7 @@
           }
         },
         {
+          "lang": "bn",
           "web": "set.noKeySecret",
           "app": null,
           "answered_by": "razorpay-casing",
@@ -995,6 +998,7 @@
           }
         },
         {
+          "lang": "bn",
           "web": "set.noWebhookSecret",
           "app": null,
           "answered_by": "razorpay-casing",
@@ -1612,6 +1616,7 @@
       ],
       "superseded_rows": [
         {
+          "lang": "gu",
           "web": "c.prepaid",
           "app": "pmode.prepaid",
           "answered_by": "prepaid-mechanism",
@@ -1623,6 +1628,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "chelp.e2.a",
           "app": "chelp.e2.a",
           "answered_by": "product-item",
@@ -1633,6 +1639,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "chelp.e2.q",
           "app": "chelp.e2.q",
           "answered_by": "product-item",
@@ -1643,6 +1650,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "chelp.e3.a",
           "app": "chelp.e3.a",
           "answered_by": "product-item",
@@ -1653,6 +1661,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "chelp.e7.q",
           "app": "chelp.e7.q",
           "answered_by": "gu-orthography",
@@ -1663,6 +1672,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "common.items",
           "app": "common.items",
           "answered_by": "product-item",
@@ -1673,6 +1683,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "dash.orderStatus.preparing",
           "app": "ostatus.preparing",
           "answered_by": "gu-status-form",
@@ -1684,6 +1695,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "ostatus.cancelled",
           "app": "ostatus.cancelled",
           "answered_by": "gu-status-form",
@@ -1695,6 +1707,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "ostatus.preparing",
           "app": "ostatus.preparing",
           "answered_by": "gu-status-form",
@@ -1706,6 +1719,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "set.keySecretSet",
           "app": "set.keySecretSet",
           "answered_by": "razorpay-casing",
@@ -1716,6 +1730,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "set.noKeySecret",
           "app": "set.noKeySecret",
           "answered_by": "razorpay-casing",
@@ -1726,6 +1741,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "set.noWebhookSecret",
           "app": "set.noWebhookSecret",
           "answered_by": "razorpay-casing",
@@ -1736,6 +1752,7 @@
           }
         },
         {
+          "lang": "gu",
           "web": "set.webhookSecretSet",
           "app": "set.webhookSecretSet",
           "answered_by": "razorpay-casing",
@@ -2373,6 +2390,7 @@
       ],
       "superseded_rows": [
         {
+          "lang": "mr",
           "web": "c.prepaid",
           "app": "pmode.prepaid",
           "answered_by": "prepaid-mechanism",
@@ -2384,6 +2402,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "c.unit",
           "app": "shopdetail.unit",
           "answered_by": "unit-counter",
@@ -2394,6 +2413,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "nav.catalog",
           "app": "tab.catalog",
           "answered_by": "catalogue-loanword",
@@ -2404,6 +2424,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "set.keySecretSet",
           "app": "set.keySecretSet",
           "answered_by": "razorpay-casing",
@@ -2414,6 +2435,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "set.noKeySecret",
           "app": "set.noKeySecret",
           "answered_by": "razorpay-casing",
@@ -2424,6 +2446,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "set.noWebhookSecret",
           "app": "set.noWebhookSecret",
           "answered_by": "razorpay-casing",
@@ -2434,6 +2457,7 @@
           }
         },
         {
+          "lang": "mr",
           "web": "set.webhookSecretSet",
           "app": "set.webhookSecretSet",
           "answered_by": "razorpay-casing",

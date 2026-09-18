@@ -86,7 +86,10 @@ jobs:
       # appears has to be recorded before it can ship. Every language the web
       # carries is compared, not only the three that were reconciled first. It
       # also holds one row to one status: a string a LOCKED decision settles
-      # cannot also be pinned as waiting for a native speaker to read it.
+      # cannot also be pinned as waiting for a native speaker to read it. The
+      # three LOCKED decisions that state a rule and name no values are held to
+      # the strings their retired queue rows recorded, so LOCKED means the same
+      # thing for all fifteen rather than for twelve.
       - name: i18n decision registry
         run: node scripts/i18n-registry-check.mjs
       # And the gate itself is tested by breaking things. The first version of

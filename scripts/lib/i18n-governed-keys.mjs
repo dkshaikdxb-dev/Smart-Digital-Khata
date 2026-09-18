@@ -43,12 +43,54 @@ function registry() {
 }
 
 /**
+ * Every value a RULE-BASED LOCKED decision governs, as
+ * { decision, surface, lang, key, want }.
+ *
+ * Most LOCKED decisions carry a `values` map and the gate checks that directly.
+ * Three of them — unit-counter, catalogue-loanword, prepaid-mechanism — state a
+ * rule instead ("c.unit and common.unit only", "English source contains
+ * 'catalog'") and name no values at all, so for a long time they were LOCKED in
+ * name and unenforced in fact: 14 strings that a decision claimed to hold and
+ * nothing checked.
+ *
+ * The strings themselves were already written down. When the native-review
+ * queue retired the rows those decisions had answered, it recorded what each
+ * one said at retirement, per surface. That is the value map, in the only place
+ * it exists, and this reads it rather than transcribing it somewhere else —
+ * a second copy is how the first drift happened.
+ *
+ * A row is read here only while its answering decision has no `values` of its
+ * own. Give one an explicit map later and it goes back to the ordinary LOCKED
+ * check, with no entry left behind to contradict it.
+ */
+export function ruleLockedRows(reg = registry()) {
+  const out = [];
+  for (const d of Object.values(reg.decisions)) {
+    for (const row of d.superseded_rows || []) {
+      const owner = reg.decisions[row.answered_by];
+      if (!owner || owner.status !== 'LOCKED') continue;
+      if (owner.values && Object.keys(owner.values).length) continue;
+      for (const [surface, want] of Object.entries(row.value_at_retirement || {})) {
+        // A row names one key per surface: the web and the app often spell the
+        // same string under different names — web c.unit is app shopdetail.unit.
+        const key = row.key ?? (surface === 'web' ? row.web : row.app);
+        if (key) out.push({ decision: row.answered_by, surface, lang: row.lang, key, want });
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * The governance status of one (lang, key), or null when nothing governs it.
  * LOCKED wins over REVIEW wins over the divergence sets, because that is the
  * order in which a human decided something about the row.
  */
 export function governedStatus(lang, key) {
   const reg = registry();
+  for (const r of ruleLockedRows(reg)) {
+    if (r.lang === lang && r.key === key) return { status: 'LOCKED', decision: r.decision };
+  }
   for (const [id, d] of Object.entries(reg.decisions)) {
     if (d.status === 'LOCKED' && d.values?.[lang]?.[key] !== undefined) return { status: 'LOCKED', decision: id };
     if (d.status === 'REVIEW' && d.protected) {

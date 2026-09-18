@@ -8,7 +8,10 @@
 // What it enforces:
 //
 //   1. A LOCKED decision's value is what the dictionaries actually say. A
-//      decision that has quietly stopped being true is not a decision.
+//      decision that has quietly stopped being true is not a decision. The
+//      three that state a rule and name no values are held to the strings
+//      their retired queue rows recorded, so LOCKED means the same thing for
+//      all fifteen of them.
 //   2. gu-orthography as a CORPUS INVARIANT, not a token list: no loanword
 //      lemma may appear in both its candra and its plain spelling. A NEW
 //      loanword inherits the rule — this is what a token list could not do, and
@@ -31,6 +34,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BRAND_TERMS, brandTermCasingErrors } from './lib/i18n-brand-keys.mjs';
+import { ruleLockedRows } from './lib/i18n-governed-keys.mjs';
 
 // I18N_ROOT lets the mutation suite point this gate at a throwaway copy of the
 // dictionaries. A check nobody can test is a check nobody can trust — the hole
@@ -104,6 +108,31 @@ for (const [id, d] of Object.entries(registry.decisions)) {
         }
       }
     }
+  }
+}
+
+/* 1b — the LOCKED decisions that state a rule and name no values ---------
+   unit-counter, catalogue-loanword and prepaid-mechanism each settled a
+   terminology question and then recorded nothing: scope.rule says which strings
+   they cover ("c.unit and common.unit only"), values says nothing at all. Rule 1
+   skips a decision with no values, so all three were LOCKED in name and
+   unenforced in fact — 14 strings a decision claimed to hold that any sweep
+   could have rewritten with every gate green.
+
+   The strings were already written down. Retiring those rows from the native
+   review queue recorded what each said at retirement, per surface, and that is
+   what this checks — the same pinned-value comparison rule 5 makes, against the
+   same kind of block, reported against the LOCKED decision that owns it. No
+   translation was invented to close this and no decision was re-scoped: the
+   rule semantics are untouched, they are simply checkable now. */
+for (const r of ruleLockedRows(registry)) {
+  const got = r.surface === 'web' ? webValue(r.lang, r.key) : APP_FILES.find((f) => f.id === r.surface)?.langs[r.lang]?.[r.key];
+  if (got === undefined) {
+    bad(r.decision, `LOCKED row disappeared: ${r.surface} ${r.lang} ${r.key}\n      was:  ${r.want}`
+      + `\n      -> this decision states a rule and names no values; the string is pinned by its`
+      + `\n         superseded_rows entry in the native review queue.`);
+  } else if (got !== r.want) {
+    bad(r.decision, `${r.surface} ${r.lang} ${r.key}\n      want: ${r.want}\n      got:  ${got}`);
   }
 }
 
