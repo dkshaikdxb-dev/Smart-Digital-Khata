@@ -583,6 +583,14 @@
         "ledger": "scripts/bn-divergence-decisions.json",
         "entry": "align_to_app_because",
         "quote": "REJECT is not CANCEL. This app treats them as different actions and a shopkeeper must not confuse them; web reads বাতিল (cancel)."
+      },
+      "follow_up": {
+        "item": "scope.surfaces is [web, app] and \"app\" means BOTH app dictionaries, so this decision nominally claims app/consumer for its six keys.",
+        "status": "OPEN — documented, deliberately not acted on.",
+        "verified_on": "2026-09-18",
+        "finding": "The consumer app has NO order-rejection workflow. Its dictionary carries no orej.* or oalert.* key and no English value containing \"reject\"; the only reject endpoints in the backend are admin moderation of promos and shop images, which this decision declares out of scope. The consumer side of an order is CANCELLING it (orderdetail.cancel) — the shopper withdrawing, which is the other half of the distinction this decision draws.",
+        "effect_today": "None on the gate: it tolerates a key a surface does not carry, so nothing is checked there and nothing is pinned. The one live effect is that guardedWrite would refuse creating those keys in the consumer dictionary until this decision was updated.",
+        "revisit_when": "A consumer-facing reject flow is added, or the surface model gains a way to say app/owner only. Until then the claim costs nothing and errs toward refusing."
       }
     },
     "approve-not-accept": {
