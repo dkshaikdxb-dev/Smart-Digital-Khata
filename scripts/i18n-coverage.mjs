@@ -192,7 +192,16 @@ const FLOORS = {
   // (admin-dashboard's dictionary for en/hi, regional-i18n.json for the rest),
   // so both surfaces say the same word and nothing new needs review. Every
   // language gains it, so every consumer floor moves together.
-  consumer: { hi: 345, bn: 345, ta: 345, te: 345, kn: 345, ml: 345, mr: 345, gu: 345, ur: 345 },
+  // Batch FAQ-APP-VARIANTS added four CONSUMER keys — chelp.e1.a, chelp.e8.a,
+  // chelp.e9.q and chelp.e9.a — so the app can answer those three questions in
+  // its own words instead of the web's, which name controls this app does not
+  // have. The English is approved; the nine translations of each are
+  // MACHINE-AUTHORED and carry REVIEW status in scripts/i18n-decisions.json.
+  // Every language gains all four. chelp.e1.q and chelp.e8.q come too, copied
+  // verbatim from the web because the app never carried them and the entries
+  // would otherwise print their key names; their wording is unchanged, so they
+  // are not part of the REVIEW set. Six keys per language in all.
+  consumer: { hi: 351, bn: 351, ta: 351, te: 351, kn: 351, ml: 351, mr: 351, gu: 351, ur: 351 },
   //
   // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'
   // and 'more.transactions' — for the Staff / Suppliers / Transactions rows the

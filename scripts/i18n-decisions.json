@@ -714,6 +714,75 @@
           "login.heroSub"
         ]
       }
+    },
+    "consumer-faq-app-variants": {
+      "type": "PRODUCT-CONTEXT",
+      "status": "REVIEW",
+      "concept": "The consumer app answers chelp.e1, e8 and e9 in its own words, because the web's answers describe controls this app does not have.",
+      "rationale": "The web answers point at 'Use my location', a language switch 'at the top' and a sun/moon toggle. The native directory has no GPS, the language picker is on Account, and the app has a single dark theme. Showing the web text would send a shopper hunting for buttons that are not there.",
+      "scope": {
+        "rule": "The chelp.* keys whose WEB answer names a control the native consumer app lacks. Resolved to the four keys below. Same namespace as every other FAQ string; the app dictionary simply holds a different value from the web, which is the mechanism eight other chelp answers already use.",
+        "keys": [
+          "chelp.e1.a",
+          "chelp.e8.a",
+          "chelp.e9.q",
+          "chelp.e9.a"
+        ],
+        "langs": [
+          "en",
+          "hi",
+          "bn",
+          "ta",
+          "te",
+          "kn",
+          "ml",
+          "mr",
+          "gu",
+          "ur"
+        ],
+        "surfaces": [
+          "app"
+        ]
+      },
+      "english_source": {
+        "status": "APPROVED",
+        "decided_by": "owner",
+        "decided_on": "2026-09-18",
+        "note": "Frozen. Reviewed line by line against the actual screens before translation; the location claim and the category-chip sentence were cut as unsupported, and no dark-mode battery claim was made."
+      },
+      "translations": {
+        "status": "REVIEW",
+        "count": 36,
+        "note": "9 languages x 4 keys, MACHINE-AUTHORED and read by nobody who speaks the language. Each names the real on-screen label in its own language (te/kn/ta render the Account tab as Profile) and keeps the microphone instruction conditional, because both mics are hidden where the device has no recognizer for the active language. Not approved, not LOCKED."
+      },
+      "values": {
+        "en": {
+          "chelp.e1.a": "Open the Shops tab and type a shop name or your city in the search box. If you see the 🎤 microphone, tap it and say the name instead of typing.",
+          "chelp.e8.a": "Open the Account tab and pick your language under Language — the app remembers it on this phone. If you see the 🎤 microphone, tap it to search by voice. Wherever you see 🔊, tap it to have the text read aloud, and tap it again to stop.",
+          "chelp.e9.q": "Can I change how the app looks?",
+          "chelp.e9.a": "The app uses one dark screen everywhere, so there is nothing to switch. If your connection is slow or costly, open the Account tab and turn on Data saver to stop extra photos loading."
+        }
+      },
+      "decided_by": "owner",
+      "decided_on": "2026-09-18",
+      "supersedes": null,
+      "override_log": [
+        {
+          "from": "web answers reused verbatim (and, briefly, raw key names)",
+          "to": "app-specific answers in the same namespace",
+          "on": "2026-09-18",
+          "by": "owner",
+          "reason": "The web answers named controls this app does not have; the keys were absent from the app dictionary entirely, so the entries rendered as key names."
+        }
+      ],
+      "also_copied": {
+        "keys": [
+          "chelp.e1.q",
+          "chelp.e8.q"
+        ],
+        "status": "unchanged wording, copied verbatim from the web",
+        "note": "The app never carried these two questions, so the entries would have printed their key names. Their English is the web English, their translations are the web translations, and they are NOT part of the 36 REVIEW rows."
+      }
     }
   },
   "divergences": {
@@ -732,16 +801,24 @@
     ],
     "INTENTIONAL_DIVERGENCE": {
       "status": "INTENTIONAL_DIVERGENCE",
-      "source": "scripts/keylevel-decisions.json, decision=web",
-      "count": 34,
+      "source": "scripts/keylevel-decisions.json decision=web, OR a decision in this file that declares the key intentionally app-specific (consumer-faq-app-variants)",
+      "count": 46,
       "keys": {
         "bn": [
+          "chelp.e1.a",
+          "chelp.e8.a",
+          "chelp.e9.a",
+          "chelp.e9.q",
           "oedit.originalSubtotal",
           "open.todayAt",
           "open.tomorrowAt"
         ],
         "gu": [
           "cat.loadMore",
+          "chelp.e1.a",
+          "chelp.e8.a",
+          "chelp.e9.a",
+          "chelp.e9.q",
           "common.subtotal",
           "ins.activeCustomers",
           "ins.outstandingByAge",
@@ -761,6 +838,10 @@
         "mr": [
           "cat.addFromCatalogue",
           "cat.loadMore",
+          "chelp.e1.a",
+          "chelp.e8.a",
+          "chelp.e9.a",
+          "chelp.e9.q",
           "ord.terminal",
           "ostatus.cancelled",
           "ref.noneYet",

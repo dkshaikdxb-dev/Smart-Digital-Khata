@@ -249,7 +249,15 @@ for (const [id, d] of Object.entries(registry.decisions)) {
     for (const [k, v] of Object.entries(WEB[lang] || {})) {
       const copies = appCopies(lang, k);
       if (!copies.length || copies.every((c) => c.value === v)) continue;
-      (KL[lang]?.[k] === 'web' ? live.INTENTIONAL_DIVERGENCE : live.UNDECIDED)[lang].push(k);
+      // Intentional by EITHER route: the older keylevel file said keep-web, or a
+      // decision in this registry declares the key app-specific. The second exists
+      // because consumer-faq-app-variants gives the app its own FAQ answers, and
+      // keylevel-decisions.json is a frozen reconciliation artefact that must not
+      // grow new rows. A bare list entry is not enough — some decision has to name
+      // the key, so "recorded" still means "explained".
+      const declared = (registry.divergences.INTENTIONAL_DIVERGENCE.keys[lang] || []).includes(k)
+        && Object.values(registry.decisions).some((d) => (d.scope?.keys || []).includes(k));
+      (KL[lang]?.[k] === 'web' || declared ? live.INTENTIONAL_DIVERGENCE : live.UNDECIDED)[lang].push(k);
     }
   }
   for (const set of ['INTENTIONAL_DIVERGENCE', 'UNDECIDED']) {

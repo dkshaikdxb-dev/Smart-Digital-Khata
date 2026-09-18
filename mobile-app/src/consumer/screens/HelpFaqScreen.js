@@ -7,46 +7,38 @@ import { useNativeVoice } from '../../lib/useNativeVoice';
 
 // Help & FAQ — a static, collapsible list of the questions a shopper actually
 // asks. NOT a bot, no network, works with the phone in flight mode, and every
-// answer is already translated into all ten languages because it was copied
-// whole from the web app's own chelp.* entries.
+// answer is translated into all ten languages — six copied whole from the web
+// app's own chelp.* entries, three written for this app (see below).
 //
-// SIX ENTRIES, NOT THE WEB'S NINE — and the reason is content, not layout.
+// ALL NINE ENTRIES, with app-specific answers for three of them.
 //
-// e1, e8 and e9 exist in the WEB dictionary only. They are absent from this
-// app's dictionary in every language, English included, so rendering them makes
-// translate() fall through to its last resort and print the key name: a shopper
-// opening Help would read the literal text "chelp.e1.q". They were shown briefly
-// and taken back out for exactly that reason.
+// e1, e8 and e9 exist in the WEB dictionary only, and their web answers describe
+// controls this app does not have — "Use my location", a language switch "at the
+// top", a sun/moon toggle. Showing them with the web text would have sent a
+// shopper hunting for buttons that are not there; showing them with no app text
+// at all printed the key name, which is how they were briefly shipped and pulled.
 //
-// Adding them is not a matter of copying the web answers across either, because
-// all three describe controls this app does not have:
+// So the app now carries its own chelp.e1.a, chelp.e8.a, chelp.e9.q and
+// chelp.e9.a: same namespace, different value from the web, recorded in the
+// divergence registry as consumer-faq-app-variants. The six other answers are
+// unchanged and still shared with the web.
 //
-//   e1 "Tap 'Use my location' to see shops near you" — the native shop directory
-//      has no GPS at all, by decision (see ShopsScreen). Searching by shop name
-//      or city, by keyboard or by microphone, is the whole discovery UX here.
-//   e8 "Tap the language switch at the top" — on this app the language picker is
-//      on the Profile screen. The voice half of that answer is true on both
-//      surfaces, including the read-aloud control below.
-//   e9 "Tap the sun/moon button" — this app has one dark theme and no toggle, so
-//      even the QUESTION presupposes a control that is not there.
-//
-// So they need app-specific English first and then ten translations each: four
-// strings (e1.a, e8.a, e9.q, e9.a) across ten languages, forty in all. That is a
-// translation task with its own review, and the mechanism for it already exists
-// — the app dictionary may hold a different value for a chelp.* key than the web
-// does, and the divergence registry records it. Eight chelp answers already
-// differ that way today.
-//
-// Until those forty strings land, six correct entries beat nine of which three
-// are key names. The read-aloud control below is keyed off ENTRIES, so all nine
-// gain it the day the content does.
+// THE ENGLISH IS APPROVED. THE NINE TRANSLATIONS OF EACH ARE NOT — they are
+// machine-authored and carry REVIEW status in scripts/i18n-decisions.json. They
+// name the real on-screen labels in each language (Telugu's Account tab reads
+// ప్రొఫైల్, so the Telugu answer says ప్రొఫైల్), and they keep the microphone
+// instruction conditional, because both mics are hidden on a device with no
+// recognizer for the active language.
 const ENTRIES = [
+  { key: 'e1', icon: '🔍' },
   { key: 'e2', icon: '🧺' },
   { key: 'e3', icon: '🛒' },
   { key: 'e4', icon: '🛵' },
   { key: 'e5', icon: '💳' },
   { key: 'e6', icon: '📒' },
   { key: 'e7', icon: '📦' },
+  { key: 'e8', icon: '🌐' },
+  { key: 'e9', icon: '🌗' },
 ];
 
 export default function HelpFaqScreen() {
