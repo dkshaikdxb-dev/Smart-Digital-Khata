@@ -230,12 +230,25 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
 }
 
 /* 5 — REVIEW rows are immutable ----------------------------------------- */
+// A REVIEW row is one nobody who speaks the language has read yet. Until they
+// do, nothing may change it. That is only enforceable if the registry records
+// what the value IS, per surface and per language — `protected`, written by
+// scripts/i18n-review-snapshot.mjs. Before it existed this check covered two
+// decisions out of eight and none of the 36 machine-authored FAQ translations,
+// so the loudest thing in the queue was the least protected.
+const appDictById = Object.fromEntries(APP_FILES.map((f) => [f.id, f.langs]));
 for (const [id, d] of Object.entries(registry.decisions)) {
-  if (d.status !== 'REVIEW' || !d.current || !d.lang) continue;
-  for (const [k, want] of Object.entries(d.current)) {
-    const seenAt = [['web', webValue(d.lang, k)], ...appCopies(d.lang, k).map((c) => [c.id, c.value])];
-    for (const [where, got] of seenAt) {
-      if (got !== undefined && got !== want) bad(id, `REVIEW row changed without a decision: ${where} ${d.lang} ${k}\n      was:  ${want}\n      now:  ${got}`);
+  if (d.status !== 'REVIEW' || !d.protected) continue;
+  for (const [surface, byLang] of Object.entries(d.protected)) {
+    for (const [lang, kv] of Object.entries(byLang)) {
+      for (const [key, want] of Object.entries(kv)) {
+        const got = surface === 'web' ? webValue(lang, key) : appDictById[surface]?.[lang]?.[key];
+        if (got === undefined) {
+          bad(id, `REVIEW row disappeared: ${surface} ${lang} ${key}\n      was:  ${want}`);
+        } else if (got !== want) {
+          bad(id, `REVIEW row changed without a native-speaker decision: ${surface} ${lang} ${key}\n      was:  ${want}\n      now:  ${got}`);
+        }
+      }
     }
   }
 }
@@ -243,8 +256,12 @@ for (const [id, d] of Object.entries(registry.decisions)) {
 /* 6 — the divergence sets are still what the registry records ------------ */
 {
   const KL = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/keylevel-decisions.json'), 'utf8'));
+  // EVERY language the web carries, not the three that happened to be reconciled
+  // first. ta/te/kn/ml/ur were never compared, so 191 web/app pairs in those five
+  // could drift, converge or appear with nothing noticing.
+  const DIVERGENCE_LANGS = Object.keys(WEB).sort();
   const live = { INTENTIONAL_DIVERGENCE: {}, UNDECIDED: {} };
-  for (const lang of ['bn', 'gu', 'mr']) {
+  for (const lang of DIVERGENCE_LANGS) {
     live.INTENTIONAL_DIVERGENCE[lang] = []; live.UNDECIDED[lang] = [];
     for (const [k, v] of Object.entries(WEB[lang] || {})) {
       const copies = appCopies(lang, k);
@@ -261,7 +278,7 @@ for (const [id, d] of Object.entries(registry.decisions)) {
     }
   }
   for (const set of ['INTENTIONAL_DIVERGENCE', 'UNDECIDED']) {
-    for (const lang of ['bn', 'gu', 'mr']) {
+    for (const lang of DIVERGENCE_LANGS) {
       const want = new Set(registry.divergences[set].keys[lang] || []);
       const got = new Set(live[set][lang]);
       for (const k of got) if (!want.has(k)) bad('divergences', `${set} ${lang}: ${k} is newly divergent and is in no decision`);

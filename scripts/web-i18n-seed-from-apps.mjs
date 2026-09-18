@@ -20,6 +20,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getAllKeys, staticValue } from '../admin-dashboard/src/lib/i18n.js';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const APPS = ['mobile-app/src/consumer/i18n.js', 'mobile-app/src/i18n.js'];
@@ -106,5 +107,5 @@ reg[lang] = { ...have, ...copied };
 const ordered = {};
 for (const k of Object.keys(reg[lang]).sort()) ordered[k] = reg[lang][k];
 reg[lang] = ordered;
-fs.writeFileSync(regPath, JSON.stringify(reg, null, 2) + '\n', 'utf8');
+guardedWrite(regPath, JSON.stringify(reg, null, 2) + '\n');
 console.log(`\nwrote ${Object.keys(copied).length} strings to regional-i18n.json under "${lang}"`);

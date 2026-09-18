@@ -19,6 +19,7 @@
 import fs from 'fs';
 import path from 'path';
 import { staticValue } from '../admin-dashboard/src/lib/i18n.js';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REG = path.join(ROOT, 'backend/src/data/regional-i18n.json');
@@ -250,7 +251,7 @@ if (process.argv.includes('--apply')) {
   const ordered = {};
   for (const k of Object.keys(dict).sort()) ordered[k] = dict[k];
   reg[lang] = ordered;
-  fs.writeFileSync(REG, JSON.stringify(reg, null, 2) + '\n', 'utf8');
+  guardedWrite(REG, JSON.stringify(reg, null, 2) + '\n');
   console.log(`\napplied ${toApply.length} strings`);
 } else {
   console.log('(dry run — pass --apply to write)');

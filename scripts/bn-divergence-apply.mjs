@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { staticValue } from '../admin-dashboard/src/lib/i18n.js';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REG = path.join(ROOT, 'backend/src/data/regional-i18n.json');
@@ -156,5 +157,5 @@ for (const r of changing) {
 const ordered = {};
 for (const k of Object.keys(bn).sort()) ordered[k] = bn[k];
 reg.bn = ordered;
-fs.writeFileSync(REG, JSON.stringify(reg, null, 2) + '\n', 'utf8');
+guardedWrite(REG, JSON.stringify(reg, null, 2) + '\n');
 console.log(`\napplied ${changing.length} strings`);

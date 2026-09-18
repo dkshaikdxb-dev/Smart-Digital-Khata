@@ -131,6 +131,51 @@ const cases = [
 
   ['native digits cannot come back',
    () => webSet('gu', 'cat.loadMore', 'વધુ ૧ લોડ કરો'), 'native-digits-latin', null],
+
+  // --- REVIEW is now pinned per surface and per language -------------------
+  // Before the snapshot these were unenforceable: the registry recorded a value
+  // for two decisions out of eight, and for none of the 36 machine-authored FAQ
+  // translations. Each case below passed silently until 2026-09-18.
+  ['a machine-authored FAQ translation cannot be rewritten (te)',
+   () => appSet(CONSUMER, 'te', 'chelp.e9.a', 'ఏదో మారింది'), 'consumer-faq-app-variants', 'app/consumer'],
+
+  ['the same, in a language the divergence guard never compared (ml)',
+   () => appSet(CONSUMER, 'ml', 'chelp.e1.a', 'എന്തോ മാറി'), 'consumer-faq-app-variants', 'app/consumer'],
+
+  ['the APPROVED English source of a REVIEW decision is pinned too',
+   () => appSet(CONSUMER, 'en', 'chelp.e9.q', 'Can I change the theme?'), 'consumer-faq-app-variants', 'app/consumer'],
+
+  ['a parked Urdu WhatsApp string cannot be quietly Latinised',
+   () => appSet(CONSUMER, 'ur', 'login.otpHint', 'WhatsApp'), 'whatsapp-latin-urdu', 'app/consumer'],
+
+  ['a parked ta/te/kn/ml/ur credential string cannot be changed',
+   () => webSet('ta', 'set.noKeySecret', 'Key Secret illai'), 'razorpay-casing-other-languages', 'web'],
+
+  ['a native-speaker-queue row cannot be resolved by a tool',
+   () => webSet('bn', 'c.pay', 'পে করুন'), 'native-speaker-queue', 'web'],
+
+  ['deleting a REVIEW row is caught, not only changing it',
+   () => { const p = path.join(box, CONSUMER); const s2 = fs.readFileSync(p, 'utf8');
+           fs.writeFileSync(p, s2.replace(/\n\s*'chelp\.e9\.q': '[^']*',/, ''), 'utf8'); },
+   'REVIEW row disappeared', null],
+
+  // --- divergence coverage now spans every web language --------------------
+  // ta/te/kn/ml/ur were never compared before 2026-09-18, so both of these
+  // passed silently: 191 pairs in those five could converge or appear unseen.
+  ['an UNDECIDED row in a NEWLY covered language cannot be reconciled (te)',
+   // te common.balance is web "nilva" / app "bakaayi" and nobody has ruled.
+   // Making the web match the app is exactly the auto-reconciliation the
+   // registry forbids.
+   () => { const p2 = path.join(box, CONSUMER); const src = fs.readFileSync(p2, 'utf8');
+           const a = src.indexOf("\nconst te = {"), b = src.indexOf('\nconst ', a + 10);
+           const m = src.slice(a, b).match(/'common\.balance':\s*'((?:[^'\\]|\\.)*)'/);
+           webSet('te', 'common.balance', m[1]); },
+   'divergences', null],
+
+  ['a NEW divergence in a newly covered language must be recorded (kn)',
+   // kn stmt.title agrees on both surfaces today, so changing one side creates
+   // a divergence that appears in no decision.
+   () => webSet('kn', 'stmt.title', 'ಬದಲಾದ ಶೀರ್ಷಿಕೆ'), 'divergences', null],
 ];
 
 let pass = 0, fail = 0;

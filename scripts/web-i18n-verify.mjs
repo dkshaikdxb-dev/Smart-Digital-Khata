@@ -16,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import { getAllKeys, staticValue } from '../admin-dashboard/src/lib/i18n.js';
 import { BRAND_KEYS } from './lib/i18n-brand-keys.mjs';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -376,5 +377,5 @@ reg[lang] = { ...(reg[lang] || {}), ...accepted };
 const ordered = {};
 for (const k of Object.keys(reg[lang]).sort()) ordered[k] = reg[lang][k];
 reg[lang] = ordered;
-fs.writeFileSync(regPath, JSON.stringify(reg, null, 2) + '\n', 'utf8');
+guardedWrite(regPath, JSON.stringify(reg, null, 2) + '\n');
 console.log(`\napplied ${n} strings to ${path.relative(ROOT, regPath)} under "${lang}"`);

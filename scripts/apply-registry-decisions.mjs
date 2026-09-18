@@ -12,6 +12,7 @@
 // Preview by default. --apply writes.
 import fs from 'fs';
 import path from 'path';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REGP = path.join(ROOT, 'backend/src/data/regional-i18n.json');
@@ -125,6 +126,10 @@ for (const c of changes) {
     if (!set(f, c.lang, c.key, c.to)) throw new Error(`app write failed: ${c.lang} ${c.key}`);
   }
 }
-fs.writeFileSync(REGP, JSON.stringify(reg, null, 2) + '\n', 'utf8');
-for (const [p, s] of Object.entries(src)) fs.writeFileSync(p, s, 'utf8');
+// This script IS the sanctioned writer for LOCKED rows — that is its entire
+// job — so it is allowed those and nothing else. A REVIEW row, an intentional
+// divergence or an undecided pair still stops it dead.
+const ALLOW = { allow: ['LOCKED'] };
+guardedWrite(REGP, JSON.stringify(reg, null, 2) + '\n', ALLOW);
+for (const [p, s] of Object.entries(src)) guardedWrite(p, s, ALLOW);
 console.log('\nwritten.');
