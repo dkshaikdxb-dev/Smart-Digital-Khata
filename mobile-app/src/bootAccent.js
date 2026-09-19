@@ -1,16 +1,16 @@
 // Establishing the accent BEFORE the screens exist.
 //
-// THE PROBLEM THIS SOLVES. Of the 71 consumer references the platform colour
-// reaches, 59 sit inside a module-level StyleSheet.create, which React Native
+// THE PROBLEM THIS SOLVES. Of the 68 consumer references the platform colour
+// reaches, 56 sit inside a module-level StyleSheet.create, which React Native
 // evaluates the moment the module is imported. Change the colour after that and
-// 12 inline references repaint while 59 stay green — a half-themed screen,
+// 12 inline references repaint while 56 stay green — a half-themed screen,
 // which looks broken in a way that not theming at all does not. So the colour
 // has to be in place before the screen modules are evaluated, and the only way
 // to guarantee that is to not import them until it is. App.js therefore
 // require()s the tree instead of importing it, and this module is what runs in
 // between.
 //
-// (The app's other 6 accent-family references are colors.positive and are never
+// (The app's other 9 accent-family references are colors.positive and are never
 // repainted at all — see src/consumer/theme.js.)
 //
 // THE ORDER, AND WHY EACH STEP IS WHERE IT IS:

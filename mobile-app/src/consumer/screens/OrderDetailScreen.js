@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   editBox: { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
   editTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
   editLine: { color: colors.text, fontSize: 14, marginTop: 6 },
-  editMoney: { color: colors.accent, fontSize: 15, fontWeight: '700', marginTop: 10 },
+  editMoney: { color: colors.positive, fontSize: 15, fontWeight: '700', marginTop: 10 },
   sectTitle: { color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: 12 },
   step: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
   dot: { width: 14, height: 14, borderRadius: 7, backgroundColor: colors.border, marginRight: 12 },

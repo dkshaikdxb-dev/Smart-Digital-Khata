@@ -4,13 +4,13 @@
 //
 // THE ACCENT IS MUTABLE, AND THE OBJECT IDENTITY IS THE MECHANISM. Every screen
 // reads `colors.accent` as a property at the moment its StyleSheet.create runs
-// — 59 of the 71 references the platform colour reaches are inside one,
+// — 56 of the 68 references the platform colour reaches are inside one,
 // evaluated when the module is imported. So the platform accent is applied by
 // writing into THIS object before the screen tree is imported (see
 // src/bootAccent.js), and after that every sheet, inline style and runtime read
 // sees the same value.
 //
-// 6 further references use `colors.positive` and are never repainted: 77 in the
+// 9 further references use `colors.positive` and are never repainted: 77 in the
 // accent family altogether.
 //
 // Two rules follow from that, and both are checked by
@@ -35,9 +35,9 @@ export const colors = {
   warn: '#f59e0b',
   // NOT the accent, and deliberately not repainted with it. `positive` is the
   // green that carries a MEANING and is read against `danger` in the same
-  // glance: an advance where a debt is red, a payment where a purchase is red,
-  // a note whose tone is 'ok'. A festive orange must not be able to make "paid"
-  // and "overdue" the same family of colour.
+  // glance: an advance where a debt is red, a payment where a purchase is red, a
+  // money figure the app draws in green, a note whose tone is 'ok'. A festive
+  // orange must not be able to make "paid" and "overdue" the same colour family.
   //
   // Same name and same role as `positive` in src/theme.js, so the two flavors
   // read alike. It replaces the `ok` token that sat here unused since the theme

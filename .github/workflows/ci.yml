@@ -131,15 +131,16 @@ jobs:
       # of describing it.
       - name: Owner app logic tests
         run: node scripts/mobile-owner-logic.test.mjs
-      # The platform accent reaches 71 references in the consumer app, 59 of
+      # The platform accent reaches 68 references in the consumer app, 56 of
       # them baked into a module-level StyleSheet.create at import. That only
       # works because App.js require()s its screen tree AFTER the colour is in
       # place, which is an ORDER — invisible in a diff, and undone by any one of
       # an eager import creeping back, a raw hex creeping back into a screen, or
       # a `const { accent } = colors` freezing the value. Each leaves an app
-      # that builds, runs, and paints 59 of 71 references wrong. This exercises
-      # the ordering both ways round, refuses all three, and also refuses a
-      # red/green money pair drawn with the accent instead of colors.positive.
+      # that builds, runs, and paints 56 of 68 references wrong. This exercises
+      # the ordering both ways round, refuses all three, and refuses the three
+      # shapes of a semantic green drawn with the accent: a red/green pair, a
+      # good-state pill or note, and a money figure.
       - name: Accent bootstrap + no-bypass check
         run: node scripts/mobile-theme-boot.test.mjs
 

@@ -18,7 +18,7 @@
  *   BYPASS —  the ways a later change could silently undo it: an eager import
  *     creeping back into App.js, a raw accent hex creeping back into a screen,
  *     a `const { accent } = colors` freezing the value at import. Each of those
- *     leaves an app that still builds, still runs, and paints 59 of the 71
+ *     leaves an app that still builds, still runs, and paints 56 of the 68
  *     themed references the wrong colour. None of them is visible in a diff
  *     unless something is looking.
  */
@@ -281,6 +281,28 @@ section('no screen can opt out of the theme');
     }
   }
   await eq(stateish, [], 'no good-state pill, note, badge or card is drawn with the accent');
+
+  // A MONEY FIGURE IS NEVER THE BRAND COLOUR.
+  //
+  // Both apps had already settled this without writing it down: every amount,
+  // total and balance is either neutral colors.text or takes a red/green tone
+  // at runtime. Three had drifted onto the accent — a referral credit, a cart
+  // line total, an order's edit note — and a festive orange would have picked
+  // exactly those three out of a screen of otherwise neutral figures.
+  //
+  // The rule reads `color:` only, and that distinction is the point: a rendered
+  // figure is TEXT, while a control that acts on money is a SURFACE. "Pay now"
+  // keeps its accent fill; the number beside it does not.
+  const MONEY = /\b\w*(amt|amount|total|balance|credit|money|price|payable|due|outstanding)\w*\s*:\s*\{([^}]*)\}/gi;
+  const money = [];
+  for (const f of files) {
+    const rel = path.relative(APP, f);
+    const code = fs.readFileSync(f, 'utf8').replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const m of code.matchAll(MONEY)) {
+      if (/(^|[^a-zA-Z])color\s*:\s*colors\.(accent|accentDark)\b/.test(m[2])) money.push(`${rel}: ${m[0].split(':')[0].trim()}`);
+    }
+  }
+  await eq(money, [], 'no money figure is drawn with the accent instead of colors.positive');
 }
 
 // ===========================================================================
