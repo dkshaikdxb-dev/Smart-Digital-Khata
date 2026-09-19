@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { products, catalog, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -201,7 +202,7 @@ export default function CatalogScreen() {
   );
 
   const renderMine = () => {
-    if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+    if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
     return (
       <FlatList
         style={{ flex: 1 }}
@@ -220,7 +221,7 @@ export default function CatalogScreen() {
             <View style={{ alignItems: 'flex-end', gap: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={s.muted}>{item.is_active ? t('cat.active') : t('cat.hidden')}</Text>
-                <Switch value={!!item.is_active} onValueChange={() => toggleActive(item)} trackColor={{ true: '#22c55e', false: '#334155' }} thumbColor="#e2e8f0" />
+                <Switch value={!!item.is_active} onValueChange={() => toggleActive(item)} trackColor={{ true: colors.accent, false: '#334155' }} thumbColor="#e2e8f0" />
               </View>
               {editing === item.id ? (
                 <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
@@ -291,10 +292,10 @@ export default function CatalogScreen() {
         keyExtractor={(i) => i.id}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={browseLoading
-          ? <ActivityIndicator color="#22c55e" style={{ marginTop: 24 }} />
+          ? <ActivityIndicator color={colors.accent} style={{ marginTop: 24 }} />
           : <Text style={s.empty}>{t('cat.noCatalogue')}</Text>}
         ListFooterComponent={browseLoadingMore
-          ? <ActivityIndicator color="#22c55e" style={{ marginVertical: 14 }} />
+          ? <ActivityIndicator color={colors.accent} style={{ marginVertical: 14 }} />
           : (browseCursor ? (
             <Pressable style={s.loadMore} onPress={loadMore}>
               <Text style={s.action}>{t('cat.loadMore')}</Text>
@@ -318,20 +319,20 @@ const s = StyleSheet.create({
   center: { flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center' },
   segRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
   seg: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center', backgroundColor: '#1e293b' },
-  segActive: { backgroundColor: '#22c55e' },
+  segActive: { backgroundColor: colors.accent },
   segText: { color: '#94a3b8', fontWeight: '700', fontSize: 13 },
   segTextActive: { color: '#000' },
   formCard: { backgroundColor: '#1e293b', padding: 14, borderRadius: 12, marginBottom: 16, gap: 8 },
   formTitle: { color: '#e2e8f0', fontSize: 16, fontWeight: '700', marginBottom: 2 },
   input: { backgroundColor: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 10 },
-  primary: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4 },
+  primary: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4 },
   primaryText: { color: '#000', fontWeight: '700' },
   sectionLabel: { color: '#94a3b8', fontSize: 13, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   row: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   name: { color: '#e2e8f0', fontSize: 16, fontWeight: '600' },
   muted: { color: '#94a3b8', fontSize: 12 },
-  action: { color: '#22c55e', fontSize: 13, fontWeight: '600' },
-  addBtn: { backgroundColor: '#22c55e', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+  action: { color: colors.accent, fontSize: 13, fontWeight: '600' },
+  addBtn: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
   addBtnText: { color: '#000', fontWeight: '700', fontSize: 13 },
   addedBadge: { color: '#64748b', fontSize: 13, fontWeight: '600' },
   loadMore: { paddingVertical: 14, alignItems: 'center' },

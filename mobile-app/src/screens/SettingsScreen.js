@@ -6,6 +6,7 @@ import {
 import { shop, orders, isAuthError } from '../services/api';
 import { AuthContext } from '../AuthContext';
 import { useT, LANGUAGES, isBetaLang } from '../i18n';
+import { colors } from '../theme';
 
 const NOTIF_MODES = [
   { value: 'silent', tkey: 'setn.silent' },
@@ -211,7 +212,7 @@ export default function SettingsScreen() {
     ]);
   }
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
   // Load finished but the shop never arrived (initial load failed) — offer a
   // retry instead of an endless spinner.
   if (!form) {
@@ -351,7 +352,7 @@ export default function SettingsScreen() {
             <Switch
               value={form.order_alert_enabled !== false}
               onValueChange={(v) => set('order_alert_enabled', v)}
-              trackColor={{ true: '#22c55e', false: '#334155' }}
+              trackColor={{ true: colors.accent, false: '#334155' }}
               thumbColor="#e2e8f0"
             />
           </View>
@@ -443,7 +444,7 @@ export default function SettingsScreen() {
           </View>
           <View style={s.switchRow}>
             <Text style={s.body}>{t('set.listShop')}</Text>
-            <Switch value={!!form.is_listed} onValueChange={(v) => set('is_listed', v)} trackColor={{ true: '#22c55e', false: '#334155' }} thumbColor="#e2e8f0" />
+            <Switch value={!!form.is_listed} onValueChange={(v) => set('is_listed', v)} trackColor={{ true: colors.accent, false: '#334155' }} thumbColor="#e2e8f0" />
           </View>
           <Pressable style={[s.primary, busy && { opacity: 0.6 }]} onPress={saveDiscovery} disabled={busy}>
             <Text style={s.primaryText}>{t('common.save')}</Text>
@@ -479,7 +480,7 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a' },
   center: { flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center', padding: 24 },
   loadFailed: { color: '#94a3b8', fontSize: 15, textAlign: 'center', marginBottom: 16 },
-  retry: { backgroundColor: '#22c55e', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+  retry: { backgroundColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
   retryText: { color: '#000', fontWeight: '700' },
   card: { backgroundColor: '#1e293b', padding: 16, borderRadius: 12, marginBottom: 12 },
   h: { color: '#e2e8f0', fontSize: 17, fontWeight: '700', marginBottom: 8 },
@@ -489,12 +490,12 @@ const s = StyleSheet.create({
   input: { backgroundColor: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 10 },
   pillRow: { flexDirection: 'row', gap: 8 },
   pill: { backgroundColor: '#0f172a', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 999 },
-  pillActive: { backgroundColor: '#22c55e' },
+  pillActive: { backgroundColor: colors.accent },
   pillText: { color: '#94a3b8' },
   pillTextActive: { color: '#000', fontWeight: '700' },
   badgeRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   badge: { color: '#94a3b8', fontSize: 11, backgroundColor: '#0f172a', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  primary: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 16 },
+  primary: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 16 },
   primaryText: { color: '#000', fontWeight: '700' },
   secondary: { backgroundColor: '#334155', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 16 },
   secondaryText: { color: '#e2e8f0', fontWeight: '600' },
@@ -517,7 +518,7 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: '#334155', borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: 'center',
   },
-  langActive: { backgroundColor: '#22c55e', borderColor: '#22c55e' },
+  langActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   langText: { color: '#e2e8f0', fontSize: 15, fontWeight: '600' },
   langTextActive: { color: '#000' },
   logout: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4, marginBottom: 20, borderWidth: 1, borderColor: '#f87171' },

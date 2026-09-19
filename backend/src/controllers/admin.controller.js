@@ -1,6 +1,7 @@
 const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const settings = require('../config/settings');
+const theme = require('../utils/theme');
 const razorpay = require('../services/razorpay.service');
 const whatsapp = require('../services/whatsapp.service');
 const { hasPermission, permissionsFor } = require('../config/permissions');
@@ -466,6 +467,11 @@ const FEATURE_NUM_DEFAULTS = {
 // malformed. Policy, not a credential — no I CONFIRM.
 const FEATURE_TEXT_DEFAULTS = {
   order_eta_chips: '15,30,60',
+  // The platform accent (batch THEME1). Seeded to the colour every client
+  // hardcodes, so an unset value and the shipped value are the same thing.
+  // A festive window in theme_campaigns overrides it while the window is live;
+  // this is the standing colour underneath.
+  theme_accent: theme.DEFAULT_ACCENT,
 };
 
 // The three referral-split percents feed the zero-burn accrual: their sum can
@@ -539,6 +545,17 @@ exports.getSettings = async (_req, res) => {
       // id. The toggle above is inert without it. Lazy require — the service
       // itself requires this controller (writeAudit).
       f.ai_moderation_configured = require('../services/moderation.service').isConfigured();
+      // Read-only: how the stored accent measures against the two fixed colours
+      // it actually lands on — a button's own label, and the app background when
+      // the accent is drawn as text. Advice for the panel, never a gate.
+      f.theme_accent_contrast = theme.contrastReport(f.theme_accent);
+      // Read-only: the colours the WEB STOREFRONT will actually use, derived
+      // from the same accent. They differ from it on purpose — a CTA fill has
+      // to be findable on a white page and accent text has to be readable on
+      // one — so the panel shows them rather than letting an operator assume
+      // their hex lands everywhere unchanged. Derived here, never in the panel,
+      // so there is one implementation of the rule.
+      f.theme_accent_tokens = theme.accentFamily(f.theme_accent);
       return f;
     })(),
     integrations: integrationsStatus(),
@@ -741,6 +758,19 @@ exports.updateSettings = async (req, res) => {
       if (!Number.isFinite(n)) throw ApiError.badRequest('invalid_threshold');
       patch[key] = String(Math.min(ADJ_MAX, Math.max(ADJ_MIN, n)));
     }
+  }
+
+  // The platform accent (batch THEME1) -> a normalised '#rrggbb'.
+  //
+  // A malformed colour is a clear 400, like the eta chips above and for the same
+  // reason: an admin must never walk away believing they saved something that
+  // was quietly dropped. POOR CONTRAST IS NOT AN ERROR — the report travels back
+  // on GET so the panel can warn, and the operator decides. Refusing here would
+  // block a brand colour they own; failing silently is the thing worth stopping.
+  if (b.theme_accent !== undefined) {
+    const hex = theme.normalizeHex(b.theme_accent);
+    if (!hex) throw ApiError.badRequest('invalid_accent');
+    patch.theme_accent = hex;
   }
 
   // Ready-time chips (batch B) -> the TEXT list getEtaConfig() parses. Validated

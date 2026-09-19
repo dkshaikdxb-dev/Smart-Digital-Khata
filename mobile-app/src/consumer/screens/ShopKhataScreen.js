@@ -104,7 +104,7 @@ export default function ShopKhataScreen({ route, navigation }) {
           <Card style={styles.balCard}>
             <Text style={styles.balShop}>{data ? data.shop_name : shopName}</Text>
             <Text style={styles.balLabel}>{owes ? t('khata.owe') : balance < 0 ? t('khata.advance') : t('khata.settled')}</Text>
-            <Text style={[styles.balValue, { color: owes ? colors.danger : colors.accent }]}>
+            <Text style={[styles.balValue, { color: owes ? colors.danger : colors.positive }]}>
               {money(Math.abs(balance))}
             </Text>
           </Card>
@@ -147,7 +147,7 @@ export default function ShopKhataScreen({ route, navigation }) {
                       {tx.note ? <Text style={styles.txnNote} numberOfLines={1}>{tx.note}</Text> : null}
                       <Text style={styles.txnDate}>{new Date(tx.created_at).toLocaleDateString()}</Text>
                     </View>
-                    <Text style={[styles.txnAmt, { color: isPurchase ? colors.danger : colors.accent }]}>
+                    <Text style={[styles.txnAmt, { color: isPurchase ? colors.danger : colors.positive }]}>
                       {isPurchase ? '+' : '−'}{money(tx.amount)}
                     </Text>
                   </View>

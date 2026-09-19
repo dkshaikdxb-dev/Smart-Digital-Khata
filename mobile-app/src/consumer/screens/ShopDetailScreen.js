@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   chipText: { color: colors.text, fontSize: 15, fontWeight: '600' },
   chipTextActive: { color: colors.onAccent },
-  lineTotal: { color: colors.accent, fontSize: 15, fontWeight: '700', marginTop: 10 },
+  lineTotal: { color: colors.positive, fontSize: 15, fontWeight: '700', marginTop: 10 },
   cartBar: {
     position: 'absolute', left: 0, right: 0, bottom: 0,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

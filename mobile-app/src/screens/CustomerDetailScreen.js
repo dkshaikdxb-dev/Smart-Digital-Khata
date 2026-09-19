@@ -4,11 +4,12 @@ import {
 } from 'react-native';
 import { customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
 
-const typeColor = (ty) => (ty === 'purchase' ? '#f87171' : '#22c55e');
+const typeColor = (ty) => (ty === 'purchase' ? '#f87171' : colors.positive);
 
 export default function CustomerDetailScreen({ route, navigation }) {
   const { t, lang } = useT();
@@ -40,7 +41,7 @@ export default function CustomerDetailScreen({ route, navigation }) {
     try { await load(); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
   if (!customer) return <View style={s.center}><Text style={s.muted}>{t('custd.notFound')}</Text></View>;
 
   return (
@@ -95,7 +96,7 @@ const s = StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
   kpiLabel: { color: '#94a3b8', fontSize: 12 },
   kpiValue: { color: '#e2e8f0', fontSize: 20, fontWeight: '700', marginTop: 2 },
-  primary: { backgroundColor: '#22c55e', padding: 14, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
+  primary: { backgroundColor: colors.accent, padding: 14, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
   primaryText: { color: '#000', fontWeight: '700', fontSize: 16 },
   sectionLabel: { color: '#94a3b8', fontSize: 13, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   txRow: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },

@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { families, customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -79,7 +80,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
     }
   }
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
   if (!detail) return <View style={s.center}><Text style={s.muted}>{t('famd.notFound')}</Text></View>;
 
   const memberIds = new Set((detail.members || []).map((m) => m.id));
@@ -151,7 +152,7 @@ export default function FamilyDetailScreen({ route, navigation }) {
               <Text style={s.body}>{row.customer_name_local || row.customer_name} · {typeLabel(row.type)}</Text>
               <Text style={s.muted}>{new Date(row.created_at).toLocaleString()}{row.note ? ` · ${row.note}` : ''}</Text>
             </View>
-            <Text style={[s.txAmount, { color: row.type === 'purchase' ? '#f87171' : '#22c55e' }]}>
+            <Text style={[s.txAmount, { color: row.type === 'purchase' ? '#f87171' : colors.positive }]}>
               {row.type === 'purchase' ? '+' : '−'}{fmt(row.amount)}
             </Text>
           </View>
@@ -171,11 +172,11 @@ const s = StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
   kpiLabel: { color: '#94a3b8', fontSize: 12 },
   kpiValue: { color: '#e2e8f0', fontSize: 20, fontWeight: '700', marginTop: 2 },
-  primary: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 14 },
+  primary: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 14 },
   primaryText: { color: '#000', fontWeight: '700' },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
   sectionTitle: { color: '#e2e8f0', fontSize: 16, fontWeight: '700' },
-  action: { color: '#22c55e', fontSize: 14, fontWeight: '600' },
+  action: { color: colors.accent, fontSize: 14, fontWeight: '600' },
   picker: { backgroundColor: '#0f172a', borderRadius: 10, padding: 8, marginBottom: 12, gap: 4 },
   pickRow: { padding: 10, borderRadius: 8 },
   memberRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#0f172a' },

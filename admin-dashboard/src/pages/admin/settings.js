@@ -4,6 +4,7 @@ import Nav from '../../components/Nav';
 import ConfirmTyped, { CONFIRM_PHRASE } from '../../components/ConfirmTyped';
 import { apiFetch } from '../../lib/api';
 import { moneyAuto } from '../../lib/money';
+import { contrastReport } from '../../lib/contrast';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -74,7 +75,7 @@ const INT_KEYS = [
 ];
 // TEXT feature keys — edited as plain strings. `order_eta_chips` (batch B) is the
 // comma-separated minute list behind the owner's three accept chips.
-const TEXT_KEYS = ['order_eta_chips'];
+const TEXT_KEYS = ['order_eta_chips', 'theme_accent'];
 const PCT_KEYS = ['referral_split_infra_pct', 'referral_split_l1_pct', 'referral_split_l2_pct'];
 
 // How the feature switches are laid out now. Each switch is an outlined tile
@@ -103,6 +104,10 @@ function featFromApi(f) {
   ADJ_KEYS.forEach((k) => { o[k] = Number.isFinite(Number(f[k])) ? Number(f[k]) : 0; });
   TEXT_KEYS.forEach((k) => { o[k] = f[k] == null ? '' : String(f[k]); });
   o.ai_moderation_configured = !!f.ai_moderation_configured;
+  // Read-only: how the SAVED accent measures. The panel shows a live figure for
+  // whatever is being typed; this is the one the server stands behind.
+  o.theme_accent_contrast = f.theme_accent_contrast || null;
+  o.theme_accent_tokens = f.theme_accent_tokens || null;
   return o;
 }
 
@@ -501,6 +506,7 @@ export default function AdminSettings() {
         <a href="#money">Money</a>
         <a href="#moderation">Moderation</a>
         <a href="#shops">Shops &amp; orders</a>
+        <a href="#appearance">Appearance</a>
         <a href="#later">Not live yet</a>
       </nav>
       {msg && <div className="card" style={{ color: 'var(--accent)' }}>{msg}</div>}
@@ -1058,6 +1064,120 @@ export default function AdminSettings() {
             </div>
 
             {/* SECTION 5 — what is not live yet. */}
+            {/* SECTION — Appearance (batch THEME1). ONE colour: the accent the apps
+                and the storefront tint their buttons, active pills and highlights
+                with. The dark base, the cards and the text are NOT here, on
+                purpose — an operator who can repaint the text can make the screen
+                unreadable from this page with no way to see what they did. */}
+            <h2 id="appearance" style={{ marginTop: 24 }}>Appearance</h2>
+            <p className="muted" style={{ fontSize: 13 }}>
+              The accent colour the consumer app, the shopkeeper app and the storefront
+              tint with. Saved here, picked up the next time an app starts.
+            </p>
+            <div className="card">
+              <h3>Accent colour</h3>
+              {(() => {
+                const typed = feat.theme_accent;
+                const live = contrastReport(typed);          // what the panel measures as you type
+                const saved = feat.theme_accent_contrast;    // what the server stands behind
+                const swatch = live ? live.accent : '#22c55e';
+                return (
+                  <div style={{ display: 'grid', gap: 14, maxWidth: 620 }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                      <div style={{ flex: '1 1 200px' }}>
+                        <label className="muted" htmlFor="f-theme_accent">Hex colour</label>
+                        <input id="f-theme_accent" data-setting="theme_accent" type="text" inputMode="text"
+                          placeholder="#22c55e" value={typed}
+                          onChange={(e) => setFeat({ ...feat, theme_accent: e.target.value })} />
+                      </div>
+                      <input aria-label="Pick the accent colour" type="color" value={swatch}
+                        style={{ width: 52, height: 40, padding: 0, border: 'none', background: 'none' }}
+                        onChange={(e) => setFeat({ ...feat, theme_accent: e.target.value })} />
+                    </div>
+
+                    {/* What it will actually look like, in the two places it lands. */}
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{ background: swatch, color: '#052e16', borderRadius: 10,
+                        padding: '10px 18px', fontWeight: 600, fontSize: 15 }}>Pay now</span>
+                      <span style={{ background: '#0f172a', color: swatch, borderRadius: 10,
+                        padding: '10px 18px', fontSize: 15 }}>₹1,240 outstanding</span>
+                    </div>
+
+                    {!live && typed !== '' && (
+                      <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>
+                        That is not a colour. Use a hex value like #22c55e.
+                      </p>
+                    )}
+                    {live && (
+                      <div style={{ fontSize: 13, display: 'grid', gap: 4 }}>
+                        <div className="muted">
+                          Button label on the accent: <b style={{ fontVariantNumeric: 'tabular-nums' }}>{live.on_accent.ratio}:1</b>
+                          {' '}{live.on_accent.passes_aa ? '✓' : '⚠'}
+                          {'  ·  '}
+                          Accent as text on the app background: <b style={{ fontVariantNumeric: 'tabular-nums' }}>{live.on_app_bg.ratio}:1</b>
+                          {' '}{live.on_app_bg.passes_aa_large ? '✓' : '⚠'}
+                        </div>
+                        {live.warnings.map((w) => (
+                          <div key={w} style={{ color: 'var(--warn, #f59e0b)' }}>⚠ {w}</div>
+                        ))}
+                        {live.warnings.length > 0 && (
+                          <div className="muted">
+                            It will still save. A shopkeeper reads this screen outdoors on a cheap phone, so this is
+                            worth a second look before you do.
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button type="button" disabled={!live}
+                        onClick={() => saveFeat({ theme_accent: feat.theme_accent }, 'Accent saved. Apps pick it up on next start.')}>
+                        Save accent
+                      </button>
+                      <button type="button" className="secondary"
+                        onClick={() => setFeat({ ...feat, theme_accent: '#22c55e' })}>
+                        Reset to khata green
+                      </button>
+                      {saved && saved.accent !== swatch && (
+                        <span className="muted" style={{ fontSize: 12 }}>
+                          Saved: <code>{saved.accent}</code> — unsaved change above.
+                        </span>
+                      )}
+                    </div>
+
+                    {/* WHAT THE STOREFRONT WILL ACTUALLY USE. The web's light theme is a
+                        white page, where this accent would be a button with no edge — the
+                        shipped green is 2.28:1 on white — so the server tones it per theme,
+                        holding the hue and moving only the brightness until a CTA can be
+                        found and accent text can be read. Showing the result here is the
+                        difference between an operator knowing that and discovering it.
+                        These are the SAVED value's colours; they refresh after a save. */}
+                    {saved && feat.theme_accent_tokens && (
+                      <div style={{ display: 'grid', gap: 6, fontSize: 13 }}>
+                        <div className="muted">On the web storefront this becomes:</div>
+                        {[['Light', feat.theme_accent_tokens.light, '#ffffff', '#0f172a'],
+                          ['Dark', feat.theme_accent_tokens.dark, '#1e293b', '#f1f5f9']].map(([name, tk, ground, ink]) => (
+                          <div key={name} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
+                            background: ground, color: ink, padding: '8px 10px', borderRadius: 10 }}>
+                            <span style={{ width: 54, opacity: 0.75 }}>{name}</span>
+                            <span style={{ background: tk.accent, color: tk.on_accent, borderRadius: 8, padding: '6px 12px', fontWeight: 600 }}>Add to cart</span>
+                            <span style={{ color: tk.ink, fontWeight: 600 }}>₹1,240</span>
+                            <span style={{ background: tk.soft, border: `1px solid ${tk.soft_border}`, color: tk.ink, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>Offer</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="muted" style={{ fontSize: 12, margin: 0 }}>
+                      A festive theme can override this for a date range — Diwali, Eid, Pongal, a sale
+                      weekend. While one is live it wins, and this stays the colour underneath it.
+                      {' '}<a href="/admin/theme-campaigns">Festive themes →</a>
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+
             <h2 id="later" style={{ marginTop: 24 }}>Not live yet</h2>
             <p className="muted" style={{ fontSize: 13 }}>
               Built, but switched off at the source and waiting on something outside this panel.

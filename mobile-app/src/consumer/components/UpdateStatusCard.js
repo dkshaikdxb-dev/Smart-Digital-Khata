@@ -135,6 +135,6 @@ const styles = StyleSheet.create({
   btn: { marginTop: 14 },
   disabled: { color: colors.textMuted, fontSize: 13, marginTop: 12 },
   note: { color: colors.textMuted, fontSize: 14, marginTop: 10 },
-  noteOk: { color: colors.accent },
+  noteOk: { color: colors.positive },
   noteBad: { color: '#fecaca' },
 });

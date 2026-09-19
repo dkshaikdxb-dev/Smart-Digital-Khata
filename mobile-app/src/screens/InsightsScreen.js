@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { analytics, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const pct = (f) => `${Math.round(Number(f || 0) * 100)}%`;
@@ -45,7 +46,7 @@ export default function InsightsScreen() {
     try { await load(days); } catch (e) { if (!isAuthError(e)) Alert.alert(t('common.error'), e.response?.data?.error || e.message); } finally { setRefreshing(false); }
   };
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
 
   const agingTotal = Number(aging?.total || 0);
 
@@ -115,7 +116,7 @@ const s = StyleSheet.create({
   center: { flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center' },
   chips: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   chip: { backgroundColor: '#1e293b', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 },
-  chipActive: { backgroundColor: '#22c55e' },
+  chipActive: { backgroundColor: colors.accent },
   chipText: { color: '#94a3b8' },
   chipTextActive: { color: '#000', fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
@@ -129,7 +130,7 @@ const s = StyleSheet.create({
   ageLabel: { color: '#94a3b8', fontSize: 13 },
   ageValue: { color: '#e2e8f0', fontSize: 14, fontWeight: '700' },
   barTrack: { height: 8, backgroundColor: '#0f172a', borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: 8, backgroundColor: '#22c55e', borderRadius: 4 },
+  barFill: { height: 8, backgroundColor: colors.accent, borderRadius: 4 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#0f172a', paddingTop: 12 },
   footnote: { color: '#64748b', fontSize: 12, textAlign: 'center', marginTop: 16 },
 });

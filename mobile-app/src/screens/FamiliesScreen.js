@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { families, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -66,7 +67,7 @@ export default function FamiliesScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
 
   return (
     <FlatList
@@ -96,7 +97,7 @@ const s = StyleSheet.create({
   formCard: { backgroundColor: '#1e293b', padding: 14, borderRadius: 12, marginBottom: 16, gap: 8 },
   formTitle: { color: '#e2e8f0', fontSize: 16, fontWeight: '700', marginBottom: 2 },
   input: { backgroundColor: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 10 },
-  primary: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4 },
+  primary: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 4 },
   primaryText: { color: '#000', fontWeight: '700' },
   hint: { color: '#64748b', fontSize: 12, marginTop: 2 },
   sectionLabel: { color: '#94a3b8', fontSize: 13, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },

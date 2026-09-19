@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, Pressable, Alert, RefreshControl } from 'react-native';
 import { customers, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -65,7 +66,7 @@ export default function CustomersScreen({ navigation }) {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f172a', padding: 16 },
   input: { backgroundColor: '#1e293b', color: '#e2e8f0', padding: 10, borderRadius: 10 },
-  button: { backgroundColor: '#22c55e', paddingHorizontal: 14, justifyContent: 'center', borderRadius: 10 },
+  button: { backgroundColor: colors.accent, paddingHorizontal: 14, justifyContent: 'center', borderRadius: 10 },
   buttonText: { color: '#000', fontWeight: '700' },
   row: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { color: '#e2e8f0', fontSize: 16, fontWeight: '600' },

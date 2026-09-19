@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   label: { color: colors.textMuted, fontSize: 14, fontWeight: '600', marginBottom: 6 },
   code: { color: colors.accent, fontSize: 28, fontWeight: '800', letterSpacing: 3, marginBottom: 12 },
   link: { color: colors.text, fontSize: 14, marginBottom: 12 },
-  credit: { color: colors.accent, fontSize: sizes.big, fontWeight: '800', marginBottom: 6 },
+  credit: { color: colors.positive, fontSize: sizes.big, fontWeight: '800', marginBottom: 6 },
   counts: { color: colors.textMuted, fontSize: 14 },
   muted: { color: colors.textMuted, fontSize: 15 },
   row: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border },

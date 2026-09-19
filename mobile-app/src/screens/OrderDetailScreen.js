@@ -5,6 +5,7 @@ import {
 import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../lib/orderEta';
+import { colors } from '../theme';
 // EDIT THE ORDER WHILE ACCEPTING (batch C). Pure JS helpers — no dependency, so
 // this whole feature ships over the air.
 import {
@@ -21,7 +22,7 @@ const PMODE = new Set(['credit', 'prepaid', 'cash']);
 const PSTATUS = new Set(['paid', 'pending', 'failed', 'not_required']);
 
 const statusColor = (s) => {
-  if (s === 'completed') return '#22c55e';
+  if (s === 'completed') return colors.positive;
   if (s === 'cancelled') return '#f87171';
   return '#e2e8f0';
 };
@@ -188,7 +189,7 @@ export default function OrderDetailScreen({ route, navigation }) {
     }
   }
 
-  if (loading) return <View style={s.center}><ActivityIndicator color="#22c55e" /></View>;
+  if (loading) return <View style={s.center}><ActivityIndicator color={colors.accent} /></View>;
   if (!order) return <View style={s.center}><Text style={s.muted}>{t('ord.notFound')}</Text></View>;
 
   const terminal = TERMINAL.includes(order.status);
@@ -513,7 +514,7 @@ const s = StyleSheet.create({
   badgeRow: { flexDirection: 'row', gap: 6, marginTop: 12, flexWrap: 'wrap' },
   badge: { color: '#94a3b8', fontSize: 11, backgroundColor: '#0f172a', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, textTransform: 'capitalize' },
   actions: { flexDirection: 'row', gap: 8, marginTop: 16, flexWrap: 'wrap' },
-  primary: { backgroundColor: '#22c55e', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10 },
+  primary: { backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10 },
   primaryText: { color: '#000', fontWeight: '700', textTransform: 'capitalize' },
   secondary: { backgroundColor: '#334155', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 10 },
   secondaryText: { color: '#e2e8f0', fontWeight: '600' },
@@ -526,10 +527,10 @@ const s = StyleSheet.create({
   // large: this is used one-handed, mid-rush, often on a cracked screen.
   etaBlock: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#0f172a', paddingTop: 14 },
   etaHint: { color: '#94a3b8', fontSize: 13, marginBottom: 10 },
-  etaPromised: { color: '#22c55e', fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  etaPromised: { color: colors.accent, fontSize: 14, fontWeight: '700', marginBottom: 10 },
   etaLate: { color: '#f87171', fontSize: 14, fontWeight: '700', marginBottom: 10 },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
-  etaChip: { backgroundColor: '#22c55e', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 14 },
+  etaChip: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 14 },
   etaChipText: { color: '#000', fontWeight: '800', fontSize: 15 },
   etaGhost: { backgroundColor: '#334155', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, alignSelf: 'flex-start' },
   etaGhostText: { color: '#e2e8f0', fontWeight: '600', fontSize: 14 },
