@@ -290,6 +290,16 @@ const cases = [
   ['the same in Marathi',
    () => webSet('mr', 'chelp.e7.a', MR.e7CollapsedToAccept), 'approve-not-accept', 'web mr chelp.e7.a'],
 
+  // --- rows released from the undecided set ---------------------------------
+  // Seven rows were held back because converging them would resolve one of the
+  // 274. Released explicitly. The web side is now the review's, and the app side
+  // of two of them stays product-item's — one row, one owner per surface.
+  ['a row released from the undecided set is held on the web',
+   () => webSet('gu', 'chelp.e6.q', 'મારું ખાતું કેવી રીતે કામ કરે છે?'), 'gu-native-review-1', 'web gu chelp.e6.q'],
+
+  ['releasing it did not take the app side from the decision that owned it',
+   () => appSet(CONSUMER, 'gu', 'chelp.e2.a', 'કંઈક સાવ જુદું.'), 'product-item', 'app/consumer gu chelp.e2.a'],
+
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
      j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
@@ -492,6 +502,22 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
       const e = reg.decisions['reject-not-cancel'].english_source_defect;
       return e?.key === 'orej.help' && /English source defect/i.test(e.status)
         && !reg.decisions['reject-not-cancel'].values.bn['orej.help'];
+    }],
+    ['every row released from the undecided set left it, and says who released it', () => {
+      const U = reg.divergences.UNDECIDED;
+      const released = (U.resolved || []).filter((x) => /native-review/.test(x.by));
+      if (!released.length) return false;
+      // gone from the live set, owned by the decision that released it, and the
+      // count moved with them
+      return released.every((x) => x.keys.every((k) => !(U.keys[x.lang] || []).includes(k)
+               && reg.decisions[x.by].values[x.lang][k] !== undefined))
+        && U.count === Object.values(U.keys).reduce((n, ks) => n + ks.length, 0);
+    }],
+    ['a released row does not claim a surface another LOCKED decision owns', () => {
+      // gu chelp.e2.a and chelp.e3.a: product-item holds the app copy, so the
+      // review took the web only. A plain string here would claim both.
+      const v = reg.decisions['gu-native-review-1'].values.gu;
+      return ['chelp.e2.a', 'chelp.e3.a'].every((k) => typeof v[k] === 'object' && v[k].web !== undefined && v[k].app === undefined);
     }],
     ['the three rule-based decisions pin exactly the 14 values, and nothing else does', () => {
       const RULE_BASED = ['unit-counter', 'catalogue-loanword', 'prepaid-mechanism'];

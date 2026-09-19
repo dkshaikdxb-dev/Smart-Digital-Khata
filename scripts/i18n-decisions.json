@@ -916,7 +916,13 @@
           "stmt.rangeError",
           "stmt.title",
           "tx.empty",
-          "custd.noTransactions"
+          "custd.noTransactions",
+          "chelp.e2.a",
+          "chelp.e3.a",
+          "chelp.e5.a",
+          "chelp.e6.a",
+          "chelp.e6.q",
+          "ord.empty"
         ]
       },
       "answered": {
@@ -1028,7 +1034,17 @@
           "stmt.rangeError": "\"થી\" તારીખ \"સુધી\" તારીખ પહેલાંની કે એ જ હોવી જોઈએ.",
           "stmt.title": "ખાતાનું વિવરણ",
           "tx.empty": "હજી કોઈ લેવડદેવડ નથી.",
-          "custd.noTransactions": "હજી કોઈ લેવડદેવડ નથી."
+          "custd.noTransactions": "હજી કોઈ લેવડદેવડ નથી.",
+          "chelp.e2.a": {
+            "web": "ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો."
+          },
+          "chelp.e3.a": {
+            "web": "દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે."
+          },
+          "chelp.e5.a": "તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય.",
+          "chelp.e6.a": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો.",
+          "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે?",
+          "ord.empty": "અહીં હજી કોઈ ઑર્ડર નથી."
         }
       },
       "values_note": "Every value is the string the app already showed. Nothing was authored. A key is written to every surface that carries it, so a key whose ENGLISH differs between surfaces is scoped: gu ord.cancelConfirm is \"Cancel this order?\" on the web and \"Cancel this order? This cannot be undone.\" in the owner app, and one value for both would have dropped a warning the English requires.",
@@ -1374,12 +1390,53 @@
           "app": "custd.noTransactions",
           "was_on_web": "હજી કોઈ વ્યવહાર નથી.",
           "now": "હજી કોઈ લેવડદેવડ નથી."
+        },
+        {
+          "web": "chelp.e2.a",
+          "app": "chelp.e2.a",
+          "was_on_web": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
+          "now": "ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો."
+        },
+        {
+          "web": "chelp.e3.a",
+          "app": "chelp.e3.a",
+          "was_on_web": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
+          "now": "દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે."
+        },
+        {
+          "web": "chelp.e5.a",
+          "app": "chelp.e5.a",
+          "was_on_web": "તમે ખાતા (ઉધાર) પર, ઑનલાઇન, કે રોકડમાં ચૂકવી શકો છો. ખાતા પર લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકતે કરી શકો.",
+          "now": "તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય."
+        },
+        {
+          "web": "chelp.e6.a",
+          "app": "chelp.e6.a",
+          "was_on_web": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી રકમ એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, તેથી તમને હંમેશાં તમારી બાકી ખબર રહે છે, અને વિગત જોઈ કે ડાઉનલોડ કરી શકો છો.",
+          "now": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો."
+        },
+        {
+          "web": "chelp.e6.q",
+          "app": "chelp.e6.q",
+          "was_on_web": "મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે?",
+          "now": "મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે?"
+        },
+        {
+          "web": "ord.empty",
+          "app": "ord.empty",
+          "was_on_web": "આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી.",
+          "now": "અહીં હજી કોઈ ઑર્ડર નથી."
         }
       ],
       "decided_by": "owner",
       "decided_on": "2026-09-19",
       "supersedes": "native-speaker-queue-gu (the 57 rows where the surfaces disagreed), and the INTENTIONAL_DIVERGENCE entries this converges.",
-      "override_log": []
+      "override_log": [],
+      "second_pass": {
+        "on": "2026-09-19",
+        "rows": 6,
+        "note": "These rows carry the same answer as the rest of their theme — take the app string — and were held back in the first pass because each was also one of the 274 undecided web/app divergences. Converging them resolves those, which needed to be asked for rather than assumed. It was, explicitly, and they are applied here."
+      }
     },
     "mr-native-review-1": {
       "type": "LINGUISTIC",
@@ -1473,7 +1530,8 @@
           "stmt.closing",
           "stmt.loadError",
           "stmt.subtitle",
-          "stmt.title"
+          "stmt.title",
+          "chelp.e2.a"
         ]
       },
       "answered": {
@@ -1567,7 +1625,8 @@
           "stmt.closing": "शेवटची शिल्लक",
           "stmt.loadError": "तपशील लोड होऊ शकला नाही.",
           "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीतील तारखेनुसार नोंदी, आणि शेवटची शिल्लक.",
-          "stmt.title": "खात्याचा तपशील"
+          "stmt.title": "खात्याचा तपशील",
+          "chelp.e2.a": "वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला."
         }
       },
       "values_note": "Every value is the string the app already showed. Nothing was authored. A key is written to every surface that carries it, so a key whose ENGLISH differs between surfaces is scoped: gu ord.cancelConfirm is \"Cancel this order?\" on the web and \"Cancel this order? This cannot be undone.\" in the owner app, and one value for both would have dropped a warning the English requires.",
@@ -1859,12 +1918,23 @@
           "app": "stmt.title",
           "was_on_web": "खात्याचे विवरण",
           "now": "खात्याचा तपशील"
+        },
+        {
+          "web": "chelp.e2.a",
+          "app": "chelp.e2.a",
+          "was_on_web": "वरच्या सर्च बारचा वापर करा, किंवा कॅटेगरीत पाहा. बोलून शोधायला 🎤 माइक दाबा आणि वस्तूचे नाव सांगा.",
+          "now": "वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला."
         }
       ],
       "decided_by": "owner",
       "decided_on": "2026-09-19",
       "supersedes": "native-speaker-queue-mr (the 48 rows where the surfaces disagreed), and the INTENTIONAL_DIVERGENCE entries this converges.",
-      "override_log": []
+      "override_log": [],
+      "second_pass": {
+        "on": "2026-09-19",
+        "rows": 1,
+        "note": "These rows carry the same answer as the rest of their theme — take the app string — and were held back in the first pass because each was also one of the 274 undecided web/app divergences. Converging them resolves those, which needed to be asked for rather than assumed. It was, explicitly, and they are applied here."
+      }
     },
     "gu-accepted-wording": {
       "type": "LINGUISTIC",
@@ -2246,7 +2316,7 @@
     "native-speaker-queue-gu": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Gujarati wording questions from the web/app ledger — 55 rows.",
+      "concept": "The open Gujarati wording questions from the web/app ledger — 49 rows.",
       "why_review": "Both readings are valid in each case; these need a Gujarati speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-gu-reconcile.md",
@@ -2304,16 +2374,6 @@
           },
           {
             "lang": "gu",
-            "web": "chelp.e2.a",
-            "app": "chelp.e2.a"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e3.a",
-            "app": "chelp.e3.a"
-          },
-          {
-            "lang": "gu",
             "web": "chelp.e3.q",
             "app": "chelp.e3.q"
           },
@@ -2329,23 +2389,8 @@
           },
           {
             "lang": "gu",
-            "web": "chelp.e5.a",
-            "app": "chelp.e5.a"
-          },
-          {
-            "lang": "gu",
             "web": "chelp.e5.q",
             "app": "chelp.e5.q"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e6.a",
-            "app": "chelp.e6.a"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e6.q",
-            "app": "chelp.e6.q"
           },
           {
             "lang": "gu",
@@ -2449,11 +2494,6 @@
           },
           {
             "lang": "gu",
-            "web": "ord.empty",
-            "app": "ord.empty"
-          },
-          {
-            "lang": "gu",
             "web": "ord.emptyItems",
             "app": "ord.noItems"
           },
@@ -2534,7 +2574,7 @@
           }
         ]
       },
-      "protects_note": "57 rows where the two surfaces disagreed were answered on 2026-09-19 and are LOCKED under gu-native-review-1. What is left is: the rows where both surfaces ALREADY say the same thing, so there was nothing to choose between — the question there is whether the wording is right at all, and it has not been asked; 6 row(s) that are also in the 274 undecided web/app divergences, held because converging them would resolve one of those and that set is not to be touched; and 1 catalogue row(s) that catalogue-loanword already answers and whose repair needs the loanword wording.",
+      "protects_note": "What is left is the rows where both surfaces ALREADY say the same thing: there was nothing to choose between them, so the question is whether the wording is right at all, and it has not been asked. Every row where the two disagreed has been answered under gu-native-review-1, except the catalogue rows, which catalogue-loanword already answers and whose repair needs the loanword wording.",
       "open_themes": [
         "orthography_candra_o",
         "product_word",
@@ -2683,15 +2723,10 @@
             "cat.addProduct": "વસ્તુ ઉમેરો",
             "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
             "cat.noResults": "મળતી કોઈ વસ્તુ નથી.",
-            "chelp.e2.a": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
-            "chelp.e3.a": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
             "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
             "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
             "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
-            "chelp.e5.a": "તમે ખાતા (ઉધાર) પર, ઑનલાઇન, કે રોકડમાં ચૂકવી શકો છો. ખાતા પર લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકતે કરી શકો.",
             "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
-            "chelp.e6.a": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી રકમ એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, તેથી તમને હંમેશાં તમારી બાકી ખબર રહે છે, અને વિગત જોઈ કે ડાઉનલોડ કરી શકો છો.",
-            "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે?",
             "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
             "common.balance": "બેલેન્સ",
             "common.remove": "દૂર કરો",
@@ -2711,7 +2746,6 @@
             "num.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
             "num.sending": "મોકલાઈ રહ્યું છે…",
             "ord.cancelOrder": "ઑર્ડર રદ કરો",
-            "ord.empty": "આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી.",
             "ord.emptyItems": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી.",
             "ord.mark": "{s} તરીકે નોંધો",
             "ord.marked": "ઑર્ડર {s} નોંધાયો.",
@@ -2740,10 +2774,7 @@
             "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
             "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
             "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
-            "chelp.e5.a": "તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય.",
             "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
-            "chelp.e6.a": "તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો.",
-            "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે?",
             "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
             "khata.balance": "બેલેન્સ",
             "tab.orders": "ઑર્ડર",
@@ -2775,7 +2806,6 @@
             "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
             "ins.collectionRate": "વસૂલીનો દર",
             "tab.catalog": "કૅટલૉગ",
-            "ord.empty": "અહીં હજી કોઈ ઑર્ડર નથી.",
             "ord.mark": "{s} તરીકે નોંધો",
             "ord.marked": "ઑર્ડર {s} નોંધાયો."
           }
@@ -3180,13 +3210,61 @@
           "app": "custd.noTransactions",
           "answered_by": "gu-native-review-1",
           "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e2.a",
+          "app": "chelp.e2.a",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e3.a",
+          "app": "chelp.e3.a",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e5.a",
+          "app": "chelp.e5.a",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e6.a",
+          "app": "chelp.e6.a",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e6.q",
+          "app": "chelp.e6.q",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "ord.empty",
+          "app": "ord.empty",
+          "answered_by": "gu-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
         }
       ]
     },
     "native-speaker-queue-mr": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Marathi wording questions from the web/app ledger — 28 rows.",
+      "concept": "The open Marathi wording questions from the web/app ledger — 27 rows.",
       "why_review": "Both readings are valid in each case; these need a Marathi speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-mr-reconcile.md",
@@ -3216,11 +3294,6 @@
             "lang": "mr",
             "web": "cat.empty",
             "app": "cat.empty"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e2.a",
-            "app": "chelp.e2.a"
           },
           {
             "lang": "mr",
@@ -3339,7 +3412,7 @@
           }
         ]
       },
-      "protects_note": "48 rows where the two surfaces disagreed were answered on 2026-09-19 and are LOCKED under mr-native-review-1. What is left is: the rows where both surfaces ALREADY say the same thing, so there was nothing to choose between — the question there is whether the wording is right at all, and it has not been asked; 1 row(s) that are also in the 274 undecided web/app divergences, held because converging them would resolve one of those and that set is not to be touched; and 2 catalogue row(s) that catalogue-loanword already answers and whose repair needs the loanword wording.",
+      "protects_note": "What is left is the rows where both surfaces ALREADY say the same thing: there was nothing to choose between them, so the question is whether the wording is right at all, and it has not been asked. Every row where the two disagreed has been answered under mr-native-review-1, except the catalogue rows, which catalogue-loanword already answers and whose repair needs the loanword wording.",
       "open_themes": [
         "outstanding_word",
         "pay_verb",
@@ -3434,7 +3507,6 @@
             "cat.addFromCatalogue": "कॅटलॉगमधून जोडा",
             "cat.addProduct": "वस्तू जोडा",
             "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
-            "chelp.e2.a": "वरच्या सर्च बारचा वापर करा, किंवा कॅटेगरीत पाहा. बोलून शोधायला 🎤 माइक दाबा आणि वस्तूचे नाव सांगा.",
             "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
             "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
             "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
@@ -3462,7 +3534,6 @@
         "app/consumer": {
           "mr": {
             "shopdetail.loading": "यादी लोड होत आहे…",
-            "chelp.e2.a": "वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला.",
             "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
             "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
             "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
@@ -3830,6 +3901,14 @@
           "app": "stmt.title",
           "answered_by": "mr-native-review-1",
           "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e2.a",
+          "app": "chelp.e2.a",
+          "answered_by": "mr-native-review-1",
+          "answer": "app",
+          "released_from_undecided": true
         }
       ]
     },
@@ -4139,7 +4218,7 @@
     },
     "UNDECIDED": {
       "status": "UNDECIDED",
-      "count": 274,
+      "count": 267,
       "keys": {
         "bn": [
           "cat.active",
@@ -4186,11 +4265,6 @@
           "cat.deleteConfirm",
           "cat.hidden",
           "cat.unitPlaceholder",
-          "chelp.e2.a",
-          "chelp.e3.a",
-          "chelp.e5.a",
-          "chelp.e6.a",
-          "chelp.e6.q",
           "chelp.e7.a",
           "fam.empty",
           "ins.collections",
@@ -4198,7 +4272,6 @@
           "ins.purchases",
           "num.newHint",
           "open.stateClosed",
-          "ord.empty",
           "pmode.credit",
           "pstatus.not_required",
           "set.listShop",
@@ -4212,7 +4285,6 @@
           "cat.deleteConfirm",
           "cat.hidden",
           "cat.unitPlaceholder",
-          "chelp.e2.a",
           "chelp.e7.a",
           "fam.empty",
           "ins.collections",
@@ -4432,7 +4504,32 @@
           "txn.upi"
         ]
       },
-      "_coverage": "All eight languages the web dictionary carries. ta/te/kn/ml/ur were never compared before 2026-09-18; the rows they contributed are recorded here UNRESOLVED and must not be auto-reconciled."
+      "_coverage": "All eight languages the web dictionary carries. ta/te/kn/ml/ur were never compared before 2026-09-18; the rows they contributed are recorded here UNRESOLVED and must not be auto-reconciled.",
+      "resolved": [
+        {
+          "on": "2026-09-19",
+          "by": "gu-native-review-1",
+          "lang": "gu",
+          "keys": [
+            "chelp.e2.a",
+            "chelp.e3.a",
+            "chelp.e5.a",
+            "chelp.e6.a",
+            "chelp.e6.q",
+            "ord.empty"
+          ],
+          "note": "Released from the undecided set on an explicit instruction. The two surfaces now agree because the web took the app string, so the difference these recorded no longer exists."
+        },
+        {
+          "on": "2026-09-19",
+          "by": "mr-native-review-1",
+          "lang": "mr",
+          "keys": [
+            "chelp.e2.a"
+          ],
+          "note": "Released from the undecided set on an explicit instruction. The two surfaces now agree because the web took the app string, so the difference these recorded no longer exists."
+        }
+      ]
     }
   }
 }

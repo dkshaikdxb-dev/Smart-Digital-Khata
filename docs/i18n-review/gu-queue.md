@@ -1,6 +1,6 @@
 # Gujarati — strings waiting for you
 
-55 rows. Every one of them is a string a Gujarati speaker has not read.
+49 rows. Every one of them is a string a Gujarati speaker has not read.
 
 Each row shows the English it was translated from and what each surface says today.
 The web is khata.dadashaik.com; app/consumer is the shopper's phone app and app/owner
@@ -11,36 +11,26 @@ not the same thing. Say what each one should read.
 Write your answer on the **Your answer** line. "web is right", "app is right", or a better
 string — all three are useful answers. "I would not say this at all" is also an answer.
 
-## 5 questions, not 55 answers
+## 4 questions, not 49 answers
 
-The ledger says so itself — "55 rows resolve to about 5 decisions". Answer the
+The ledger says so itself — "49 rows resolve to about 4 decisions". Answer the
 question at the head of each section and every row under it follows. You do not have to
 rule on each line, though you can: a row you disagree with overrides its theme.
 
-- **`register_and_tense`** — 45 rows
-- **`product_word`** — 5 rows
+- **`register_and_tense`** — 41 rows
+- **`product_word`** — 4 rows
 - **`catalogue_word`** — 3 rows
 - **`balance_vs_outstanding`** — 1 rows
-- **`cart_word`** — 1 rows
 
-Closed since the ledger was written, with no rows left: `ref.shareLink`, `orthography_candra_o`.
+Closed since the ledger was written, with no rows left: `ref.shareLink`, `cart_word`, `orthography_candra_o`.
 
-## `register_and_tense` — 45 rows
+## `register_and_tense` — 41 rows
 
 **The app tends to the continuous ('લોડ થઈ રહ્યું છે') where the web is plainer ('લોડ થાય છે'), and they differ on politeness in places.**
 
 Neither is wrong. It is a voice decision for the product, and applying it string by string is how a product ends up with two voices.
 
 **Your answer for this whole theme:** 
-
-### The surfaces disagree — 4
-
-| key | English | web | app |
-|---|---|---|---|
-| `chelp.e5.a` | You can pay on khata (udhaar), pay online, or pay cash. If you pay on khata, the amount is added to your running balance at that shop, to settle later. | તમે ખાતા (ઉધાર) પર, ઑનલાઇન, કે રોકડમાં ચૂકવી શકો છો. ખાતા પર લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકતે કરી શકો. | તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય. |
-| `chelp.e6.a` | Your khata shows what you owe at each shop in one place. Every purchase and payment is listed, so you always know your balance and can view or download a statement. | તમારું ખાતું દરેક દુકાનમાં તમારી બાકી રકમ એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, તેથી તમને હંમેશાં તમારી બાકી ખબર રહે છે, અને વિગત જોઈ કે ડાઉનલોડ કરી શકો છો. | તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો. |
-| `chelp.e6.q` | How does my khata (udhaar) work? | મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે? | મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે? |
-| `ord.empty` | No orders in this view yet. | આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી. | અહીં હજી કોઈ ઑર્ડર નથી. |
 
 ### Both surfaces already say this — 41
 
@@ -90,19 +80,13 @@ No choice to make between them. The question is only whether the wording is righ
 | `stmt.pickShop` | Choose a shop | દુકાન પસંદ કરો |
 | `stmt.subtitle` | Opening balance, dated entries for a range, and closing balance. | શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ. |
 
-## `product_word` — 5 rows
+## `product_word` — 4 rows
 
 **Is a product સામાન (app), ઉત્પાદન or વસ્તુ (web)?**
 
 સામાન is what a kirana shopkeeper says; ઉત્પાદન is the formal word; વસ્તુ is 'thing'. Around eight rows, and the answer should be one word used everywhere, chosen by someone who sells groceries in Gujarati.
 
 **Your answer for this whole theme:** 
-
-### The surfaces disagree — 1
-
-| key | English | web | app |
-|---|---|---|---|
-| `chelp.e2.a` | Use the search bar at the top, or browse the categories. To search by voice, tap the 🎤 microphone and just say the item name. | ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો. | ઉપરનો સર્ચ બાર વાપરો, કે શ્રેણીઓમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો. |
 
 ### Both surfaces already say this — 4
 
@@ -155,16 +139,4 @@ No choice to make between them. The question is only whether the wording is righ
 | key | English | both |
 |---|---|---|
 | `common.balance` / `khata.balance` | Balance | બેલેન્સ |
-
-## `cart_word` — 1 rows
-
-**Is the cart કાર્ટ (web) or ટોપલી (app, 'basket')?**
-
-**Your answer for this whole theme:** 
-
-### The surfaces disagree — 1
-
-| key | English | web | app |
-|---|---|---|---|
-| `chelp.e3.a` | Open a shop, add the items you want to your cart, choose pickup or delivery, and tap Place order. The shop gets your order and confirms it. | એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે. | દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે. |
 

@@ -1,6 +1,6 @@
 # Marathi — strings waiting for you
 
-28 rows. Every one of them is a string a Marathi speaker has not read.
+27 rows. Every one of them is a string a Marathi speaker has not read.
 
 Each row shows the English it was translated from and what each surface says today.
 The web is khata.dadashaik.com; app/consumer is the shopper's phone app and app/owner
@@ -11,17 +11,17 @@ not the same thing. Say what each one should read.
 Write your answer on the **Your answer** line. "web is right", "app is right", or a better
 string — all three are useful answers. "I would not say this at all" is also an answer.
 
-## 6 questions, not 28 answers
+## 6 questions, not 27 answers
 
-The ledger says so itself — "28 rows resolve to about 6 decisions". Answer the
+The ledger says so itself — "27 rows resolve to about 6 decisions". Answer the
 question at the head of each section and every row under it follows. You do not have to
 rule on each line, though you can: a row you disagree with overrides its theme.
 
 - **`register_and_tense`** — 15 rows
 - **`outstanding_word`** — 4 rows
 - **`pay_verb`** — 3 rows
-- **`product_word`** — 3 rows
 - **`catalogue_word`** — 2 rows
+- **`product_word`** — 2 rows
 - **`cart_word`** — 1 rows
 
 Closed since the ledger was written, with no rows left: `c.locationNotSet`.
@@ -93,29 +93,6 @@ No choice to make between them. The question is only whether the wording is righ
 | `chelp.e5.q` | How do I pay for an order? | ऑर्डरचे पैसे कसे भरायचे? |
 | `ref.title` | Invite & earn | निमंत्रण द्या आणि कमवा |
 
-## `product_word` — 3 rows
-
-**Is a product उत्पादन (web) or वस्तू (app)?**
-
-उत्पादन is the formal word; वस्तू is 'thing/article'. The identical question is open in Gujarati and Bengali.
-
-**Your answer for this whole theme:** 
-
-### The surfaces disagree — 1
-
-| key | English | web | app |
-|---|---|---|---|
-| `chelp.e2.a` | Use the search bar at the top, or browse the categories. To search by voice, tap the 🎤 microphone and just say the item name. | वरच्या सर्च बारचा वापर करा, किंवा कॅटेगरीत पाहा. बोलून शोधायला 🎤 माइक दाबा आणि वस्तूचे नाव सांगा. | वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला. |
-
-### Both surfaces already say this — 2
-
-No choice to make between them. The question is only whether the wording is right.
-
-| key | English | both |
-|---|---|---|
-| `cat.addProduct` | Add product | वस्तू जोडा |
-| `cat.empty` | No products yet. Add your first above. | अजून कोणतीही वस्तू नाही. वर पहिली जोडा. |
-
 ## `catalogue_word` — 2 rows
 
 > **Already decided — do not answer this one.** `catalogue-loanword` is LOCKED and says: where the ENGLISH says catalog, the language uses the loanword, not its word for "list". That settles the WORD. It says nothing about the case ending or the verb around it, so a row where both surfaces already use the loanword and still differ is a register question and belongs to the theme below.
@@ -128,6 +105,23 @@ No choice to make between them. The question is only whether the wording is righ
 |---|---|---|---|
 | `c.loadingCatalog` / `shopdetail.loading` | Loading catalog… | कॅटलॉग लोड होत आहे… | यादी लोड होत आहे… |
 | `cat.addFromCatalogue` | Add from catalogue | कॅटलॉगमधून जोडा | कॅटलॉगतून जोडा |
+
+## `product_word` — 2 rows
+
+**Is a product उत्पादन (web) or वस्तू (app)?**
+
+उत्पादन is the formal word; वस्तू is 'thing/article'. The identical question is open in Gujarati and Bengali.
+
+**Your answer for this whole theme:** 
+
+### Both surfaces already say this — 2
+
+No choice to make between them. The question is only whether the wording is right.
+
+| key | English | both |
+|---|---|---|
+| `cat.addProduct` | Add product | वस्तू जोडा |
+| `cat.empty` | No products yet. Add your first above. | अजून कोणतीही वस्तू नाही. वर पहिली जोडा. |
 
 ## `cart_word` — 1 rows
 
