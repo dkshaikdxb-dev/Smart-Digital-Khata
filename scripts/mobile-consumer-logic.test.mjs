@@ -690,6 +690,58 @@ section('why an order was refused');
     'nor imports the flattener any more');
 }
 
+// ---------------------------------------------------------------------------
+section('the accent the app paints, and what it does when it cannot ask');
+{
+  const A = loadPure('mobile-app/src/consumer/lib/accent.js', ['DEFAULT_ACCENT', 'ACCENT_KEY']);
+
+  // The shape the server promises, and nothing else. This is a GUARD, not a
+  // parser: the server normalises before it sends, so a value that is not
+  // already '#rrggbb' is one this app should not have been given and must not
+  // try to rescue — guessing at a malformed colour paints something nobody chose.
+  for (const good of ['#22c55e', '#000000', '#ffffff', '#ff8800']) {
+    ok(A.isHex(good), `${good} is the shape the server sends`);
+  }
+  for (const bad of ['22c55e', '#22C55E', '#2c5', '#12345', 'green', '', null, undefined, 42, {}]) {
+    ok(!A.isHex(bad), `${JSON.stringify(bad)} is refused rather than repaired`);
+  }
+
+  // The order of preference is the whole behaviour.
+  eq(A.chooseAccent({ fetched: '#ff8800', cached: '#0055ff' }),
+    { accent: '#ff8800', from: 'server' }, 'a fresh answer wins');
+  eq(A.chooseAccent({ fetched: null, cached: '#0055ff' }),
+    { accent: '#0055ff', from: 'cache' }, 'offline, the last good colour stands');
+  eq(A.chooseAccent({ fetched: null, cached: null }),
+    { accent: A.DEFAULT_ACCENT, from: 'default' }, 'first launch offline still has an accent');
+  eq(A.chooseAccent({}), { accent: A.DEFAULT_ACCENT, from: 'default' },
+    'and so does a call with nothing at all');
+
+  // A malformed value at either step is ABSENT, not obeyed. This is the one
+  // that matters: a server bug must not be able to blank the accent out.
+  eq(A.chooseAccent({ fetched: 'rgb(1,2,3)', cached: '#0055ff' }),
+    { accent: '#0055ff', from: 'cache' }, 'a malformed answer falls through to the cache');
+  eq(A.chooseAccent({ fetched: '', cached: 'nonsense' }),
+    { accent: A.DEFAULT_ACCENT, from: 'default' }, 'two bad values still leave a colour');
+
+  // Reading the config body.
+  eq(A.accentFromConfig({ theme: { accent: '#ff8800' } }), '#ff8800', 'reads the accent out of /public/config');
+  for (const body of [null, {}, { theme: null }, { theme: {} }, { theme: { accent: 'x' } }]) {
+    eq(A.accentFromConfig(body), null, `and returns null for ${JSON.stringify(body)}`);
+  }
+
+  // The colour the app ships with is the one the backend calls its default.
+  const backendDefault = fs.readFileSync(path.join(ROOT, 'backend/src/utils/contrast.js'), 'utf8')
+    .match(/DEFAULT_ACCENT = '([^']+)'/)[1];
+  eq(A.DEFAULT_ACCENT, backendDefault,
+    'the fallback the app ships and the one the server falls back to are the same colour');
+
+  // ...and it is still the colour the theme file actually paints, so the two
+  // cannot drift apart without this failing.
+  const themeSrc = fs.readFileSync(path.join(ROOT, 'mobile-app/src/consumer/theme.js'), 'utf8');
+  ok(themeSrc.includes(`accent: '${A.DEFAULT_ACCENT}'`),
+    'and the theme file still ships that same colour');
+}
+
 console.log('');
 if (failures) {
   console.error(`${failures} of ${checks} checks FAILED`);
