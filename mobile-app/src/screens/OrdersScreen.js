@@ -5,6 +5,7 @@ import {
 import { orders, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import { chipLabel, etaState, formatClock, DEFAULT_CHIPS } from '../lib/orderEta';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 const label = (s) => (s || '').replace(/_/g, ' ');
@@ -15,7 +16,7 @@ const PMODE = new Set(['credit', 'prepaid', 'cash']);
 const PSTATUS = new Set(['paid', 'pending', 'failed', 'not_required']);
 
 const statusColor = (s) => {
-  if (s === 'completed') return '#22c55e';
+  if (s === 'completed') return colors.positive;
   if (s === 'cancelled') return '#f87171';
   return '#e2e8f0';
 };
@@ -121,7 +122,7 @@ export default function OrdersScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View style={s.center}><ActivityIndicator color="#22c55e" /></View>
+        <View style={s.center}><ActivityIndicator color={colors.accent} /></View>
       ) : (
         <FlatList
           data={items}
@@ -250,7 +251,7 @@ const s = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   filterWrap: { borderBottomWidth: 1, borderBottomColor: '#1e293b' },
   chip: { backgroundColor: '#1e293b', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  chipActive: { backgroundColor: '#22c55e' },
+  chipActive: { backgroundColor: colors.accent },
   chipText: { color: '#94a3b8', textTransform: 'capitalize' },
   chipTextActive: { color: '#000', fontWeight: '700' },
   row: { backgroundColor: '#1e293b', padding: 14, borderRadius: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
@@ -263,9 +264,9 @@ const s = StyleSheet.create({
   empty: { color: '#64748b', textAlign: 'center', marginTop: 24 },
   // Ready-time promise + one-tap accept (batch B). Touch targets are deliberately
   // large: this is used one-handed, mid-rush, often on a cracked screen.
-  etaText: { color: '#22c55e', fontSize: 12, fontWeight: '700', marginTop: 4 },
+  etaText: { color: colors.accent, fontSize: 12, fontWeight: '700', marginTop: 4 },
   etaLate: { color: '#f87171', fontSize: 12, fontWeight: '700', marginTop: 4 },
-  acceptBtn: { backgroundColor: '#22c55e', borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: -4, marginBottom: 12 },
+  acceptBtn: { backgroundColor: colors.accent, borderRadius: 10, paddingVertical: 14, alignItems: 'center', marginTop: -4, marginBottom: 12 },
   acceptBtnText: { color: '#000', fontWeight: '800', fontSize: 16 },
   // REJECT (batch ALERT2). Outlined in the danger colour, never a filled button
   // the thumb can hit on the way to Accept.
@@ -283,7 +284,7 @@ const s = StyleSheet.create({
   acceptPanel: { backgroundColor: '#1e293b', borderRadius: 10, padding: 12, marginTop: -4, marginBottom: 12 },
   acceptHint: { color: '#94a3b8', fontSize: 13, marginBottom: 10 },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 6 },
-  etaChip: { backgroundColor: '#22c55e', borderRadius: 10, paddingHorizontal: 18, paddingVertical: 14 },
+  etaChip: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 14 },
   etaChipText: { color: '#000', fontWeight: '800', fontSize: 15 },
   etaGhost: { backgroundColor: '#334155', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12 },
   etaGhostText: { color: '#e2e8f0', fontWeight: '600', fontSize: 13 },

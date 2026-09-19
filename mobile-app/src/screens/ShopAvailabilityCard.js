@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { shop, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import { availabilityLine, isOpen } from '../lib/shopOpen';
+import { colors } from '../theme';
 
 // Shop availability (batch A) — the owner's HOME control on the native app, the
 // mirror of the web console's card. "Are we open?" is the most time-critical
@@ -93,7 +94,7 @@ export default function ShopAvailabilityCard() {
           value={data.shop.is_open !== false}
           disabled={busy}
           onValueChange={toggleOpen}
-          trackColor={{ true: '#22c55e', false: '#334155' }}
+          trackColor={{ true: colors.positive, false: '#334155' }}
           thumbColor="#e2e8f0"
         />
       </View>
@@ -130,12 +131,12 @@ function Chip({ label, onPress, disabled, primary }) {
 
 const s = StyleSheet.create({
   card: { backgroundColor: '#1e293b', padding: 16, borderRadius: 12, marginBottom: 12, borderLeftWidth: 6 },
-  cardOpen: { borderLeftColor: '#22c55e' },
+  cardOpen: { borderLeftColor: colors.positive },
   cardClosed: { borderLeftColor: '#f87171' },
   headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h: { color: '#e2e8f0', fontSize: 17, fontWeight: '700' },
   pill: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 5 },
-  pillOpen: { backgroundColor: '#22c55e' },
+  pillOpen: { backgroundColor: colors.positive },
   pillClosed: { backgroundColor: '#b91c1c' },
   pillText: { color: '#fff', fontWeight: '800', fontSize: 13 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 },
@@ -147,7 +148,7 @@ const s = StyleSheet.create({
     backgroundColor: '#334155', borderRadius: 10, paddingHorizontal: 18,
     minHeight: 48, alignItems: 'center', justifyContent: 'center',
   },
-  chipPrimary: { backgroundColor: '#22c55e' },
+  chipPrimary: { backgroundColor: colors.accent },
   chipDisabled: { opacity: 0.6 },
   chipText: { color: '#e2e8f0', fontWeight: '700', fontSize: 15 },
   chipTextPrimary: { color: '#000' },

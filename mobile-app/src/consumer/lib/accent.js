@@ -80,13 +80,22 @@ export async function cacheAccent(SecureStore, hex) {
   }
 }
 
+// Where the accent is asked for. BOTH axios clients in this app are created
+// with the API HOST as baseURL — not the host plus /api — so every call in
+// consumerApi.js and services/api.js writes the /api prefix itself. This one
+// has to as well; without it the request 404s and the app silently keeps the
+// cached colour forever. Asserted in scripts/mobile-theme-boot.test.mjs against
+// the prefix the other calls in this app actually use, because a wrong path
+// here fails in the one way nothing notices: quietly, and only in production.
+export const CONFIG_PATH = '/api/public/config';
+
 /**
  * Ask the server. Short timeout on purpose: this is decoration, and a shopper
  * on 2G must never wait on it — the caller already has a colour to paint.
  */
 export async function fetchAccent(api, { timeout = 4000 } = {}) {
   try {
-    const res = await api.get('/public/config', { timeout });
+    const res = await api.get(CONFIG_PATH, { timeout });
     return accentFromConfig(res && res.data);
   } catch (_e) {
     return null;

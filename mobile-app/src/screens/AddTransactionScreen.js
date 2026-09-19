@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
 import { customers, transactions, isAuthError } from '../services/api';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 export default function AddTransactionScreen({ navigation, route }) {
   const { t, lang } = useT();
@@ -82,11 +83,11 @@ const s = StyleSheet.create({
   input: { backgroundColor: '#1e293b', color: '#e2e8f0', padding: 12, borderRadius: 10 },
   typeRow: { flexDirection: 'row', gap: 8 },
   pill: { backgroundColor: '#1e293b', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999 },
-  pillActive: { backgroundColor: '#22c55e' },
+  pillActive: { backgroundColor: colors.accent },
   pillText: { color: '#94a3b8', textTransform: 'capitalize' },
   pillTextActive: { color: '#000', fontWeight: '700' },
   cust: { backgroundColor: '#1e293b', padding: 12, borderRadius: 10 },
-  custActive: { borderColor: '#22c55e', borderWidth: 1 },
-  button: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 20 },
+  custActive: { borderColor: colors.accent, borderWidth: 1 },
+  button: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 20 },
   buttonText: { color: '#000', fontWeight: '700' },
 });

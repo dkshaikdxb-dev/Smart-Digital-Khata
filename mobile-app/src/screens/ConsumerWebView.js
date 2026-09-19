@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Constants from 'expo-constants';
 import { WebView } from 'react-native-webview';
+import { colors } from '../theme';
 
 const BG = '#0f172a';
 const CONSUMER_URL =
@@ -87,7 +88,7 @@ export default function ConsumerWebView() {
       )}
       {loading && !error ? (
         <View style={styles.loadingOverlay} pointerEvents="none">
-          <ActivityIndicator size="large" color="#22c55e" />
+          <ActivityIndicator size="large" color={colors.accent} />
         </View>
       ) : null}
     </View>
@@ -124,10 +125,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: colors.accent,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
-  retryText: { color: '#052e16', fontSize: 16, fontWeight: '600' },
+  retryText: { color: colors.onAccent, fontSize: 16, fontWeight: '600' },
 });

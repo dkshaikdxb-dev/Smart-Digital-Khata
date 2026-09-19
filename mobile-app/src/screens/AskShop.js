@@ -5,6 +5,7 @@ import Constants from 'expo-constants';
 import api from '../services/api';
 import { useNativeVoice, isLocaleSupported } from '../lib/useNativeVoice';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 // Owner "Ask" — a voice question on the owner home. The owner taps the mic,
 // SPEAKS a question about their shop and HEARS a one-line answer read aloud.
@@ -482,7 +483,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#22c55e',
+    backgroundColor: colors.accent,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 999,

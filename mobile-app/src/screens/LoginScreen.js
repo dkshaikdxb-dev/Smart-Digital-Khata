@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Alert, KeyboardAvoidingVi
 import { auth } from '../services/api';
 import { AuthContext } from '../AuthContext';
 import { useT } from '../i18n';
+import { colors } from '../theme';
 
 export default function LoginScreen() {
   const { t } = useT();
@@ -41,6 +42,6 @@ const s = StyleSheet.create({
   title: { color: '#e2e8f0', fontSize: 28, fontWeight: '700' },
   subtitle: { color: '#94a3b8', marginBottom: 24 },
   input: { backgroundColor: '#1e293b', color: '#e2e8f0', padding: 14, borderRadius: 10, marginBottom: 12 },
-  button: { backgroundColor: '#22c55e', padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
+  button: { backgroundColor: colors.accent, padding: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
   buttonText: { color: '#000', fontWeight: '700' },
 });

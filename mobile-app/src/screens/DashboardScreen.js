@@ -5,6 +5,7 @@ import { summary, isAuthError } from '../services/api';
 import { useT } from '../i18n';
 import AskShop from './AskShop';
 import ShopAvailabilityCard from './ShopAvailabilityCard';
+import { colors } from '../theme';
 
 const fmt = (p) => `₹${(Number(p || 0) / 100).toFixed(2)}`;
 
@@ -76,7 +77,7 @@ const s = StyleSheet.create({
   card: { flex: 1, backgroundColor: '#1e293b', padding: 16, borderRadius: 12 },
   label: { color: '#94a3b8', fontSize: 13 },
   value: { color: '#e2e8f0', fontSize: 22, fontWeight: '700', marginTop: 4 },
-  primary: { backgroundColor: '#22c55e', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 12 },
+  primary: { backgroundColor: colors.accent, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 12 },
   primaryText: { color: '#000', fontWeight: '700', fontSize: 16 },
   secondary: { backgroundColor: '#334155', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
   secondaryText: { color: '#e2e8f0', fontWeight: '600' },
