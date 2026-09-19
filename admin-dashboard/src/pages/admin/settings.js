@@ -1145,8 +1145,9 @@ export default function AdminSettings() {
                     </div>
 
                     <p className="muted" style={{ fontSize: 12, margin: 0 }}>
-                      A festive theme can override this for a date range. Those windows are managed separately;
-                      while one is live it wins, and this stays the colour underneath it.
+                      A festive theme can override this for a date range — Diwali, Eid, Pongal, a sale
+                      weekend. While one is live it wins, and this stays the colour underneath it.
+                      {' '}<a href="/admin/theme-campaigns">Festive themes →</a>
                     </p>
                   </div>
                 );
