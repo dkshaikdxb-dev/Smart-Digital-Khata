@@ -2631,7 +2631,7 @@
     },
     "gu-accepted-wording": {
       "type": "LINGUISTIC",
-      "status": "REVIEW",
+      "status": "LOCKED",
       "concept": "Is the current Gujarati word for 'Accepted' the right one?",
       "why_review": "It appears in NEITHER surface's prior history — it is a word a decision introduced, and no native speaker has read it. The FORM rule (bare in chips) is locked; the WORDING is not.",
       "current": {
@@ -2645,34 +2645,6 @@
       ],
       "immutable": true,
       "lang": "gu",
-      "protects": {
-        "keys": [
-          "ostatus.accepted",
-          "dash.orderStatus.accepted",
-          "status.accepted"
-        ],
-        "langs": [
-          "gu"
-        ]
-      },
-      "protected": {
-        "web": {
-          "gu": {
-            "ostatus.accepted": "સ્વીકારેલ",
-            "dash.orderStatus.accepted": "સ્વીકારેલ"
-          }
-        },
-        "app/consumer": {
-          "gu": {
-            "ostatus.accepted": "સ્વીકારેલ"
-          }
-        },
-        "app/owner": {
-          "gu": {
-            "ostatus.accepted": "સ્વીકારેલ"
-          }
-        }
-      },
       "superseded_rows": [
         {
           "lang": "gu",
@@ -2684,11 +2656,38 @@
           }
         }
       ],
-      "protects_note": "gu-status-form locks the FORM of this chip (bare, not inflected). The open question here is the WORD, and it stays open on the two rows that decision does not name."
+      "protects_note": "gu-status-form locks the FORM of this chip (bare, not inflected). The open question here is the WORD, and it stays open on the two rows that decision does not name.",
+      "values": {
+        "gu": {
+          "ostatus.accepted": "સ્વીકારેલ",
+          "dash.orderStatus.accepted": {
+            "web": "સ્વીકારેલ"
+          }
+        }
+      },
+      "scope": {
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "ostatus.accepted",
+          "dash.orderStatus.accepted"
+        ]
+      },
+      "kept": {
+        "status": "KEPT AS IS — no string changes.",
+        "not_read_by_a_native_speaker": true,
+        "decided_on": "2026-09-19",
+        "note": "The word સ્વીકારેલ appears in neither surface's prior history — a decision introduced it, and no Gujarati speaker has read it. That is still true. Closing this is a decision to stop asking, not a finding that the word is right."
+      }
     },
     "gu-out-for-delivery-form": {
       "type": "LINGUISTIC",
-      "status": "REVIEW",
+      "status": "LOCKED",
       "concept": "'Out for delivery' has no bare Gujarati form in the corpus — one candidate is masculine, the other neuter, neither is uninflected.",
       "why_review": "Applying the bare-chip rule here would mean inventing a word, which is what produced gu-accepted-wording. Left as it stands rather than invented.",
       "current": {
@@ -2698,66 +2697,44 @@
       },
       "immutable": true,
       "lang": "gu",
-      "protects": {
+      "values": {
+        "gu": {
+          "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
+          "dash.orderStatus.out_for_delivery": {
+            "web": "ડિલિવરી માટે નીકળ્યો"
+          },
+          "status.out_for_delivery": {
+            "web": "ડિલિવરી માટે નીકળ્યું"
+          }
+        }
+      },
+      "scope": {
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
         "keys": [
           "ostatus.out_for_delivery",
           "dash.orderStatus.out_for_delivery",
           "status.out_for_delivery"
-        ],
-        "langs": [
-          "gu"
         ]
       },
-      "protected": {
-        "web": {
-          "gu": {
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "dash.orderStatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "status.out_for_delivery": "ડિલિવરી માટે નીકળ્યું"
-          }
-        },
-        "app/consumer": {
-          "gu": {
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો"
-          }
-        },
-        "app/owner": {
-          "gu": {
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો"
-          }
-        }
+      "kept": {
+        "status": "KEPT AS IS — no string changes.",
+        "not_read_by_a_native_speaker": true,
+        "decided_on": "2026-09-19",
+        "note": "\"Out for delivery\" has no bare Gujarati form in this corpus: one candidate is masculine, the other neuter, neither uninflected. Applying the bare-chip rule from gu-status-form would have meant inventing a word, which is exactly what produced the gu-accepted-wording question. It stands as it is, unread."
       }
     },
     "status-mentions-in-prose": {
       "type": "LINGUISTIC",
-      "status": "REVIEW",
+      "status": "LOCKED",
       "concept": "chelp.e7.a names order states inside a sentence, and the words it uses do not match the chips.",
       "why_review": "The gu web prose uses a Latin loan where the chip uses the Gujarati word; the mr prose uses the Sanskritic form that mr-status-register just replaced in the chips. Rewriting prose is not the same decision as fixing a chip, and neither gu-status-form nor mr-status-register claims it.",
       "immutable": true,
-      "protects": {
-        "keys": [
-          "chelp.e7.a"
-        ],
-        "langs": [
-          "gu",
-          "mr"
-        ]
-      },
-      "protected": {
-        "web": {
-          "gu": {
-            "chelp.e7.a": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે."
-          },
-          "mr": {
-            "chelp.e7.a": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबितपासून मंजूर, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
-          }
-        },
-        "app/consumer": {
-          "mr": {
-            "chelp.e7.a": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबित पासून स्वीकारले, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
-          }
-        }
-      },
       "superseded_rows": [
         {
           "lang": "gu",
@@ -2770,7 +2747,39 @@
           "surface": "app/consumer"
         }
       ],
-      "protects_note": "gu-orthography records the gu APP value, because respelling its loanword rewrote that string; it says nothing about the gu web sentence, which this decision still protects. The mr rows are untouched and still carry the question."
+      "protects_note": "gu-orthography records the gu APP value, because respelling its loanword rewrote that string; it says nothing about the gu web sentence, which this decision still protects. The mr rows are untouched and still carry the question.",
+      "values": {
+        "gu": {
+          "chelp.e7.a": {
+            "web": "ઑર્ડર ટૅબ ખોલો અને દરેક ઑર્ડરને પેન્ડિંગથી મંજૂર, પછી તૈયાર કે પૂરો થતો જુઓ. દરેક પગલે તમને અપડેટ મળે છે."
+          }
+        },
+        "mr": {
+          "chelp.e7.a": {
+            "web": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबितपासून मंजूर, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते.",
+            "app": "ऑर्डर टॅब उघडा आणि प्रत्येक ऑर्डर प्रलंबित पासून स्वीकारले, मग तयार किंवा पूर्ण होताना पाहा. प्रत्येक टप्प्यावर तुम्हाला अपडेट मिळते."
+          }
+        }
+      },
+      "scope": {
+        "langs": [
+          "gu",
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "chelp.e7.a"
+        ]
+      },
+      "kept": {
+        "status": "KEPT AS IS — no string changes.",
+        "not_read_by_a_native_speaker": true,
+        "decided_on": "2026-09-19",
+        "note": "The prose names order states with words the chips do not use — the gu web sentence uses a Latin loan where the chip uses the Gujarati word, the mr sentence the Sanskritic form the chips moved away from. Nobody has read either. Note that locking these values also makes approve-not-accept moot for them: that decision constrains how this question may be ANSWERED, and the answer is now that nothing changes."
+      }
     },
     "rangeEmpty-rewording": {
       "type": "LINGUISTIC",

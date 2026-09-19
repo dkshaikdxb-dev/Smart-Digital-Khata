@@ -297,12 +297,13 @@ const cases = [
    // in gu-accepted-wording, which asks whether that word is right at all.
    // Answering the queue would have closed a question it does not own.
    () => editRegistry((j) => {
-     j.decisions['rangeEmpty-rewording'].protected = { web: { gu: { 'ostatus.accepted': 'સ્વીકારેલ' } } };
+     j.decisions['rangeEmpty-rewording'].protected = { 'app/consumer': { ur: { 'login.otpHint': j.decisions['whatsapp-latin-urdu'].protected['app/consumer'].ur['login.otpHint'] } } };
    }), 'pinned by TWO REVIEW decisions', null],
 
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
-     j.decisions['gu-orthography'].values.gu['ostatus.accepted'] = 'સ્વીકારેલ';
+     j.decisions['whatsapp-latin'].values ||= {};
+     (j.decisions['whatsapp-latin'].values.ur ||= {})['login.otpHint'] = j.decisions['whatsapp-latin-urdu'].protected['app/consumer'].ur['login.otpHint'];
    }), 'pinned as REVIEW and LOCKED', null],
 
   ['deleting a REVIEW row is caught, not only changing it',
@@ -494,13 +495,19 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     // twin under that name, so even the divergence check cannot see it.
     // The bug, stated directly: ownership is (surface, lang, key), not (lang, key).
     ['an app-only LOCKED value does not claim the web surface', () => {
-      const spec = reg.decisions['gu-orthography'].values.gu['chelp.e7.a'];
-      const appOnly = typeof spec === 'object' && spec.app !== undefined && spec.web === undefined;
-      const webPinned = reg.decisions['status-mentions-in-prose'].protected?.web?.gu?.['chelp.e7.a'] !== undefined;
-      const appPinnedAsReview = reg.decisions['status-mentions-in-prose'].protected?.['app/consumer']?.gu?.['chelp.e7.a'] !== undefined;
-      // app side LOCKED and therefore NOT also REVIEW; web side REVIEW because no
-      // LOCKED decision names it. Both halves have to hold, or the fix is half done.
-      return appOnly && webPinned && !appPinnedAsReview;
+      // gu chelp.e7.a is one string owned by TWO decisions, one surface each:
+      // gu-orthography respelled the app copy, status-mentions-in-prose holds the
+      // web sentence. Neither may claim the other's side.
+      const orth = reg.decisions['gu-orthography'].values.gu['chelp.e7.a'];
+      const prose = reg.decisions['status-mentions-in-prose'].values.gu['chelp.e7.a'];
+      return typeof orth === 'object' && orth.app !== undefined && orth.web === undefined
+        && typeof prose === 'object' && prose.web !== undefined && prose.app === undefined;
+    }],
+    ['a web/app pair kept ON PURPOSE is not flattened into one value', () => {
+      // mr chelp.e7.a says different things on the two surfaces deliberately.
+      // Closing the question had to keep both, not pick one.
+      const v = reg.decisions['status-mentions-in-prose'].values.mr['chelp.e7.a'];
+      return typeof v === 'object' && v.web && v.app && v.web !== v.app;
     }],
     ['a superseded row records only the surfaces its LOCKED decision claims', () => Object.values(reg.decisions)
       .flatMap((d) => d.superseded_rows || [])
@@ -514,27 +521,28 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
           .every((sfc) => (sfc === 'web' ? spec.web !== undefined : spec.app !== undefined));
       })],
     // approve-not-accept constrains a review without becoming a competing owner.
-    ['approve-not-accept owns no values and does not take the rows from its REVIEW owner', () => {
+    ['approve-not-accept still owns no values, and the rows it names are held by the decision it constrains', () => {
       const a = reg.decisions['approve-not-accept'];
       if (a.status !== 'LOCKED') return false;
       if (a.values && Object.keys(a.values).length) return false;          // never a value owner
       const c = a.constrains;
       if (!c || c.decision !== 'status-mentions-in-prose') return false;    // says what it constrains
       const owner = reg.decisions[c.decision];
-      if (owner.status !== 'REVIEW') return false;
-      // the rows it names are still pinned by that REVIEW decision, on its surface
-      return c.langs.every((l) => c.keys.every((k) => c.surfaces
-        .every((sfc) => owner.protected?.[sfc]?.[l]?.[k] !== undefined)));
+      // That decision has since been closed on its existing wording, so the rows
+      // are LOCKED rather than REVIEW and the constraint binds nothing that can
+      // still move. It stays recorded, and says so.
+      return c.langs.every((l) => c.keys.every((k) => owner.values?.[l]?.[k] !== undefined));
     }],
     ['the constraint records what it forbids, in terms taken from live strings', () => {
       const c = reg.decisions['approve-not-accept'].constrains;
-      const chip = { gu: 'ostatus.accepted', mr: 'ostatus.accepted' };
-      // the forbidden stem must actually be the stem of the accept-word in use,
-      // or the constraint is about a word this product does not say
+      // The forbidden stem must be the stem of the accept-word this product
+      // actually says, or the constraint is about a word nobody uses. Both chips
+      // are LOCKED now — mr under mr-status-register, gu under gu-accepted-wording.
       return c.langs.every((l) => {
-        const live = reg.decisions['mr-status-register'].values?.[l]?.[chip[l]]
-          ?? reg.decisions['gu-accepted-wording'].protected?.web?.[l]?.[chip[l]];
-        return typeof c.forbidden_stems?.[l] === 'string' && live && live.startsWith(c.forbidden_stems[l]);
+        const live = reg.decisions['mr-status-register'].values?.[l]?.['ostatus.accepted']
+          ?? reg.decisions['gu-accepted-wording'].values?.[l]?.['ostatus.accepted'];
+        const stem = c.forbidden_stems?.[l];
+        return typeof stem === 'string' && typeof live === 'string' && live.startsWith(stem);
       });
     }],
     ['reject-not-cancel names its six keys and declares what it excludes', () => {
