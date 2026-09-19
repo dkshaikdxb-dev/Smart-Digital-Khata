@@ -306,8 +306,11 @@ const cases = [
    }), 'pinned as REVIEW and LOCKED', null],
 
   ['deleting a REVIEW row is caught, not only changing it',
-   () => { const p = path.join(box, CONSUMER); const s2 = fs.readFileSync(p, 'utf8');
-           fs.writeFileSync(p, s2.replace(/\n\s*'chelp\.e9\.q': '[^']*',/, ''), 'utf8'); },
+   // ur login.otpHint, parked under whatsapp-latin-urdu. The FAQ keys used to
+   // serve here and are LOCKED now, and rule 1 tolerates a LOCKED key a surface
+   // does not carry — deliberately, since a decision may name a key one side
+   // lacks. A deleted LOCKED string is caught by the coverage ratchet instead.
+   () => appDelete(CONSUMER, 'ur', 'login.otpHint'),
    'REVIEW row disappeared', null],
 
   // --- divergence coverage now spans every web language --------------------
@@ -389,6 +392,19 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
 // registry directly and assert the shape.
 {
   const reg = JSON.parse(fs.readFileSync(path.join(box, 'scripts/i18n-decisions.json'), 'utf8'));
+  const readConsumerDict = () => {
+    const src = fs.readFileSync(path.join(box, CONSUMER), 'utf8');
+    const out = {};
+    for (const m of src.matchAll(/\nconst ([a-z]{2}) = \{/g)) {
+      const a = m.index, b = src.indexOf('\nconst ', a + 10);
+      const blk = src.slice(a, b > 0 ? b : src.length);
+      const kv = {};
+      for (const q of blk.matchAll(/'([^']+)':\s*'((?:[^'\\]|\\.)*)'/g)) kv[q[1]] = q[2].replace(/\\'/g, "'");
+      for (const q of blk.matchAll(/'([^']+)':\s*"((?:[^"\\]|\\.)*)"/g)) kv[q[1]] = q[2].replace(/\\"/g, '"');
+      out[m[1]] = kv;
+    }
+    return out;
+  };
   const pinnedBy = (lang, key) => Object.entries(reg.decisions)
     .filter(([, d]) => d.status === 'REVIEW' && d.protected
       && Object.values(d.protected).some((byLang) => byLang[lang]?.[key] !== undefined))
@@ -441,13 +457,25 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
       return resolved.keys.every((k) => !(d.keys.bn || []).includes(k))
         && d.count === Object.values(d.keys).reduce((n, ks) => n + ks.length, 0);
     }],
-    ['the FAQ decision pins app/consumer only', () => {
-      const s = Object.keys(reg.decisions['consumer-faq-app-variants'].protected);
-      return s.length === 1 && s[0] === 'app/consumer';
+    ['the FAQ decision covers the app only, never the web strings it diverges from', () => {
+      const d = reg.decisions['consumer-faq-app-variants'];
+      return d.scope.surfaces.length === 1 && d.scope.surfaces[0] === 'app';
     }],
-    ['the FAQ decision does not pin the web strings it diverges from', () => {
-      const d = reg.decisions['consumer-faq-app-variants'].protected;
-      return d.web === undefined;
+    ['every FAQ answer names its control using the app\'s own label for it', () => {
+      // The one thing that would really hurt: help pointing at a label the
+      // shopper cannot find. Checked against the live dictionary, per language.
+      const dict = readConsumerDict();
+      const NEEDS = { 'chelp.e1.a': ['tab.shops'], 'chelp.e8.a': ['tab.account', 'account.language'], 'chelp.e9.a': ['tab.account', 'account.dataSaver'] };
+      return reg.decisions['consumer-faq-app-variants'].scope.langs.every((l) =>
+        Object.entries(NEEDS).every(([k, labels]) => {
+          const v = dict[l]?.[k];
+          return v !== undefined && labels.every((lk) => dict[l]?.[lk] && v.includes(dict[l][lk]));
+        }));
+    }],
+    ['the 36 translations are closed WITHOUT claiming anybody read them', () => {
+      const t = reg.decisions['consumer-faq-app-variants'].translations;
+      return t.count === 36 && t.not_read_by_a_native_speaker === true
+        && Array.isArray(t.what_is_established) && t.what_is_established.length > 0;
     }],
     ['the queue is split per language and none of them is rectangular', () => ['bn', 'gu', 'mr'].every((l) => {
       const d = reg.decisions[`native-speaker-queue-${l}`];
