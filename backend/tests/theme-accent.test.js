@@ -313,3 +313,114 @@ describe('festive windows — admin CRUD', () => {
       .toBeGreaterThanOrEqual(401);
   });
 });
+
+// ---------------------------------------------------------------------------
+// The derived family (batch THEME1, storefront).
+//
+// The web storefront cannot paint the raw hex: its light theme is a white page,
+// where the shipped green is 2.28:1 — a button with no edge. So the accent is
+// toned per theme. These are about the PROPERTIES that toning has to hold, not
+// about particular output values, because the point is that it works for a
+// colour nobody has tried yet.
+describe('deriving the accent family for the web storefront', () => {
+  const { accentFamily, contrastRatio, toHsl, WEB_LIGHT, WEB_DARK } = require('../src/utils/contrast');
+
+  // What an operator plausibly types, plus the two degenerate ends.
+  const TRIED = ['#22c55e', '#ff8800', '#0055ff', '#dc2626', '#eab308', '#7c3aed',
+    '#03a9f4', '#ffffff', '#000000', '#777777'];
+
+  it('a CTA can be read AND can be found, on both themes', () => {
+    for (const a of TRIED) {
+      const f = accentFamily(a);
+      for (const [theme, ground] of [['light', WEB_LIGHT], ['dark', WEB_DARK]]) {
+        const tk = f[theme];
+        // Its own label, at body-text contrast.
+        expect(contrastRatio(tk.accent, tk.on_accent)).toBeGreaterThanOrEqual(4.5);
+        // And the fill itself against the surface behind it — the constraint it
+        // is easy to forget, and the one that makes a green button on a white
+        // page visible at all. 3:1 is the WCAG figure for a UI component.
+        expect(contrastRatio(tk.accent, ground.surface)).toBeGreaterThanOrEqual(2.99);
+      }
+    }
+  });
+
+  it('the accent used as TEXT clears body contrast on its own page', () => {
+    for (const a of TRIED) {
+      const f = accentFamily(a);
+      expect(contrastRatio(f.light.ink, WEB_LIGHT.bg)).toBeGreaterThanOrEqual(4.49);
+      expect(contrastRatio(f.dark.ink, WEB_DARK.bg)).toBeGreaterThanOrEqual(4.49);
+    }
+  });
+
+  it('keeps the operator\'s colour — only its brightness moves', () => {
+    // A derived token that drifted in hue would be a different colour wearing
+    // the operator's name, which is worse than refusing the colour outright.
+    //
+    // 3° is the tolerance, and it is rounding, not policy: every token is a
+    // hue rotation away from nothing — only lightness and, for the tints,
+    // saturation move — but landing back on 8-bit channels shifts the measured
+    // hue by up to about 2° on the palest tint, where the three channels sit
+    // closest together. The worst case across these colours is 2.09°.
+    for (const a of ['#ff8800', '#0055ff', '#dc2626', '#7c3aed', '#22c55e']) {
+      const want = toHsl(a).h;
+      const f = accentFamily(a);
+      for (const tk of [f.light, f.dark]) {
+        for (const v of [tk.accent, tk.ink, tk.soft, tk.soft_border]) {
+          expect(Math.abs(toHsl(v).h - want)).toBeLessThan(3);
+        }
+      }
+    }
+  });
+
+  it('lands where the hand-picked palette already sits', () => {
+    // The consumer web's light and dark tokens were chosen by hand for the
+    // shipped green. If this derivation is the rule those choices followed,
+    // feeding it that same green should arrive in the same neighbourhood —
+    // which is the only evidence available that the rule is the right one.
+    const f = accentFamily('#22c55e');
+    const near = (got, want, by) => expect(contrastRatio(got, want)).toBeLessThan(by);
+    near(f.light.soft, '#e6f4ec', 1.05);          // shipped --c-accent-soft
+    near(f.light.soft_border, '#bfe3ce', 1.1);    // shipped --c-accent-soft-border
+    near(f.dark.soft, '#16351f', 1.1);            // shipped dark --c-accent-soft
+    near(f.dark.soft_border, '#2c6b3f', 1.15);    // shipped dark --c-accent-soft-border
+  });
+
+  it('the apps get the raw colour, not a toned one', () => {
+    // The two apps and the shopkeeper's web console draw on the same navy the
+    // accent was chosen against, so toning there would change a colour that
+    // needed no changing.
+    for (const a of TRIED) expect(accentFamily(a).app.accent).toBe(a);
+  });
+
+  it('picks the ink that actually reads on the fill', () => {
+    expect(accentFamily('#ffeb3b').app.on_accent).toBe('#052e16');   // dark ink on a yellow
+    expect(accentFamily('#0b1a4a').app.on_accent).toBe('#ffffff');   // white on a deep navy
+  });
+
+  it('is deterministic — the same hex always derives the same family', () => {
+    for (const a of TRIED) expect(accentFamily(a)).toEqual(accentFamily(a));
+  });
+
+  it('normalises before deriving, and refuses what is not a colour', () => {
+    expect(accentFamily('22C55E')).toEqual(accentFamily('#22c55e'));
+    expect(accentFamily('#2c5')).toEqual(accentFamily('#22cc55'));
+    expect(accentFamily('chartreuse')).toBeNull();
+    expect(accentFamily('')).toBeNull();
+    expect(accentFamily(null)).toBeNull();
+  });
+
+  it('rides along on /public/config, beside the accent the apps read', async () => {
+    const res = await request(app).get('/api/public/config');
+    expect(res.status).toBe(200);
+    // Not a fixed colour: earlier tests in this file move the accent about, and
+    // the point here is that the family always agrees with whatever is resolved.
+    expect(res.body.theme.accent).toMatch(/^#[0-9a-f]{6}$/);
+    // The apps' contract is untouched by the addition.
+    expect(res.body.theme.tokens.app.accent).toBe(res.body.theme.accent);
+    for (const theme of ['light', 'dark']) {
+      for (const k of ['accent', 'on_accent', 'ink', 'soft', 'soft_border']) {
+        expect(res.body.theme.tokens[theme][k]).toMatch(/^#[0-9a-f]{6}$/);
+      }
+    }
+  });
+});

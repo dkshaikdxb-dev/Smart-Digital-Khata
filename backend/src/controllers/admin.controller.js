@@ -549,6 +549,13 @@ exports.getSettings = async (_req, res) => {
       // it actually lands on — a button's own label, and the app background when
       // the accent is drawn as text. Advice for the panel, never a gate.
       f.theme_accent_contrast = theme.contrastReport(f.theme_accent);
+      // Read-only: the colours the WEB STOREFRONT will actually use, derived
+      // from the same accent. They differ from it on purpose — a CTA fill has
+      // to be findable on a white page and accent text has to be readable on
+      // one — so the panel shows them rather than letting an operator assume
+      // their hex lands everywhere unchanged. Derived here, never in the panel,
+      // so there is one implementation of the rule.
+      f.theme_accent_tokens = theme.accentFamily(f.theme_accent);
       return f;
     })(),
     integrations: integrationsStatus(),

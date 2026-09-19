@@ -107,6 +107,7 @@ function featFromApi(f) {
   // Read-only: how the SAVED accent measures. The panel shows a live figure for
   // whatever is being typed; this is the one the server stands behind.
   o.theme_accent_contrast = f.theme_accent_contrast || null;
+  o.theme_accent_tokens = f.theme_accent_tokens || null;
   return o;
 }
 
@@ -1143,6 +1144,29 @@ export default function AdminSettings() {
                         </span>
                       )}
                     </div>
+
+                    {/* WHAT THE STOREFRONT WILL ACTUALLY USE. The web's light theme is a
+                        white page, where this accent would be a button with no edge — the
+                        shipped green is 2.28:1 on white — so the server tones it per theme,
+                        holding the hue and moving only the brightness until a CTA can be
+                        found and accent text can be read. Showing the result here is the
+                        difference between an operator knowing that and discovering it.
+                        These are the SAVED value's colours; they refresh after a save. */}
+                    {saved && feat.theme_accent_tokens && (
+                      <div style={{ display: 'grid', gap: 6, fontSize: 13 }}>
+                        <div className="muted">On the web storefront this becomes:</div>
+                        {[['Light', feat.theme_accent_tokens.light, '#ffffff', '#0f172a'],
+                          ['Dark', feat.theme_accent_tokens.dark, '#1e293b', '#f1f5f9']].map(([name, tk, ground, ink]) => (
+                          <div key={name} style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
+                            background: ground, color: ink, padding: '8px 10px', borderRadius: 10 }}>
+                            <span style={{ width: 54, opacity: 0.75 }}>{name}</span>
+                            <span style={{ background: tk.accent, color: tk.on_accent, borderRadius: 8, padding: '6px 12px', fontWeight: 600 }}>Add to cart</span>
+                            <span style={{ color: tk.ink, fontWeight: 600 }}>₹1,240</span>
+                            <span style={{ background: tk.soft, border: `1px solid ${tk.soft_border}`, color: tk.ink, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>Offer</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <p className="muted" style={{ fontSize: 12, margin: 0 }}>
                       A festive theme can override this for a date range — Diwali, Eid, Pongal, a sale

@@ -8,7 +8,7 @@
 const { query } = require('../config/db');
 const {
   DEFAULT_ACCENT, ON_ACCENT, APP_BG,
-  normalizeHex, luminance, contrastRatio, contrastReport,
+  normalizeHex, luminance, contrastRatio, contrastReport, accentFamily,
 } = require('./contrast');
 
 /** The standing accent from platform_settings, or the built-in default. */
@@ -22,7 +22,12 @@ async function defaultAccent() {
 }
 
 /**
- * The accent to paint right now.
+ * The accent to paint right now, with the family derived from it.
+ *
+ * `tokens` is what the web storefront needs and the apps do not: one hex cannot
+ * be both a CTA fill on a white page and readable text on it, so the light and
+ * dark themes each get a derived set. See contrast.js. The apps read `accent`
+ * and ignore the rest.
  *
  * Same rule referral campaigns use: active, inside its window, highest priority
  * wins — with the row's own id as the last tiebreak so two equal-priority
@@ -43,15 +48,15 @@ async function resolveAccent() {
     );
     const row = r.rows[0];
     const hex = row && normalizeHex(row.accent);
-    if (hex) return { accent: hex, source: 'campaign', campaign: row.name };
+    if (hex) return { accent: hex, source: 'campaign', campaign: row.name, tokens: accentFamily(hex) };
   } catch (_e) {
     // No table yet, or the database is unreachable: the standing accent still stands.
   }
-  return { accent: fallback, source: 'default', campaign: null };
+  return { accent: fallback, source: 'default', campaign: null, tokens: accentFamily(fallback) };
 }
 
 module.exports = {
   DEFAULT_ACCENT, ON_ACCENT, APP_BG,
-  normalizeHex, luminance, contrastRatio, contrastReport,   // re-exported from ./contrast
+  normalizeHex, luminance, contrastRatio, contrastReport, accentFamily,   // re-exported from ./contrast
   defaultAccent, resolveAccent,
 };

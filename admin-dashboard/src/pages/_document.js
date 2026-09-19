@@ -17,11 +17,20 @@ export default function Document() {
             light: the stored value is deleted and no data-theme is set, so the
             user lands on whichever half their phone is already in. Deleting it
             makes the migration a one-time event. The LAYOUT axis below is a
-            separate setting and its own 'gaon' value is untouched. */}
+            separate setting and its own 'gaon' value is untouched.
+
+            The third axis is the platform ACCENT, which a festive window can
+            change (see components/AccentVars). The stylesheet it produced last
+            time is replayed here, before paint, for the same reason the theme is:
+            without it a returning shopper watches the shipped green flash over to
+            the festive colour a beat after the page appears. AccentVars replaces
+            it with a fresh one as soon as the server answers, and clears it when
+            the window ends. It is only ever a stylesheet this app wrote itself,
+            built from colours the server normalised. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='warm'||t==='gaon'){try{localStorage.removeItem('skhata-theme');}catch(e){}t=null;}if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.removeAttribute('data-theme');}}catch(e){}try{var l=localStorage.getItem('skhata-layout');if(l==='gaon'){document.documentElement.setAttribute('data-cpwa-layout','gaon');}}catch(e){}})();",
+              "(function(){try{var t=localStorage.getItem('skhata-theme');if(t==='warm'||t==='gaon'){try{localStorage.removeItem('skhata-theme');}catch(e){}t=null;}if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}else{document.documentElement.removeAttribute('data-theme');}}catch(e){}try{var l=localStorage.getItem('skhata-layout');if(l==='gaon'){document.documentElement.setAttribute('data-cpwa-layout','gaon');}}catch(e){}try{var a=localStorage.getItem('skhata-accent-css');if(a&&a.indexOf('<')<0){var s=document.createElement('style');s.id='skhata-accent';s.textContent=a;document.head.appendChild(s);}}catch(e){}})();",
           }}
         />
         <meta name="application-name" content="Smart Digital Khata" />
