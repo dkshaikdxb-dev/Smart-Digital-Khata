@@ -1148,7 +1148,7 @@ const bn = {
   'shops.kmAway': '{km} কিমি দূরে',
   'shops.noLocation': 'লোকেশন নেই',
 
-  'shopdetail.loading': 'তালিকা লোড হচ্ছে…',
+  'shopdetail.loading': 'ক্যাটালগ লোড হচ্ছে…',
   'shopdetail.noItems': 'এই দোকান এখনো জিনিস যোগ করেনি।',
   'shopdetail.perKg': '/ কেজি',
   'shopdetail.per': '/ {unit}',
@@ -3226,7 +3226,7 @@ const mr = {
   'shops.kmAway': '{km} किमी दूर',
   'shops.noLocation': 'लोकेशन नाही',
 
-  'shopdetail.loading': 'यादी लोड होत आहे…',
+  'shopdetail.loading': 'कॅटलॉग लोड होत आहे…',
   'shopdetail.noItems': 'या दुकानाने अजून वस्तू जोडलेल्या नाहीत.',
   'shopdetail.perKg': '/ किलो',
   'shopdetail.per': '/ {unit}',
@@ -3624,7 +3624,7 @@ const gu = {
   'shops.kmAway': '{km} કિમી દૂર',
   'shops.noLocation': 'લોકેશન નથી',
 
-  'shopdetail.loading': 'યાદી લોડ થઈ રહી છે…',
+  'shopdetail.loading': 'કૅટલૉગ લોડ થાય છે…',
   'shopdetail.noItems': 'આ દુકાને હજી વસ્તુઓ ઉમેરી નથી.',
   'shopdetail.perKg': '/ કિલો',
   'shopdetail.per': '/ {unit}',

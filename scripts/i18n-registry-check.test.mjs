@@ -187,13 +187,6 @@ const cases = [
   ['a parked ta/te/kn/ml/ur credential string cannot be changed',
    () => webSet('ta', 'set.noKeySecret', 'Key Secret illai'), 'razorpay-casing-other-languages', 'web'],
 
-  ['a native-speaker-queue row cannot be resolved by a tool',
-   // Gujarati, because Bengali's queue is answered: a Bengali speaker read all
-   // six rows on 2026-09-18 and they are LOCKED now. The cases below cover that.
-   // c.loadingCatalog is what is left in that queue: catalogue-loanword answers
-   // the WORD, the app still says the list-word, and the repair needs wording.
-   () => webSet('gu', 'c.loadingCatalog', 'યાદી લોડ થાય છે…'), 'native-speaker-queue-gu', 'web gu c.loadingCatalog'],
-
   // --- a landed native review is LOCKED, and holds both key names -----------
   // This is what the queue was FOR. The answers arrived per surface — three
   // converge the two, one keeps them deliberately apart — and each side is held
@@ -217,9 +210,6 @@ const cases = [
   // rectangle could not express that, so it pinned the web string of a question
   // and left the app string — the thing the question was actually about —
   // writable by anything. These four passed silently until 2026-09-18.
-  ['the same where the app key shares nothing with the web key (mr c.loadingCatalog -> shopdetail.loading)',
-   () => appSet(CONSUMER, 'mr', 'shopdetail.loading', 'कॅटलॉग लोड होत आहे…'), 'native-speaker-queue-mr', 'app/consumer mr shopdetail.loading'],
-
   ['a row closed on its existing wording is still held — closing is not approval',
    // gu acc.logout was closed as-is under gu-wording-kept: nobody Gujarati read
    // it, and it is LOCKED precisely so nothing drifts it while that is true.
@@ -407,8 +397,30 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     // acc.dob is queued in Gujarati and nowhere else — 60 of the open rows are
     // like that. Under the old rectangle every one of them was pinned in all
     // three languages, which is the shape this replaced.
-    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'c.loadingCatalog').length === 1],
-    ['and NOT in Bengali, which has no such row', () => pinnedBy('bn', 'c.loadingCatalog').length === 0],
+    // The three queues are empty. What has to hold is that nothing fell out of
+    // them: every row each one ever held is accounted for exactly once, and the
+    // decision that took it exists.
+    ['every queue is empty and every row it held is accounted for, once', () => ['bn', 'gu', 'mr'].every((l) => {
+      const q = reg.decisions[`native-speaker-queue-${l}`];
+      if (!q || q.protects.rows.length) return false;
+      const all = [...(q.resolved_rows || []), ...(q.superseded_rows || [])];
+      const seen = new Set();
+      return all.every((x) => {
+        const at = `${x.web}|${x.app}`;
+        if (seen.has(at)) return false;                       // no row counted twice
+        seen.add(at);
+        const owner = x.answered_by || x.deferred_to;
+        return !!owner && !!reg.decisions[owner];             // and its owner is real
+      });
+    })],
+    ['the catalogue repair took strings that already existed, and says what it could not fix', () => {
+      const d = reg.decisions['catalogue-loanword-repair'];
+      if (!d || d.status !== 'LOCKED' || d.applies !== 'catalogue-loanword') return false;
+      // every repaired row names the web key it was taken from
+      const took = d.rows.every((x) => /^web /.test(x.taken_from || ''));
+      // and the ones it could not repair are listed with what they need
+      return took && d.not_repaired.rows.length === 6 && !!d.not_repaired.needs;
+    }],
     // What a landed review looks like from the registry's side.
     ['an answered queue holds no rows and keeps every answer as provenance', () => {
       const q = reg.decisions['native-speaker-queue-bn'];
