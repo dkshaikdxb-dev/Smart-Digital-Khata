@@ -292,6 +292,17 @@ const cases = [
   ['releasing it did not take the app side from the decision that owned it',
    () => appSet(CONSUMER, 'gu', 'chelp.e2.a', 'કંઈક સાવ જુદું.'), 'product-item', 'app/consumer gu chelp.e2.a'],
 
+  ['the catalogue loanword holds as a rule over the corpus, not a list of rows',
+   // Nine app strings across bn, gu and mr said the list-word where their English
+   // says catalog, for as long as catalogue-loanword had existed, because it
+   // names no values and nothing evaluated the rule. Eight were in no queue.
+   () => appSet(OWNER, 'gu', 'cat.searchCatalogue', 'યાદીમાં શોધો'),
+   'catalogue-loanword', 'app/owner gu cat.searchCatalogue'],
+
+  ['and it catches a key no decision has ever listed',
+   () => appSet(OWNER, 'mr', 'cat.noCatalogue', 'यादीत काही सापडले नाही.'),
+   'says catalog in English and the word for "list" here', null],
+
   ['a value cannot be claimed by TWO REVIEW decisions either',
    // Eight rows were, briefly: gu ostatus.accepted sat in the Gujarati queue and
    // in gu-accepted-wording, which asked whether that word was right at all.
@@ -437,13 +448,13 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
         return !!owner && !!reg.decisions[owner];             // and its owner is real
       });
     })],
-    ['the catalogue repair took strings that already existed, and says what it could not fix', () => {
+    ['every catalogue repair says where its string came from, and none is outstanding', () => {
       const d = reg.decisions['catalogue-loanword-repair'];
       if (!d || d.status !== 'LOCKED' || d.applies !== 'catalogue-loanword') return false;
-      // every repaired row names the web key it was taken from
-      const took = d.rows.every((x) => /^web /.test(x.taken_from || ''));
-      // and the ones it could not repair are listed with what they need
-      return took && d.not_repaired.rows.length === 6 && !!d.not_repaired.needs;
+      // three took a web string that already read correctly; six were supplied by
+      // a speaker. Every row says which, and nothing is left unrepaired.
+      const sourced = d.rows.every((x) => /^web /.test(x.taken_from || '') || /supplied by a speaker/.test(x.taken_from || ''));
+      return sourced && d.rows.length === 9 && d.not_repaired.rows.length === 0;
     }],
     // What a landed review looks like from the registry's side.
     ['an answered queue holds no rows and keeps every answer as provenance', () => {

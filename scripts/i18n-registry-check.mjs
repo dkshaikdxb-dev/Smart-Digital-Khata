@@ -20,7 +20,8 @@
 //      drifted into web/app conflict because the old single set only covered
 //      bare labels.
 //   4. The standing invariants: no native digits, no transliterated WhatsApp,
-//      Balance and Outstanding never collide, and the one decision that is a
+//      the catalogue loanword wherever the English says catalog, Balance and
+//      Outstanding never colliding, and the one decision that is a
 //      CONSTRAINT rather than an owner — a native review of the gu/mr FAQ prose
 //      may revise it but may not collapse the approve-word into the accept-word.
 //   5. REVIEW rows are IMMUTABLE. Where the registry recorded the current
@@ -202,6 +203,38 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
   for (const lang of registry.decisions['whatsapp-latin'].scope.langs) {
     for (const [src, kv] of [['web', WEB[lang]], ['dash', DASH[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
       for (const [k, v] of Object.entries(kv || {})) if (WA.test(v)) bad('whatsapp-latin', `${src} ${lang} ${k}: ${v}`);
+    }
+  }
+
+  // catalogue-loanword as a RULE over the corpus, not a list of rows.
+  //
+  // It names no values, so until now it was held only by the rows the review
+  // queue retired under it — and nine app strings in bn, gu and mr said the word
+  // for "list" where their English says catalog, unseen, for as long as the
+  // decision had existed. Eight of the nine were never in any queue. The rule was
+  // always checkable; nobody had checked it.
+  //
+  // The list-word per language is derived from the strings the decision already
+  // governs rather than typed here: whatever tab.catalog does NOT say, when the
+  // same language's older rows did.
+  {
+    const d = registry.decisions['catalogue-loanword'];
+    const LIST = { bn: /তালিকা/, gu: /યાદી/, mr: /यादी/ };
+    for (const lang of d.scope.langs) {
+      const re = LIST[lang];
+      if (!re) continue;
+      const enOf = {
+        web: (k) => DASH.en?.[k],
+        ...Object.fromEntries(APP_FILES.map((f) => [f.id, (k) => f.langs.en?.[k]])),
+      };
+      for (const [src, kv] of [['web', WEB[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
+        for (const [key, v] of Object.entries(kv || {})) {
+          const en = (enOf[src]?.(key) || '').trim();
+          if (!/catalog/i.test(en) || !re.test(v)) continue;
+          bad('catalogue-loanword', `${src} ${lang} ${key} says catalog in English and the word for "list" here`
+            + `\n      en: ${en}\n      ${lang}: ${v}`);
+        }
+      }
     }
   }
 

@@ -2522,7 +2522,7 @@
     "catalogue-loanword-repair": {
       "type": "TERMINOLOGY",
       "status": "LOCKED",
-      "concept": "The app strings that broke catalogue-loanword, repaired with strings that already existed.",
+      "concept": "The app strings that broke catalogue-loanword, repaired — three with strings that already existed, six with wording from a speaker.",
       "scope": {
         "rule": "Applies catalogue-loanword, which is LOCKED and says that where the ENGLISH says catalog the language uses the loanword. This decision adds no rule of its own and re-scopes nothing. It covers only the rows whose repair needed NO new wording: for each, a web string with the SAME English already read correctly, and the app takes it.",
         "langs": [
@@ -2534,7 +2534,9 @@
           "app"
         ],
         "keys": [
-          "shopdetail.loading"
+          "shopdetail.loading",
+          "cat.searchCatalogue",
+          "cat.noCatalogue"
         ]
       },
       "applies": "catalogue-loanword",
@@ -2542,16 +2544,34 @@
         "bn": {
           "shopdetail.loading": {
             "app": "ক্যাটালগ লোড হচ্ছে…"
+          },
+          "cat.searchCatalogue": {
+            "app": "ক্যাটালগে খুঁজুন"
+          },
+          "cat.noCatalogue": {
+            "app": "ক্যাটালগে কিছু পাওয়া যায়নি।"
           }
         },
         "gu": {
           "shopdetail.loading": {
             "app": "કૅટલૉગ લોડ થાય છે…"
+          },
+          "cat.searchCatalogue": {
+            "app": "કૅટલૉગમાં શોધો"
+          },
+          "cat.noCatalogue": {
+            "app": "કૅટલૉગમાં કંઈ મળ્યું નથી."
           }
         },
         "mr": {
           "shopdetail.loading": {
             "app": "कॅटलॉग लोड होत आहे…"
+          },
+          "cat.searchCatalogue": {
+            "app": "कॅटलॉगमध्ये शोधा"
+          },
+          "cat.noCatalogue": {
+            "app": "कॅटलॉगमध्ये काही सापडले नाही."
           }
         }
       },
@@ -2583,10 +2603,67 @@
           "was": "यादी लोड होत आहे…",
           "now": "कॅटलॉग लोड होत आहे…",
           "taken_from": "web c.loadingCatalog"
+        },
+        {
+          "lang": "bn",
+          "surface": "app/owner",
+          "key": "cat.searchCatalogue",
+          "en": "Search catalogue",
+          "was": "তালিকায় খুঁজুন",
+          "now": "ক্যাটালগে খুঁজুন",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
+        },
+        {
+          "lang": "bn",
+          "surface": "app/owner",
+          "key": "cat.noCatalogue",
+          "en": "No catalogue items found.",
+          "was": "তালিকায় কিছু পাওয়া যায়নি।",
+          "now": "ক্যাটালগে কিছু পাওয়া যায়নি।",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
+        },
+        {
+          "lang": "gu",
+          "surface": "app/owner",
+          "key": "cat.searchCatalogue",
+          "en": "Search catalogue",
+          "was": "યાદીમાં શોધો",
+          "now": "કૅટલૉગમાં શોધો",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
+        },
+        {
+          "lang": "gu",
+          "surface": "app/owner",
+          "key": "cat.noCatalogue",
+          "en": "No catalogue items found.",
+          "was": "યાદીમાં કંઈ મળ્યું નથી.",
+          "now": "કૅટલૉગમાં કંઈ મળ્યું નથી.",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
+        },
+        {
+          "lang": "mr",
+          "surface": "app/owner",
+          "key": "cat.searchCatalogue",
+          "en": "Search catalogue",
+          "was": "यादीत शोधा",
+          "now": "कॅटलॉगमध्ये शोधा",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
+        },
+        {
+          "lang": "mr",
+          "surface": "app/owner",
+          "key": "cat.noCatalogue",
+          "en": "No catalogue items found.",
+          "was": "यादीत काही सापडले नाही.",
+          "now": "कॅटलॉगमध्ये काही सापडले नाही.",
+          "taken_from": "supplied by a speaker of the language, 2026-09-19"
         }
       ],
       "not_repaired": {
-        "rows": [
+        "rows": [],
+        "resolved_on": "2026-09-19",
+        "note": "All six were supplied by a speaker of each language on 2026-09-19 and applied. Every one is its old string with the list-word replaced by the loanword and the rest of the phrase untouched — which is the change I could not make myself: the list-word sat in a case-marked slot, and each language attaches the loanword differently there (bn ক্যাটালগে, gu કૅટલૉગમાં, mr कॅटलॉगमध्ये). Kept as the record of what was open and how it closed.",
+        "was": [
           {
             "lang": "bn",
             "surface": "app/owner",
@@ -2630,8 +2707,7 @@
             "is": "यादीत काही सापडले नाही."
           }
         ],
-        "why": "No string with this English exists anywhere that obeys the rule, so repairing these means replacing the list-word inside an inflected phrase and making the rest of the sentence agree with a different noun. That is writing the language, not choosing between two strings that exist — and it is the exact change product-item-grammar had to go back and repair when it was done by substitution. They stay broken and recorded rather than guessed at.",
-        "needs": "The Gujarati, Marathi and Bengali wording for \"Search catalogue\" and \"No catalogue items found.\", from someone who speaks each."
+        "why_it_waited": "No string with this English exists anywhere that obeys the rule, so repairing these means replacing the list-word inside an inflected phrase and making the rest of the sentence agree with a different noun. That is writing the language, not choosing between two strings that exist — and it is the exact change product-item-grammar had to go back and repair when it was done by substitution. They stay broken and recorded rather than guessed at."
       },
       "decided_by": "owner",
       "decided_on": "2026-09-19",
