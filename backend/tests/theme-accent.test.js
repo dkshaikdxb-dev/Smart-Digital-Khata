@@ -8,6 +8,7 @@
 // rather than on nothing. A theme that fails open to "no accent" is worse than
 // one that never changed.
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret_test_secret_test_secret_abc';
 
@@ -26,6 +27,19 @@ const mkCampaign = (over = {}) => pool.query(
 ).then((r) => r.rows[0].id);
 
 const getConfig = () => request(app).get('/api/public/config');
+const withToken = (req, token) => req.set('Authorization', `Bearer ${token}`);
+const tokenFor = (id) => jwt.sign({ sub: id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+let admin;
+
+beforeAll(async () => {
+  const r = await pool.query(
+    `INSERT INTO users (name, email, phone, password_hash, role, admin_role)
+     VALUES ($1,$2,$3,'x','admin','super') RETURNING id`,
+    [`Thm Super ${uniq}`, `thm_${uniq}@test.local`, `+9153${uniq}`],
+  );
+  admin = { id: r.rows[0].id, token: tokenFor(r.rows[0].id) };
+});
 
 afterEach(async () => {
   await pool.query('DELETE FROM theme_campaigns WHERE name LIKE $1', [`thm_${uniq}%`]);
@@ -34,6 +48,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await pool.query('DELETE FROM theme_campaigns WHERE name LIKE $1', [`thm_${uniq}%`]);
+  await pool.query('DELETE FROM users WHERE id = $1', [admin.id]);
   await pool.end();
 });
 
@@ -155,5 +170,52 @@ describe('GET /api/public/config — the resolved accent', () => {
     const res = await request(app).get('/api/public/config'); // no Authorization header
     expect(res.status).toBe(200);
     expect(res.body.theme).toBeDefined();
+  });
+});
+
+describe('the admin sets the accent', () => {
+  it('PATCH /api/admin/settings stores a normalised colour, and /public/config serves it', async () => {
+    // Typed without a hash, in upper case — the shapes an operator actually uses.
+    const patch = await withToken(request(app).patch('/api/admin/settings'), admin.token)
+      .send({ theme_accent: 'FF8800' });
+    expect(patch.status).toBe(200);
+    expect((await getConfig()).body.theme.accent).toBe('#ff8800');
+  });
+
+  it('GET /api/admin/settings echoes it back with its contrast measured', async () => {
+    await withToken(request(app).patch('/api/admin/settings'), admin.token)
+      .send({ theme_accent: '#22c55e' });
+    const got = await withToken(request(app).get('/api/admin/settings'), admin.token);
+    expect(got.status).toBe(200);
+    expect(got.body.features.theme_accent).toBe('#22c55e');
+    const c = got.body.features.theme_accent_contrast;
+    expect(c.on_accent.passes_aa).toBe(true);
+    expect(c.warnings).toEqual([]);
+  });
+
+  it('a colour that reads badly SAVES, and comes back carrying the warning', async () => {
+    const patch = await withToken(request(app).patch('/api/admin/settings'), admin.token)
+      .send({ theme_accent: '#777777' });
+    expect(patch.status).toBe(200);                       // not a gate
+    const got = await withToken(request(app).get('/api/admin/settings'), admin.token);
+    expect(got.body.features.theme_accent).toBe('#777777');
+    expect(got.body.features.theme_accent_contrast.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('a value that is not a colour is refused outright', async () => {
+    for (const bad of ['chartreuse', '#12345', '']) {
+      const res = await withToken(request(app).patch('/api/admin/settings'), admin.token)
+        .send({ theme_accent: bad });
+      expect(res.status).toBeGreaterThanOrEqual(400);
+    }
+    // ...and nothing was written: the last good value still stands.
+    const got = await withToken(request(app).get('/api/admin/settings'), admin.token);
+    expect(got.body.features.theme_accent).toBe('#777777');
+  });
+
+  it('setting the accent needs no typed I CONFIRM — it is a policy value, not a credential', async () => {
+    const res = await withToken(request(app).patch('/api/admin/settings'), admin.token)
+      .send({ theme_accent: '#22c55e' });   // no confirm field
+    expect(res.status).toBe(200);
   });
 });

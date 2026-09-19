@@ -135,6 +135,9 @@ const settingsSchema = Joi.object({
   // within the ceiling, no duplicates) lives in the controller so it can compare
   // against the RESULTING max and answer a clear 400 `invalid_eta_chips`.
   order_eta_chips: Joi.string().max(64),
+  // '#rgb' / '#rrggbb' with or without the hash; the controller normalises and
+  // is the one that rejects, so the shapes an operator types all reach it.
+  theme_accent: Joi.string().trim().max(9),
   order_eta_max_minutes: Joi.number().integer().min(1).max(1440),
 }).min(1);
 
