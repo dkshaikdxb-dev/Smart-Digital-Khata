@@ -1,5 +1,6 @@
 const settings = require('../config/settings');
 const { query } = require('../config/db');
+const { resolveAccent } = require('../utils/theme');
 
 // The owner voice-assistant toggle, read LIVE from platform_settings so a just-
 // saved Admin change is honoured on the next load (mirrors utils/referral
@@ -47,15 +48,22 @@ async function getSocialShareEnabled() {
 // "Ask": the owner app loads this endpoint early and hides the mic when false.
 // `social_share_enabled` is the platform on/off flag for the owner "Share your
 // shop" poster: the owner app loads this and hides the share card when false.
+// `theme` carries the RESOLVED accent — the standing one, or a festive window's
+// if one is live. The resolution happens on the server so no client ships a
+// schedule or does date arithmetic, and a phone with a wrong clock cannot pick
+// the wrong colour. Clients cache the value and fall back to their built-in
+// accent, so this endpoint being unreachable changes nothing on screen.
 exports.publicConfig = async (_req, res) => {
   const raw = settings.get('LANDING_WHATSAPP');
   const digits = raw ? String(raw).replace(/\D/g, '') : '';
   const voiceEnabled = await getVoiceAssistantEnabled();
   const socialShareEnabled = await getSocialShareEnabled();
+  const theme = await resolveAccent();
   res.setHeader('Cache-Control', 'public, max-age=60');
   res.json({
     landing_whatsapp: digits || null,
     voice_assistant_enabled: voiceEnabled,
     social_share_enabled: socialShareEnabled,
+    theme,
   });
 };
