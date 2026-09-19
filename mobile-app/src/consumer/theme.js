@@ -4,10 +4,14 @@
 //
 // THE ACCENT IS MUTABLE, AND THE OBJECT IDENTITY IS THE MECHANISM. Every screen
 // reads `colors.accent` as a property at the moment its StyleSheet.create runs
-// — 60 of the 77 accent references in this app are inside one, evaluated when
-// the module is imported. So the platform accent is applied by writing into
-// THIS object before the screen tree is imported (see src/bootAccent.js), and
-// after that every sheet, inline style and runtime read sees the same value.
+// — 59 of the 71 references the platform colour reaches are inside one,
+// evaluated when the module is imported. So the platform accent is applied by
+// writing into THIS object before the screen tree is imported (see
+// src/bootAccent.js), and after that every sheet, inline style and runtime read
+// sees the same value.
+//
+// 6 further references use `colors.positive` and are never repainted: 77 in the
+// accent family altogether.
 //
 // Two rules follow from that, and both are checked by
 // scripts/mobile-theme-boot.test.mjs:
@@ -29,11 +33,16 @@ export const colors = {
   onAccent: '#052e16',
   danger: '#ef4444',
   warn: '#f59e0b',
-  // NOT the accent, and deliberately not repainted with it: `ok` is the green
-  // that means a thing succeeded, and it sits beside `danger` in the same
-  // sentence. A festive orange must not be able to make "paid" and "overdue"
-  // the same family of colour.
-  ok: '#22c55e',
+  // NOT the accent, and deliberately not repainted with it. `positive` is the
+  // green that carries a MEANING and is read against `danger` in the same
+  // glance: an advance where a debt is red, a payment where a purchase is red,
+  // a note whose tone is 'ok'. A festive orange must not be able to make "paid"
+  // and "overdue" the same family of colour.
+  //
+  // Same name and same role as `positive` in src/theme.js, so the two flavors
+  // read alike. It replaces the `ok` token that sat here unused since the theme
+  // was written — this is the job it was added for, finally done.
+  positive: '#22c55e',
 };
 
 // The colour this app ships with, and the floor under every failure path.

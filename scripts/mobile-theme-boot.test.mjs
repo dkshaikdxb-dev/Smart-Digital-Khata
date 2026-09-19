@@ -18,8 +18,8 @@
  *   BYPASS —  the ways a later change could silently undo it: an eager import
  *     creeping back into App.js, a raw accent hex creeping back into a screen,
  *     a `const { accent } = colors` freezing the value at import. Each of those
- *     leaves an app that still builds, still runs, and paints 60 of its 77
- *     accent references the wrong colour. None of them is visible in a diff
+ *     leaves an app that still builds, still runs, and paints 59 of the 71
+ *     themed references the wrong colour. None of them is visible in a diff
  *     unless something is looking.
  */
 import fs from 'node:fs';
@@ -246,6 +246,41 @@ section('no screen can opt out of the theme');
   await eq(offenders, [], 'no file outside the theme modules writes an accent hex literally');
   await eq(unimported, [], 'every file that reads colors.* imports it');
   await eq(destructured, [], 'nobody destructures the accent off colors — that would copy and freeze it');
+
+  // A GREEN READ AGAINST RED IS NOT THE BRAND COLOUR.
+  //
+  // Both apps keep a fixed `colors.positive` for the greens that carry a
+  // meaning — an advance where a debt is red, a payment where a purchase is
+  // red, an order completed, a shop open. If one of those is drawn with
+  // colors.accent, a festive orange makes "paid" and "owed" the same family of
+  // colour and the red/green convention the money screens rely on stops
+  // working. The shape is recognisable: both tokens in one expression.
+  const paired = [];
+  for (const f of files) {
+    const rel = path.relative(APP, f);
+    const code = fs.readFileSync(f, 'utf8').replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const line of code.split('\n')) {
+      if (/colors\.danger/.test(line) && /colors\.(accent|accentDark)\b/.test(line)) paired.push(`${rel}: ${line.trim()}`);
+    }
+  }
+  await eq(paired, [], 'no red/green pair is drawn with the accent instead of colors.positive');
+
+  // The same mistake in its other shape. A state pill, note, badge or card
+  // whose NAME says "this is the good outcome" pairs with a red or amber
+  // sibling somewhere else in the file rather than on its own line, so the
+  // check above cannot see it — noteOk sits beside noteBad, pillOk beside
+  // pillWarn. Matched on the naming pattern those styles already follow, and
+  // narrow on purpose: a BUTTON that opens something is brand chrome and must
+  // stay free to be the accent, which is why this matches state nouns only.
+  const stateish = [];
+  for (const f of files) {
+    const rel = path.relative(APP, f);
+    const code = fs.readFileSync(f, 'utf8').replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const m of code.matchAll(/\b(pill|note|badge|card|dot|tag)(Ok|Open|Completed|Positive|Success|Paid)\s*:\s*\{([^}]*)\}/g)) {
+      if (/colors\.(accent|accentDark)\b/.test(m[3])) stateish.push(`${rel}: ${m[1]}${m[2]}`);
+    }
+  }
+  await eq(stateish, [], 'no good-state pill, note, badge or card is drawn with the accent');
 }
 
 // ===========================================================================
@@ -266,7 +301,10 @@ section('cache, then server, then the colour it ships with');
   await eq(async () => (await run(store({ value: '#ff8800' }))).from, 'cache', 'a cached colour is used');
   await eq(() => theme.colors.accent, '#ff8800', 'and it is painted into the consumer theme');
   await eq(() => owner.colors.accent, '#ff8800', 'and into the owner theme, in the same breath');
-  await eq(() => owner.colors.positive, '#22c55e', 'while the semantic green is left alone');
+  await eq(() => owner.colors.positive, '#22c55e', 'while the owner semantic green is left alone');
+  await eq(() => theme.colors.positive, '#22c55e', 'and the consumer one too — a festive colour never reaches either');
+  // The dead `ok` token this replaced must not come back beside it.
+  await eq(() => theme.colors.ok, undefined, 'and there is one name for that role, not two');
 
   await eq(async () => (await run(store({ value: null }))).accent, '#22c55e', 'nothing cached falls back to the shipped colour');
   await eq(async () => (await run(store({ value: null }))).from, 'default', 'and says so');
@@ -386,6 +424,7 @@ section('nothing changes colour on the day this ships');
   await eq(owner.colors.accent, '#22c55e', 'owner accent likewise');
   await eq(owner.colors.onAccent, '#052e16', 'owner on-accent likewise');
   await eq(owner.colors.positive, '#22c55e', 'and the owner semantic green is untouched by any of it');
+  await eq(consumer.colors.positive, '#22c55e', 'as is the consumer one');
   await eq(consumer.DEFAULT_ACCENT, owner.DEFAULT_ACCENT, 'both flavors ship the same default');
 
   const accent = loadModule('src/consumer/lib/accent.js');

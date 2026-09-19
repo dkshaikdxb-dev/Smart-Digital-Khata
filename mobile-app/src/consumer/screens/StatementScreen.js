@@ -236,7 +236,7 @@ function StatementBlock({ block, t }) {
             <View key={l.id} style={styles.entry}>
               <View style={styles.entryTop}>
                 <Text style={styles.entryType}>{txnLabel(l.type)}</Text>
-                <Text style={[styles.entryAmt, { color: up ? colors.danger : colors.accent }]}>
+                <Text style={[styles.entryAmt, { color: up ? colors.danger : colors.positive }]}>
                   {up ? '+' : '−'}{money(l.amount)}
                 </Text>
               </View>

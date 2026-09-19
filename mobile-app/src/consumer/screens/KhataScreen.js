@@ -76,7 +76,7 @@ export default function KhataScreen({ navigation }) {
   const totalOwes = total > 0;
   const totalAdvance = total < 0;
   const totalWord = totalOwes ? t('khata.owe') : totalAdvance ? t('khata.advance') : t('khata.settled');
-  const totalTone = totalOwes ? colors.danger : totalAdvance ? colors.accent : colors.textMuted;
+  const totalTone = totalOwes ? colors.danger : totalAdvance ? colors.positive : colors.textMuted;
 
   return (
     <ScrollView
@@ -106,7 +106,7 @@ export default function KhataScreen({ navigation }) {
             const owes = bal > 0;
             const advance = bal < 0;
             const word = owes ? t('khata.owe') : advance ? t('khata.advance') : t('khata.settled');
-            const tone = owes ? colors.danger : advance ? colors.accent : colors.textMuted;
+            const tone = owes ? colors.danger : advance ? colors.positive : colors.textMuted;
             return (
               <Pressable
                 key={s.shop_id}

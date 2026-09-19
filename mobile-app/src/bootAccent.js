@@ -1,13 +1,17 @@
 // Establishing the accent BEFORE the screens exist.
 //
-// THE PROBLEM THIS SOLVES. 60 of the consumer app's 77 accent references sit
-// inside a module-level StyleSheet.create, which React Native evaluates the
-// moment the module is imported. Change the colour after that and 17 inline
-// references repaint while 60 stay green — a half-themed screen, which looks
-// broken in a way that not theming at all does not. So the colour has to be in
-// place before the screen modules are evaluated, and the only way to guarantee
-// that is to not import them until it is. App.js therefore require()s the tree
-// instead of importing it, and this module is what runs in between.
+// THE PROBLEM THIS SOLVES. Of the 71 consumer references the platform colour
+// reaches, 59 sit inside a module-level StyleSheet.create, which React Native
+// evaluates the moment the module is imported. Change the colour after that and
+// 12 inline references repaint while 59 stay green — a half-themed screen,
+// which looks broken in a way that not theming at all does not. So the colour
+// has to be in place before the screen modules are evaluated, and the only way
+// to guarantee that is to not import them until it is. App.js therefore
+// require()s the tree instead of importing it, and this module is what runs in
+// between.
+//
+// (The app's other 6 accent-family references are colors.positive and are never
+// repainted at all — see src/consumer/theme.js.)
 //
 // THE ORDER, AND WHY EACH STEP IS WHERE IT IS:
 //
@@ -73,7 +77,7 @@ export async function establishAccent(store = SecureStore) {
  *
  * Deliberately does NOT repaint. By the time this resolves the screen tree has
  * been imported and 60 stylesheets are already baked; writing a new colour in
- * now would repaint exactly the 17 inline references and leave the rest — the
+ * now would repaint exactly the 12 inline references and leave the rest — the
  * half-themed screen this whole design exists to prevent. The value is stored
  * and takes effect on the next start.
  *

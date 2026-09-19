@@ -9,13 +9,15 @@ import { establishAccent, refreshAccentForNextStart, DEFAULT_ACCENT } from './sr
 // This file imports NO screen, NO navigator, NO language provider and NO api
 // client, and that is not tidiness — it is the whole mechanism.
 //
-// 60 of the consumer app's 77 accent references live inside a module-level
-// StyleSheet.create, which React Native evaluates when the module is imported.
-// A static `import` is hoisted and runs before any code in this file, so a tree
-// imported at the top would bake the shipped green before the boot gate ever
-// ran, and a colour applied afterwards would repaint the 17 inline references
-// and leave the other 60 — a half-themed screen, which reads as broken in a way
-// that an unthemed one does not.
+// The consumer app has 77 references to the accent family. 6 are deliberately
+// frozen (colors.positive — money and good-state greens read against red), and
+// the platform colour reaches the other 71. Of those, 59 live inside a
+// module-level StyleSheet.create, which React Native evaluates when the module
+// is imported. A static `import` is hoisted and runs before any code in this
+// file, so a tree imported at the top would bake the shipped green before the
+// boot gate ever ran, and a colour applied afterwards would repaint the 12
+// inline references and leave the other 59 — a half-themed screen, which reads
+// as broken in a way that an unthemed one does not.
 //
 // So the tree is require()d, inside the effect, AFTER establishAccent() has
 // written the colour into the theme objects. scripts/mobile-theme-boot.test.mjs
