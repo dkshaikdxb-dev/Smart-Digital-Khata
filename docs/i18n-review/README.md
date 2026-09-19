@@ -9,8 +9,8 @@ files are for.
 | file | what it holds | questions |
 |---|---|---|
 | [`bn-queue.md`](bn-queue.md) | Bengali — answered | 0 |
-| [`gu-queue.md`](gu-queue.md) | Gujarati queue | 112 |
-| [`mr-queue.md`](mr-queue.md) | Marathi queue | 76 |
+| [`gu-queue.md`](gu-queue.md) | Gujarati — 6 questions over 112 rows | 112 |
+| [`mr-queue.md`](mr-queue.md) | Marathi — 7 questions over 76 rows | 76 |
 | [`other-questions.md`](other-questions.md) | 7 cross-cutting decisions | 94 |
 
 ## What is NOT in here, and must not be answered here

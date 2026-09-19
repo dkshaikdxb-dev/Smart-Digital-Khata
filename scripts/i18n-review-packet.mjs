@@ -60,6 +60,87 @@ const enApp = (sid, key) => (APP[sid].en?.[key] || '').trim();
 
 const esc = (s) => String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
+// Which question a row belongs to.
+//
+// The ledgers say it plainly — "123 rows resolve to about eight decisions, not
+// 123" — and then record only a count per theme, so the mapping was never
+// written down. Listing 112 rows flat asks a reviewer for 112 answers when the
+// corpus only contains about seven questions, which is the difference between an
+// afternoon and a month. This derives the membership from the strings.
+//
+// Order matters: the first test that matches wins, so the specific themes are
+// tried before the catch-all. `register_and_tense` IS the catch-all, and the
+// ledger describes it that way — everything left once the word choices are out
+// is one decision about voice.
+const plainGu = (s) => String(s).replace(/ઑ/g, 'ઓ').replace(/ૉ/g, 'ો').replace(/ઍ/g, 'એ').replace(/ૅ/g, 'ે');
+const THEMES = {
+  bn: [],
+  gu: [
+    ['balance_vs_outstanding', (r) => ['common.balance', 'common.outstanding'].includes(r.web)],
+    ['ref.shareLink', (r) => r.web === 'ref.shareLink'],
+    // The ENGLISH, not the word that happens to appear: catalogue-loanword says
+    // so itself, and of nine gu strings carrying the word for "list" only three
+    // were about a catalogue. set.discovery is "Discovery (list your shop)".
+    ['catalogue_word', (r) => /catalog/i.test(r.en)],
+    ['cart_word', (r) => /કાર્ટ|ટોપલી/.test(r.w + r.a)],
+    ['product_word', (r) => /સામાન|ઉત્પાદન|વસ્તુ/.test(r.w + r.a)],
+    // Nothing reaches this any more: gu-orthography settled the candra spelling
+    // across the whole corpus, so no row now differs by that alone. Kept so the
+    // zero is visible rather than inferred.
+    ['orthography_candra_o', (r) => r.w && r.a && r.w !== r.a && plainGu(r.w) === plainGu(r.a)],
+    ['register_and_tense', () => true],
+  ],
+  mr: [
+    ['c.locationNotSet', (r) => r.web === 'c.locationNotSet'],
+    // The mr ledger never named these two, but the corpus has both splits and
+    // they are the same questions Gujarati asks. Grouping them here rather than
+    // leaving them in the catch-all is not a decision — it is putting the same
+    // question on one page instead of five.
+    ['catalogue_word', (r) => /catalog/i.test(r.en)],
+    ['cart_word', (r) => /कार्ट|टोपली/.test(r.w + r.a)],
+    ['outstanding_word', (r) => /बाकी|उधारी/.test(r.w + r.a)],
+    ['pay_verb', (r) => /भर|देण|द्या/.test(r.w + r.a)],
+    ['product_word', (r) => /उत्पादन|वस्तू/.test(r.w + r.a)],
+    ['register_and_tense', () => true],
+  ],
+};
+// The question each theme asks, as its ledger words it.
+const THEME_Q = {};
+for (const [lang, f] of [['gu', 'scripts/gu-reconcile-decisions.json'], ['mr', 'scripts/mr-reconcile-decisions.json']]) {
+  const j = JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8')).review;
+  for (const [k, v] of Object.entries(j)) {
+    if (k === '_themes') continue;
+    THEME_Q[`${lang}:${k}`] = typeof v === 'string' ? v : { q: v.question, why: v.why_not_mechanical };
+  }
+}
+// A theme a LOCKED decision already answers is not a question, and putting it to
+// a reviewer would be asking them to re-decide something a person decided. The
+// catalogue one is live: its app side does not obey the decision (see below),
+// but that is a defect to repair, not a question to ask.
+const SETTLED_BY = {
+  catalogue_word: {
+    by: 'catalogue-loanword',
+    rule: 'where the ENGLISH says catalog, the language uses the loanword, not its word for "list". That settles the WORD. It says nothing about the case ending or the verb around it, so a row where both surfaces already use the loanword and still differ is a register question and belongs to the theme below.',
+    note: 'The web obeys it. The app does not, in nine strings across bn, gu and mr — `shopdetail.loading`, `cat.searchCatalogue` and `cat.noCatalogue`. That decision carries no values and the gate cannot evaluate it, which is how they drifted unseen. Repairing them needs the loanword forms written by someone who speaks the language; it is not a choice between the two surfaces.',
+  },
+};
+
+const valuesOf = (lang, r) => ({
+  w: WEB[lang]?.[r.web] ?? staticValue(lang, r.web),
+  a: APP['app/consumer'][lang]?.[r.app] ?? APP['app/owner'][lang]?.[r.app],
+  en: enWeb(r.web) || enApp('app/consumer', r.app) || enApp('app/owner', r.app),
+});
+function byTheme(lang, rows) {
+  const tests = THEMES[lang] || [];
+  const buckets = new Map(tests.map(([t]) => [t, []]));
+  for (const row of rows) {
+    const r = { ...row, ...valuesOf(lang, row) };
+    const hit = tests.find(([, test]) => test(r));
+    if (hit) buckets.get(hit[0]).push(r); else (buckets.get('_ungrouped') || buckets.set('_ungrouped', []).get('_ungrouped')).push(r);
+  }
+  return buckets;
+}
+
 function rowBlock(lang, r) {
   const lines = [];
   const en = enWeb(r.web) || enApp('app/consumer', r.app) || enApp('app/owner', r.app);
@@ -127,20 +208,70 @@ for (const lang of ['bn', 'gu', 'mr']) {
   body.push('Write your answer on the **Your answer** line. "web is right", "app is right", or a better');
   body.push('string — all three are useful answers. "I would not say this at all" is also an answer.');
   body.push('');
-  if (d.open_themes?.length) {
-    body.push('## The questions underneath these rows');
+  const buckets = byTheme(lang, d.protects.rows);
+  const live = [...buckets].filter(([, rows]) => rows.length).sort((a, b) => b[1].length - a[1].length);
+  if (live.length) {
+    body.push(`## ${live.length} questions, not ${d.protects.rows.length} answers`);
     body.push('');
-    body.push(`Recorded in \`${d.source.themes}\`. Most rows are one of these, and answering the question`);
-    body.push('answers every row in it — you do not have to rule on each line separately.');
+    body.push(`The ledger says so itself — "${d.protects.rows.length} rows resolve to about ${live.length} decisions". Answer the`);
+    body.push('question at the head of each section and every row under it follows. You do not have to');
+    body.push('rule on each line, though you can: a row you disagree with overrides its theme.');
     body.push('');
-    for (const t of d.open_themes) body.push(`- \`${t}\``);
+    for (const [t, rows] of live) body.push(`- **\`${t}\`** — ${rows.length} rows`);
+    const empty = [...buckets].filter(([, rows]) => !rows.length).map(([t]) => t);
+    if (empty.length) {
+      body.push('');
+      body.push(`Closed since the ledger was written, with no rows left: ${empty.map((t) => `\`${t}\``).join(', ')}.`);
+    }
     body.push('');
   }
-  body.push('## Rows');
-  body.push('');
-  for (const r of d.protects.rows) { body.push(rowBlock(lang, r)); body.push(''); }
+  for (const [t, rows] of live) {
+    const q = THEME_Q[`${lang}:${t}`];
+    body.push(`## \`${t}\` — ${rows.length} rows`);
+    body.push('');
+    if (q) { body.push(`**${typeof q === 'string' ? q : q.q}**`); if (q.why) body.push('', q.why); body.push(''); }
+    const settled = SETTLED_BY[t];
+    if (settled) {
+      body.push(`> **Already decided — do not answer this one.** \`${settled.by}\` is LOCKED and says: ${settled.rule}`);
+      body.push('>');
+      body.push(`> ${settled.note}`);
+      body.push('');
+    } else {
+      body.push('**Your answer for this whole theme:** ');
+      body.push('');
+    }
+    // Split the rows that actually pose a web-vs-app choice from the ones where
+    // the two surfaces already say the same thing. They are different questions:
+    // one is "which of these", the other is "is this right at all".
+    const differ = rows.filter((r) => r.a !== undefined && r.w !== r.a);
+    const agree = rows.filter((r) => r.a === undefined || r.w === r.a);
+    if (differ.length) {
+      body.push(`### The surfaces disagree — ${differ.length}`);
+      body.push('');
+      body.push('| key | English | web | app |');
+      body.push('|---|---|---|---|');
+      for (const r of differ) {
+        const en = enWeb(r.web) || enApp('app/consumer', r.app) || enApp('app/owner', r.app);
+        body.push(`| \`${r.web}\`${r.app !== r.web ? ` / \`${r.app}\`` : ''} | ${esc(en)} | ${esc(r.w)} | ${esc(r.a)} |`);
+      }
+      body.push('');
+    }
+    if (agree.length) {
+      body.push(`### Both surfaces already say this — ${agree.length}`);
+      body.push('');
+      body.push('No choice to make between them. The question is only whether the wording is right.');
+      body.push('');
+      body.push('| key | English | both |');
+      body.push('|---|---|---|');
+      for (const r of agree) {
+        const en = enWeb(r.web) || enApp('app/consumer', r.app) || enApp('app/owner', r.app);
+        body.push(`| \`${r.web}\`${r.app !== r.web ? ` / \`${r.app}\`` : ''} | ${esc(en)} | ${esc(r.w ?? r.a)} |`);
+      }
+      body.push('');
+    }
+  }
   files.set(`${lang}-queue.md`, body.join('\n'));
-  summary.push([`${lang}-queue.md`, `${name} queue`, d.protects.rows.length]);
+  summary.push([`${lang}-queue.md`, `${name} — ${live.length} questions over ${d.protects.rows.length} rows`, d.protects.rows.length]);
 }
 
 /* ---- the REVIEW decisions that are not the per-language queue ---------- */
