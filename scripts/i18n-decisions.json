@@ -449,7 +449,8 @@
           "bn",
           "gu",
           "mr",
-          "hi"
+          "hi",
+          "ur"
         ],
         "surfaces": [
           "web",
@@ -460,7 +461,15 @@
       "decided_by": "owner",
       "decided_on": "round-2",
       "supersedes": null,
-      "override_log": []
+      "override_log": [
+        {
+          "from": "scoped to bn, gu, mr, hi",
+          "to": "ur added",
+          "on": "2026-09-19",
+          "by": "owner",
+          "reason": "whatsapp-latin-urdu answered the question this scope was waiting on. Without this the two repaired strings would be held by their values and a NEW Urdu string could still transliterate the name — documented but not enforced, which is the failure this registry keeps finding."
+        }
+      ]
     },
     "native-digits-latin": {
       "type": "HOUSE-STYLE",
@@ -2821,91 +2830,209 @@
     },
     "razorpay-casing-other-languages": {
       "type": "HOUSE-STYLE",
-      "status": "REVIEW",
-      "concept": "ta, te, kn, ml and ur all transliterate the Razorpay credential terms, as hi did before this round.",
+      "status": "LOCKED",
+      "concept": "ta, te, kn, ml and ur name the Razorpay credentials in Latin, as en, hi, bn, gu and mr already do.",
       "why_review": "Out of the stated scope of razorpay-casing. Applying it by cross-language analogy is exactly the implicit override the freeze forbids.",
       "immutable": true,
-      "protects": {
-        "keys": [
-          "set.noKeySecret",
-          "set.noWebhookSecret",
-          "set.keySecretSet",
-          "set.webhookSecretSet"
-        ],
+      "scope": {
+        "rule": "Extends razorpay-casing to the five languages it scoped itself out of. Same rule, unchanged: the term is Title Case in the label AND in the sentence, and the surrounding sentence stays in its own language.",
         "langs": [
           "ta",
           "te",
           "kn",
           "ml",
           "ur"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "set.noKeySecret",
+          "set.keySecretSet",
+          "set.noWebhookSecret",
+          "set.webhookSecretSet"
         ]
       },
-      "protected": {
-        "web": {
-          "ta": {
-            "set.noKeySecret": "கீ சீக்ரெட் இல்லை",
-            "set.noWebhookSecret": "வெப்ஹுக் சீக்ரெட் இல்லை",
-            "set.keySecretSet": "கீ சீக்ரெட் அமைக்கப்பட்டது",
-            "set.webhookSecretSet": "வெப்ஹுக் சீக்ரெட் அமைக்கப்பட்டது"
-          },
-          "te": {
-            "set.noKeySecret": "కీ సీక్రెట్ లేదు",
-            "set.noWebhookSecret": "వెబ్‌హుక్ సీక్రెట్ లేదు",
-            "set.keySecretSet": "కీ సీక్రెట్ సెట్ చేయబడింది",
-            "set.webhookSecretSet": "వెబ్‌హుక్ సీక్రెట్ సెట్ చేయబడింది"
-          },
-          "kn": {
-            "set.noKeySecret": "ಕೀ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
-            "set.noWebhookSecret": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
-            "set.keySecretSet": "ಕೀ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ",
-            "set.webhookSecretSet": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ"
-          },
-          "ml": {
-            "set.noKeySecret": "കീ സീക്രട്ട് ഇല്ല",
-            "set.noWebhookSecret": "വെബ്‌ഹുക്ക് സീക്രട്ട് ഇല്ല",
-            "set.keySecretSet": "കീ സീക്രട്ട് സജ്ജമാക്കി",
-            "set.webhookSecretSet": "വെബ്‌ഹുക്ക് സീക്രട്ട് സജ്ജമാക്കി"
-          },
-          "ur": {
-            "set.noKeySecret": "کوئی کی سیکریٹ نہیں",
-            "set.noWebhookSecret": "کوئی ویب ہک سیکریٹ نہیں",
-            "set.keySecretSet": "کی سیکریٹ مقرر ہے",
-            "set.webhookSecretSet": "ویب ہک سیکریٹ مقرر ہے"
-          }
+      "extends": "razorpay-casing",
+      "values": {
+        "ta": {
+          "set.noKeySecret": "Key Secret இல்லை",
+          "set.keySecretSet": "Key Secret அமைக்கப்பட்டது",
+          "set.noWebhookSecret": "Webhook Secret இல்லை",
+          "set.webhookSecretSet": "Webhook Secret அமைக்கப்பட்டது"
         },
-        "app/owner": {
-          "ta": {
-            "set.noKeySecret": "கீ சீக்ரெட் இல்லை",
-            "set.noWebhookSecret": "வெப்ஹுக் சீக்ரெட் இல்லை",
-            "set.keySecretSet": "கீ சீக்ரெட் அமைக்கப்பட்டது",
-            "set.webhookSecretSet": "வெப்ஹுக் சீக்ரெட் அமைக்கப்பட்டது"
-          },
-          "te": {
-            "set.noKeySecret": "కీ సీక్రెట్ లేదు",
-            "set.noWebhookSecret": "వెబ్‌హుక్ సీక్రెట్ లేదు",
-            "set.keySecretSet": "కీ సీక్రెట్ సెట్ చేయబడింది",
-            "set.webhookSecretSet": "వెబ్‌హుక్ సీక్రెట్ సెట్ చేయబడింది"
-          },
-          "kn": {
-            "set.noKeySecret": "ಕೀ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
-            "set.noWebhookSecret": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
-            "set.keySecretSet": "ಕೀ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ",
-            "set.webhookSecretSet": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ"
-          },
-          "ml": {
-            "set.noKeySecret": "കീ സീക്രട്ട് ഇല്ല",
-            "set.noWebhookSecret": "വെബ്‌ഹുക്ക് സീക്രട്ട് ഇല്ല",
-            "set.keySecretSet": "കീ സീക്രട്ട് സജ്ജമാക്കി",
-            "set.webhookSecretSet": "വെബ്‌ഹുക്ക് സീക്രട്ട് സജ്ജമാക്കി"
-          },
-          "ur": {
-            "set.noKeySecret": "کوئی کی سیکریٹ نہیں",
-            "set.noWebhookSecret": "کوئی ویب ہک سیکریٹ نہیں",
-            "set.keySecretSet": "کی سیکریٹ مقرر ہے",
-            "set.webhookSecretSet": "ویب ہک سیکریٹ مقرر ہے"
-          }
+        "te": {
+          "set.noKeySecret": "Key Secret లేదు",
+          "set.keySecretSet": "Key Secret సెట్ చేయబడింది",
+          "set.noWebhookSecret": "Webhook Secret లేదు",
+          "set.webhookSecretSet": "Webhook Secret సెట్ చేయబడింది"
+        },
+        "kn": {
+          "set.noKeySecret": "Key Secret ಇಲ್ಲ",
+          "set.keySecretSet": "Key Secret ಹೊಂದಿಸಲಾಗಿದೆ",
+          "set.noWebhookSecret": "Webhook Secret ಇಲ್ಲ",
+          "set.webhookSecretSet": "Webhook Secret ಹೊಂದಿಸಲಾಗಿದೆ"
+        },
+        "ml": {
+          "set.noKeySecret": "Key Secret ഇല്ല",
+          "set.keySecretSet": "Key Secret സജ്ജമാക്കി",
+          "set.noWebhookSecret": "Webhook Secret ഇല്ല",
+          "set.webhookSecretSet": "Webhook Secret സജ്ജമാക്കി"
+        },
+        "ur": {
+          "set.noKeySecret": "کوئی Key Secret نہیں",
+          "set.keySecretSet": "Key Secret مقرر ہے",
+          "set.noWebhookSecret": "کوئی Webhook Secret نہیں",
+          "set.webhookSecretSet": "Webhook Secret مقرر ہے"
         }
-      }
+      },
+      "values_note": "No sentence was translated. In each string the TRANSLITERATION of the credential term was replaced by the Latin term and nothing else moved — the span was derived, not eyeballed: the two strings naming the same credential share exactly that span and differ everywhere else, so the longest substring they have in common IS the term. Every \"now\" is its \"was\" with that one span swapped.",
+      "rows": [
+        {
+          "lang": "ta",
+          "key": "set.noKeySecret",
+          "was": "கீ சீக்ரெட் இல்லை",
+          "now": "Key Secret இல்லை",
+          "transliteration_removed": "கீ சீக்ரெட்"
+        },
+        {
+          "lang": "ta",
+          "key": "set.keySecretSet",
+          "was": "கீ சீக்ரெட் அமைக்கப்பட்டது",
+          "now": "Key Secret அமைக்கப்பட்டது",
+          "transliteration_removed": "கீ சீக்ரெட்"
+        },
+        {
+          "lang": "ta",
+          "key": "set.noWebhookSecret",
+          "was": "வெப்ஹுக் சீக்ரெட் இல்லை",
+          "now": "Webhook Secret இல்லை",
+          "transliteration_removed": "வெப்ஹுக் சீக்ரெட்"
+        },
+        {
+          "lang": "ta",
+          "key": "set.webhookSecretSet",
+          "was": "வெப்ஹுக் சீக்ரெட் அமைக்கப்பட்டது",
+          "now": "Webhook Secret அமைக்கப்பட்டது",
+          "transliteration_removed": "வெப்ஹுக் சீக்ரெட்"
+        },
+        {
+          "lang": "te",
+          "key": "set.noKeySecret",
+          "was": "కీ సీక్రెట్ లేదు",
+          "now": "Key Secret లేదు",
+          "transliteration_removed": "కీ సీక్రెట్"
+        },
+        {
+          "lang": "te",
+          "key": "set.keySecretSet",
+          "was": "కీ సీక్రెట్ సెట్ చేయబడింది",
+          "now": "Key Secret సెట్ చేయబడింది",
+          "transliteration_removed": "కీ సీక్రెట్"
+        },
+        {
+          "lang": "te",
+          "key": "set.noWebhookSecret",
+          "was": "వెబ్‌హుక్ సీక్రెట్ లేదు",
+          "now": "Webhook Secret లేదు",
+          "transliteration_removed": "వెబ్‌హుక్ సీక్రెట్"
+        },
+        {
+          "lang": "te",
+          "key": "set.webhookSecretSet",
+          "was": "వెబ్‌హుక్ సీక్రెట్ సెట్ చేయబడింది",
+          "now": "Webhook Secret సెట్ చేయబడింది",
+          "transliteration_removed": "వెబ్‌హుక్ సీక్రెట్"
+        },
+        {
+          "lang": "kn",
+          "key": "set.noKeySecret",
+          "was": "ಕೀ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
+          "now": "Key Secret ಇಲ್ಲ",
+          "transliteration_removed": "ಕೀ ಸೀಕ್ರೆಟ್"
+        },
+        {
+          "lang": "kn",
+          "key": "set.keySecretSet",
+          "was": "ಕೀ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ",
+          "now": "Key Secret ಹೊಂದಿಸಲಾಗಿದೆ",
+          "transliteration_removed": "ಕೀ ಸೀಕ್ರೆಟ್"
+        },
+        {
+          "lang": "kn",
+          "key": "set.noWebhookSecret",
+          "was": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಇಲ್ಲ",
+          "now": "Webhook Secret ಇಲ್ಲ",
+          "transliteration_removed": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್"
+        },
+        {
+          "lang": "kn",
+          "key": "set.webhookSecretSet",
+          "was": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್ ಹೊಂದಿಸಲಾಗಿದೆ",
+          "now": "Webhook Secret ಹೊಂದಿಸಲಾಗಿದೆ",
+          "transliteration_removed": "ವೆಬ್‌ಹುಕ್ ಸೀಕ್ರೆಟ್"
+        },
+        {
+          "lang": "ml",
+          "key": "set.noKeySecret",
+          "was": "കീ സീക്രട്ട് ഇല്ല",
+          "now": "Key Secret ഇല്ല",
+          "transliteration_removed": "കീ സീക്രട്ട്"
+        },
+        {
+          "lang": "ml",
+          "key": "set.keySecretSet",
+          "was": "കീ സീക്രട്ട് സജ്ജമാക്കി",
+          "now": "Key Secret സജ്ജമാക്കി",
+          "transliteration_removed": "കീ സീക്രട്ട്"
+        },
+        {
+          "lang": "ml",
+          "key": "set.noWebhookSecret",
+          "was": "വെബ്‌ഹുക്ക് സീക്രട്ട് ഇല്ല",
+          "now": "Webhook Secret ഇല്ല",
+          "transliteration_removed": "വെബ്‌ഹുക്ക് സീക്രട്ട്"
+        },
+        {
+          "lang": "ml",
+          "key": "set.webhookSecretSet",
+          "was": "വെബ്‌ഹുക്ക് സീക്രട്ട് സജ്ജമാക്കി",
+          "now": "Webhook Secret സജ്ജമാക്കി",
+          "transliteration_removed": "വെബ്‌ഹുക്ക് സീക്രട്ട്"
+        },
+        {
+          "lang": "ur",
+          "key": "set.noKeySecret",
+          "was": "کوئی کی سیکریٹ نہیں",
+          "now": "کوئی Key Secret نہیں",
+          "transliteration_removed": "کی سیکریٹ"
+        },
+        {
+          "lang": "ur",
+          "key": "set.keySecretSet",
+          "was": "کی سیکریٹ مقرر ہے",
+          "now": "Key Secret مقرر ہے",
+          "transliteration_removed": "کی سیکریٹ"
+        },
+        {
+          "lang": "ur",
+          "key": "set.noWebhookSecret",
+          "was": "کوئی ویب ہک سیکریٹ نہیں",
+          "now": "کوئی Webhook Secret نہیں",
+          "transliteration_removed": "ویب ہک سیکریٹ"
+        },
+        {
+          "lang": "ur",
+          "key": "set.webhookSecretSet",
+          "was": "ویب ہک سیکریٹ مقرر ہے",
+          "now": "Webhook Secret مقرر ہے",
+          "transliteration_removed": "ویب ہک سیکریٹ"
+        }
+      ],
+      "why": "A shopkeeper reading கீ சீக்ரெட் while the Razorpay dashboard in front of them says Key Secret is the confusion razorpay-casing was made to end. It was left open because extending a decision by cross-language analogy is the implicit override the freeze forbids; this is the explicit one.",
+      "decided_by": "owner",
+      "decided_on": "2026-09-19"
     },
     "native-speaker-queue-bn": {
       "type": "LINGUISTIC",
@@ -4589,8 +4716,8 @@
     },
     "whatsapp-latin-urdu": {
       "type": "HOUSE-STYLE",
-      "status": "REVIEW",
-      "concept": "Urdu renders WhatsApp in the Urdu script in two login strings.",
+      "status": "LOCKED",
+      "concept": "Urdu writes WhatsApp in Latin, as bn, gu, mr and hi do.",
       "why_review": "whatsapp-latin scopes itself to bn, gu, mr and hi. Extending it to ur by analogy is the implicit override the freeze forbids — and Urdu is right-to-left, so an embedded Latin word is a typographic decision, not just a spelling one.",
       "immutable": true,
       "keys": {
@@ -4599,23 +4726,61 @@
           "login.heroSub"
         ]
       },
-      "protects": {
-        "keys": [
-          "login.otpHint",
-          "login.heroSub"
-        ],
+      "scope": {
+        "rule": "Extends whatsapp-latin to Urdu. The product name is Latin; the postposition stays Urdu, which is what the string already did around the transliteration — واٹس ایپ پر becomes WhatsApp پر, the same shape gu uses with પર.",
         "langs": [
           "ur"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "login.otpHint",
+          "login.heroSub",
+          "help.e4.a"
         ]
       },
-      "protected": {
-        "app/consumer": {
-          "ur": {
-            "login.otpHint": "ہم واٹس ایپ پر 6 ہندسوں کا کوڈ بھیجیں گے۔",
-            "login.heroSub": "اپنے فون سے سائن ان کریں۔ ہم واٹس ایپ پر کوڈ بھیجتے ہیں — کوئی پاس ورڈ یاد رکھنے کی ضرورت نہیں۔"
+      "extends": "whatsapp-latin",
+      "values": {
+        "ur": {
+          "login.otpHint": {
+            "app": "ہم WhatsApp پر 6 ہندسوں کا کوڈ بھیجیں گے۔"
+          },
+          "login.heroSub": {
+            "app": "اپنے فون سے سائن ان کریں۔ ہم WhatsApp پر کوڈ بھیجتے ہیں — کوئی پاس ورڈ یاد رکھنے کی ضرورت نہیں۔"
+          },
+          "help.e4.a": {
+            "web": "آپ کی دکان کے نوٹیفکیشن موڈ کے مطابق مہذب WhatsApp یاد دہانیاں بھیجی جاتی ہیں۔ کسی بھی ایک گاہک کے لیے انہیں بند کر سکتے ہیں۔"
           }
         }
-      }
+      },
+      "values_note": "Two strings, one span each: the transliteration واٹس ایپ replaced by WhatsApp. Nothing else in either sentence moved.",
+      "rows": [
+        {
+          "lang": "ur",
+          "key": "login.otpHint",
+          "was": "ہم واٹس ایپ پر 6 ہندسوں کا کوڈ بھیجیں گے۔",
+          "now": "ہم WhatsApp پر 6 ہندسوں کا کوڈ بھیجیں گے۔"
+        },
+        {
+          "lang": "ur",
+          "key": "login.heroSub",
+          "was": "اپنے فون سے سائن ان کریں۔ ہم واٹس ایپ پر کوڈ بھیجتے ہیں — کوئی پاس ورڈ یاد رکھنے کی ضرورت نہیں۔",
+          "now": "اپنے فون سے سائن ان کریں۔ ہم WhatsApp پر کوڈ بھیجتے ہیں — کوئی پاس ورڈ یاد رکھنے کی ضرورت نہیں۔"
+        },
+        {
+          "lang": "ur",
+          "key": "help.e4.a",
+          "was": "آپ کی دکان کے نوٹیفکیشن موڈ کے مطابق مہذب واٹس ایپ یاد دہانیاں بھیجی جاتی ہیں۔ کسی بھی ایک گاہک کے لیے انہیں بند کر سکتے ہیں۔",
+          "now": "آپ کی دکان کے نوٹیفکیشن موڈ کے مطابق مہذب WhatsApp یاد دہانیاں بھیجی جاتی ہیں۔ کسی بھی ایک گاہک کے لیے انہیں بند کر سکتے ہیں۔",
+          "found_by": "whatsapp-latin, the moment ur entered its scope"
+        }
+      ],
+      "bidi_note": "Urdu is right-to-left and a Latin run inside it is a bidirectional layout question as well as a spelling one. The same mix already ships in Urdu for the Razorpay credentials under this round, and in every other language for this brand. Worth an eye on a real device before the OTA.",
+      "decided_by": "owner",
+      "decided_on": "2026-09-19",
+      "found_note": "The dashboard catalog carried a third string the decision never listed — help.e4.a. It surfaced the moment ur entered whatsapp-latin’s scope, which is the difference between a rule and a list: the list had two, the rule found three."
     },
     "consumer-faq-app-variants": {
       "type": "PRODUCT-CONTEXT",

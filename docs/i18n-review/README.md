@@ -1,6 +1,6 @@
 # Native-speaker review
 
-42 questions, covering the 42 strings the registry holds under REVIEW.
+0 questions, covering the 0 strings the registry holds under REVIEW.
 Nothing in this repository can change one of them without a decision behind it — that
 part is finished and enforced in CI. What it cannot do is tell you whether any of them is
 the right thing to say to a shopkeeper in Bengali, Gujarati or Marathi. That is what these
@@ -11,7 +11,7 @@ files are for.
 | [`bn-queue.md`](bn-queue.md) | Bengali — answered | 0 |
 | [`gu-queue.md`](gu-queue.md) | Gujarati — answered | 0 |
 | [`mr-queue.md`](mr-queue.md) | Marathi — answered | 0 |
-| [`other-questions.md`](other-questions.md) | 3 cross-cutting decisions | 42 |
+| [`other-questions.md`](other-questions.md) | 1 cross-cutting decisions | 0 |
 
 ## What is NOT in here, and must not be answered here
 

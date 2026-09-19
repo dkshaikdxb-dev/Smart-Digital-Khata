@@ -87,11 +87,15 @@ for (const [id, d] of Object.entries(registry.decisions)) {
       // en and hi live only in the dashboard's own DICT.
       if (surfaces.has('web') && perSurface.web !== undefined) {
         const to = perSurface.web;
+        // BOTH web files, not whichever is found first. regional-i18n.json is the
+        // override a shopper actually sees and the dashboard catalog is the
+        // fallback underneath it, and a key can live in both — ur help.e4.a does.
+        // Writing only the override left the fallback saying the old thing, which
+        // the gate caught because it reads the two as separate sources. This is
+        // the same first-hit bug the two APP dictionaries had, on the web side.
         if (reg[lang] && key in reg[lang]) note(id, lang, 'web', key, reg[lang][key], to, 'regional-i18n.json');
-        else {
-          const cur = get(DASHP, lang, key);
-          if (cur != null) note(id, lang, 'web', key, cur, to, 'admin-dashboard');
-        }
+        const cur = get(DASHP, lang, key);
+        if (cur != null) note(id, lang, 'web', key, cur, to, 'admin-dashboard');
       }
       if (!surfaces.has('app') || perSurface.app === undefined) continue;
       for (const f of APPS) {

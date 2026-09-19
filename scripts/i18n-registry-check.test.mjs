@@ -294,24 +294,31 @@ const cases = [
 
   ['a value cannot be claimed by TWO REVIEW decisions either',
    // Eight rows were, briefly: gu ostatus.accepted sat in the Gujarati queue and
-   // in gu-accepted-wording, which asks whether that word is right at all.
-   // Answering the queue would have closed a question it does not own.
+   // in gu-accepted-wording, which asked whether that word was right at all.
+   // Answering the queue would have closed a question it did not own.
    () => editRegistry((j) => {
-     j.decisions['rangeEmpty-rewording'].protected = { 'app/consumer': { ur: { 'login.otpHint': j.decisions['whatsapp-latin-urdu'].protected['app/consumer'].ur['login.otpHint'] } } };
+     const v = { 'app/consumer': { ur: { 'login.otpHint': 'ہم WhatsApp پر 6 ہندسوں کا کوڈ بھیجیں گے۔' } } };
+     j.decisions['rangeEmpty-rewording'].protected = v;
+     j.decisions['native-speaker-queue-bn'].protected = v;
    }), 'pinned by TWO REVIEW decisions', null],
 
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
-     j.decisions['whatsapp-latin'].values ||= {};
-     (j.decisions['whatsapp-latin'].values.ur ||= {})['login.otpHint'] = j.decisions['whatsapp-latin-urdu'].protected['app/consumer'].ur['login.otpHint'];
+     // whatsapp-latin-urdu holds this row LOCKED now; claiming it for REVIEW too
+     // is the conflict, whichever way round the two arrive.
+     j.decisions['rangeEmpty-rewording'].protected = {
+       'app/consumer': { ur: { 'login.otpHint': 'ہم WhatsApp پر 6 ہندسوں کا کوڈ بھیجیں گے۔' } },
+     };
    }), 'pinned as REVIEW and LOCKED', null],
 
   ['deleting a REVIEW row is caught, not only changing it',
-   // ur login.otpHint, parked under whatsapp-latin-urdu. The FAQ keys used to
-   // serve here and are LOCKED now, and rule 1 tolerates a LOCKED key a surface
-   // does not carry — deliberately, since a decision may name a key one side
-   // lacks. A deleted LOCKED string is caught by the coverage ratchet instead.
-   () => appDelete(CONSUMER, 'ur', 'login.otpHint'),
+   // Every REVIEW question in this repo has now been answered, so there is no
+   // live row left to break. The rule still has to hold for the next one, so the
+   // case builds its own: park a string under REVIEW, then delete the string.
+   () => { editRegistry((j) => {
+             j.decisions['rangeEmpty-rewording'].protected = { 'app/consumer': { ur: { 'login.otpHint': 'ہم WhatsApp پر 6 ہندسوں کا کوڈ بھیجیں گے۔' } } };
+           });
+           appDelete(CONSUMER, 'ur', 'login.otpHint'); },
    'REVIEW row disappeared', null],
 
   // --- divergence coverage now spans every web language --------------------
