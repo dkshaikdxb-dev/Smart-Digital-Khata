@@ -137,9 +137,23 @@ exports.listShops = async (req, res) => {
     where.push(openPredicateSql('s', 'sc', `$${params.length}`));
   }
 
+  // Match the LOCALIZED name as well as the canonical English one. The join
+  // above already brings sn.name in for display; filtering on s.name alone meant
+  // a shopper whose app is in Telugu could read "గుప్తా స్టోర్" on screen, speak
+  // or type exactly that, and be told no such shop exists — the name the product
+  // showed them was the one name it would not search. Both surfaces use this
+  // endpoint, so the fix belongs here and nowhere else.
+  //
+  // s.name stays in the predicate for two reasons: the canonical name must keep
+  // working while the UI is localized (a shopkeeper reading the English name off
+  // a sign), and a shop with no shop_name_i18n row must stay findable at all.
+  // One bind param serves both sides. The LEFT JOIN is on shop_name_i18n's
+  // (shop_id, lang) PRIMARY KEY, so it matches at most one row per shop and
+  // cannot duplicate a result.
   if (search) {
     params.push(`%${search}%`);
-    where.push(`s.name ILIKE $${params.length}`);
+    const term = `$${params.length}`;
+    where.push(localized ? `(s.name ILIKE ${term} OR sn.name ILIKE ${term})` : `s.name ILIKE ${term}`);
   }
   if (city) {
     params.push(`%${city}%`);

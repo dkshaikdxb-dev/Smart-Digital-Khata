@@ -11,6 +11,7 @@
 import fs from 'fs';
 import path from 'path';
 import { staticValue } from '../admin-dashboard/src/lib/i18n.js';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REGP = path.join(ROOT, 'backend/src/data/regional-i18n.json');
@@ -128,6 +129,6 @@ if (broke) { console.log('\nREFUSING — ' + broke + ' problem(s)'); process.exi
 
 if (!process.argv.includes('--apply')) { console.log('\n(dry run — pass --apply to write)'); process.exit(0); }
 for (const l of LANGS) { const o = {}; for (const k of Object.keys(reg[l]).sort()) o[k] = reg[l][k]; reg[l] = o; }
-fs.writeFileSync(REGP, JSON.stringify(reg, null, 2) + '\n', 'utf8');
-for (const f of APPS) fs.writeFileSync(path.join(ROOT, f), src[f], 'utf8');
+guardedWrite(REGP, JSON.stringify(reg, null, 2) + '\n');
+for (const f of APPS) guardedWrite(path.join(ROOT, f), src[f]);
 console.log('\napplied');

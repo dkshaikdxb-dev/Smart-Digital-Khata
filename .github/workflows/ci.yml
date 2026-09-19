@@ -81,9 +81,15 @@ jobs:
       # that every LOCKED decision still describes what the dictionaries say,
       # that the Gujarati loanword spelling holds as a corpus invariant rather
       # than a token list, that protected brand terms keep their casing, and
-      # that the 34 intentional and 83 undecided web/app divergences are still
+      # that the 46 intentional and 274 undecided web/app divergences are still
       # exactly the sets somebody signed off — so a pair that converges or
-      # appears has to be recorded before it can ship.
+      # appears has to be recorded before it can ship. Every language the web
+      # carries is compared, not only the three that were reconciled first. It
+      # also holds one row to one status: a string a LOCKED decision settles
+      # cannot also be pinned as waiting for a native speaker to read it. The
+      # three LOCKED decisions that state a rule and name no values are held to
+      # the strings their retired queue rows recorded, so LOCKED means the same
+      # thing for all fifteen rather than for twelve.
       - name: i18n decision registry
         run: node scripts/i18n-registry-check.mjs
       # And the gate itself is tested by breaking things. The first version of
@@ -93,6 +99,13 @@ jobs:
       # and fails if any violation is allowed through.
       - name: i18n registry gate — mutation tests
         run: node scripts/i18n-registry-check.test.mjs
+      # Every REVIEW string is pinned to its current value, per surface and per
+      # language. Re-run the snapshot and the registry must not move: if it does,
+      # a translation changed without a native-speaker decision behind it.
+      - name: i18n REVIEW snapshot is current
+        run: |
+          node scripts/i18n-review-snapshot.mjs --apply
+          git diff --exit-code scripts/i18n-decisions.json
       - name: Build
         working-directory: admin-dashboard
         env:

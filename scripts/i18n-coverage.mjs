@@ -186,7 +186,22 @@ const FLOORS = {
   // 'voice.speak' are copied verbatim from the web consumer khata, which has
   // spoken a balance for a while, and 'common.stop' from the owner app, whose
   // order alert already offers exactly this Stop. Every language +3.
-  consumer: { hi: 344, bn: 344, ta: 344, te: 344, kn: 344, ml: 344, mr: 344, gu: 344, ur: 344 },
+  // Batch FAQ-VOICE added one CONSUMER key, 'help.listen', for the read-aloud
+  // button the web FAQ has had and this screen did not. Not authored here: it
+  // is the label the web already shows, copied verbatim in all ten languages
+  // (admin-dashboard's dictionary for en/hi, regional-i18n.json for the rest),
+  // so both surfaces say the same word and nothing new needs review. Every
+  // language gains it, so every consumer floor moves together.
+  // Batch FAQ-APP-VARIANTS added four CONSUMER keys — chelp.e1.a, chelp.e8.a,
+  // chelp.e9.q and chelp.e9.a — so the app can answer those three questions in
+  // its own words instead of the web's, which name controls this app does not
+  // have. The English is approved; the nine translations of each are
+  // MACHINE-AUTHORED and carry REVIEW status in scripts/i18n-decisions.json.
+  // Every language gains all four. chelp.e1.q and chelp.e8.q come too, copied
+  // verbatim from the web because the app never carried them and the entries
+  // would otherwise print their key names; their wording is unchanged, so they
+  // are not part of the REVIEW set. Six keys per language in all.
+  consumer: { hi: 351, bn: 351, ta: 351, te: 351, kn: 351, ml: 351, mr: 351, gu: 351, ur: 351 },
   //
   // Batch MORE-ROUTES added three OWNER keys — 'more.staff', 'more.suppliers'
   // and 'more.transactions' — for the Staff / Suppliers / Transactions rows the

@@ -8,7 +8,10 @@
 // What it enforces:
 //
 //   1. A LOCKED decision's value is what the dictionaries actually say. A
-//      decision that has quietly stopped being true is not a decision.
+//      decision that has quietly stopped being true is not a decision. The
+//      three that state a rule and name no values are held to the strings
+//      their retired queue rows recorded, so LOCKED means the same thing for
+//      all fifteen of them.
 //   2. gu-orthography as a CORPUS INVARIANT, not a token list: no loanword
 //      lemma may appear in both its candra and its plain spelling. A NEW
 //      loanword inherits the rule — this is what a token list could not do, and
@@ -17,7 +20,10 @@
 //      drifted into web/app conflict because the old single set only covered
 //      bare labels.
 //   4. The standing invariants: no native digits, no transliterated WhatsApp,
-//      Balance and Outstanding never collide.
+//      the catalogue loanword wherever the English says catalog, Balance and
+//      Outstanding never colliding, and the one decision that is a
+//      CONSTRAINT rather than an owner — a native review of the gu/mr FAQ prose
+//      may revise it but may not collapse the approve-word into the accept-word.
 //   5. REVIEW rows are IMMUTABLE. Where the registry recorded the current
 //      value, it must still be the current value — a REVIEW row that something
 //      silently "fixed" has been decided by a tool instead of a person.
@@ -31,6 +37,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BRAND_TERMS, brandTermCasingErrors } from './lib/i18n-brand-keys.mjs';
+import { lockedValues } from './lib/i18n-governed-keys.mjs';
 
 // I18N_ROOT lets the mutation suite point this gate at a throwaway copy of the
 // dictionaries. A check nobody can test is a check nobody can trust — the hole
@@ -88,22 +95,48 @@ const fail = [];
 const bad = (rule, detail) => fail.push({ rule, detail });
 
 /* 1 — every LOCKED decision still holds -------------------------------- */
-for (const [id, d] of Object.entries(registry.decisions)) {
-  if (d.status !== 'LOCKED' || !d.values) continue;
-  const surfaces = new Set(d.scope?.surfaces ?? ['web', 'app']);
-  for (const [lang, kv] of Object.entries(d.values)) {
-    for (const [key, spec] of Object.entries(kv)) {
-      const per = typeof spec === 'string' ? { web: spec, app: spec } : spec;
-      if (surfaces.has('web') && per.web !== undefined) {
-        const got = webValue(lang, key);
-        if (got !== undefined && got !== per.web) bad(id, `web ${lang} ${key}\n      want: ${per.web}\n      got:  ${got}`);
-      }
-      if (surfaces.has('app') && per.app !== undefined) {
-        for (const c of appCopies(lang, key)) {
-          if (c.value !== per.app) bad(id, `${c.id} ${lang} ${key}\n      want: ${per.app}\n      got:  ${c.value}`);
-        }
-      }
-    }
+// `lockedValues` resolves each decision's values to one row PER SURFACE, honouring
+// scope.surfaces and the {web, app} shape — gu chelp.e7.a is {app: …}, so it
+// claims the two app dictionaries and says nothing about the web string. The
+// guard and the snapshot read the same function, so the three cannot disagree
+// about which surface of a key is settled.
+//
+// A missing string is not a violation HERE: a decision may name a key one
+// surface does not carry. Rule 1b is stricter, because there the recorded value
+// is the only record the string ever had.
+const LOCKED_ROWS = lockedValues(registry);
+const surfaceValue = (surface, lang, key) => (surface === 'web'
+  ? webValue(lang, key)
+  : APP_FILES.find((f) => f.id === surface)?.langs[lang]?.[key]);
+for (const r of LOCKED_ROWS) {
+  if (r.source !== 'values') continue;
+  const got = surfaceValue(r.surface, r.lang, r.key);
+  if (got !== undefined && got !== r.want) bad(r.decision, `${r.surface} ${r.lang} ${r.key}\n      want: ${r.want}\n      got:  ${got}`);
+}
+
+/* 1b — the LOCKED decisions that state a rule and name no values ---------
+   unit-counter, catalogue-loanword and prepaid-mechanism each settled a
+   terminology question and then recorded nothing: scope.rule says which strings
+   they cover ("c.unit and common.unit only"), values says nothing at all. Rule 1
+   skips a decision with no values, so all three were LOCKED in name and
+   unenforced in fact — 14 strings a decision claimed to hold that any sweep
+   could have rewritten with every gate green.
+
+   The strings were already written down. Retiring those rows from the native
+   review queue recorded what each said at retirement, per surface, and that is
+   what this checks — the same pinned-value comparison rule 5 makes, against the
+   same kind of block, reported against the LOCKED decision that owns it. No
+   translation was invented to close this and no decision was re-scoped: the
+   rule semantics are untouched, they are simply checkable now. */
+for (const r of LOCKED_ROWS) {
+  if (r.source !== 'rule') continue;
+  const got = surfaceValue(r.surface, r.lang, r.key);
+  if (got === undefined) {
+    bad(r.decision, `LOCKED row disappeared: ${r.surface} ${r.lang} ${r.key}\n      was:  ${r.want}`
+      + `\n      -> this decision states a rule and names no values; the string is pinned by its`
+      + `\n         superseded_rows entry in the native review queue.`);
+  } else if (got !== r.want) {
+    bad(r.decision, `${r.surface} ${r.lang} ${r.key}\n      want: ${r.want}\n      got:  ${got}`);
   }
 }
 
@@ -173,11 +206,73 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
     }
   }
 
+  // catalogue-loanword as a RULE over the corpus, not a list of rows.
+  //
+  // It names no values, so until now it was held only by the rows the review
+  // queue retired under it — and nine app strings in bn, gu and mr said the word
+  // for "list" where their English says catalog, unseen, for as long as the
+  // decision had existed. Eight of the nine were never in any queue. The rule was
+  // always checkable; nobody had checked it.
+  //
+  // The list-word per language is derived from the strings the decision already
+  // governs rather than typed here: whatever tab.catalog does NOT say, when the
+  // same language's older rows did.
+  {
+    const d = registry.decisions['catalogue-loanword'];
+    const LIST = { bn: /তালিকা/, gu: /યાદી/, mr: /यादी/ };
+    for (const lang of d.scope.langs) {
+      const re = LIST[lang];
+      if (!re) continue;
+      const enOf = {
+        web: (k) => DASH.en?.[k],
+        ...Object.fromEntries(APP_FILES.map((f) => [f.id, (k) => f.langs.en?.[k]])),
+      };
+      for (const [src, kv] of [['web', WEB[lang]], ...APP_FILES.map((f) => [f.id, f.langs[lang]])]) {
+        for (const [key, v] of Object.entries(kv || {})) {
+          const en = (enOf[src]?.(key) || '').trim();
+          if (!/catalog/i.test(en) || !re.test(v)) continue;
+          bad('catalogue-loanword', `${src} ${lang} ${key} says catalog in English and the word for "list" here`
+            + `\n      en: ${en}\n      ${lang}: ${v}`);
+        }
+      }
+    }
+  }
+
   for (const lang of registry.decisions['balance-vs-outstanding'].scope.langs) {
     for (const [src, get] of [['web', (k) => webValue(lang, k)],
                               ...APP_FILES.map((f) => [f.id, (k) => f.langs[lang]?.[k]])]) {
       const b = get('common.balance'), o = get('common.outstanding');
       if (b && o && b === o) bad('balance-vs-outstanding', `${src} ${lang}: both render "${b}"`);
+    }
+  }
+
+  // approve-not-accept is a CONSTRAINT on an open review, not a value pin, and
+  // this is the shape that lets it be one. status-mentions-in-prose owns the
+  // exact gu/mr web chelp.e7.a strings and stays authoritative for them; a
+  // native speaker may rewrite that prose however they read it, including with a
+  // different approve-word. What they may not do is settle the prose/chip
+  // mismatch by collapsing the approve-word into the accept-word, because that
+  // makes the shopkeeper approving an order and a delivery being accepted the
+  // same act. The stem, not a whole word, because the accept-word inflects:
+  // the chip reads સ્વીકારેલ and the app prose સ્વીકાર્યો.
+  //
+  // It owns no values, so it appears in neither lockedValues nor governedStatus
+  // and cannot compete for ownership. It only says what an answer may not be.
+  {
+    const c = registry.decisions['approve-not-accept'].constrains;
+    for (const lang of c.langs) {
+      const stem = c.forbidden_stems[lang];
+      for (const surface of c.surfaces) {
+        for (const key of c.keys) {
+          const v = surface === 'web' ? webValue(lang, key) : APP_FILES.find((f) => f.id === surface)?.langs[lang]?.[key];
+          if (v !== undefined && stem && v.includes(stem)) {
+            bad('approve-not-accept', `${surface} ${lang} ${key} renders the approved state with the accept-word`
+              + `\n      found: ${stem}  in: ${v}`
+              + `\n      -> the wording is owned by ${c.decision} (REVIEW) and may be revised;`
+              + `\n         collapsing it into the accept-word is what this decision rules out.`);
+          }
+        }
+      }
     }
   }
 }
@@ -230,12 +325,67 @@ for (const [lang, kv] of Object.entries({ ...Object.fromEntries(Object.entries(W
 }
 
 /* 5 — REVIEW rows are immutable ----------------------------------------- */
+// A REVIEW row is one nobody who speaks the language has read yet. Until they
+// do, nothing may change it. That is only enforceable if the registry records
+// what the value IS, per surface and per language — `protected`, written by
+// scripts/i18n-review-snapshot.mjs. Before it existed this check covered two
+// decisions out of eight and none of the 36 machine-authored FAQ translations,
+// so the loudest thing in the queue was the least protected.
+const appDictById = Object.fromEntries(APP_FILES.map((f) => [f.id, f.langs]));
 for (const [id, d] of Object.entries(registry.decisions)) {
-  if (d.status !== 'REVIEW' || !d.current || !d.lang) continue;
-  for (const [k, want] of Object.entries(d.current)) {
-    const seenAt = [['web', webValue(d.lang, k)], ...appCopies(d.lang, k).map((c) => [c.id, c.value])];
-    for (const [where, got] of seenAt) {
-      if (got !== undefined && got !== want) bad(id, `REVIEW row changed without a decision: ${where} ${d.lang} ${k}\n      was:  ${want}\n      now:  ${got}`);
+  if (d.status !== 'REVIEW' || !d.protected) continue;
+  for (const [surface, byLang] of Object.entries(d.protected)) {
+    for (const [lang, kv] of Object.entries(byLang)) {
+      for (const [key, want] of Object.entries(kv)) {
+        const got = surface === 'web' ? webValue(lang, key) : appDictById[surface]?.[lang]?.[key];
+        if (got === undefined) {
+          bad(id, `REVIEW row disappeared: ${surface} ${lang} ${key}\n      was:  ${want}`);
+        } else if (got !== want) {
+          bad(id, `REVIEW row changed without a native-speaker decision: ${surface} ${lang} ${key}\n      was:  ${want}\n      now:  ${got}`);
+        }
+      }
+    }
+  }
+}
+
+/* 5b — one row, one status ----------------------------------------------
+   A value cannot be both settled and waiting to be read. The queue was built
+   before the terminology rounds, so rows it raised were later answered by a
+   LOCKED decision — and the snapshot went on pinning them as REVIEW, leaving 12
+   values claiming two statuses at once. Nothing broke, because guardedWrite
+   resolves LOCKED first, but the registry asserted two different things about
+   the same string. The same applies between two REVIEW decisions: a row in two
+   open questions gets answered by whichever is answered first. The snapshot now leaves LOCKED rows alone and records them
+   as `superseded_rows`; this makes that hold rather than describe it. */
+{
+  // Per surface, for the same reason rule 1 is: gu chelp.e7.a is LOCKED on the
+  // app and open on the web, and calling the web row settled is what left it
+  // held by nothing.
+  const lockedBy = new Map();
+  for (const r of LOCKED_ROWS) lockedBy.set(`${r.surface}|${r.lang}|${r.key}`, r.decision);
+  // ... and one row, one REVIEWER. Two REVIEW decisions pinning the same string
+  // is the same defect a status down: gu ostatus.accepted sat in the Gujarati
+  // queue AND in gu-accepted-wording, which asks whether that word is right at
+  // all, so answering the queue would have closed a question it does not own.
+  const reviewedBy = new Map();
+  for (const [id, d] of Object.entries(registry.decisions)) {
+    if (d.status !== 'REVIEW' || !d.protected) continue;
+    for (const [surface, byLang] of Object.entries(d.protected)) {
+      for (const [lang, kv] of Object.entries(byLang)) {
+        for (const key of Object.keys(kv)) {
+          const at = `${surface}|${lang}|${key}`;
+          const owner = lockedBy.get(at);
+          if (owner) {
+            bad(id, `${surface} ${lang} ${key} is pinned as REVIEW and LOCKED by ${owner}`
+              + `\n      -> LOCKED is authoritative. Move the row to ${id}.superseded_rows and re-run scripts/i18n-review-snapshot.mjs`);
+          }
+          const also = reviewedBy.get(at);
+          if (also) {
+            bad(id, `${surface} ${lang} ${key} is pinned by TWO REVIEW decisions: ${also} and ${id}`
+              + `\n      -> a row has one owner. Decide which question it belongs to and record it in the other's resolved_rows.`);
+          } else reviewedBy.set(at, id);
+        }
+      }
     }
   }
 }
@@ -243,17 +393,29 @@ for (const [id, d] of Object.entries(registry.decisions)) {
 /* 6 — the divergence sets are still what the registry records ------------ */
 {
   const KL = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/keylevel-decisions.json'), 'utf8'));
+  // EVERY language the web carries, not the three that happened to be reconciled
+  // first. ta/te/kn/ml/ur were never compared, so 191 web/app pairs in those five
+  // could drift, converge or appear with nothing noticing.
+  const DIVERGENCE_LANGS = Object.keys(WEB).sort();
   const live = { INTENTIONAL_DIVERGENCE: {}, UNDECIDED: {} };
-  for (const lang of ['bn', 'gu', 'mr']) {
+  for (const lang of DIVERGENCE_LANGS) {
     live.INTENTIONAL_DIVERGENCE[lang] = []; live.UNDECIDED[lang] = [];
     for (const [k, v] of Object.entries(WEB[lang] || {})) {
       const copies = appCopies(lang, k);
       if (!copies.length || copies.every((c) => c.value === v)) continue;
-      (KL[lang]?.[k] === 'web' ? live.INTENTIONAL_DIVERGENCE : live.UNDECIDED)[lang].push(k);
+      // Intentional by EITHER route: the older keylevel file said keep-web, or a
+      // decision in this registry declares the key app-specific. The second exists
+      // because consumer-faq-app-variants gives the app its own FAQ answers, and
+      // keylevel-decisions.json is a frozen reconciliation artefact that must not
+      // grow new rows. A bare list entry is not enough — some decision has to name
+      // the key, so "recorded" still means "explained".
+      const declared = (registry.divergences.INTENTIONAL_DIVERGENCE.keys[lang] || []).includes(k)
+        && Object.values(registry.decisions).some((d) => (d.scope?.keys || []).includes(k));
+      (KL[lang]?.[k] === 'web' || declared ? live.INTENTIONAL_DIVERGENCE : live.UNDECIDED)[lang].push(k);
     }
   }
   for (const set of ['INTENTIONAL_DIVERGENCE', 'UNDECIDED']) {
-    for (const lang of ['bn', 'gu', 'mr']) {
+    for (const lang of DIVERGENCE_LANGS) {
       const want = new Set(registry.divergences[set].keys[lang] || []);
       const got = new Set(live[set][lang]);
       for (const k of got) if (!want.has(k)) bad('divergences', `${set} ${lang}: ${k} is newly divergent and is in no decision`);

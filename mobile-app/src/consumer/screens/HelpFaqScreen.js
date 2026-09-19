@@ -3,41 +3,70 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { colors, sizes } from '../theme';
 import { Card } from '../components';
 import { useT } from '../i18n';
+import { useNativeVoice } from '../../lib/useNativeVoice';
 
 // Help & FAQ — a static, collapsible list of the questions a shopper actually
 // asks. NOT a bot, no network, works with the phone in flight mode, and every
-// answer is already translated into Hindi, Tamil, Telugu, Kannada, Malayalam and
-// Urdu because it was copied whole from the web app's own chelp.* entries.
+// answer is translated into all ten languages — six copied whole from the web
+// app's own chelp.* entries, three written for this app (see below).
 //
-// WHICH ENTRIES, AND WHY NOT ALL NINE. The web has nine. Six are here. The three
-// that were left out describe controls this app does not have, and an answer
-// that sends someone hunting for a button that is not there is worse than no
-// answer at all:
+// ALL NINE ENTRIES, with app-specific answers for three of them.
 //
-//   e1 "How do I find a shop?" tells the reader to tap "Use my location". The
-//      native shop directory deliberately has no GPS (see ShopsScreen) — search
-//      by name or city is the whole discovery UX here.
-//   e8 points at "the language switch at the top"; on this app the language
-//      picker lives on the Account screen.
-//   e9 explains the light/dark toggle. The native app has one theme.
+// e1, e8 and e9 exist in the WEB dictionary only, and their web answers describe
+// controls this app does not have — "Use my location", a language switch "at the
+// top", a sun/moon toggle. Showing them with the web text would have sent a
+// shopper hunting for buttons that are not there; showing them with no app text
+// at all printed the key name, which is how they were briefly shipped and pulled.
 //
-// Rewriting those three to match the native app would mean authoring six new
-// sentences and then ten translations of each, which is not this batch's work.
-// They are listed in the handover instead.
+// So the app now carries its own chelp.e1.a, chelp.e8.a, chelp.e9.q and
+// chelp.e9.a: same namespace, different value from the web, recorded in the
+// divergence registry as consumer-faq-app-variants. The six other answers are
+// unchanged and still shared with the web.
+//
+// THE ENGLISH IS APPROVED. THE NINE TRANSLATIONS OF EACH ARE NOT — they are
+// machine-authored and carry REVIEW status in scripts/i18n-decisions.json. They
+// name the real on-screen labels in each language (Telugu's Account tab reads
+// ప్రొఫైల్, so the Telugu answer says ప్రొఫైల్), and they keep the microphone
+// instruction conditional, because both mics are hidden on a device with no
+// recognizer for the active language.
 const ENTRIES = [
+  { key: 'e1', icon: '🔍' },
   { key: 'e2', icon: '🧺' },
   { key: 'e3', icon: '🛒' },
   { key: 'e4', icon: '🛵' },
   { key: 'e5', icon: '💳' },
   { key: 'e6', icon: '📒' },
   { key: 'e7', icon: '📦' },
+  { key: 'e8', icon: '🌐' },
+  { key: 'e9', icon: '🌗' },
 ];
 
 export default function HelpFaqScreen() {
-  const { t } = useT();
+  const { t, lang } = useT();
   // Which question is expanded. One at a time keeps the list scannable on a
   // small screen; tapping the open one closes it.
   const [open, setOpen] = useState(null);
+
+  // Read the answer out loud, the same way the khata balance does.
+  //
+  // The web FAQ has had a Listen button per answer for a while (HelpFaq.js) and
+  // this screen had none, so the shopper least able to read the answer was the
+  // one sent to a browser to hear it. Same hook, same start/stop semantics, same
+  // dictionary key as the web's label.
+  //
+  // Keyed by entry, not by the hook's single `speaking` flag: that flag is one
+  // boolean for the whole hook, so gating on it alone would turn every answer's
+  // button into Stop at once. Only the answer actually being read shows Stop;
+  // tapping another switches to it, because speak() replaces rather than queues.
+  const voice = useNativeVoice(lang);
+  const [speakingKey, setSpeakingKey] = useState('');
+  const isSaying = (key) => voice.speaking && speakingKey === key;
+
+  const sayAnswer = (key) => {
+    if (isSaying(key)) { voice.stopSpeaking(); setSpeakingKey(''); return; }
+    setSpeakingKey(key);
+    voice.speak(t(`chelp.${key}.a`));
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -62,7 +91,30 @@ export default function HelpFaqScreen() {
               <Text style={styles.q}>{t(`chelp.${e.key}.q`)}</Text>
               <Text style={styles.chev}>{expanded ? '▲' : '▼'}</Text>
             </Pressable>
-            {expanded ? <Text style={styles.a}>{t(`chelp.${e.key}.a`)}</Text> : null}
+            {expanded ? (
+              <View>
+                <Text style={styles.a}>{t(`chelp.${e.key}.a`)}</Text>
+                {/* Gated on ttsSupported, NOT `supported` — that one is speech
+                    RECOGNITION, a different capability that also asks for the
+                    microphone. Reading aloud needs no permission. Hidden
+                    entirely when the device cannot speak, rather than offering a
+                    button that does nothing. Its own Pressable, so a tap here
+                    reads the answer instead of collapsing it. */}
+                {voice.ttsSupported ? (
+                  <Pressable
+                    onPress={() => sayAnswer(e.key)}
+                    hitSlop={8}
+                    style={styles.listenBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={isSaying(e.key) ? t('common.stop') : t('help.listen')}
+                  >
+                    <Text style={styles.listenText}>
+                      {isSaying(e.key) ? `⏹ ${t('common.stop')}` : `🔊 ${t('help.listen')}`}
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
           </Card>
         );
       })}
@@ -82,4 +134,19 @@ const styles = StyleSheet.create({
   q: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1, paddingRight: 10 },
   chev: { color: colors.textMuted, fontSize: 14 },
   a: { color: colors.textMuted, fontSize: 15, lineHeight: 22, marginTop: 8 },
+  // A real target under the answer, the same 44px the khata read-aloud uses.
+  listenBtn: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    // cardAlt, not bg: this button sits INSIDE a Card, and bg is the same colour
+    // the Card sits on, which would have left it invisible.
+    backgroundColor: colors.cardAlt,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: 10,
+  },
+  listenText: { color: colors.text, fontSize: 15, fontWeight: '600' },
 });

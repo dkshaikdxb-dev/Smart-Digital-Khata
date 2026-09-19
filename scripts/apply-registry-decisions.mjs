@@ -12,6 +12,7 @@
 // Preview by default. --apply writes.
 import fs from 'fs';
 import path from 'path';
+import { guardedWrite } from './lib/i18n-governed-keys.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const REGP = path.join(ROOT, 'backend/src/data/regional-i18n.json');
@@ -86,11 +87,15 @@ for (const [id, d] of Object.entries(registry.decisions)) {
       // en and hi live only in the dashboard's own DICT.
       if (surfaces.has('web') && perSurface.web !== undefined) {
         const to = perSurface.web;
+        // BOTH web files, not whichever is found first. regional-i18n.json is the
+        // override a shopper actually sees and the dashboard catalog is the
+        // fallback underneath it, and a key can live in both — ur help.e4.a does.
+        // Writing only the override left the fallback saying the old thing, which
+        // the gate caught because it reads the two as separate sources. This is
+        // the same first-hit bug the two APP dictionaries had, on the web side.
         if (reg[lang] && key in reg[lang]) note(id, lang, 'web', key, reg[lang][key], to, 'regional-i18n.json');
-        else {
-          const cur = get(DASHP, lang, key);
-          if (cur != null) note(id, lang, 'web', key, cur, to, 'admin-dashboard');
-        }
+        const cur = get(DASHP, lang, key);
+        if (cur != null) note(id, lang, 'web', key, cur, to, 'admin-dashboard');
       }
       if (!surfaces.has('app') || perSurface.app === undefined) continue;
       for (const f of APPS) {
@@ -125,6 +130,10 @@ for (const c of changes) {
     if (!set(f, c.lang, c.key, c.to)) throw new Error(`app write failed: ${c.lang} ${c.key}`);
   }
 }
-fs.writeFileSync(REGP, JSON.stringify(reg, null, 2) + '\n', 'utf8');
-for (const [p, s] of Object.entries(src)) fs.writeFileSync(p, s, 'utf8');
+// This script IS the sanctioned writer for LOCKED rows — that is its entire
+// job — so it is allowed those and nothing else. A REVIEW row, an intentional
+// divergence or an undecided pair still stops it dead.
+const ALLOW = { allow: ['LOCKED'] };
+guardedWrite(REGP, JSON.stringify(reg, null, 2) + '\n', ALLOW);
+for (const [p, s] of Object.entries(src)) guardedWrite(p, s, ALLOW);
 console.log('\nwritten.');
