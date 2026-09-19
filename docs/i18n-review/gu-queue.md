@@ -1,6 +1,6 @@
 # Gujarati — strings waiting for you
 
-49 rows. Every one of them is a string a Gujarati speaker has not read.
+1 rows. Every one of them is a string a Gujarati speaker has not read.
 
 Each row shows the English it was translated from and what each surface says today.
 The web is khata.dadashaik.com; app/consumer is the shopper's phone app and app/owner
@@ -11,95 +11,17 @@ not the same thing. Say what each one should read.
 Write your answer on the **Your answer** line. "web is right", "app is right", or a better
 string — all three are useful answers. "I would not say this at all" is also an answer.
 
-## 4 questions, not 49 answers
+## 1 questions, not 1 answers
 
-The ledger says so itself — "49 rows resolve to about 4 decisions". Answer the
+The ledger says so itself — "1 rows resolve to about 1 decisions". Answer the
 question at the head of each section and every row under it follows. You do not have to
 rule on each line, though you can: a row you disagree with overrides its theme.
 
-- **`register_and_tense`** — 41 rows
-- **`product_word`** — 4 rows
-- **`catalogue_word`** — 3 rows
-- **`balance_vs_outstanding`** — 1 rows
+- **`catalogue_word`** — 1 rows
 
-Closed since the ledger was written, with no rows left: `ref.shareLink`, `cart_word`, `orthography_candra_o`.
+Closed since the ledger was written, with no rows left: `balance_vs_outstanding`, `ref.shareLink`, `cart_word`, `product_word`, `orthography_candra_o`, `register_and_tense`.
 
-## `register_and_tense` — 41 rows
-
-**The app tends to the continuous ('લોડ થઈ રહ્યું છે') where the web is plainer ('લોડ થાય છે'), and they differ on politeness in places.**
-
-Neither is wrong. It is a voice decision for the product, and applying it string by string is how a product ends up with two voices.
-
-**Your answer for this whole theme:** 
-
-### Both surfaces already say this — 41
-
-No choice to make between them. The question is only whether the wording is right.
-
-| key | English | both |
-|---|---|---|
-| `acc.logout` / `account.logout` | Log out | લૉગ આઉટ |
-| `c.myOrders` / `orders.title` | My orders | મારા ઑર્ડર |
-| `c.placeOrder` / `cart.placeOrder` | Place order | ઑર્ડર કરો |
-| `c.unit` / `shopdetail.unit` | unit | નંગ |
-| `chelp.e3.q` | How do I place an order? | ઑર્ડર કેવી રીતે કરવો? |
-| `chelp.e4.a` | Pickup means you collect the order from the shop yourself, for free. Delivery means the shop brings it to you, sometimes with a small fee — many shops give free delivery above a set amount. | જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે. |
-| `chelp.e4.q` | What is the difference between pickup and delivery? | જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે? |
-| `chelp.e5.q` | How do I pay for an order? | ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા? |
-| `chelp.subtitle` | Short answers for shopping, orders and your khata. | ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ. |
-| `common.remove` / `cart.remove` | Remove | દૂર કરો |
-| `ctab.orders` / `tab.orders` | Orders | ઑર્ડર |
-| `dash.customersWithDues` | Customers with dues | બાકી હોય તેવા ગ્રાહક |
-| `dash.kpi.orders` / `tab.orders` | Orders | ઑર્ડર |
-| `dash.orderStatus.accepted` / `ostatus.accepted` | Accepted | સ્વીકારેલ |
-| `dash.orderStatus.cancelled` / `ostatus.cancelled` | Cancelled | રદ |
-| `dash.orderStatus.out_for_delivery` / `ostatus.out_for_delivery` | Out for delivery | ડિલિવરી માટે નીકળ્યો |
-| `dl.myOrders` / `orders.title` | My orders | મારા ઑર્ડર |
-| `dl.orders` / `tab.orders` | Orders | ઑર્ડર |
-| `ins.collectionRate` | Collection rate | વસૂલીનો દર |
-| `nav.logout` / `account.logout` | Log out | લૉગ આઉટ |
-| `nav.orders` / `tab.orders` | Orders | ઑર્ડર |
-| `num.changed` | Number changed. Your khata across all shops now uses the new number. | નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે. |
-| `num.changing` | Changing… | બદલાઈ રહ્યું છે… |
-| `num.enterCode` / `login.enterCode` | Enter the code sent to {phone} | {phone} પર મોકલેલો કોડ દાખલ કરો |
-| `num.sending` / `login.sending` | Sending… | મોકલાઈ રહ્યું છે… |
-| `ord.cancelOrder` / `orderdetail.cancel` | Cancel order | ઑર્ડર રદ કરો |
-| `ord.mark` | Mark {s} | {s} તરીકે નોંધો |
-| `ord.marked` | Order marked {s}. | ઑર્ડર {s} નોંધાયો. |
-| `ord.order` / `orderdetail.title` | Order | ઑર્ડર |
-| `ostatus.accepted` | Accepted | સ્વીકારેલ |
-| `ostatus.out_for_delivery` | Out for delivery | ડિલિવરી માટે નીકળ્યો |
-| `ref.loadError` | Could not load referrals. | રેફરલ લોડ થઈ શક્યા નથી. |
-| `ref.subtitle` | Share your code. When someone joins with it, they appear here. | તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે. |
-| `ref.title` | Invite & earn | આમંત્રણ આપો ને કમાઓ |
-| `ref.type.owner` | Shop owner | દુકાન માલિક |
-| `stmt.closing` | Closing balance | છેલ્લું બેલેન્સ |
-| `stmt.loadError` | Could not load the statement. | વિવરણ લોડ થઈ શક્યું નથી. |
-| `stmt.noData` | No entries in this date range. | આ સમયગાળામાં કોઈ એન્ટ્રી નથી. |
-| `stmt.opening` | Opening balance | શરૂઆતનું બેલેન્સ |
-| `stmt.pickShop` | Choose a shop | દુકાન પસંદ કરો |
-| `stmt.subtitle` | Opening balance, dated entries for a range, and closing balance. | શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ. |
-
-## `product_word` — 4 rows
-
-**Is a product સામાન (app), ઉત્પાદન or વસ્તુ (web)?**
-
-સામાન is what a kirana shopkeeper says; ઉત્પાદન is the formal word; વસ્તુ is 'thing'. Around eight rows, and the answer should be one word used everywhere, chosen by someone who sells groceries in Gujarati.
-
-**Your answer for this whole theme:** 
-
-### Both surfaces already say this — 4
-
-No choice to make between them. The question is only whether the wording is right.
-
-| key | English | both |
-|---|---|---|
-| `cat.addProduct` | Add product | વસ્તુ ઉમેરો |
-| `cat.empty` | No products yet. Add your first above. | હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો. |
-| `cat.noResults` / `shopdetail.noResults` | No matching items. | મળતી કોઈ વસ્તુ નથી. |
-| `ord.emptyItems` / `ord.noItems` | No items on this order. | આ ઑર્ડરમાં કોઈ વસ્તુ નથી. |
-
-## `catalogue_word` — 3 rows
+## `catalogue_word` — 1 rows
 
 **Is the catalogue કૅટલૉગ (web) or યાદી (app)?**
 
@@ -114,29 +36,4 @@ No choice to make between them. The question is only whether the wording is righ
 | key | English | web | app |
 |---|---|---|---|
 | `c.loadingCatalog` / `shopdetail.loading` | Loading catalog… | કૅટલૉગ લોડ થાય છે… | યાદી લોડ થઈ રહી છે… |
-
-### Both surfaces already say this — 2
-
-No choice to make between them. The question is only whether the wording is right.
-
-| key | English | both |
-|---|---|---|
-| `cat.addFromCatalogue` | Add from catalogue | કૅટલૉગમાંથી ઉમેરો |
-| `nav.catalog` / `tab.catalog` | Catalog | કૅટલૉગ |
-
-## `balance_vs_outstanding` — 1 rows
-
-**common.balance and common.outstanding must be decided TOGETHER.**
-
-Web has balance=બાકી, outstanding=બાકી રકમ. App has balance=બેલેન્સ, outstanding=બાકી. Each is internally distinct, but taking one from each surface gives balance=બાકી AND outstanding=બાકી — two different English words rendering identically, on money. બાકી also asserts money is OWED, which 'Balance' does not: a balance can be an advance.
-
-**Your answer for this whole theme:** 
-
-### Both surfaces already say this — 1
-
-No choice to make between them. The question is only whether the wording is right.
-
-| key | English | both |
-|---|---|---|
-| `common.balance` / `khata.balance` | Balance | બેલેન્સ |
 

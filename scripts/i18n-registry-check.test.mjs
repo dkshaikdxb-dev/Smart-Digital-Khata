@@ -190,7 +190,9 @@ const cases = [
   ['a native-speaker-queue row cannot be resolved by a tool',
    // Gujarati, because Bengali's queue is answered: a Bengali speaker read all
    // six rows on 2026-09-18 and they are LOCKED now. The cases below cover that.
-   () => webSet('gu', 'acc.logout', 'બહાર નીકળો'), 'native-speaker-queue-gu', 'web gu acc.logout'],
+   // c.loadingCatalog is what is left in that queue: catalogue-loanword answers
+   // the WORD, the app still says the list-word, and the repair needs wording.
+   () => webSet('gu', 'c.loadingCatalog', 'યાદી લોડ થાય છે…'), 'native-speaker-queue-gu', 'web gu c.loadingCatalog'],
 
   // --- a landed native review is LOCKED, and holds both key names -----------
   // This is what the queue was FOR. The answers arrived per surface — three
@@ -215,13 +217,13 @@ const cases = [
   // rectangle could not express that, so it pinned the web string of a question
   // and left the app string — the thing the question was actually about —
   // writable by anything. These four passed silently until 2026-09-18.
-  ['the same where the app key shares nothing with the web key (mr common.outstanding -> ins.outstanding)',
-   () => appSet(OWNER, 'mr', 'ins.outstanding', 'बाकी रक्कम'), 'native-speaker-queue-mr', 'app/owner mr ins.outstanding'],
+  ['the same where the app key shares nothing with the web key (mr c.loadingCatalog -> shopdetail.loading)',
+   () => appSet(CONSUMER, 'mr', 'shopdetail.loading', 'कॅटलॉग लोड होत आहे…'), 'native-speaker-queue-mr', 'app/consumer mr shopdetail.loading'],
 
-  ['a row that has since CONVERGED is still protected — converging is not approval',
-   // gu acc.logout / account.logout now reads the same on both surfaces, so no
-   // divergence check covers it any more. Nobody Gujarati has read it either.
-   () => appSet(CONSUMER, 'gu', 'account.logout', 'બહાર નીકળો'), 'native-speaker-queue-gu', 'app/consumer'],
+  ['a row closed on its existing wording is still held — closing is not approval',
+   // gu acc.logout was closed as-is under gu-wording-kept: nobody Gujarati read
+   // it, and it is LOCKED precisely so nothing drifts it while that is true.
+   () => appSet(CONSUMER, 'gu', 'account.logout', 'બહાર નીકળો'), 'gu-wording-kept', 'app/consumer gu account.logout'],
 
   // --- the three LOCKED decisions that state a rule and name no values -----
   // unit-counter, catalogue-loanword and prepaid-mechanism each settled a
@@ -299,6 +301,14 @@ const cases = [
 
   ['releasing it did not take the app side from the decision that owned it',
    () => appSet(CONSUMER, 'gu', 'chelp.e2.a', 'કંઈક સાવ જુદું.'), 'product-item', 'app/consumer gu chelp.e2.a'],
+
+  ['a value cannot be claimed by TWO REVIEW decisions either',
+   // Eight rows were, briefly: gu ostatus.accepted sat in the Gujarati queue and
+   // in gu-accepted-wording, which asks whether that word is right at all.
+   // Answering the queue would have closed a question it does not own.
+   () => editRegistry((j) => {
+     j.decisions['rangeEmpty-rewording'].protected = { web: { gu: { 'ostatus.accepted': 'સ્વીકારેલ' } } };
+   }), 'pinned by TWO REVIEW decisions', null],
 
   ['a value cannot be claimed by REVIEW and LOCKED at once',
    () => editRegistry((j) => {
@@ -397,8 +407,8 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     // acc.dob is queued in Gujarati and nowhere else — 60 of the open rows are
     // like that. Under the old rectangle every one of them was pinned in all
     // three languages, which is the shape this replaced.
-    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'acc.logout').length === 1],
-    ['and NOT in the other two', () => pinnedBy('bn', 'acc.logout').length === 0 && pinnedBy('mr', 'acc.logout').length === 0],
+    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'c.loadingCatalog').length === 1],
+    ['and NOT in Bengali, which has no such row', () => pinnedBy('bn', 'c.loadingCatalog').length === 0],
     // What a landed review looks like from the registry's side.
     ['an answered queue holds no rows and keeps every answer as provenance', () => {
       const q = reg.decisions['native-speaker-queue-bn'];

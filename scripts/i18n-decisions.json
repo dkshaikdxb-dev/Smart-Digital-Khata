@@ -1936,6 +1936,571 @@
         "note": "These rows carry the same answer as the rest of their theme — take the app string — and were held back in the first pass because each was also one of the 274 undecided web/app divergences. Converging them resolves those, which needed to be asked for rather than assumed. It was, explicitly, and they are applied here."
       }
     },
+    "gu-wording-kept": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "The Gujarati rows where both surfaces already said the same thing — closed on the wording they have.",
+      "scope": {
+        "rule": "The rows left in native-speaker-queue-gu once every web/app disagreement had been answered. There was no choice to make on these: the two surfaces agreed, so the only question was whether the wording is right at all.",
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "acc.logout",
+          "account.logout",
+          "c.myOrders",
+          "orders.title",
+          "c.placeOrder",
+          "cart.placeOrder",
+          "c.unit",
+          "shopdetail.unit",
+          "cat.addFromCatalogue",
+          "cat.addProduct",
+          "cat.empty",
+          "cat.noResults",
+          "chelp.e3.q",
+          "chelp.e4.a",
+          "chelp.e4.q",
+          "chelp.e5.q",
+          "chelp.subtitle",
+          "common.balance",
+          "khata.balance",
+          "common.remove",
+          "ctab.orders",
+          "tab.orders",
+          "dash.kpi.orders",
+          "dash.orderStatus.cancelled",
+          "dl.myOrders",
+          "dl.orders",
+          "ins.collectionRate",
+          "nav.catalog",
+          "tab.catalog",
+          "nav.logout",
+          "nav.orders",
+          "num.changed",
+          "num.changing",
+          "num.enterCode",
+          "num.sending",
+          "ord.cancelOrder",
+          "orderdetail.cancel",
+          "ord.emptyItems",
+          "ord.mark",
+          "ord.marked",
+          "ord.order",
+          "orderdetail.title",
+          "ref.loadError",
+          "ref.subtitle",
+          "ref.title",
+          "ref.type.owner",
+          "stmt.closing",
+          "stmt.loadError",
+          "stmt.noData",
+          "stmt.opening",
+          "stmt.pickShop",
+          "stmt.subtitle"
+        ]
+      },
+      "basis": "KEPT AS IS — no string changes.",
+      "not_read_by_a_native_speaker": true,
+      "note": "This is a decision to stop asking, not a finding that the wording is good. No Gujarati speaker has read these 43 rows. What IS established is that none of them is defective on any evidence this repository can produce: every one was checked against its English for placeholder drift, native digits, a transliterated brand name, brand-term casing, an empty value and an untranslated one, and all 43 passed. They are LOCKED so that tooling cannot drift them, and they can be reopened by a person at any time — the rows are listed below with their values, which is what a reviewer would need.",
+      "values": {
+        "gu": {
+          "acc.logout": "લૉગ આઉટ",
+          "account.logout": "લૉગ આઉટ",
+          "c.myOrders": "મારા ઑર્ડર",
+          "orders.title": "મારા ઑર્ડર",
+          "c.placeOrder": "ઑર્ડર કરો",
+          "cart.placeOrder": "ઑર્ડર કરો",
+          "c.unit": "નંગ",
+          "shopdetail.unit": "નંગ",
+          "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
+          "cat.addProduct": "વસ્તુ ઉમેરો",
+          "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
+          "cat.noResults": {
+            "web": "મળતી કોઈ વસ્તુ નથી."
+          },
+          "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
+          "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
+          "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
+          "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
+          "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
+          "common.balance": "બેલેન્સ",
+          "khata.balance": "બેલેન્સ",
+          "common.remove": {
+            "web": "દૂર કરો"
+          },
+          "ctab.orders": "ઑર્ડર",
+          "tab.orders": "ઑર્ડર",
+          "dash.kpi.orders": "ઑર્ડર",
+          "dash.orderStatus.cancelled": {
+            "web": "રદ"
+          },
+          "dl.myOrders": "મારા ઑર્ડર",
+          "dl.orders": "ઑર્ડર",
+          "ins.collectionRate": "વસૂલીનો દર",
+          "nav.catalog": "કૅટલૉગ",
+          "tab.catalog": "કૅટલૉગ",
+          "nav.logout": "લૉગ આઉટ",
+          "nav.orders": "ઑર્ડર",
+          "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
+          "num.changing": "બદલાઈ રહ્યું છે…",
+          "num.enterCode": {
+            "web": "{phone} પર મોકલેલો કોડ દાખલ કરો"
+          },
+          "num.sending": {
+            "web": "મોકલાઈ રહ્યું છે…"
+          },
+          "ord.cancelOrder": "ઑર્ડર રદ કરો",
+          "orderdetail.cancel": "ઑર્ડર રદ કરો",
+          "ord.emptyItems": {
+            "web": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી."
+          },
+          "ord.mark": "{s} તરીકે નોંધો",
+          "ord.marked": "ઑર્ડર {s} નોંધાયો.",
+          "ord.order": "ઑર્ડર",
+          "orderdetail.title": "ઑર્ડર",
+          "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
+          "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
+          "ref.title": "આમંત્રણ આપો ને કમાઓ",
+          "ref.type.owner": "દુકાન માલિક",
+          "stmt.closing": "છેલ્લું બેલેન્સ",
+          "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
+          "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
+          "stmt.opening": "શરૂઆતનું બેલેન્સ",
+          "stmt.pickShop": "દુકાન પસંદ કરો",
+          "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
+        }
+      },
+      "values_note": "Every value is the string already on disk. Nothing was authored and nothing changes.",
+      "rows": [
+        {
+          "web": "acc.logout",
+          "app": "account.logout",
+          "value": "લૉગ આઉટ"
+        },
+        {
+          "web": "c.myOrders",
+          "app": "orders.title",
+          "value": "મારા ઑર્ડર"
+        },
+        {
+          "web": "c.placeOrder",
+          "app": "cart.placeOrder",
+          "value": "ઑર્ડર કરો"
+        },
+        {
+          "web": "c.unit",
+          "app": "shopdetail.unit",
+          "value": "નંગ"
+        },
+        {
+          "web": "cat.addFromCatalogue",
+          "app": "cat.addFromCatalogue",
+          "value": "કૅટલૉગમાંથી ઉમેરો"
+        },
+        {
+          "web": "cat.addProduct",
+          "app": "cat.addProduct",
+          "value": "વસ્તુ ઉમેરો"
+        },
+        {
+          "web": "cat.empty",
+          "app": "cat.empty",
+          "value": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો."
+        },
+        {
+          "web": "cat.noResults",
+          "app": "shopdetail.noResults",
+          "value": "મળતી કોઈ વસ્તુ નથી."
+        },
+        {
+          "web": "chelp.e3.q",
+          "app": "chelp.e3.q",
+          "value": "ઑર્ડર કેવી રીતે કરવો?"
+        },
+        {
+          "web": "chelp.e4.a",
+          "app": "chelp.e4.a",
+          "value": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે."
+        },
+        {
+          "web": "chelp.e4.q",
+          "app": "chelp.e4.q",
+          "value": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?"
+        },
+        {
+          "web": "chelp.e5.q",
+          "app": "chelp.e5.q",
+          "value": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?"
+        },
+        {
+          "web": "chelp.subtitle",
+          "app": "chelp.subtitle",
+          "value": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ."
+        },
+        {
+          "web": "common.balance",
+          "app": "khata.balance",
+          "value": "બેલેન્સ"
+        },
+        {
+          "web": "common.remove",
+          "app": "cart.remove",
+          "value": "દૂર કરો"
+        },
+        {
+          "web": "ctab.orders",
+          "app": "tab.orders",
+          "value": "ઑર્ડર"
+        },
+        {
+          "web": "dash.kpi.orders",
+          "app": "tab.orders",
+          "value": "ઑર્ડર"
+        },
+        {
+          "web": "dash.orderStatus.cancelled",
+          "app": "ostatus.cancelled",
+          "value": "રદ"
+        },
+        {
+          "web": "dl.myOrders",
+          "app": "orders.title",
+          "value": "મારા ઑર્ડર"
+        },
+        {
+          "web": "dl.orders",
+          "app": "tab.orders",
+          "value": "ઑર્ડર"
+        },
+        {
+          "web": "ins.collectionRate",
+          "app": "ins.collectionRate",
+          "value": "વસૂલીનો દર"
+        },
+        {
+          "web": "nav.catalog",
+          "app": "tab.catalog",
+          "value": "કૅટલૉગ"
+        },
+        {
+          "web": "nav.logout",
+          "app": "account.logout",
+          "value": "લૉગ આઉટ"
+        },
+        {
+          "web": "nav.orders",
+          "app": "tab.orders",
+          "value": "ઑર્ડર"
+        },
+        {
+          "web": "num.changed",
+          "app": "num.changed",
+          "value": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે."
+        },
+        {
+          "web": "num.changing",
+          "app": "num.changing",
+          "value": "બદલાઈ રહ્યું છે…"
+        },
+        {
+          "web": "num.enterCode",
+          "app": "login.enterCode",
+          "value": "{phone} પર મોકલેલો કોડ દાખલ કરો"
+        },
+        {
+          "web": "num.sending",
+          "app": "login.sending",
+          "value": "મોકલાઈ રહ્યું છે…"
+        },
+        {
+          "web": "ord.cancelOrder",
+          "app": "orderdetail.cancel",
+          "value": "ઑર્ડર રદ કરો"
+        },
+        {
+          "web": "ord.emptyItems",
+          "app": "ord.noItems",
+          "value": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી."
+        },
+        {
+          "web": "ord.mark",
+          "app": "ord.mark",
+          "value": "{s} તરીકે નોંધો"
+        },
+        {
+          "web": "ord.marked",
+          "app": "ord.marked",
+          "value": "ઑર્ડર {s} નોંધાયો."
+        },
+        {
+          "web": "ord.order",
+          "app": "orderdetail.title",
+          "value": "ઑર્ડર"
+        },
+        {
+          "web": "ref.loadError",
+          "app": "ref.loadError",
+          "value": "રેફરલ લોડ થઈ શક્યા નથી."
+        },
+        {
+          "web": "ref.subtitle",
+          "app": "ref.subtitle",
+          "value": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે."
+        },
+        {
+          "web": "ref.title",
+          "app": "ref.title",
+          "value": "આમંત્રણ આપો ને કમાઓ"
+        },
+        {
+          "web": "ref.type.owner",
+          "app": "ref.type.owner",
+          "value": "દુકાન માલિક"
+        },
+        {
+          "web": "stmt.closing",
+          "app": "stmt.closing",
+          "value": "છેલ્લું બેલેન્સ"
+        },
+        {
+          "web": "stmt.loadError",
+          "app": "stmt.loadError",
+          "value": "વિવરણ લોડ થઈ શક્યું નથી."
+        },
+        {
+          "web": "stmt.noData",
+          "app": "stmt.noData",
+          "value": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી."
+        },
+        {
+          "web": "stmt.opening",
+          "app": "stmt.opening",
+          "value": "શરૂઆતનું બેલેન્સ"
+        },
+        {
+          "web": "stmt.pickShop",
+          "app": "stmt.pickShop",
+          "value": "દુકાન પસંદ કરો"
+        },
+        {
+          "web": "stmt.subtitle",
+          "app": "stmt.subtitle",
+          "value": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
+        }
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-19",
+      "supersedes": "native-speaker-queue-gu (its remaining rows).",
+      "override_log": []
+    },
+    "mr-wording-kept": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "The Marathi rows where both surfaces already said the same thing — closed on the wording they have.",
+      "scope": {
+        "rule": "The rows left in native-speaker-queue-mr once every web/app disagreement had been answered. There was no choice to make on these: the two surfaces agreed, so the only question was whether the wording is right at all.",
+        "langs": [
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "cat.addProduct",
+          "cat.empty",
+          "chelp.e3.a",
+          "chelp.e4.a",
+          "chelp.e4.q",
+          "chelp.e5.a",
+          "chelp.e5.q",
+          "chelp.e6.a",
+          "common.outstanding",
+          "ins.outstanding",
+          "common.subtotal",
+          "ins.collectionRate",
+          "ins.outstandingByAge",
+          "num.changed",
+          "num.enterCode",
+          "ord.empty",
+          "ord.mark",
+          "ord.marked",
+          "ref.referredByLabel",
+          "ref.subtitle",
+          "ref.title",
+          "ref.type.owner",
+          "stmt.noData",
+          "stmt.pickShop",
+          "stmt.rangeError"
+        ]
+      },
+      "basis": "KEPT AS IS — no string changes.",
+      "not_read_by_a_native_speaker": true,
+      "note": "This is a decision to stop asking, not a finding that the wording is good. No Marathi speaker has read these 24 rows. What IS established is that none of them is defective on any evidence this repository can produce: every one was checked against its English for placeholder drift, native digits, a transliterated brand name, brand-term casing, an empty value and an untranslated one, and all 24 passed. They are LOCKED so that tooling cannot drift them, and they can be reopened by a person at any time — the rows are listed below with their values, which is what a reviewer would need.",
+      "values": {
+        "mr": {
+          "cat.addProduct": "वस्तू जोडा",
+          "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
+          "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
+          "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
+          "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
+          "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
+          "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
+          "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
+          "common.outstanding": "उधारी",
+          "ins.outstanding": "उधारी",
+          "common.subtotal": "उप-बेरीज",
+          "ins.collectionRate": "वसुलीचा दर",
+          "ins.outstandingByAge": "किती दिवसांची उधारी",
+          "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
+          "num.enterCode": {
+            "web": "{phone} वर पाठवलेला कोड टाका"
+          },
+          "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
+          "ord.mark": "{s} म्हणून नोंदवा",
+          "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
+          "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
+          "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
+          "ref.title": "निमंत्रण द्या आणि कमवा",
+          "ref.type.owner": "दुकान मालक",
+          "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
+          "stmt.pickShop": "दुकान निवडा",
+          "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
+        }
+      },
+      "values_note": "Every value is the string already on disk. Nothing was authored and nothing changes.",
+      "rows": [
+        {
+          "web": "cat.addProduct",
+          "app": "cat.addProduct",
+          "value": "वस्तू जोडा"
+        },
+        {
+          "web": "cat.empty",
+          "app": "cat.empty",
+          "value": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा."
+        },
+        {
+          "web": "chelp.e3.a",
+          "app": "chelp.e3.a",
+          "value": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात."
+        },
+        {
+          "web": "chelp.e4.a",
+          "app": "chelp.e4.a",
+          "value": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात."
+        },
+        {
+          "web": "chelp.e4.q",
+          "app": "chelp.e4.q",
+          "value": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?"
+        },
+        {
+          "web": "chelp.e5.a",
+          "app": "chelp.e5.a",
+          "value": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते."
+        },
+        {
+          "web": "chelp.e5.q",
+          "app": "chelp.e5.q",
+          "value": "ऑर्डरचे पैसे कसे भरायचे?"
+        },
+        {
+          "web": "chelp.e6.a",
+          "app": "chelp.e6.a",
+          "value": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो."
+        },
+        {
+          "web": "common.outstanding",
+          "app": "ins.outstanding",
+          "value": "उधारी"
+        },
+        {
+          "web": "common.subtotal",
+          "app": "common.subtotal",
+          "value": "उप-बेरीज"
+        },
+        {
+          "web": "ins.collectionRate",
+          "app": "ins.collectionRate",
+          "value": "वसुलीचा दर"
+        },
+        {
+          "web": "ins.outstandingByAge",
+          "app": "ins.outstandingByAge",
+          "value": "किती दिवसांची उधारी"
+        },
+        {
+          "web": "num.changed",
+          "app": "num.changed",
+          "value": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे."
+        },
+        {
+          "web": "num.enterCode",
+          "app": "login.enterCode",
+          "value": "{phone} वर पाठवलेला कोड टाका"
+        },
+        {
+          "web": "ord.empty",
+          "app": "ord.empty",
+          "value": "इथे अजून कोणताही ऑर्डर नाही."
+        },
+        {
+          "web": "ord.mark",
+          "app": "ord.mark",
+          "value": "{s} म्हणून नोंदवा"
+        },
+        {
+          "web": "ord.marked",
+          "app": "ord.marked",
+          "value": "ऑर्डर {s} म्हणून नोंदवला."
+        },
+        {
+          "web": "ref.referredByLabel",
+          "app": "ref.referredByLabel",
+          "value": "तुम्हाला निमंत्रण दिले"
+        },
+        {
+          "web": "ref.subtitle",
+          "app": "ref.subtitle",
+          "value": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल."
+        },
+        {
+          "web": "ref.title",
+          "app": "ref.title",
+          "value": "निमंत्रण द्या आणि कमवा"
+        },
+        {
+          "web": "ref.type.owner",
+          "app": "ref.type.owner",
+          "value": "दुकान मालक"
+        },
+        {
+          "web": "stmt.noData",
+          "app": "stmt.noData",
+          "value": "या कालावधीत कोणतीही नोंद नाही."
+        },
+        {
+          "web": "stmt.pickShop",
+          "app": "stmt.pickShop",
+          "value": "दुकान निवडा"
+        },
+        {
+          "web": "stmt.rangeError",
+          "app": "stmt.rangeError",
+          "value": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
+        }
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-19",
+      "supersedes": "native-speaker-queue-mr (its remaining rows).",
+      "override_log": []
+    },
     "gu-accepted-wording": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
@@ -2316,7 +2881,7 @@
     "native-speaker-queue-gu": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Gujarati wording questions from the web/app ledger — 49 rows.",
+      "concept": "The open Gujarati wording questions from the web/app ledger — 1 rows.",
       "why_review": "Both readings are valid in each case; these need a Gujarati speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-gu-reconcile.md",
@@ -2329,260 +2894,14 @@
         "rows": [
           {
             "lang": "gu",
-            "web": "acc.logout",
-            "app": "account.logout"
-          },
-          {
-            "lang": "gu",
             "web": "c.loadingCatalog",
             "app": "shopdetail.loading"
-          },
-          {
-            "lang": "gu",
-            "web": "c.myOrders",
-            "app": "orders.title"
-          },
-          {
-            "lang": "gu",
-            "web": "c.placeOrder",
-            "app": "cart.placeOrder"
-          },
-          {
-            "lang": "gu",
-            "web": "c.unit",
-            "app": "shopdetail.unit"
-          },
-          {
-            "lang": "gu",
-            "web": "cat.addFromCatalogue",
-            "app": "cat.addFromCatalogue"
-          },
-          {
-            "lang": "gu",
-            "web": "cat.addProduct",
-            "app": "cat.addProduct"
-          },
-          {
-            "lang": "gu",
-            "web": "cat.empty",
-            "app": "cat.empty"
-          },
-          {
-            "lang": "gu",
-            "web": "cat.noResults",
-            "app": "shopdetail.noResults"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e3.q",
-            "app": "chelp.e3.q"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e4.a",
-            "app": "chelp.e4.a"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e4.q",
-            "app": "chelp.e4.q"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.e5.q",
-            "app": "chelp.e5.q"
-          },
-          {
-            "lang": "gu",
-            "web": "chelp.subtitle",
-            "app": "chelp.subtitle"
-          },
-          {
-            "lang": "gu",
-            "web": "common.balance",
-            "app": "khata.balance"
-          },
-          {
-            "lang": "gu",
-            "web": "common.remove",
-            "app": "cart.remove"
-          },
-          {
-            "lang": "gu",
-            "web": "ctab.orders",
-            "app": "tab.orders"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.customersWithDues",
-            "app": "dash.customersWithDues"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.kpi.orders",
-            "app": "tab.orders"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.orderStatus.accepted",
-            "app": "ostatus.accepted"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.orderStatus.cancelled",
-            "app": "ostatus.cancelled"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.orderStatus.out_for_delivery",
-            "app": "ostatus.out_for_delivery"
-          },
-          {
-            "lang": "gu",
-            "web": "dl.myOrders",
-            "app": "orders.title"
-          },
-          {
-            "lang": "gu",
-            "web": "dl.orders",
-            "app": "tab.orders"
-          },
-          {
-            "lang": "gu",
-            "web": "ins.collectionRate",
-            "app": "ins.collectionRate"
-          },
-          {
-            "lang": "gu",
-            "web": "nav.catalog",
-            "app": "tab.catalog"
-          },
-          {
-            "lang": "gu",
-            "web": "nav.logout",
-            "app": "account.logout"
-          },
-          {
-            "lang": "gu",
-            "web": "nav.orders",
-            "app": "tab.orders"
-          },
-          {
-            "lang": "gu",
-            "web": "num.changed",
-            "app": "num.changed"
-          },
-          {
-            "lang": "gu",
-            "web": "num.changing",
-            "app": "num.changing"
-          },
-          {
-            "lang": "gu",
-            "web": "num.enterCode",
-            "app": "login.enterCode"
-          },
-          {
-            "lang": "gu",
-            "web": "num.sending",
-            "app": "login.sending"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.cancelOrder",
-            "app": "orderdetail.cancel"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.emptyItems",
-            "app": "ord.noItems"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.mark",
-            "app": "ord.mark"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.marked",
-            "app": "ord.marked"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.order",
-            "app": "orderdetail.title"
-          },
-          {
-            "lang": "gu",
-            "web": "ostatus.accepted",
-            "app": "ostatus.accepted"
-          },
-          {
-            "lang": "gu",
-            "web": "ostatus.out_for_delivery",
-            "app": "ostatus.out_for_delivery"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.loadError",
-            "app": "ref.loadError"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.subtitle",
-            "app": "ref.subtitle"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.title",
-            "app": "ref.title"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.type.owner",
-            "app": "ref.type.owner"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.closing",
-            "app": "stmt.closing"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.loadError",
-            "app": "stmt.loadError"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.noData",
-            "app": "stmt.noData"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.opening",
-            "app": "stmt.opening"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.pickShop",
-            "app": "stmt.pickShop"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.subtitle",
-            "app": "stmt.subtitle"
           }
         ]
       },
-      "protects_note": "What is left is the rows where both surfaces ALREADY say the same thing: there was nothing to choose between them, so the question is whether the wording is right at all, and it has not been asked. Every row where the two disagreed has been answered under gu-native-review-1, except the catalogue rows, which catalogue-loanword already answers and whose repair needs the loanword wording.",
+      "protects_note": "Every row where the two surfaces disagreed was answered under gu-native-review-1; every row where they agreed was closed on its existing wording under gu-wording-kept, which records that no Gujarati speaker read them. What is left is 1 catalogue row(s): catalogue-loanword already answers the word, the app does not obey it, and repairing that needs the loanword wording — so they are neither a choice between the surfaces nor a keep.",
       "open_themes": [
-        "orthography_candra_o",
-        "product_word",
-        "catalogue_word",
-        "balance_vs_outstanding",
-        "cart_word",
-        "register_and_tense",
-        "ref.shareLink"
+        "catalogue_word"
       ],
       "superseded_rows": [
         {
@@ -2714,100 +3033,12 @@
       "protected": {
         "web": {
           "gu": {
-            "acc.logout": "લૉગ આઉટ",
-            "c.loadingCatalog": "કૅટલૉગ લોડ થાય છે…",
-            "c.myOrders": "મારા ઑર્ડર",
-            "c.placeOrder": "ઑર્ડર કરો",
-            "c.unit": "નંગ",
-            "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
-            "cat.addProduct": "વસ્તુ ઉમેરો",
-            "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
-            "cat.noResults": "મળતી કોઈ વસ્તુ નથી.",
-            "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
-            "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
-            "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
-            "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
-            "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
-            "common.balance": "બેલેન્સ",
-            "common.remove": "દૂર કરો",
-            "ctab.orders": "ઑર્ડર",
-            "dash.kpi.orders": "ઑર્ડર",
-            "dash.orderStatus.accepted": "સ્વીકારેલ",
-            "dash.orderStatus.cancelled": "રદ",
-            "dash.orderStatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "dl.myOrders": "મારા ઑર્ડર",
-            "dl.orders": "ઑર્ડર",
-            "ins.collectionRate": "વસૂલીનો દર",
-            "nav.catalog": "કૅટલૉગ",
-            "nav.logout": "લૉગ આઉટ",
-            "nav.orders": "ઑર્ડર",
-            "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
-            "num.changing": "બદલાઈ રહ્યું છે…",
-            "num.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
-            "num.sending": "મોકલાઈ રહ્યું છે…",
-            "ord.cancelOrder": "ઑર્ડર રદ કરો",
-            "ord.emptyItems": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી.",
-            "ord.mark": "{s} તરીકે નોંધો",
-            "ord.marked": "ઑર્ડર {s} નોંધાયો.",
-            "ord.order": "ઑર્ડર",
-            "ostatus.accepted": "સ્વીકારેલ",
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
-            "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
-            "ref.title": "આમંત્રણ આપો ને કમાઓ",
-            "ref.type.owner": "દુકાન માલિક",
-            "stmt.closing": "છેલ્લું બેલેન્સ",
-            "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
-            "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
-            "stmt.opening": "શરૂઆતનું બેલેન્સ",
-            "stmt.pickShop": "દુકાન પસંદ કરો",
-            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
+            "c.loadingCatalog": "કૅટલૉગ લોડ થાય છે…"
           }
         },
         "app/consumer": {
           "gu": {
-            "account.logout": "લૉગ આઉટ",
-            "shopdetail.loading": "યાદી લોડ થઈ રહી છે…",
-            "orders.title": "મારા ઑર્ડર",
-            "cart.placeOrder": "ઑર્ડર કરો",
-            "shopdetail.unit": "નંગ",
-            "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
-            "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
-            "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
-            "chelp.e5.q": "ઑર્ડરના પૈસા કેવી રીતે ચૂકવવા?",
-            "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
-            "khata.balance": "બેલેન્સ",
-            "tab.orders": "ઑર્ડર",
-            "ostatus.accepted": "સ્વીકારેલ",
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
-            "num.changing": "બદલાઈ રહ્યું છે…",
-            "orderdetail.cancel": "ઑર્ડર રદ કરો",
-            "orderdetail.title": "ઑર્ડર",
-            "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
-            "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
-            "ref.title": "આમંત્રણ આપો ને કમાઓ",
-            "ref.type.owner": "દુકાન માલિક",
-            "stmt.closing": "છેલ્લું બેલેન્સ",
-            "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
-            "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
-            "stmt.opening": "શરૂઆતનું બેલેન્સ",
-            "stmt.pickShop": "દુકાન પસંદ કરો",
-            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
-          }
-        },
-        "app/owner": {
-          "gu": {
-            "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
-            "cat.addProduct": "વસ્તુ ઉમેરો",
-            "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
-            "tab.orders": "ઑર્ડર",
-            "ostatus.accepted": "સ્વીકારેલ",
-            "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "ins.collectionRate": "વસૂલીનો દર",
-            "tab.catalog": "કૅટલૉગ",
-            "ord.mark": "{s} તરીકે નોંધો",
-            "ord.marked": "ઑર્ડર {s} નોંધાયો."
+            "shopdetail.loading": "યાદી લોડ થઈ રહી છે…"
           }
         }
       },
@@ -3258,13 +3489,349 @@
           "answered_by": "gu-native-review-1",
           "answer": "app",
           "released_from_undecided": true
+        },
+        {
+          "lang": "gu",
+          "web": "acc.logout",
+          "app": "account.logout",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "c.myOrders",
+          "app": "orders.title",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "c.placeOrder",
+          "app": "cart.placeOrder",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "c.unit",
+          "app": "shopdetail.unit",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.addFromCatalogue",
+          "app": "cat.addFromCatalogue",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.addProduct",
+          "app": "cat.addProduct",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.empty",
+          "app": "cat.empty",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.noResults",
+          "app": "shopdetail.noResults",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e3.q",
+          "app": "chelp.e3.q",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e4.a",
+          "app": "chelp.e4.a",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e4.q",
+          "app": "chelp.e4.q",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.e5.q",
+          "app": "chelp.e5.q",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "chelp.subtitle",
+          "app": "chelp.subtitle",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "common.balance",
+          "app": "khata.balance",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "common.remove",
+          "app": "cart.remove",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ctab.orders",
+          "app": "tab.orders",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.kpi.orders",
+          "app": "tab.orders",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.orderStatus.cancelled",
+          "app": "ostatus.cancelled",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "dl.myOrders",
+          "app": "orders.title",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "dl.orders",
+          "app": "tab.orders",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ins.collectionRate",
+          "app": "ins.collectionRate",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.catalog",
+          "app": "tab.catalog",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.logout",
+          "app": "account.logout",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.orders",
+          "app": "tab.orders",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "num.changed",
+          "app": "num.changed",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "num.changing",
+          "app": "num.changing",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "num.enterCode",
+          "app": "login.enterCode",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "num.sending",
+          "app": "login.sending",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.cancelOrder",
+          "app": "orderdetail.cancel",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.emptyItems",
+          "app": "ord.noItems",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.mark",
+          "app": "ord.mark",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.marked",
+          "app": "ord.marked",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.order",
+          "app": "orderdetail.title",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.loadError",
+          "app": "ref.loadError",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.subtitle",
+          "app": "ref.subtitle",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.title",
+          "app": "ref.title",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.type.owner",
+          "app": "ref.type.owner",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.closing",
+          "app": "stmt.closing",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.loadError",
+          "app": "stmt.loadError",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.noData",
+          "app": "stmt.noData",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.opening",
+          "app": "stmt.opening",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.pickShop",
+          "app": "stmt.pickShop",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.subtitle",
+          "app": "stmt.subtitle",
+          "answered_by": "gu-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.customersWithDues",
+          "app": "dash.customersWithDues",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.orderStatus.accepted",
+          "app": "ostatus.accepted",
+          "deferred_to": "gu-accepted-wording",
+          "note": "Not answered here. This row is the subject of that decision — whether the word itself is right — which is still open. One row, one owner: leaving it in this queue as well pinned it twice."
+        },
+        {
+          "lang": "gu",
+          "web": "dash.orderStatus.out_for_delivery",
+          "app": "ostatus.out_for_delivery",
+          "deferred_to": "gu-out-for-delivery-form",
+          "note": "Not answered here. This row is the subject of that decision — whether the word itself is right — which is still open. One row, one owner: leaving it in this queue as well pinned it twice."
+        },
+        {
+          "lang": "gu",
+          "web": "ostatus.accepted",
+          "app": "ostatus.accepted",
+          "deferred_to": "gu-accepted-wording",
+          "note": "Not answered here. This row is the subject of that decision — whether the word itself is right — which is still open. One row, one owner: leaving it in this queue as well pinned it twice."
+        },
+        {
+          "lang": "gu",
+          "web": "ostatus.out_for_delivery",
+          "app": "ostatus.out_for_delivery",
+          "deferred_to": "gu-out-for-delivery-form",
+          "note": "Not answered here. This row is the subject of that decision — whether the word itself is right — which is still open. One row, one owner: leaving it in this queue as well pinned it twice."
         }
       ]
     },
     "native-speaker-queue-mr": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Marathi wording questions from the web/app ledger — 27 rows.",
+      "concept": "The open Marathi wording questions from the web/app ledger — 2 rows.",
       "why_review": "Both readings are valid in each case; these need a Marathi speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-mr-reconcile.md",
@@ -3284,141 +3851,12 @@
             "lang": "mr",
             "web": "cat.addFromCatalogue",
             "app": "cat.addFromCatalogue"
-          },
-          {
-            "lang": "mr",
-            "web": "cat.addProduct",
-            "app": "cat.addProduct"
-          },
-          {
-            "lang": "mr",
-            "web": "cat.empty",
-            "app": "cat.empty"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e3.a",
-            "app": "chelp.e3.a"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e4.a",
-            "app": "chelp.e4.a"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e4.q",
-            "app": "chelp.e4.q"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e5.a",
-            "app": "chelp.e5.a"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e5.q",
-            "app": "chelp.e5.q"
-          },
-          {
-            "lang": "mr",
-            "web": "chelp.e6.a",
-            "app": "chelp.e6.a"
-          },
-          {
-            "lang": "mr",
-            "web": "common.outstanding",
-            "app": "ins.outstanding"
-          },
-          {
-            "lang": "mr",
-            "web": "common.subtotal",
-            "app": "common.subtotal"
-          },
-          {
-            "lang": "mr",
-            "web": "dash.customersWithDues",
-            "app": "dash.customersWithDues"
-          },
-          {
-            "lang": "mr",
-            "web": "ins.collectionRate",
-            "app": "ins.collectionRate"
-          },
-          {
-            "lang": "mr",
-            "web": "ins.outstandingByAge",
-            "app": "ins.outstandingByAge"
-          },
-          {
-            "lang": "mr",
-            "web": "num.changed",
-            "app": "num.changed"
-          },
-          {
-            "lang": "mr",
-            "web": "num.enterCode",
-            "app": "login.enterCode"
-          },
-          {
-            "lang": "mr",
-            "web": "ord.empty",
-            "app": "ord.empty"
-          },
-          {
-            "lang": "mr",
-            "web": "ord.mark",
-            "app": "ord.mark"
-          },
-          {
-            "lang": "mr",
-            "web": "ord.marked",
-            "app": "ord.marked"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.referredByLabel",
-            "app": "ref.referredByLabel"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.subtitle",
-            "app": "ref.subtitle"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.title",
-            "app": "ref.title"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.type.owner",
-            "app": "ref.type.owner"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.noData",
-            "app": "stmt.noData"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.pickShop",
-            "app": "stmt.pickShop"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.rangeError",
-            "app": "stmt.rangeError"
           }
         ]
       },
-      "protects_note": "What is left is the rows where both surfaces ALREADY say the same thing: there was nothing to choose between them, so the question is whether the wording is right at all, and it has not been asked. Every row where the two disagreed has been answered under mr-native-review-1, except the catalogue rows, which catalogue-loanword already answers and whose repair needs the loanword wording.",
+      "protects_note": "Every row where the two surfaces disagreed was answered under mr-native-review-1; every row where they agreed was closed on its existing wording under mr-wording-kept, which records that no Marathi speaker read them. What is left is 2 catalogue row(s): catalogue-loanword already answers the word, the app does not obey it, and repairing that needs the loanword wording — so they are neither a choice between the surfaces nor a keep.",
       "open_themes": [
-        "outstanding_word",
-        "pay_verb",
-        "product_word",
-        "c.locationNotSet",
-        "register_and_tense"
+        "catalogue_word"
       ],
       "superseded_rows": [
         {
@@ -3504,64 +3942,17 @@
         "web": {
           "mr": {
             "c.loadingCatalog": "कॅटलॉग लोड होत आहे…",
-            "cat.addFromCatalogue": "कॅटलॉगमधून जोडा",
-            "cat.addProduct": "वस्तू जोडा",
-            "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
-            "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
-            "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
-            "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
-            "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
-            "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
-            "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
-            "common.outstanding": "उधारी",
-            "common.subtotal": "उप-बेरीज",
-            "ins.collectionRate": "वसुलीचा दर",
-            "ins.outstandingByAge": "किती दिवसांची उधारी",
-            "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
-            "num.enterCode": "{phone} वर पाठवलेला कोड टाका",
-            "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
-            "ord.mark": "{s} म्हणून नोंदवा",
-            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
-            "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
-            "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
-            "ref.title": "निमंत्रण द्या आणि कमवा",
-            "ref.type.owner": "दुकान मालक",
-            "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
-            "stmt.pickShop": "दुकान निवडा",
-            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
+            "cat.addFromCatalogue": "कॅटलॉगमधून जोडा"
           }
         },
         "app/consumer": {
           "mr": {
-            "shopdetail.loading": "यादी लोड होत आहे…",
-            "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
-            "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
-            "chelp.e4.q": "स्वतः घेऊन जाणे आणि डिलिव्हरीत काय फरक आहे?",
-            "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
-            "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
-            "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
-            "common.subtotal": "उप-बेरीज",
-            "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
-            "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
-            "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
-            "ref.title": "निमंत्रण द्या आणि कमवा",
-            "ref.type.owner": "दुकान मालक",
-            "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
-            "stmt.pickShop": "दुकान निवडा",
-            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
+            "shopdetail.loading": "यादी लोड होत आहे…"
           }
         },
         "app/owner": {
           "mr": {
-            "cat.addFromCatalogue": "कॅटलॉगतून जोडा",
-            "cat.addProduct": "वस्तू जोडा",
-            "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
-            "ins.outstanding": "उधारी",
-            "ins.collectionRate": "वसुलीचा दर",
-            "ins.outstandingByAge": "किती दिवसांची उधारी",
-            "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
-            "ord.mark": "{s} म्हणून नोंदवा",
-            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला."
+            "cat.addFromCatalogue": "कॅटलॉगतून जोडा"
           }
         }
       },
@@ -3909,6 +4300,181 @@
           "answered_by": "mr-native-review-1",
           "answer": "app",
           "released_from_undecided": true
+        },
+        {
+          "lang": "mr",
+          "web": "cat.addProduct",
+          "app": "cat.addProduct",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "cat.empty",
+          "app": "cat.empty",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e3.a",
+          "app": "chelp.e3.a",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e4.a",
+          "app": "chelp.e4.a",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e4.q",
+          "app": "chelp.e4.q",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e5.a",
+          "app": "chelp.e5.a",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e5.q",
+          "app": "chelp.e5.q",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "chelp.e6.a",
+          "app": "chelp.e6.a",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "common.outstanding",
+          "app": "ins.outstanding",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "common.subtotal",
+          "app": "common.subtotal",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ins.collectionRate",
+          "app": "ins.collectionRate",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ins.outstandingByAge",
+          "app": "ins.outstandingByAge",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "num.changed",
+          "app": "num.changed",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "num.enterCode",
+          "app": "login.enterCode",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ord.empty",
+          "app": "ord.empty",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ord.mark",
+          "app": "ord.mark",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ord.marked",
+          "app": "ord.marked",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.referredByLabel",
+          "app": "ref.referredByLabel",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.subtitle",
+          "app": "ref.subtitle",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.title",
+          "app": "ref.title",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.type.owner",
+          "app": "ref.type.owner",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.noData",
+          "app": "stmt.noData",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.pickShop",
+          "app": "stmt.pickShop",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.rangeError",
+          "app": "stmt.rangeError",
+          "answered_by": "mr-wording-kept",
+          "answer": "keep"
+        },
+        {
+          "lang": "mr",
+          "web": "dash.customersWithDues",
+          "app": "dash.customersWithDues",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
         }
       ]
     },

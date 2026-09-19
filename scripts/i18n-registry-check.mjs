@@ -321,7 +321,8 @@ for (const [id, d] of Object.entries(registry.decisions)) {
    LOCKED decision — and the snapshot went on pinning them as REVIEW, leaving 12
    values claiming two statuses at once. Nothing broke, because guardedWrite
    resolves LOCKED first, but the registry asserted two different things about
-   the same string. The snapshot now leaves LOCKED rows alone and records them
+   the same string. The same applies between two REVIEW decisions: a row in two
+   open questions gets answered by whichever is answered first. The snapshot now leaves LOCKED rows alone and records them
    as `superseded_rows`; this makes that hold rather than describe it. */
 {
   // Per surface, for the same reason rule 1 is: gu chelp.e7.a is LOCKED on the
@@ -329,16 +330,27 @@ for (const [id, d] of Object.entries(registry.decisions)) {
   // held by nothing.
   const lockedBy = new Map();
   for (const r of LOCKED_ROWS) lockedBy.set(`${r.surface}|${r.lang}|${r.key}`, r.decision);
+  // ... and one row, one REVIEWER. Two REVIEW decisions pinning the same string
+  // is the same defect a status down: gu ostatus.accepted sat in the Gujarati
+  // queue AND in gu-accepted-wording, which asks whether that word is right at
+  // all, so answering the queue would have closed a question it does not own.
+  const reviewedBy = new Map();
   for (const [id, d] of Object.entries(registry.decisions)) {
     if (d.status !== 'REVIEW' || !d.protected) continue;
     for (const [surface, byLang] of Object.entries(d.protected)) {
       for (const [lang, kv] of Object.entries(byLang)) {
         for (const key of Object.keys(kv)) {
-          const owner = lockedBy.get(`${surface}|${lang}|${key}`);
+          const at = `${surface}|${lang}|${key}`;
+          const owner = lockedBy.get(at);
           if (owner) {
             bad(id, `${surface} ${lang} ${key} is pinned as REVIEW and LOCKED by ${owner}`
               + `\n      -> LOCKED is authoritative. Move the row to ${id}.superseded_rows and re-run scripts/i18n-review-snapshot.mjs`);
           }
+          const also = reviewedBy.get(at);
+          if (also) {
+            bad(id, `${surface} ${lang} ${key} is pinned by TWO REVIEW decisions: ${also} and ${id}`
+              + `\n      -> a row has one owner. Decide which question it belongs to and record it in the other's resolved_rows.`);
+          } else reviewedBy.set(at, id);
         }
       }
     }
