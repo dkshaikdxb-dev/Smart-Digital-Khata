@@ -219,3 +219,97 @@ describe('the admin sets the accent', () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe('festive windows — admin CRUD', () => {
+  const url = '/api/admin/theme/campaigns';
+  const post = (body) => withToken(request(app).post(url), admin.token).send(body);
+
+  it('creates one, and the list says whether it is live', async () => {
+    const res = await post({ name: `${NAME}_diwali`, accent: 'FF8800', status: 'active' });
+    expect(res.status).toBe(201);
+    expect(res.body.campaign.accent).toBe('#ff8800');      // normalised on the way in
+    expect(res.body.campaign.is_live).toBe(true);
+    // and it is painting, through the one resolver
+    expect((await getConfig()).body.theme.accent).toBe('#ff8800');
+
+    const list = await withToken(request(app).get(url), admin.token);
+    expect(list.status).toBe(200);
+    const mine = list.body.items.find((x) => x.name === `${NAME}_diwali`);
+    expect(mine.is_live).toBe(true);
+    // every row carries what its colour will read like, so the list can warn
+    expect(mine.contrast.on_accent.ratio).toBeGreaterThan(0);
+  });
+
+  it('a draft is created but does not paint, and activating it does', async () => {
+    const made = await post({ name: `${NAME}_eid`, accent: '#0055ff', status: 'draft' });
+    expect(made.body.campaign.is_live).toBe(false);
+    expect((await getConfig()).body.theme.accent).toBe('#22c55e');
+
+    const patched = await withToken(
+      request(app).patch(`${url}/${made.body.campaign.id}/status`), admin.token,
+    ).send({ status: 'active' });
+    expect(patched.status).toBe(200);
+    expect(patched.body.campaign.is_live).toBe(true);
+    expect((await getConfig()).body.theme.accent).toBe('#0055ff');
+  });
+
+  it('pausing a live window hands the colour back without deleting anything', async () => {
+    const made = await post({ name: `${NAME}_pongal`, accent: '#0055ff', status: 'active' });
+    expect((await getConfig()).body.theme.accent).toBe('#0055ff');
+
+    await withToken(request(app).patch(`${url}/${made.body.campaign.id}/status`), admin.token)
+      .send({ status: 'paused' });
+    expect((await getConfig()).body.theme.accent).toBe('#22c55e');
+
+    // still there, still editable — a pause is not a loss
+    const got = await withToken(request(app).get(`${url}/${made.body.campaign.id}`), admin.token);
+    expect(got.status).toBe(200);
+    expect(got.body.campaign.status).toBe('paused');
+  });
+
+  it('refuses a window that would end before it starts', async () => {
+    const res = await post({
+      name: `${NAME}_backwards`, accent: '#0055ff', status: 'active',
+      starts_at: new Date(Date.now() + 864e5).toISOString(),
+      ends_at: new Date(Date.now() - 864e5).toISOString(),
+    });
+    // It would never paint, and saving it silently is how somebody spends a
+    // festival wondering why nothing happened.
+    expect(res.status).toBe(400);
+  });
+
+  it('refuses a colour that is not a colour, and a window with no name', async () => {
+    expect((await post({ name: `${NAME}_x`, accent: 'crimson' })).status).toBe(400);
+    expect((await post({ name: '   ', accent: '#0055ff' })).status).toBeGreaterThanOrEqual(400);
+  });
+
+  it('edits one in place, and the paint follows', async () => {
+    const made = await post({ name: `${NAME}_edit`, accent: '#0055ff', status: 'active' });
+    expect((await getConfig()).body.theme.accent).toBe('#0055ff');
+
+    const put = await withToken(request(app).put(`${url}/${made.body.campaign.id}`), admin.token)
+      .send({ name: `${NAME}_edit`, accent: '#ff8800', status: 'active' });
+    expect(put.status).toBe(200);
+    expect((await getConfig()).body.theme.accent).toBe('#ff8800');
+  });
+
+  it('deleting the live window returns the standing accent', async () => {
+    const made = await post({ name: `${NAME}_gone`, accent: '#0055ff', status: 'active' });
+    expect((await getConfig()).body.theme.accent).toBe('#0055ff');
+    const del = await withToken(request(app).delete(`${url}/${made.body.campaign.id}`), admin.token);
+    expect(del.status).toBe(200);
+    expect((await getConfig()).body.theme.accent).toBe('#22c55e');
+  });
+
+  it('a window whose colour reads badly is still created, and says so', async () => {
+    const res = await post({ name: `${NAME}_dim`, accent: '#777777', status: 'active' });
+    expect(res.status).toBe(201);
+    expect(res.body.campaign.contrast.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('needs admin auth', async () => {
+    expect((await request(app).get(url)).status).toBeGreaterThanOrEqual(401);
+    expect((await request(app).post(url).send({ name: 'x', accent: '#0055ff' })).status)
+      .toBeGreaterThanOrEqual(401);
+  });
+});

@@ -13,6 +13,7 @@ const distributorCtrl = require('../controllers/distributor.controller');
 const analyticsCtrl = require('../controllers/admin-analytics.controller');
 const adsCtrl = require('../controllers/ads.controller');
 const refCampaignCtrl = require('../controllers/referral-campaigns.controller');
+const themeCampaignCtrl = require('../controllers/theme-campaigns.controller');
 
 const updateShopSchema = Joi.object({
   status: Joi.string().valid('active', 'suspended'),
@@ -331,6 +332,20 @@ router.post('/referral/settle', requirePerm('settings:manage'), asyncHandler(ref
 // place + audience, hard-capped by a pre-funded budget. Same referral-admin
 // permissions as above: reads with revenue:view, writes with settings:manage.
 // The geo-options route is registered BEFORE /:id so it is not captured as an id.
+const themeCampaignSchema = Joi.object({
+  name: Joi.string().trim().min(1).max(80).required(),
+  // '#rgb' / '#rrggbb', with or without the hash. The controller normalises and
+  // is the one that refuses, so every shape an operator types reaches it.
+  accent: Joi.string().trim().max(9).required(),
+  status: Joi.string().valid('draft', 'active', 'paused', 'ended'),
+  starts_at: Joi.alternatives(Joi.date().iso(), Joi.valid(null, '')),
+  ends_at: Joi.alternatives(Joi.date().iso(), Joi.valid(null, '')),
+  priority: Joi.number().integer().min(-1000).max(1000),
+});
+const themeCampaignStatusSchema = Joi.object({
+  status: Joi.string().valid('draft', 'active', 'paused', 'ended').required(),
+});
+
 router.get('/referral/campaigns', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.list));
 router.get('/referral/campaigns-geo-options', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.geoOptions));
 router.get('/referral/campaigns/:id', requirePerm('revenue:view'), asyncHandler(refCampaignCtrl.getOne));
@@ -338,6 +353,19 @@ router.post('/referral/campaigns', requirePerm('settings:manage'), validate(refC
 router.put('/referral/campaigns/:id', requirePerm('settings:manage'), validate(refCampaignSchema), asyncHandler(refCampaignCtrl.update));
 router.patch('/referral/campaigns/:id/status', requirePerm('settings:manage'), validate(refCampaignStatusSchema), asyncHandler(refCampaignCtrl.setStatus));
 router.delete('/referral/campaigns/:id', requirePerm('settings:manage'), asyncHandler(refCampaignCtrl.remove));
+
+// Festive accent windows (batch THEME1). Same per-verb gating as the referral
+// campaigns beside them: reads with revenue:view, writes with settings:manage.
+// Which window WINS is not decided here — utils/theme.resolveAccent owns that,
+// and /public/config is where a client asks.
+router.get('/theme/campaigns', requirePerm('revenue:view'), asyncHandler(themeCampaignCtrl.list));
+router.get('/theme/campaigns/:id', requirePerm('revenue:view'), asyncHandler(themeCampaignCtrl.getOne));
+router.post('/theme/campaigns', requirePerm('settings:manage'), validate(themeCampaignSchema), asyncHandler(themeCampaignCtrl.create));
+router.put('/theme/campaigns/:id', requirePerm('settings:manage'), validate(themeCampaignSchema), asyncHandler(themeCampaignCtrl.update));
+router.patch('/theme/campaigns/:id/status', requirePerm('settings:manage'), validate(themeCampaignStatusSchema), asyncHandler(themeCampaignCtrl.setStatus));
+router.delete('/theme/campaigns/:id', requirePerm('settings:manage'), asyncHandler(themeCampaignCtrl.remove));
+
+
 
 // Role-based CSV exports. Each is gated by the permission for the data it emits,
 // so a caller only downloads what their admin sub-role is allowed to see.
