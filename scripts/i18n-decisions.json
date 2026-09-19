@@ -808,6 +808,1064 @@
       "supersedes": "native-speaker-queue-bn (all six rows), and the INTENTIONAL_DIVERGENCE on oedit.originalSubtotal, open.todayAt and open.tomorrowAt, which this review converges.",
       "override_log": []
     },
+    "gu-native-review-1": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "The Gujarati rows where the two surfaces disagreed — answered by taking the app string.",
+      "scope": {
+        "rule": "One answer for every theme the Gujarati queue holds: where the web and the app said different things, the app string is the one that stays, on both surfaces. Applies ONLY to rows that disagreed; the rows where the surfaces already said the same thing are a different question and are still open in native-speaker-queue-gu.",
+        "langs": [
+          "gu"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "acc.dob",
+          "account.dob",
+          "acc.genderUnset",
+          "account.genderUnset",
+          "acc.loadError",
+          "account.loadError",
+          "acc.optional",
+          "account.optional",
+          "acc.phoneReadonly",
+          "account.phoneReadonly",
+          "c.cancelling",
+          "orderdetail.cancelling",
+          "c.cartEmpty",
+          "cart.empty",
+          "c.enterCodeSentTo",
+          "login.enterCode",
+          "c.loadingOrder",
+          "orderdetail.loading",
+          "c.loadingShops",
+          "shops.loading",
+          "c.locationNotSet",
+          "shops.noLocation",
+          "c.noShops",
+          "shops.none",
+          "c.notePlaceholderArrival",
+          "cart.notePlaceholder",
+          "c.opening",
+          "khata.opening",
+          "c.payOnline",
+          "cart.payOnline",
+          "c.placing",
+          "cart.placing",
+          "c.sending",
+          "login.sending",
+          "c.verifyContinue",
+          "login.verify",
+          "c.verifying",
+          "login.verifying",
+          "c.yourCart",
+          "cart.title",
+          "cat.descOptional",
+          "cat.descPlaceholder",
+          "cat.loadMore",
+          "common.creditLimit",
+          "custd.creditLimit",
+          "common.noteOptional",
+          "addtx.note",
+          "common.outstanding",
+          "ins.outstanding",
+          "common.subtotal",
+          "dash.revenue.family",
+          "title.family",
+          "dash.revenue.free",
+          "cart.freeDelivery",
+          "dl.customers",
+          "tab.customers",
+          "fam.combinedStatement",
+          "famd.combinedStatement",
+          "fam.removeConfirm",
+          "famd.removeConfirm",
+          "fam.sendReminder",
+          "famd.sendReminder",
+          "ins.activeCustomers",
+          "ins.customersWithDues",
+          "dash.customersWithDues",
+          "ins.outstandingByAge",
+          "log.signIn",
+          "login.title",
+          "mod.loadMore",
+          "nav.customers",
+          "nav.insights",
+          "title.insights",
+          "nav.settings",
+          "title.settings",
+          "num.confirm",
+          "ord.cancelConfirm",
+          "orderdetail.cancelConfirm",
+          "ord.terminal",
+          "pin.saving",
+          "account.saving",
+          "ref.referredCount",
+          "ref.shareLink",
+          "set.customerNotifications",
+          "set.discovery",
+          "set.free",
+          "set.leaveBlank",
+          "set.paymentSaved",
+          "staff.remove",
+          "cart.remove",
+          "stmt.allShops",
+          "stmt.combined",
+          "stmt.rangeError",
+          "stmt.title",
+          "tx.empty",
+          "custd.noTransactions"
+        ]
+      },
+      "answered": {
+        "themes": [
+          "register_and_tense",
+          "cart_word",
+          "product_word",
+          "balance_vs_outstanding",
+          "ref.shareLink"
+        ],
+        "answer": "app",
+        "note": "Answered per theme, with four rows named individually and given the same answer: gu ord.cancelConfirm, gu cat.loadMore + mod.loadMore, gu staff.remove, mr ostatus.cancelled + dash.orderStatus.cancelled."
+      },
+      "values": {
+        "gu": {
+          "acc.dob": "જન્મ તારીખ",
+          "account.dob": "જન્મ તારીખ",
+          "acc.genderUnset": "આપ્યું નથી",
+          "account.genderUnset": "આપ્યું નથી",
+          "acc.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નથી.",
+          "account.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નથી.",
+          "acc.optional": "વૈકલ્પિક",
+          "account.optional": "વૈકલ્પિક",
+          "acc.phoneReadonly": "ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી.",
+          "account.phoneReadonly": "ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી.",
+          "c.cancelling": "રદ થઈ રહ્યો છે…",
+          "orderdetail.cancelling": "રદ થઈ રહ્યો છે…",
+          "c.cartEmpty": "તમારી ટોપલી ખાલી છે.",
+          "cart.empty": "તમારી ટોપલી ખાલી છે.",
+          "c.enterCodeSentTo": "{phone} પર મોકલેલો કોડ દાખલ કરો",
+          "login.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
+          "c.loadingOrder": "ઑર્ડર લોડ થઈ રહ્યો છે…",
+          "orderdetail.loading": "ઑર્ડર લોડ થઈ રહ્યો છે…",
+          "c.loadingShops": "દુકાનો લોડ થઈ રહી છે…",
+          "shops.loading": "દુકાનો લોડ થઈ રહી છે…",
+          "c.locationNotSet": "લોકેશન નથી",
+          "shops.noLocation": "લોકેશન નથી",
+          "c.noShops": "કોઈ દુકાન મળી નહીં. બીજી શોધ કરો.",
+          "shops.none": "કોઈ દુકાન મળી નહીં. બીજી શોધ કરો.",
+          "c.notePlaceholderArrival": "દા.ત. પહોંચીને કોલ કરો",
+          "cart.notePlaceholder": "દા.ત. પહોંચીને કોલ કરો",
+          "c.opening": "ખૂલી રહ્યું છે…",
+          "khata.opening": "ખૂલી રહ્યું છે…",
+          "c.payOnline": "ઑનલાઇન ચૂકવણી",
+          "cart.payOnline": "ઑનલાઇન ચૂકવણી",
+          "c.placing": "ઑર્ડર થઈ રહ્યો છે…",
+          "cart.placing": "ઑર્ડર થઈ રહ્યો છે…",
+          "c.sending": "મોકલાઈ રહ્યું છે…",
+          "login.sending": "મોકલાઈ રહ્યું છે…",
+          "c.verifyContinue": "ચકાસીને આગળ વધો",
+          "login.verify": "ચકાસીને આગળ વધો",
+          "c.verifying": "ચકાસાઈ રહ્યું છે…",
+          "login.verifying": "ચકાસાઈ રહ્યું છે…",
+          "c.yourCart": "તમારી ટોપલી",
+          "cart.title": "તમારી ટોપલી",
+          "cat.descOptional": "વર્ણન (વૈકલ્પિક)",
+          "cat.descPlaceholder": "વર્ણન (વૈકલ્પિક)",
+          "cat.loadMore": "વધુ જુઓ",
+          "common.creditLimit": "ઉધારની મર્યાદા",
+          "custd.creditLimit": "ઉધારની મર્યાદા",
+          "common.noteOptional": "નોંધ (વૈકલ્પિક)",
+          "addtx.note": "નોંધ (વૈકલ્પિક)",
+          "common.outstanding": "બાકી",
+          "ins.outstanding": "બાકી",
+          "common.subtotal": "ઉપ-કુલ",
+          "dash.revenue.family": "પરિવાર",
+          "title.family": "પરિવાર",
+          "dash.revenue.free": "મફત",
+          "cart.freeDelivery": "મફત",
+          "dl.customers": "ગ્રાહક",
+          "tab.customers": "ગ્રાહક",
+          "fam.combinedStatement": "સંયુક્ત હિસાબ",
+          "famd.combinedStatement": "સંયુક્ત હિસાબ",
+          "fam.removeConfirm": "{name} ને આ પરિવારમાંથી દૂર કરવા?",
+          "famd.removeConfirm": "{name} ને આ પરિવારમાંથી દૂર કરવા?",
+          "fam.sendReminder": "WhatsApp પર યાદ કરાવો",
+          "famd.sendReminder": "WhatsApp પર યાદ કરાવો",
+          "ins.activeCustomers": "સક્રિય ગ્રાહક",
+          "ins.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
+          "dash.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
+          "ins.outstandingByAge": "કેટલા દિવસની બાકી",
+          "log.signIn": "સાઇન ઇન કરો",
+          "login.title": "સાઇન ઇન કરો",
+          "mod.loadMore": "વધુ જુઓ",
+          "nav.customers": "ગ્રાહક",
+          "nav.insights": "વિશ્લેષણ",
+          "title.insights": "વિશ્લેષણ",
+          "nav.settings": "સેટિંગ",
+          "title.settings": "સેટિંગ",
+          "num.confirm": "ફેરફારની ખાતરી કરો",
+          "ord.cancelConfirm": {
+            "web": "આ ઑર્ડર રદ કરવો?"
+          },
+          "orderdetail.cancelConfirm": "આ ઑર્ડર રદ કરવો?",
+          "ord.terminal": "આ ઑર્ડર {s} — હવે કોઈ ફેરફાર નહીં.",
+          "pin.saving": "સેવ થઈ રહ્યું છે…",
+          "account.saving": "સેવ થઈ રહ્યું છે…",
+          "ref.referredCount": "અત્યાર સુધી તમે {n} ને રેફર કર્યા છે.",
+          "ref.shareLink": "શેર લિંક",
+          "set.customerNotifications": "ગ્રાહકનાં નોટિફિકેશન",
+          "set.discovery": "શોધ (તમારી દુકાન યાદીમાં મૂકો)",
+          "set.free": "મફત",
+          "set.leaveBlank": "હાલનું રાખવા ખાલી રાખો",
+          "set.paymentSaved": "ચૂકવણી સેટિંગ સેવ થયું.",
+          "staff.remove": "દૂર કરો",
+          "cart.remove": "દૂર કરો",
+          "stmt.allShops": "બધી દુકાનો (સાથે)",
+          "stmt.combined": "બધું મળીને કુલ",
+          "stmt.rangeError": "\"થી\" તારીખ \"સુધી\" તારીખ પહેલાંની કે એ જ હોવી જોઈએ.",
+          "stmt.title": "ખાતાનું વિવરણ",
+          "tx.empty": "હજી કોઈ લેવડદેવડ નથી.",
+          "custd.noTransactions": "હજી કોઈ લેવડદેવડ નથી."
+        }
+      },
+      "values_note": "Every value is the string the app already showed. Nothing was authored. A key is written to every surface that carries it, so a key whose ENGLISH differs between surfaces is scoped: gu ord.cancelConfirm is \"Cancel this order?\" on the web and \"Cancel this order? This cannot be undone.\" in the owner app, and one value for both would have dropped a warning the English requires.",
+      "rows": [
+        {
+          "web": "acc.dob",
+          "app": "account.dob",
+          "was_on_web": "જન્મતારીખ",
+          "now": "જન્મ તારીખ"
+        },
+        {
+          "web": "acc.genderUnset",
+          "app": "account.genderUnset",
+          "was_on_web": "સેટ નથી",
+          "now": "આપ્યું નથી"
+        },
+        {
+          "web": "acc.loadError",
+          "app": "account.loadError",
+          "was_on_web": "તમારી પ્રોફાઇલ લોડ થઈ શકી નહીં.",
+          "now": "તમારી પ્રોફાઇલ લોડ થઈ શકી નથી."
+        },
+        {
+          "web": "acc.optional",
+          "app": "account.optional",
+          "was_on_web": "મરજિયાત",
+          "now": "વૈકલ્પિક"
+        },
+        {
+          "web": "acc.phoneReadonly",
+          "app": "account.phoneReadonly",
+          "was_on_web": "ફોન એ તમારો લૉગિન આઈડી છે અને અહીં બદલી શકાતો નથી.",
+          "now": "ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી."
+        },
+        {
+          "web": "c.cancelling",
+          "app": "orderdetail.cancelling",
+          "was_on_web": "રદ થાય છે…",
+          "now": "રદ થઈ રહ્યો છે…"
+        },
+        {
+          "web": "c.cartEmpty",
+          "app": "cart.empty",
+          "was_on_web": "તમારી કાર્ટ ખાલી છે.",
+          "now": "તમારી ટોપલી ખાલી છે."
+        },
+        {
+          "web": "c.enterCodeSentTo",
+          "app": "login.enterCode",
+          "was_on_web": "{phone} પર મોકલેલો કોડ લખો",
+          "now": "{phone} પર મોકલેલો કોડ દાખલ કરો"
+        },
+        {
+          "web": "c.loadingOrder",
+          "app": "orderdetail.loading",
+          "was_on_web": "ઑર્ડર લોડ થાય છે…",
+          "now": "ઑર્ડર લોડ થઈ રહ્યો છે…"
+        },
+        {
+          "web": "c.loadingShops",
+          "app": "shops.loading",
+          "was_on_web": "દુકાનો લોડ થાય છે…",
+          "now": "દુકાનો લોડ થઈ રહી છે…"
+        },
+        {
+          "web": "c.locationNotSet",
+          "app": "shops.noLocation",
+          "was_on_web": "સ્થાન સેટ નથી",
+          "now": "લોકેશન નથી"
+        },
+        {
+          "web": "c.noShops",
+          "app": "shops.none",
+          "was_on_web": "કોઈ દુકાન મળી નથી. બીજી રીતે શોધો.",
+          "now": "કોઈ દુકાન મળી નહીં. બીજી શોધ કરો."
+        },
+        {
+          "web": "c.notePlaceholderArrival",
+          "app": "cart.notePlaceholder",
+          "was_on_web": "દા.ત. પહોંચતાં ફોન કરો",
+          "now": "દા.ત. પહોંચીને કોલ કરો"
+        },
+        {
+          "web": "c.opening",
+          "app": "khata.opening",
+          "was_on_web": "ખૂલે છે…",
+          "now": "ખૂલી રહ્યું છે…"
+        },
+        {
+          "web": "c.payOnline",
+          "app": "cart.payOnline",
+          "was_on_web": "ઑનલાઇન ચૂકવો",
+          "now": "ઑનલાઇન ચૂકવણી"
+        },
+        {
+          "web": "c.placing",
+          "app": "cart.placing",
+          "was_on_web": "ઑર્ડર થાય છે…",
+          "now": "ઑર્ડર થઈ રહ્યો છે…"
+        },
+        {
+          "web": "c.sending",
+          "app": "login.sending",
+          "was_on_web": "મોકલાય છે…",
+          "now": "મોકલાઈ રહ્યું છે…"
+        },
+        {
+          "web": "c.verifyContinue",
+          "app": "login.verify",
+          "was_on_web": "ચકાસો અને આગળ વધો",
+          "now": "ચકાસીને આગળ વધો"
+        },
+        {
+          "web": "c.verifying",
+          "app": "login.verifying",
+          "was_on_web": "ચકાસાય છે…",
+          "now": "ચકાસાઈ રહ્યું છે…"
+        },
+        {
+          "web": "c.yourCart",
+          "app": "cart.title",
+          "was_on_web": "તમારી કાર્ટ",
+          "now": "તમારી ટોપલી"
+        },
+        {
+          "web": "cat.descOptional",
+          "app": "cat.descPlaceholder",
+          "was_on_web": "વર્ણન (મરજિયાત)",
+          "now": "વર્ણન (વૈકલ્પિક)"
+        },
+        {
+          "web": "cat.loadMore",
+          "app": "cat.loadMore",
+          "was_on_web": "વધુ લોડ કરો",
+          "now": "વધુ જુઓ"
+        },
+        {
+          "web": "common.creditLimit",
+          "app": "custd.creditLimit",
+          "was_on_web": "ઉધાર મર્યાદા",
+          "now": "ઉધારની મર્યાદા"
+        },
+        {
+          "web": "common.noteOptional",
+          "app": "addtx.note",
+          "was_on_web": "નોંધ (મરજિયાત)",
+          "now": "નોંધ (વૈકલ્પિક)"
+        },
+        {
+          "web": "common.outstanding",
+          "app": "ins.outstanding",
+          "was_on_web": "બાકી રકમ",
+          "now": "બાકી"
+        },
+        {
+          "web": "common.subtotal",
+          "app": "common.subtotal",
+          "was_on_web": "પેટા-કુલ",
+          "now": "ઉપ-કુલ"
+        },
+        {
+          "web": "dash.revenue.family",
+          "app": "title.family",
+          "was_on_web": "ફેમિલી",
+          "now": "પરિવાર"
+        },
+        {
+          "web": "dash.revenue.free",
+          "app": "cart.freeDelivery",
+          "was_on_web": "ફ્રી",
+          "now": "મફત"
+        },
+        {
+          "web": "dl.customers",
+          "app": "tab.customers",
+          "was_on_web": "ગ્રાહકો",
+          "now": "ગ્રાહક"
+        },
+        {
+          "web": "fam.combinedStatement",
+          "app": "famd.combinedStatement",
+          "was_on_web": "સંયુક્ત સ્ટેટમેન્ટ",
+          "now": "સંયુક્ત હિસાબ"
+        },
+        {
+          "web": "fam.removeConfirm",
+          "app": "famd.removeConfirm",
+          "was_on_web": "{name}ને આ પરિવારમાંથી કાઢવા?",
+          "now": "{name} ને આ પરિવારમાંથી દૂર કરવા?"
+        },
+        {
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "was_on_web": "WhatsApp રિમાઇન્ડર મોકલો",
+          "now": "WhatsApp પર યાદ કરાવો"
+        },
+        {
+          "web": "ins.activeCustomers",
+          "app": "ins.activeCustomers",
+          "was_on_web": "સક્રિય ગ્રાહકો",
+          "now": "સક્રિય ગ્રાહક"
+        },
+        {
+          "web": "ins.customersWithDues",
+          "app": "dash.customersWithDues",
+          "was_on_web": "બાકીવાળા ગ્રાહકો",
+          "now": "બાકી હોય તેવા ગ્રાહક"
+        },
+        {
+          "web": "ins.outstandingByAge",
+          "app": "ins.outstandingByAge",
+          "was_on_web": "સમય પ્રમાણે બાકી",
+          "now": "કેટલા દિવસની બાકી"
+        },
+        {
+          "web": "log.signIn",
+          "app": "login.title",
+          "was_on_web": "સાઇન ઇન",
+          "now": "સાઇન ઇન કરો"
+        },
+        {
+          "web": "mod.loadMore",
+          "app": "cat.loadMore",
+          "was_on_web": "વધુ લોડ કરો",
+          "now": "વધુ જુઓ"
+        },
+        {
+          "web": "nav.customers",
+          "app": "tab.customers",
+          "was_on_web": "ગ્રાહકો",
+          "now": "ગ્રાહક"
+        },
+        {
+          "web": "nav.insights",
+          "app": "title.insights",
+          "was_on_web": "માહિતી",
+          "now": "વિશ્લેષણ"
+        },
+        {
+          "web": "nav.settings",
+          "app": "title.settings",
+          "was_on_web": "સેટિંગ્સ",
+          "now": "સેટિંગ"
+        },
+        {
+          "web": "num.confirm",
+          "app": "num.confirm",
+          "was_on_web": "બદલાવ પાકો કરો",
+          "now": "ફેરફારની ખાતરી કરો"
+        },
+        {
+          "web": "ord.cancelConfirm",
+          "app": "orderdetail.cancelConfirm",
+          "was_on_web": "આ ઑર્ડર રદ કરવો? આ પાછું નહીં આવે.",
+          "now": "આ ઑર્ડર રદ કરવો?"
+        },
+        {
+          "web": "ord.terminal",
+          "app": "ord.terminal",
+          "was_on_web": "આ ઑર્ડર {s} છે — વધુ કોઈ ફેરફાર નહીં.",
+          "now": "આ ઑર્ડર {s} — હવે કોઈ ફેરફાર નહીં."
+        },
+        {
+          "web": "pin.saving",
+          "app": "account.saving",
+          "was_on_web": "સેવ થાય છે…",
+          "now": "સેવ થઈ રહ્યું છે…"
+        },
+        {
+          "web": "ref.referredCount",
+          "app": "ref.referredCount",
+          "was_on_web": "તમે અત્યાર સુધી {n}ને રેફર કર્યા છે.",
+          "now": "અત્યાર સુધી તમે {n} ને રેફર કર્યા છે."
+        },
+        {
+          "web": "ref.shareLink",
+          "app": "ref.shareLink",
+          "was_on_web": "લિંક શેર કરો",
+          "now": "શેર લિંક"
+        },
+        {
+          "web": "set.customerNotifications",
+          "app": "set.customerNotifications",
+          "was_on_web": "ગ્રાહક નોટિફિકેશન",
+          "now": "ગ્રાહકનાં નોટિફિકેશન"
+        },
+        {
+          "web": "set.discovery",
+          "app": "set.discovery",
+          "was_on_web": "ડિસ્કવરી (તમારી દુકાન યાદીમાં મૂકો)",
+          "now": "શોધ (તમારી દુકાન યાદીમાં મૂકો)"
+        },
+        {
+          "web": "set.free",
+          "app": "cart.freeDelivery",
+          "was_on_web": "ફ્રી",
+          "now": "મફત"
+        },
+        {
+          "web": "set.leaveBlank",
+          "app": "set.leaveBlank",
+          "was_on_web": "હાલનું રાખવા ખાલી છોડો",
+          "now": "હાલનું રાખવા ખાલી રાખો"
+        },
+        {
+          "web": "set.paymentSaved",
+          "app": "set.paymentSaved",
+          "was_on_web": "ચૂકવણી સેટિંગ્સ સેવ થઈ.",
+          "now": "ચૂકવણી સેટિંગ સેવ થયું."
+        },
+        {
+          "web": "staff.remove",
+          "app": "cart.remove",
+          "was_on_web": "કાઢો",
+          "now": "દૂર કરો"
+        },
+        {
+          "web": "stmt.allShops",
+          "app": "stmt.allShops",
+          "was_on_web": "બધી દુકાનો (સંયુક્ત)",
+          "now": "બધી દુકાનો (સાથે)"
+        },
+        {
+          "web": "stmt.combined",
+          "app": "stmt.combined",
+          "was_on_web": "સંયુક્ત કુલ",
+          "now": "બધું મળીને કુલ"
+        },
+        {
+          "web": "stmt.rangeError",
+          "app": "stmt.rangeError",
+          "was_on_web": "'થી' તારીખ 'સુધી' તારીખની બરાબર કે પહેલાં હોવી જોઈએ.",
+          "now": "\"થી\" તારીખ \"સુધી\" તારીખ પહેલાંની કે એ જ હોવી જોઈએ."
+        },
+        {
+          "web": "stmt.title",
+          "app": "stmt.title",
+          "was_on_web": "ખાતાનું સ્ટેટમેન્ટ",
+          "now": "ખાતાનું વિવરણ"
+        },
+        {
+          "web": "tx.empty",
+          "app": "custd.noTransactions",
+          "was_on_web": "હજી કોઈ વ્યવહાર નથી.",
+          "now": "હજી કોઈ લેવડદેવડ નથી."
+        }
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-19",
+      "supersedes": "native-speaker-queue-gu (the 57 rows where the surfaces disagreed), and the INTENTIONAL_DIVERGENCE entries this converges.",
+      "override_log": []
+    },
+    "mr-native-review-1": {
+      "type": "LINGUISTIC",
+      "status": "LOCKED",
+      "concept": "The Marathi rows where the two surfaces disagreed — answered by taking the app string.",
+      "scope": {
+        "rule": "One answer for every theme the Marathi queue holds: where the web and the app said different things, the app string is the one that stays, on both surfaces. Applies ONLY to rows that disagreed; the rows where the surfaces already said the same thing are a different question and are still open in native-speaker-queue-mr.",
+        "langs": [
+          "mr"
+        ],
+        "surfaces": [
+          "web",
+          "app"
+        ],
+        "keys": [
+          "acc.genderFemale",
+          "account.genderFemale",
+          "acc.genderPreferNot",
+          "account.genderPreferNot",
+          "acc.genderUnset",
+          "account.genderUnset",
+          "acc.phoneReadonly",
+          "account.phoneReadonly",
+          "c.cartEmpty",
+          "cart.empty",
+          "c.deliverTo",
+          "orderdetail.deliverTo",
+          "c.enterCodeSentTo",
+          "login.enterCode",
+          "c.locationNotSet",
+          "shops.noLocation",
+          "c.noShops",
+          "shops.none",
+          "c.noteColon",
+          "orderdetail.note",
+          "c.notePlaceholderArrival",
+          "cart.notePlaceholder",
+          "c.payOnline",
+          "cart.payOnline",
+          "c.placing",
+          "cart.placing",
+          "c.size",
+          "shopdetail.size",
+          "c.verifyContinue",
+          "login.verify",
+          "c.yourCart",
+          "cart.title",
+          "cat.descOptional",
+          "cat.descPlaceholder",
+          "cat.loadMore",
+          "common.note",
+          "ord.note",
+          "common.noteOptional",
+          "addtx.note",
+          "common.totalOutstanding",
+          "dash.totalOutstanding",
+          "dash.orderStatus.cancelled",
+          "ostatus.cancelled",
+          "dash.revenue.family",
+          "title.family",
+          "dash.revenue.free",
+          "cart.freeDelivery",
+          "fam.combinedOutstanding",
+          "famd.combinedOutstanding",
+          "fam.combinedStatement",
+          "famd.combinedStatement",
+          "fam.removeConfirm",
+          "famd.removeConfirm",
+          "fam.sendReminder",
+          "famd.sendReminder",
+          "help.title",
+          "chelp.title",
+          "ins.customersWithDues",
+          "dash.customersWithDues",
+          "log.signIn",
+          "login.title",
+          "mod.loadMore",
+          "nav.insights",
+          "title.insights",
+          "nav.settings",
+          "title.settings",
+          "ord.terminal",
+          "ref.noneYet",
+          "ref.referredCount",
+          "ref.shareLink",
+          "set.customerNotifications",
+          "set.discovery",
+          "set.free",
+          "set.paymentSaved",
+          "stmt.allShops",
+          "stmt.closing",
+          "stmt.loadError",
+          "stmt.subtitle",
+          "stmt.title"
+        ]
+      },
+      "answered": {
+        "themes": [
+          "register_and_tense",
+          "product_word",
+          "outstanding_word",
+          "pay_verb",
+          "c.locationNotSet"
+        ],
+        "answer": "app",
+        "note": "Answered per theme, with four rows named individually and given the same answer: gu ord.cancelConfirm, gu cat.loadMore + mod.loadMore, gu staff.remove, mr ostatus.cancelled + dash.orderStatus.cancelled."
+      },
+      "values": {
+        "mr": {
+          "acc.genderFemale": "महिला",
+          "account.genderFemale": "महिला",
+          "acc.genderPreferNot": "सांगायचे नाही",
+          "account.genderPreferNot": "सांगायचे नाही",
+          "acc.genderUnset": "दिलेले नाही",
+          "account.genderUnset": "दिलेले नाही",
+          "acc.phoneReadonly": "फोन हीच तुमची लॉगिन आयडी आहे, इथे बदलता येत नाही.",
+          "account.phoneReadonly": "फोन हीच तुमची लॉगिन आयडी आहे, इथे बदलता येत नाही.",
+          "c.cartEmpty": "तुमची टोपली रिकामी आहे.",
+          "cart.empty": "तुमची टोपली रिकामी आहे.",
+          "c.deliverTo": "येथे पोहोचवा:",
+          "orderdetail.deliverTo": "येथे पोहोचवा:",
+          "c.enterCodeSentTo": "{phone} वर पाठवलेला कोड टाका",
+          "login.enterCode": "{phone} वर पाठवलेला कोड टाका",
+          "c.locationNotSet": "लोकेशन नाही",
+          "shops.noLocation": "लोकेशन नाही",
+          "c.noShops": "कोणतीही दुकान मिळाली नाही. वेगळा शोध करा.",
+          "shops.none": "कोणतीही दुकान मिळाली नाही. वेगळा शोध करा.",
+          "c.noteColon": "सूचना:",
+          "orderdetail.note": "सूचना:",
+          "c.notePlaceholderArrival": "उदा. पोहोचल्यावर कॉल करा",
+          "cart.notePlaceholder": "उदा. पोहोचल्यावर कॉल करा",
+          "c.payOnline": "ऑनलाइन भरणा",
+          "cart.payOnline": "ऑनलाइन भरणा",
+          "c.placing": "ऑर्डर होत आहे…",
+          "cart.placing": "ऑर्डर होत आहे…",
+          "c.size": "साइज",
+          "shopdetail.size": "साइज",
+          "c.verifyContinue": "पडताळून पुढे जा",
+          "login.verify": "पडताळून पुढे जा",
+          "c.yourCart": "तुमची टोपली",
+          "cart.title": "तुमची टोपली",
+          "cat.descOptional": "तपशील (ऐच्छिक)",
+          "cat.descPlaceholder": "तपशील (ऐच्छिक)",
+          "cat.loadMore": "अधिक पाहा",
+          "common.note": "सूचना",
+          "ord.note": "सूचना",
+          "common.noteOptional": "सूचना (ऐच्छिक)",
+          "addtx.note": "सूचना (ऐच्छिक)",
+          "common.totalOutstanding": "एकूण उधारी",
+          "dash.totalOutstanding": "एकूण उधारी",
+          "dash.orderStatus.cancelled": "रद्द केले",
+          "ostatus.cancelled": "रद्द केले",
+          "dash.revenue.family": "कुटुंब",
+          "title.family": "कुटुंब",
+          "dash.revenue.free": "मोफत",
+          "cart.freeDelivery": "मोफत",
+          "fam.combinedOutstanding": "एकत्रित उधारी",
+          "famd.combinedOutstanding": "एकत्रित उधारी",
+          "fam.combinedStatement": "एकत्रित हिशेब",
+          "famd.combinedStatement": "एकत्रित हिशेब",
+          "fam.removeConfirm": "{name} ला या कुटुंबातून काढायचे?",
+          "famd.removeConfirm": "{name} ला या कुटुंबातून काढायचे?",
+          "fam.sendReminder": "WhatsApp वर आठवण पाठवा",
+          "famd.sendReminder": "WhatsApp वर आठवण पाठवा",
+          "help.title": "मदत आणि नेहमीचे प्रश्न",
+          "chelp.title": "मदत आणि नेहमीचे प्रश्न",
+          "ins.customersWithDues": "उधारी असलेले ग्राहक",
+          "dash.customersWithDues": "उधारी असलेले ग्राहक",
+          "log.signIn": "साइन इन करा",
+          "login.title": "साइन इन करा",
+          "mod.loadMore": "अधिक पाहा",
+          "nav.insights": "विश्लेषण",
+          "title.insights": "विश्लेषण",
+          "nav.settings": "सेटिंग",
+          "title.settings": "सेटिंग",
+          "ord.terminal": "हा ऑर्डर {s} — आता बदल नाही.",
+          "ref.noneYet": "अजून कोणताही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
+          "ref.referredCount": "आतापर्यंत तुम्ही {n} जणांना रेफर केले आहे.",
+          "ref.shareLink": "शेअर लिंक",
+          "set.customerNotifications": "ग्राहकांचे नोटिफिकेशन",
+          "set.discovery": "शोध (तुमचे दुकान यादीत द्या)",
+          "set.free": "मोफत",
+          "set.paymentSaved": "भरणा सेटिंग सेव्ह झाले.",
+          "stmt.allShops": "सर्व दुकाने (एकत्र)",
+          "stmt.closing": "शेवटची शिल्लक",
+          "stmt.loadError": "तपशील लोड होऊ शकला नाही.",
+          "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीतील तारखेनुसार नोंदी, आणि शेवटची शिल्लक.",
+          "stmt.title": "खात्याचा तपशील"
+        }
+      },
+      "values_note": "Every value is the string the app already showed. Nothing was authored. A key is written to every surface that carries it, so a key whose ENGLISH differs between surfaces is scoped: gu ord.cancelConfirm is \"Cancel this order?\" on the web and \"Cancel this order? This cannot be undone.\" in the owner app, and one value for both would have dropped a warning the English requires.",
+      "rows": [
+        {
+          "web": "acc.genderFemale",
+          "app": "account.genderFemale",
+          "was_on_web": "स्त्री",
+          "now": "महिला"
+        },
+        {
+          "web": "acc.genderPreferNot",
+          "app": "account.genderPreferNot",
+          "was_on_web": "सांगू इच्छित नाही",
+          "now": "सांगायचे नाही"
+        },
+        {
+          "web": "acc.genderUnset",
+          "app": "account.genderUnset",
+          "was_on_web": "सेट केलेले नाही",
+          "now": "दिलेले नाही"
+        },
+        {
+          "web": "acc.phoneReadonly",
+          "app": "account.phoneReadonly",
+          "was_on_web": "फोन हा तुमचा लॉगिन आयडी आहे आणि इथे बदलता येत नाही.",
+          "now": "फोन हीच तुमची लॉगिन आयडी आहे, इथे बदलता येत नाही."
+        },
+        {
+          "web": "c.cartEmpty",
+          "app": "cart.empty",
+          "was_on_web": "तुमची कार्ट रिकामी आहे.",
+          "now": "तुमची टोपली रिकामी आहे."
+        },
+        {
+          "web": "c.deliverTo",
+          "app": "orderdetail.deliverTo",
+          "was_on_web": "इथे पोहोचवा:",
+          "now": "येथे पोहोचवा:"
+        },
+        {
+          "web": "c.enterCodeSentTo",
+          "app": "login.enterCode",
+          "was_on_web": "{phone} वर पाठवलेला कोड लिहा",
+          "now": "{phone} वर पाठवलेला कोड टाका"
+        },
+        {
+          "web": "c.locationNotSet",
+          "app": "shops.noLocation",
+          "was_on_web": "लोकेशन सेट केलेले नाही",
+          "now": "लोकेशन नाही"
+        },
+        {
+          "web": "c.noShops",
+          "app": "shops.none",
+          "was_on_web": "कोणतेही दुकान सापडले नाही. वेगळ्या प्रकारे शोधा.",
+          "now": "कोणतीही दुकान मिळाली नाही. वेगळा शोध करा."
+        },
+        {
+          "web": "c.noteColon",
+          "app": "orderdetail.note",
+          "was_on_web": "नोंद:",
+          "now": "सूचना:"
+        },
+        {
+          "web": "c.notePlaceholderArrival",
+          "app": "cart.notePlaceholder",
+          "was_on_web": "उदा. पोहोचल्यावर फोन करा",
+          "now": "उदा. पोहोचल्यावर कॉल करा"
+        },
+        {
+          "web": "c.payOnline",
+          "app": "cart.payOnline",
+          "was_on_web": "ऑनलाइन भरा",
+          "now": "ऑनलाइन भरणा"
+        },
+        {
+          "web": "c.placing",
+          "app": "cart.placing",
+          "was_on_web": "ऑर्डर करत आहे…",
+          "now": "ऑर्डर होत आहे…"
+        },
+        {
+          "web": "c.size",
+          "app": "shopdetail.size",
+          "was_on_web": "आकार",
+          "now": "साइज"
+        },
+        {
+          "web": "c.verifyContinue",
+          "app": "login.verify",
+          "was_on_web": "पडताळा आणि पुढे जा",
+          "now": "पडताळून पुढे जा"
+        },
+        {
+          "web": "c.yourCart",
+          "app": "cart.title",
+          "was_on_web": "तुमची कार्ट",
+          "now": "तुमची टोपली"
+        },
+        {
+          "web": "cat.descOptional",
+          "app": "cat.descPlaceholder",
+          "was_on_web": "वर्णन (ऐच्छिक)",
+          "now": "तपशील (ऐच्छिक)"
+        },
+        {
+          "web": "cat.loadMore",
+          "app": "cat.loadMore",
+          "was_on_web": "अधिक लोड करा",
+          "now": "अधिक पाहा"
+        },
+        {
+          "web": "common.note",
+          "app": "ord.note",
+          "was_on_web": "नोंद",
+          "now": "सूचना"
+        },
+        {
+          "web": "common.noteOptional",
+          "app": "addtx.note",
+          "was_on_web": "नोंद (ऐच्छिक)",
+          "now": "सूचना (ऐच्छिक)"
+        },
+        {
+          "web": "common.totalOutstanding",
+          "app": "dash.totalOutstanding",
+          "was_on_web": "एकूण बाकी",
+          "now": "एकूण उधारी"
+        },
+        {
+          "web": "dash.orderStatus.cancelled",
+          "app": "ostatus.cancelled",
+          "was_on_web": "रद्द",
+          "now": "रद्द केले"
+        },
+        {
+          "web": "dash.revenue.family",
+          "app": "title.family",
+          "was_on_web": "फॅमिली",
+          "now": "कुटुंब"
+        },
+        {
+          "web": "dash.revenue.free",
+          "app": "cart.freeDelivery",
+          "was_on_web": "फ्री",
+          "now": "मोफत"
+        },
+        {
+          "web": "fam.combinedOutstanding",
+          "app": "famd.combinedOutstanding",
+          "was_on_web": "एकत्रित बाकी",
+          "now": "एकत्रित उधारी"
+        },
+        {
+          "web": "fam.combinedStatement",
+          "app": "famd.combinedStatement",
+          "was_on_web": "एकत्रित विवरण",
+          "now": "एकत्रित हिशेब"
+        },
+        {
+          "web": "fam.removeConfirm",
+          "app": "famd.removeConfirm",
+          "was_on_web": "{name} यांना या कुटुंबातून काढायचे?",
+          "now": "{name} ला या कुटुंबातून काढायचे?"
+        },
+        {
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "was_on_web": "WhatsApp रिमाइंडर पाठवा",
+          "now": "WhatsApp वर आठवण पाठवा"
+        },
+        {
+          "web": "help.title",
+          "app": "chelp.title",
+          "was_on_web": "मदत आणि सामान्य प्रश्न",
+          "now": "मदत आणि नेहमीचे प्रश्न"
+        },
+        {
+          "web": "ins.customersWithDues",
+          "app": "dash.customersWithDues",
+          "was_on_web": "बाकी असलेले ग्राहक",
+          "now": "उधारी असलेले ग्राहक"
+        },
+        {
+          "web": "log.signIn",
+          "app": "login.title",
+          "was_on_web": "साइन इन",
+          "now": "साइन इन करा"
+        },
+        {
+          "web": "mod.loadMore",
+          "app": "cat.loadMore",
+          "was_on_web": "अधिक लोड करा",
+          "now": "अधिक पाहा"
+        },
+        {
+          "web": "nav.insights",
+          "app": "title.insights",
+          "was_on_web": "माहिती",
+          "now": "विश्लेषण"
+        },
+        {
+          "web": "nav.settings",
+          "app": "title.settings",
+          "was_on_web": "सेटिंग्ज",
+          "now": "सेटिंग"
+        },
+        {
+          "web": "ord.terminal",
+          "app": "ord.terminal",
+          "was_on_web": "हा ऑर्डर {s} आहे — पुढे कोणताही बदल नाही.",
+          "now": "हा ऑर्डर {s} — आता बदल नाही."
+        },
+        {
+          "web": "ostatus.cancelled",
+          "app": "ostatus.cancelled",
+          "was_on_web": "रद्द",
+          "now": "रद्द केले"
+        },
+        {
+          "web": "ref.noneYet",
+          "app": "ref.noneYet",
+          "was_on_web": "अजून कोणतेही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
+          "now": "अजून कोणताही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा."
+        },
+        {
+          "web": "ref.referredCount",
+          "app": "ref.referredCount",
+          "was_on_web": "तुम्ही आतापर्यंत {n} जणांना रेफर केले आहे.",
+          "now": "आतापर्यंत तुम्ही {n} जणांना रेफर केले आहे."
+        },
+        {
+          "web": "ref.shareLink",
+          "app": "ref.shareLink",
+          "was_on_web": "लिंक शेअर करा",
+          "now": "शेअर लिंक"
+        },
+        {
+          "web": "set.customerNotifications",
+          "app": "set.customerNotifications",
+          "was_on_web": "ग्राहक नोटिफिकेशन",
+          "now": "ग्राहकांचे नोटिफिकेशन"
+        },
+        {
+          "web": "set.discovery",
+          "app": "set.discovery",
+          "was_on_web": "डिस्कव्हरी (तुमचे दुकान यादीत टाका)",
+          "now": "शोध (तुमचे दुकान यादीत द्या)"
+        },
+        {
+          "web": "set.free",
+          "app": "cart.freeDelivery",
+          "was_on_web": "फ्री",
+          "now": "मोफत"
+        },
+        {
+          "web": "set.paymentSaved",
+          "app": "set.paymentSaved",
+          "was_on_web": "भरणा सेटिंग्ज सेव्ह झाल्या.",
+          "now": "भरणा सेटिंग सेव्ह झाले."
+        },
+        {
+          "web": "stmt.allShops",
+          "app": "stmt.allShops",
+          "was_on_web": "सर्व दुकाने (एकत्रित)",
+          "now": "सर्व दुकाने (एकत्र)"
+        },
+        {
+          "web": "stmt.closing",
+          "app": "stmt.closing",
+          "was_on_web": "अखेरची शिल्लक",
+          "now": "शेवटची शिल्लक"
+        },
+        {
+          "web": "stmt.loadError",
+          "app": "stmt.loadError",
+          "was_on_web": "विवरण लोड होऊ शकले नाही.",
+          "now": "तपशील लोड होऊ शकला नाही."
+        },
+        {
+          "web": "stmt.subtitle",
+          "app": "stmt.subtitle",
+          "was_on_web": "सुरुवातीची शिल्लक, कालावधीसाठी तारखेनुसार नोंदी, आणि अखेरची शिल्लक.",
+          "now": "सुरुवातीची शिल्लक, कालावधीतील तारखेनुसार नोंदी, आणि शेवटची शिल्लक."
+        },
+        {
+          "web": "stmt.title",
+          "app": "stmt.title",
+          "was_on_web": "खात्याचे विवरण",
+          "now": "खात्याचा तपशील"
+        }
+      ],
+      "decided_by": "owner",
+      "decided_on": "2026-09-19",
+      "supersedes": "native-speaker-queue-mr (the 48 rows where the surfaces disagreed), and the INTENTIONAL_DIVERGENCE entries this converges.",
+      "override_log": []
+    },
     "gu-accepted-wording": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
@@ -1188,7 +2246,7 @@
     "native-speaker-queue-gu": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Gujarati wording questions from the web/app ledger — 112 rows.",
+      "concept": "The open Gujarati wording questions from the web/app ledger — 55 rows.",
       "why_review": "Both readings are valid in each case; these need a Gujarati speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-gu-reconcile.md",
@@ -1201,48 +2259,8 @@
         "rows": [
           {
             "lang": "gu",
-            "web": "acc.dob",
-            "app": "account.dob"
-          },
-          {
-            "lang": "gu",
-            "web": "acc.genderUnset",
-            "app": "account.genderUnset"
-          },
-          {
-            "lang": "gu",
-            "web": "acc.loadError",
-            "app": "account.loadError"
-          },
-          {
-            "lang": "gu",
             "web": "acc.logout",
             "app": "account.logout"
-          },
-          {
-            "lang": "gu",
-            "web": "acc.optional",
-            "app": "account.optional"
-          },
-          {
-            "lang": "gu",
-            "web": "acc.phoneReadonly",
-            "app": "account.phoneReadonly"
-          },
-          {
-            "lang": "gu",
-            "web": "c.cancelling",
-            "app": "orderdetail.cancelling"
-          },
-          {
-            "lang": "gu",
-            "web": "c.cartEmpty",
-            "app": "cart.empty"
-          },
-          {
-            "lang": "gu",
-            "web": "c.enterCodeSentTo",
-            "app": "login.enterCode"
           },
           {
             "lang": "gu",
@@ -1251,43 +2269,8 @@
           },
           {
             "lang": "gu",
-            "web": "c.loadingOrder",
-            "app": "orderdetail.loading"
-          },
-          {
-            "lang": "gu",
-            "web": "c.loadingShops",
-            "app": "shops.loading"
-          },
-          {
-            "lang": "gu",
-            "web": "c.locationNotSet",
-            "app": "shops.noLocation"
-          },
-          {
-            "lang": "gu",
             "web": "c.myOrders",
             "app": "orders.title"
-          },
-          {
-            "lang": "gu",
-            "web": "c.noShops",
-            "app": "shops.none"
-          },
-          {
-            "lang": "gu",
-            "web": "c.notePlaceholderArrival",
-            "app": "cart.notePlaceholder"
-          },
-          {
-            "lang": "gu",
-            "web": "c.opening",
-            "app": "khata.opening"
-          },
-          {
-            "lang": "gu",
-            "web": "c.payOnline",
-            "app": "cart.payOnline"
           },
           {
             "lang": "gu",
@@ -1296,33 +2279,8 @@
           },
           {
             "lang": "gu",
-            "web": "c.placing",
-            "app": "cart.placing"
-          },
-          {
-            "lang": "gu",
-            "web": "c.sending",
-            "app": "login.sending"
-          },
-          {
-            "lang": "gu",
             "web": "c.unit",
             "app": "shopdetail.unit"
-          },
-          {
-            "lang": "gu",
-            "web": "c.verifyContinue",
-            "app": "login.verify"
-          },
-          {
-            "lang": "gu",
-            "web": "c.verifying",
-            "app": "login.verifying"
-          },
-          {
-            "lang": "gu",
-            "web": "c.yourCart",
-            "app": "cart.title"
           },
           {
             "lang": "gu",
@@ -1336,18 +2294,8 @@
           },
           {
             "lang": "gu",
-            "web": "cat.descOptional",
-            "app": "cat.descPlaceholder"
-          },
-          {
-            "lang": "gu",
             "web": "cat.empty",
             "app": "cat.empty"
-          },
-          {
-            "lang": "gu",
-            "web": "cat.loadMore",
-            "app": "cat.loadMore"
           },
           {
             "lang": "gu",
@@ -1411,28 +2359,8 @@
           },
           {
             "lang": "gu",
-            "web": "common.creditLimit",
-            "app": "custd.creditLimit"
-          },
-          {
-            "lang": "gu",
-            "web": "common.noteOptional",
-            "app": "addtx.note"
-          },
-          {
-            "lang": "gu",
-            "web": "common.outstanding",
-            "app": "ins.outstanding"
-          },
-          {
-            "lang": "gu",
             "web": "common.remove",
             "app": "cart.remove"
-          },
-          {
-            "lang": "gu",
-            "web": "common.subtotal",
-            "app": "common.subtotal"
           },
           {
             "lang": "gu",
@@ -1466,21 +2394,6 @@
           },
           {
             "lang": "gu",
-            "web": "dash.revenue.family",
-            "app": "title.family"
-          },
-          {
-            "lang": "gu",
-            "web": "dash.revenue.free",
-            "app": "cart.freeDelivery"
-          },
-          {
-            "lang": "gu",
-            "web": "dl.customers",
-            "app": "tab.customers"
-          },
-          {
-            "lang": "gu",
             "web": "dl.myOrders",
             "app": "orders.title"
           },
@@ -1491,63 +2404,13 @@
           },
           {
             "lang": "gu",
-            "web": "fam.combinedStatement",
-            "app": "famd.combinedStatement"
-          },
-          {
-            "lang": "gu",
-            "web": "fam.removeConfirm",
-            "app": "famd.removeConfirm"
-          },
-          {
-            "lang": "gu",
-            "web": "fam.sendReminder",
-            "app": "famd.sendReminder"
-          },
-          {
-            "lang": "gu",
-            "web": "ins.activeCustomers",
-            "app": "ins.activeCustomers"
-          },
-          {
-            "lang": "gu",
             "web": "ins.collectionRate",
             "app": "ins.collectionRate"
           },
           {
             "lang": "gu",
-            "web": "ins.customersWithDues",
-            "app": "dash.customersWithDues"
-          },
-          {
-            "lang": "gu",
-            "web": "ins.outstandingByAge",
-            "app": "ins.outstandingByAge"
-          },
-          {
-            "lang": "gu",
-            "web": "log.signIn",
-            "app": "login.title"
-          },
-          {
-            "lang": "gu",
-            "web": "mod.loadMore",
-            "app": "cat.loadMore"
-          },
-          {
-            "lang": "gu",
             "web": "nav.catalog",
             "app": "tab.catalog"
-          },
-          {
-            "lang": "gu",
-            "web": "nav.customers",
-            "app": "tab.customers"
-          },
-          {
-            "lang": "gu",
-            "web": "nav.insights",
-            "app": "title.insights"
           },
           {
             "lang": "gu",
@@ -1561,11 +2424,6 @@
           },
           {
             "lang": "gu",
-            "web": "nav.settings",
-            "app": "title.settings"
-          },
-          {
-            "lang": "gu",
             "web": "num.changed",
             "app": "num.changed"
           },
@@ -1576,11 +2434,6 @@
           },
           {
             "lang": "gu",
-            "web": "num.confirm",
-            "app": "num.confirm"
-          },
-          {
-            "lang": "gu",
             "web": "num.enterCode",
             "app": "login.enterCode"
           },
@@ -1588,11 +2441,6 @@
             "lang": "gu",
             "web": "num.sending",
             "app": "login.sending"
-          },
-          {
-            "lang": "gu",
-            "web": "ord.cancelConfirm",
-            "app": "orderdetail.cancelConfirm"
           },
           {
             "lang": "gu",
@@ -1626,11 +2474,6 @@
           },
           {
             "lang": "gu",
-            "web": "ord.terminal",
-            "app": "ord.terminal"
-          },
-          {
-            "lang": "gu",
             "web": "ostatus.accepted",
             "app": "ostatus.accepted"
           },
@@ -1641,23 +2484,8 @@
           },
           {
             "lang": "gu",
-            "web": "pin.saving",
-            "app": "account.saving"
-          },
-          {
-            "lang": "gu",
             "web": "ref.loadError",
             "app": "ref.loadError"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.referredCount",
-            "app": "ref.referredCount"
-          },
-          {
-            "lang": "gu",
-            "web": "ref.shareLink",
-            "app": "ref.shareLink"
           },
           {
             "lang": "gu",
@@ -1676,48 +2504,8 @@
           },
           {
             "lang": "gu",
-            "web": "set.customerNotifications",
-            "app": "set.customerNotifications"
-          },
-          {
-            "lang": "gu",
-            "web": "set.discovery",
-            "app": "set.discovery"
-          },
-          {
-            "lang": "gu",
-            "web": "set.free",
-            "app": "cart.freeDelivery"
-          },
-          {
-            "lang": "gu",
-            "web": "set.leaveBlank",
-            "app": "set.leaveBlank"
-          },
-          {
-            "lang": "gu",
-            "web": "set.paymentSaved",
-            "app": "set.paymentSaved"
-          },
-          {
-            "lang": "gu",
-            "web": "staff.remove",
-            "app": "cart.remove"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.allShops",
-            "app": "stmt.allShops"
-          },
-          {
-            "lang": "gu",
             "web": "stmt.closing",
             "app": "stmt.closing"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.combined",
-            "app": "stmt.combined"
           },
           {
             "lang": "gu",
@@ -1741,27 +2529,12 @@
           },
           {
             "lang": "gu",
-            "web": "stmt.rangeError",
-            "app": "stmt.rangeError"
-          },
-          {
-            "lang": "gu",
             "web": "stmt.subtitle",
             "app": "stmt.subtitle"
-          },
-          {
-            "lang": "gu",
-            "web": "stmt.title",
-            "app": "stmt.title"
-          },
-          {
-            "lang": "gu",
-            "web": "tx.empty",
-            "app": "custd.noTransactions"
           }
         ]
       },
-      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
+      "protects_note": "57 rows where the two surfaces disagreed were answered on 2026-09-19 and are LOCKED under gu-native-review-1. What is left is: the rows where both surfaces ALREADY say the same thing, so there was nothing to choose between — the question there is whether the wording is right at all, and it has not been asked; 6 row(s) that are also in the 274 undecided web/app divergences, held because converging them would resolve one of those and that set is not to be touched; and 1 catalogue row(s) that catalogue-loanword already answers and whose repair needs the loanword wording.",
       "open_themes": [
         "orthography_candra_o",
         "product_word",
@@ -1901,36 +2674,14 @@
       "protected": {
         "web": {
           "gu": {
-            "acc.dob": "જન્મતારીખ",
-            "acc.genderUnset": "સેટ નથી",
-            "acc.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નહીં.",
             "acc.logout": "લૉગ આઉટ",
-            "acc.optional": "મરજિયાત",
-            "acc.phoneReadonly": "ફોન એ તમારો લૉગિન આઈડી છે અને અહીં બદલી શકાતો નથી.",
-            "c.cancelling": "રદ થાય છે…",
-            "c.cartEmpty": "તમારી કાર્ટ ખાલી છે.",
-            "c.enterCodeSentTo": "{phone} પર મોકલેલો કોડ લખો",
             "c.loadingCatalog": "કૅટલૉગ લોડ થાય છે…",
-            "c.loadingOrder": "ઑર્ડર લોડ થાય છે…",
-            "c.loadingShops": "દુકાનો લોડ થાય છે…",
-            "c.locationNotSet": "સ્થાન સેટ નથી",
             "c.myOrders": "મારા ઑર્ડર",
-            "c.noShops": "કોઈ દુકાન મળી નથી. બીજી રીતે શોધો.",
-            "c.notePlaceholderArrival": "દા.ત. પહોંચતાં ફોન કરો",
-            "c.opening": "ખૂલે છે…",
-            "c.payOnline": "ઑનલાઇન ચૂકવો",
             "c.placeOrder": "ઑર્ડર કરો",
-            "c.placing": "ઑર્ડર થાય છે…",
-            "c.sending": "મોકલાય છે…",
             "c.unit": "નંગ",
-            "c.verifyContinue": "ચકાસો અને આગળ વધો",
-            "c.verifying": "ચકાસાય છે…",
-            "c.yourCart": "તમારી કાર્ટ",
             "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
             "cat.addProduct": "વસ્તુ ઉમેરો",
-            "cat.descOptional": "વર્ણન (મરજિયાત)",
             "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
-            "cat.loadMore": "વધુ લોડ કરો",
             "cat.noResults": "મળતી કોઈ વસ્તુ નથી.",
             "chelp.e2.a": "ઉપરના સર્ચ બારનો ઉપયોગ કરો, અથવા કૅટેગરીમાં જુઓ. બોલીને શોધવા 🎤 માઇક દબાવો અને વસ્તુનું નામ બોલો.",
             "chelp.e3.a": "એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે.",
@@ -1943,105 +2694,49 @@
             "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે?",
             "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
             "common.balance": "બેલેન્સ",
-            "common.creditLimit": "ઉધાર મર્યાદા",
-            "common.noteOptional": "નોંધ (મરજિયાત)",
-            "common.outstanding": "બાકી રકમ",
             "common.remove": "દૂર કરો",
-            "common.subtotal": "પેટા-કુલ",
             "ctab.orders": "ઑર્ડર",
-            "dash.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
             "dash.kpi.orders": "ઑર્ડર",
             "dash.orderStatus.accepted": "સ્વીકારેલ",
             "dash.orderStatus.cancelled": "રદ",
             "dash.orderStatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "dash.revenue.family": "ફેમિલી",
-            "dash.revenue.free": "ફ્રી",
-            "dl.customers": "ગ્રાહકો",
             "dl.myOrders": "મારા ઑર્ડર",
             "dl.orders": "ઑર્ડર",
-            "fam.combinedStatement": "સંયુક્ત સ્ટેટમેન્ટ",
-            "fam.removeConfirm": "{name}ને આ પરિવારમાંથી કાઢવા?",
-            "fam.sendReminder": "WhatsApp રિમાઇન્ડર મોકલો",
-            "ins.activeCustomers": "સક્રિય ગ્રાહકો",
             "ins.collectionRate": "વસૂલીનો દર",
-            "ins.customersWithDues": "બાકીવાળા ગ્રાહકો",
-            "ins.outstandingByAge": "સમય પ્રમાણે બાકી",
-            "log.signIn": "સાઇન ઇન",
-            "mod.loadMore": "વધુ લોડ કરો",
             "nav.catalog": "કૅટલૉગ",
-            "nav.customers": "ગ્રાહકો",
-            "nav.insights": "માહિતી",
             "nav.logout": "લૉગ આઉટ",
             "nav.orders": "ઑર્ડર",
-            "nav.settings": "સેટિંગ્સ",
             "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
             "num.changing": "બદલાઈ રહ્યું છે…",
-            "num.confirm": "બદલાવ પાકો કરો",
             "num.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
             "num.sending": "મોકલાઈ રહ્યું છે…",
-            "ord.cancelConfirm": "આ ઑર્ડર રદ કરવો? આ પાછું નહીં આવે.",
             "ord.cancelOrder": "ઑર્ડર રદ કરો",
             "ord.empty": "આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી.",
             "ord.emptyItems": "આ ઑર્ડરમાં કોઈ વસ્તુ નથી.",
             "ord.mark": "{s} તરીકે નોંધો",
             "ord.marked": "ઑર્ડર {s} નોંધાયો.",
             "ord.order": "ઑર્ડર",
-            "ord.terminal": "આ ઑર્ડર {s} છે — વધુ કોઈ ફેરફાર નહીં.",
             "ostatus.accepted": "સ્વીકારેલ",
             "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "pin.saving": "સેવ થાય છે…",
             "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
-            "ref.referredCount": "તમે અત્યાર સુધી {n}ને રેફર કર્યા છે.",
-            "ref.shareLink": "લિંક શેર કરો",
             "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
             "ref.title": "આમંત્રણ આપો ને કમાઓ",
             "ref.type.owner": "દુકાન માલિક",
-            "set.customerNotifications": "ગ્રાહક નોટિફિકેશન",
-            "set.discovery": "ડિસ્કવરી (તમારી દુકાન યાદીમાં મૂકો)",
-            "set.free": "ફ્રી",
-            "set.leaveBlank": "હાલનું રાખવા ખાલી છોડો",
-            "set.paymentSaved": "ચૂકવણી સેટિંગ્સ સેવ થઈ.",
-            "staff.remove": "કાઢો",
-            "stmt.allShops": "બધી દુકાનો (સંયુક્ત)",
             "stmt.closing": "છેલ્લું બેલેન્સ",
-            "stmt.combined": "સંયુક્ત કુલ",
             "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
             "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
             "stmt.opening": "શરૂઆતનું બેલેન્સ",
             "stmt.pickShop": "દુકાન પસંદ કરો",
-            "stmt.rangeError": "'થી' તારીખ 'સુધી' તારીખની બરાબર કે પહેલાં હોવી જોઈએ.",
-            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ.",
-            "stmt.title": "ખાતાનું સ્ટેટમેન્ટ",
-            "tx.empty": "હજી કોઈ વ્યવહાર નથી."
+            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
           }
         },
         "app/consumer": {
           "gu": {
-            "account.dob": "જન્મ તારીખ",
-            "account.genderUnset": "આપ્યું નથી",
-            "account.loadError": "તમારી પ્રોફાઇલ લોડ થઈ શકી નથી.",
             "account.logout": "લૉગ આઉટ",
-            "account.optional": "વૈકલ્પિક",
-            "account.phoneReadonly": "ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી.",
-            "orderdetail.cancelling": "રદ થઈ રહ્યો છે…",
-            "cart.empty": "તમારી ટોપલી ખાલી છે.",
-            "login.enterCode": "{phone} પર મોકલેલો કોડ દાખલ કરો",
             "shopdetail.loading": "યાદી લોડ થઈ રહી છે…",
-            "orderdetail.loading": "ઑર્ડર લોડ થઈ રહ્યો છે…",
-            "shops.loading": "દુકાનો લોડ થઈ રહી છે…",
-            "shops.noLocation": "લોકેશન નથી",
             "orders.title": "મારા ઑર્ડર",
-            "shops.none": "કોઈ દુકાન મળી નહીં. બીજી શોધ કરો.",
-            "cart.notePlaceholder": "દા.ત. પહોંચીને કોલ કરો",
-            "khata.opening": "ખૂલી રહ્યું છે…",
-            "cart.payOnline": "ઑનલાઇન ચૂકવણી",
             "cart.placeOrder": "ઑર્ડર કરો",
-            "cart.placing": "ઑર્ડર થઈ રહ્યો છે…",
-            "login.sending": "મોકલાઈ રહ્યું છે…",
             "shopdetail.unit": "નંગ",
-            "login.verify": "ચકાસીને આગળ વધો",
-            "login.verifying": "ચકાસાઈ રહ્યું છે…",
-            "cart.title": "તમારી ટોપલી",
             "chelp.e3.q": "ઑર્ડર કેવી રીતે કરવો?",
             "chelp.e4.a": "જાતે લઈ જવું એટલે તમે ઑર્ડર જાતે દુકાનેથી લઈ આવો, મફત. ડિલિવરી એટલે દુકાન તમારા સુધી પહોંચાડે, ક્યારેક નાના ચાર્જ સાથે — ઘણી દુકાનો નક્કી રકમથી ઉપર મફત ડિલિવરી આપે છે.",
             "chelp.e4.q": "જાતે લઈ જવું અને ડિલિવરીમાં શું ફરક છે?",
@@ -2051,80 +2746,447 @@
             "chelp.e6.q": "મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે?",
             "chelp.subtitle": "ખરીદી, ઑર્ડર અને તમારા ખાતા માટે ટૂંકા જવાબ.",
             "khata.balance": "બેલેન્સ",
-            "cart.remove": "દૂર કરો",
-            "common.subtotal": "ઉપ-કુલ",
             "tab.orders": "ઑર્ડર",
             "ostatus.accepted": "સ્વીકારેલ",
             "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "cart.freeDelivery": "મફત",
-            "login.title": "સાઇન ઇન કરો",
             "num.changed": "નંબર બદલાઈ ગયો. બધી દુકાનોમાં તમારું ખાતું હવે નવા નંબર પર છે.",
             "num.changing": "બદલાઈ રહ્યું છે…",
-            "num.confirm": "ફેરફારની ખાતરી કરો",
-            "orderdetail.cancelConfirm": "આ ઑર્ડર રદ કરવો?",
             "orderdetail.cancel": "ઑર્ડર રદ કરો",
             "orderdetail.title": "ઑર્ડર",
-            "account.saving": "સેવ થઈ રહ્યું છે…",
             "ref.loadError": "રેફરલ લોડ થઈ શક્યા નથી.",
-            "ref.referredCount": "અત્યાર સુધી તમે {n} ને રેફર કર્યા છે.",
-            "ref.shareLink": "શેર લિંક",
             "ref.subtitle": "તમારો કોડ શેર કરો. કોઈ તેનાથી જોડાય તો અહીં દેખાશે.",
             "ref.title": "આમંત્રણ આપો ને કમાઓ",
             "ref.type.owner": "દુકાન માલિક",
-            "stmt.allShops": "બધી દુકાનો (સાથે)",
             "stmt.closing": "છેલ્લું બેલેન્સ",
-            "stmt.combined": "બધું મળીને કુલ",
             "stmt.loadError": "વિવરણ લોડ થઈ શક્યું નથી.",
             "stmt.noData": "આ સમયગાળામાં કોઈ એન્ટ્રી નથી.",
             "stmt.opening": "શરૂઆતનું બેલેન્સ",
             "stmt.pickShop": "દુકાન પસંદ કરો",
-            "stmt.rangeError": "\"થી\" તારીખ \"સુધી\" તારીખ પહેલાંની કે એ જ હોવી જોઈએ.",
-            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ.",
-            "stmt.title": "ખાતાનું વિવરણ"
+            "stmt.subtitle": "શરૂઆતનું બેલેન્સ, સમયગાળાની તારીખવાર એન્ટ્રી, અને છેલ્લું બેલેન્સ."
           }
         },
         "app/owner": {
           "gu": {
             "cat.addFromCatalogue": "કૅટલૉગમાંથી ઉમેરો",
             "cat.addProduct": "વસ્તુ ઉમેરો",
-            "cat.descPlaceholder": "વર્ણન (વૈકલ્પિક)",
             "cat.empty": "હજી કોઈ વસ્તુ નથી. ઉપર પહેલી ઉમેરો.",
-            "cat.loadMore": "વધુ જુઓ",
-            "custd.creditLimit": "ઉધારની મર્યાદા",
-            "addtx.note": "નોંધ (વૈકલ્પિક)",
-            "ins.outstanding": "બાકી",
             "tab.orders": "ઑર્ડર",
-            "dash.customersWithDues": "બાકી હોય તેવા ગ્રાહક",
             "ostatus.accepted": "સ્વીકારેલ",
             "ostatus.out_for_delivery": "ડિલિવરી માટે નીકળ્યો",
-            "title.family": "પરિવાર",
-            "tab.customers": "ગ્રાહક",
-            "famd.combinedStatement": "સંયુક્ત હિસાબ",
-            "famd.removeConfirm": "{name} ને આ પરિવારમાંથી દૂર કરવા?",
-            "famd.sendReminder": "WhatsApp પર યાદ કરાવો",
-            "ins.activeCustomers": "સક્રિય ગ્રાહક",
             "ins.collectionRate": "વસૂલીનો દર",
-            "ins.outstandingByAge": "કેટલા દિવસની બાકી",
             "tab.catalog": "કૅટલૉગ",
-            "title.insights": "વિશ્લેષણ",
-            "title.settings": "સેટિંગ",
             "ord.empty": "અહીં હજી કોઈ ઑર્ડર નથી.",
             "ord.mark": "{s} તરીકે નોંધો",
-            "ord.marked": "ઑર્ડર {s} નોંધાયો.",
-            "ord.terminal": "આ ઑર્ડર {s} — હવે કોઈ ફેરફાર નહીં.",
-            "set.customerNotifications": "ગ્રાહકનાં નોટિફિકેશન",
-            "set.discovery": "શોધ (તમારી દુકાન યાદીમાં મૂકો)",
-            "set.leaveBlank": "હાલનું રાખવા ખાલી રાખો",
-            "set.paymentSaved": "ચૂકવણી સેટિંગ સેવ થયું.",
-            "custd.noTransactions": "હજી કોઈ લેવડદેવડ નથી."
+            "ord.marked": "ઑર્ડર {s} નોંધાયો."
           }
         }
-      }
+      },
+      "resolved_rows": [
+        {
+          "lang": "gu",
+          "web": "acc.dob",
+          "app": "account.dob",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "acc.genderUnset",
+          "app": "account.genderUnset",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "acc.loadError",
+          "app": "account.loadError",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "acc.optional",
+          "app": "account.optional",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "acc.phoneReadonly",
+          "app": "account.phoneReadonly",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.cancelling",
+          "app": "orderdetail.cancelling",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.cartEmpty",
+          "app": "cart.empty",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.enterCodeSentTo",
+          "app": "login.enterCode",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.loadingOrder",
+          "app": "orderdetail.loading",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.loadingShops",
+          "app": "shops.loading",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.locationNotSet",
+          "app": "shops.noLocation",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.noShops",
+          "app": "shops.none",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.notePlaceholderArrival",
+          "app": "cart.notePlaceholder",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.opening",
+          "app": "khata.opening",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.payOnline",
+          "app": "cart.payOnline",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.placing",
+          "app": "cart.placing",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.sending",
+          "app": "login.sending",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.verifyContinue",
+          "app": "login.verify",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.verifying",
+          "app": "login.verifying",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "c.yourCart",
+          "app": "cart.title",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.descOptional",
+          "app": "cat.descPlaceholder",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "cat.loadMore",
+          "app": "cat.loadMore",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "common.creditLimit",
+          "app": "custd.creditLimit",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "common.noteOptional",
+          "app": "addtx.note",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "common.outstanding",
+          "app": "ins.outstanding",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "common.subtotal",
+          "app": "common.subtotal",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.revenue.family",
+          "app": "title.family",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "dash.revenue.free",
+          "app": "cart.freeDelivery",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "dl.customers",
+          "app": "tab.customers",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "fam.combinedStatement",
+          "app": "famd.combinedStatement",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "fam.removeConfirm",
+          "app": "famd.removeConfirm",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ins.activeCustomers",
+          "app": "ins.activeCustomers",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ins.customersWithDues",
+          "app": "dash.customersWithDues",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ins.outstandingByAge",
+          "app": "ins.outstandingByAge",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "log.signIn",
+          "app": "login.title",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "mod.loadMore",
+          "app": "cat.loadMore",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.customers",
+          "app": "tab.customers",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.insights",
+          "app": "title.insights",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "nav.settings",
+          "app": "title.settings",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "num.confirm",
+          "app": "num.confirm",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.cancelConfirm",
+          "app": "orderdetail.cancelConfirm",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ord.terminal",
+          "app": "ord.terminal",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "pin.saving",
+          "app": "account.saving",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.referredCount",
+          "app": "ref.referredCount",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "ref.shareLink",
+          "app": "ref.shareLink",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "set.customerNotifications",
+          "app": "set.customerNotifications",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "set.discovery",
+          "app": "set.discovery",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "set.free",
+          "app": "cart.freeDelivery",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "set.leaveBlank",
+          "app": "set.leaveBlank",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "set.paymentSaved",
+          "app": "set.paymentSaved",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "staff.remove",
+          "app": "cart.remove",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.allShops",
+          "app": "stmt.allShops",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.combined",
+          "app": "stmt.combined",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.rangeError",
+          "app": "stmt.rangeError",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "stmt.title",
+          "app": "stmt.title",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "gu",
+          "web": "tx.empty",
+          "app": "custd.noTransactions",
+          "answered_by": "gu-native-review-1",
+          "answer": "app"
+        }
+      ]
     },
     "native-speaker-queue-mr": {
       "type": "LINGUISTIC",
       "status": "REVIEW",
-      "concept": "The open Marathi wording questions from the web/app ledger — 76 rows.",
+      "concept": "The open Marathi wording questions from the web/app ledger — 28 rows.",
       "why_review": "Both readings are valid in each case; these need a Marathi speaker, not more analysis. Split per language because the three ledgers queued different keys in different languages, and a reader answers one language at a time: a landed review clears one decision instead of partly clearing three.",
       "source": {
         "ledger": "docs/i18n-web/LEDGER-mr-reconcile.md",
@@ -2137,88 +3199,8 @@
         "rows": [
           {
             "lang": "mr",
-            "web": "acc.genderFemale",
-            "app": "account.genderFemale"
-          },
-          {
-            "lang": "mr",
-            "web": "acc.genderPreferNot",
-            "app": "account.genderPreferNot"
-          },
-          {
-            "lang": "mr",
-            "web": "acc.genderUnset",
-            "app": "account.genderUnset"
-          },
-          {
-            "lang": "mr",
-            "web": "acc.phoneReadonly",
-            "app": "account.phoneReadonly"
-          },
-          {
-            "lang": "mr",
-            "web": "c.cartEmpty",
-            "app": "cart.empty"
-          },
-          {
-            "lang": "mr",
-            "web": "c.deliverTo",
-            "app": "orderdetail.deliverTo"
-          },
-          {
-            "lang": "mr",
-            "web": "c.enterCodeSentTo",
-            "app": "login.enterCode"
-          },
-          {
-            "lang": "mr",
             "web": "c.loadingCatalog",
             "app": "shopdetail.loading"
-          },
-          {
-            "lang": "mr",
-            "web": "c.locationNotSet",
-            "app": "shops.noLocation"
-          },
-          {
-            "lang": "mr",
-            "web": "c.noShops",
-            "app": "shops.none"
-          },
-          {
-            "lang": "mr",
-            "web": "c.noteColon",
-            "app": "orderdetail.note"
-          },
-          {
-            "lang": "mr",
-            "web": "c.notePlaceholderArrival",
-            "app": "cart.notePlaceholder"
-          },
-          {
-            "lang": "mr",
-            "web": "c.payOnline",
-            "app": "cart.payOnline"
-          },
-          {
-            "lang": "mr",
-            "web": "c.placing",
-            "app": "cart.placing"
-          },
-          {
-            "lang": "mr",
-            "web": "c.size",
-            "app": "shopdetail.size"
-          },
-          {
-            "lang": "mr",
-            "web": "c.verifyContinue",
-            "app": "login.verify"
-          },
-          {
-            "lang": "mr",
-            "web": "c.yourCart",
-            "app": "cart.title"
           },
           {
             "lang": "mr",
@@ -2232,18 +3214,8 @@
           },
           {
             "lang": "mr",
-            "web": "cat.descOptional",
-            "app": "cat.descPlaceholder"
-          },
-          {
-            "lang": "mr",
             "web": "cat.empty",
             "app": "cat.empty"
-          },
-          {
-            "lang": "mr",
-            "web": "cat.loadMore",
-            "app": "cat.loadMore"
           },
           {
             "lang": "mr",
@@ -2282,16 +3254,6 @@
           },
           {
             "lang": "mr",
-            "web": "common.note",
-            "app": "ord.note"
-          },
-          {
-            "lang": "mr",
-            "web": "common.noteOptional",
-            "app": "addtx.note"
-          },
-          {
-            "lang": "mr",
             "web": "common.outstanding",
             "app": "ins.outstanding"
           },
@@ -2302,53 +3264,8 @@
           },
           {
             "lang": "mr",
-            "web": "common.totalOutstanding",
-            "app": "dash.totalOutstanding"
-          },
-          {
-            "lang": "mr",
             "web": "dash.customersWithDues",
             "app": "dash.customersWithDues"
-          },
-          {
-            "lang": "mr",
-            "web": "dash.orderStatus.cancelled",
-            "app": "ostatus.cancelled"
-          },
-          {
-            "lang": "mr",
-            "web": "dash.revenue.family",
-            "app": "title.family"
-          },
-          {
-            "lang": "mr",
-            "web": "dash.revenue.free",
-            "app": "cart.freeDelivery"
-          },
-          {
-            "lang": "mr",
-            "web": "fam.combinedOutstanding",
-            "app": "famd.combinedOutstanding"
-          },
-          {
-            "lang": "mr",
-            "web": "fam.combinedStatement",
-            "app": "famd.combinedStatement"
-          },
-          {
-            "lang": "mr",
-            "web": "fam.removeConfirm",
-            "app": "famd.removeConfirm"
-          },
-          {
-            "lang": "mr",
-            "web": "fam.sendReminder",
-            "app": "famd.sendReminder"
-          },
-          {
-            "lang": "mr",
-            "web": "help.title",
-            "app": "chelp.title"
           },
           {
             "lang": "mr",
@@ -2357,33 +3274,8 @@
           },
           {
             "lang": "mr",
-            "web": "ins.customersWithDues",
-            "app": "dash.customersWithDues"
-          },
-          {
-            "lang": "mr",
             "web": "ins.outstandingByAge",
             "app": "ins.outstandingByAge"
-          },
-          {
-            "lang": "mr",
-            "web": "log.signIn",
-            "app": "login.title"
-          },
-          {
-            "lang": "mr",
-            "web": "mod.loadMore",
-            "app": "cat.loadMore"
-          },
-          {
-            "lang": "mr",
-            "web": "nav.insights",
-            "app": "title.insights"
-          },
-          {
-            "lang": "mr",
-            "web": "nav.settings",
-            "app": "title.settings"
           },
           {
             "lang": "mr",
@@ -2412,33 +3304,8 @@
           },
           {
             "lang": "mr",
-            "web": "ord.terminal",
-            "app": "ord.terminal"
-          },
-          {
-            "lang": "mr",
-            "web": "ostatus.cancelled",
-            "app": "ostatus.cancelled"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.noneYet",
-            "app": "ref.noneYet"
-          },
-          {
-            "lang": "mr",
             "web": "ref.referredByLabel",
             "app": "ref.referredByLabel"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.referredCount",
-            "app": "ref.referredCount"
-          },
-          {
-            "lang": "mr",
-            "web": "ref.shareLink",
-            "app": "ref.shareLink"
           },
           {
             "lang": "mr",
@@ -2457,41 +3324,6 @@
           },
           {
             "lang": "mr",
-            "web": "set.customerNotifications",
-            "app": "set.customerNotifications"
-          },
-          {
-            "lang": "mr",
-            "web": "set.discovery",
-            "app": "set.discovery"
-          },
-          {
-            "lang": "mr",
-            "web": "set.free",
-            "app": "cart.freeDelivery"
-          },
-          {
-            "lang": "mr",
-            "web": "set.paymentSaved",
-            "app": "set.paymentSaved"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.allShops",
-            "app": "stmt.allShops"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.closing",
-            "app": "stmt.closing"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.loadError",
-            "app": "stmt.loadError"
-          },
-          {
-            "lang": "mr",
             "web": "stmt.noData",
             "app": "stmt.noData"
           },
@@ -2504,20 +3336,10 @@
             "lang": "mr",
             "web": "stmt.rangeError",
             "app": "stmt.rangeError"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.subtitle",
-            "app": "stmt.subtitle"
-          },
-          {
-            "lang": "mr",
-            "web": "stmt.title",
-            "app": "stmt.title"
           }
         ]
       },
-      "protects_note": "An explicit row list, not a key/lang rectangle. The app side of a row usually lives under a DIFFERENT key name — web c.pay is app khata.pay, web c.locationNotSet is app shops.noLocation — so a rectangle pinned values nobody had queued and missed the ones the question was actually about. One app key can answer several web keys (gu tab.orders serves four), so the snapshot deduplicates by (surface, lang, key). Where a LOCKED decision names SOME of a row's values, the snapshot pins the rest and leaves those alone: the row stays open on the half nobody has ruled on.",
+      "protects_note": "48 rows where the two surfaces disagreed were answered on 2026-09-19 and are LOCKED under mr-native-review-1. What is left is: the rows where both surfaces ALREADY say the same thing, so there was nothing to choose between — the question there is whether the wording is right at all, and it has not been asked; 1 row(s) that are also in the 274 undecided web/app divergences, held because converging them would resolve one of those and that set is not to be touched; and 2 catalogue row(s) that catalogue-loanword already answers and whose repair needs the loanword wording.",
       "open_themes": [
         "outstanding_word",
         "pay_verb",
@@ -2608,28 +3430,10 @@
       "protected": {
         "web": {
           "mr": {
-            "acc.genderFemale": "स्त्री",
-            "acc.genderPreferNot": "सांगू इच्छित नाही",
-            "acc.genderUnset": "सेट केलेले नाही",
-            "acc.phoneReadonly": "फोन हा तुमचा लॉगिन आयडी आहे आणि इथे बदलता येत नाही.",
-            "c.cartEmpty": "तुमची कार्ट रिकामी आहे.",
-            "c.deliverTo": "इथे पोहोचवा:",
-            "c.enterCodeSentTo": "{phone} वर पाठवलेला कोड लिहा",
             "c.loadingCatalog": "कॅटलॉग लोड होत आहे…",
-            "c.locationNotSet": "लोकेशन सेट केलेले नाही",
-            "c.noShops": "कोणतेही दुकान सापडले नाही. वेगळ्या प्रकारे शोधा.",
-            "c.noteColon": "नोंद:",
-            "c.notePlaceholderArrival": "उदा. पोहोचल्यावर फोन करा",
-            "c.payOnline": "ऑनलाइन भरा",
-            "c.placing": "ऑर्डर करत आहे…",
-            "c.size": "आकार",
-            "c.verifyContinue": "पडताळा आणि पुढे जा",
-            "c.yourCart": "तुमची कार्ट",
             "cat.addFromCatalogue": "कॅटलॉगमधून जोडा",
             "cat.addProduct": "वस्तू जोडा",
-            "cat.descOptional": "वर्णन (ऐच्छिक)",
             "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
-            "cat.loadMore": "अधिक लोड करा",
             "chelp.e2.a": "वरच्या सर्च बारचा वापर करा, किंवा कॅटेगरीत पाहा. बोलून शोधायला 🎤 माइक दाबा आणि वस्तूचे नाव सांगा.",
             "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
             "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
@@ -2637,74 +3441,27 @@
             "chelp.e5.a": "तुम्ही खात्यावर (उधार), ऑनलाइन, किंवा रोख भरू शकता. खात्यावर घेतले तर ती रक्कम त्या दुकानातल्या तुमच्या चालू शिल्लकीत जमा होते, नंतर फेडता येते.",
             "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
             "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
-            "common.note": "नोंद",
-            "common.noteOptional": "नोंद (ऐच्छिक)",
             "common.outstanding": "उधारी",
             "common.subtotal": "उप-बेरीज",
-            "common.totalOutstanding": "एकूण बाकी",
-            "dash.customersWithDues": "उधारी असलेले ग्राहक",
-            "dash.orderStatus.cancelled": "रद्द",
-            "dash.revenue.family": "फॅमिली",
-            "dash.revenue.free": "फ्री",
-            "fam.combinedOutstanding": "एकत्रित बाकी",
-            "fam.combinedStatement": "एकत्रित विवरण",
-            "fam.removeConfirm": "{name} यांना या कुटुंबातून काढायचे?",
-            "fam.sendReminder": "WhatsApp रिमाइंडर पाठवा",
-            "help.title": "मदत आणि सामान्य प्रश्न",
             "ins.collectionRate": "वसुलीचा दर",
-            "ins.customersWithDues": "बाकी असलेले ग्राहक",
             "ins.outstandingByAge": "किती दिवसांची उधारी",
-            "log.signIn": "साइन इन",
-            "mod.loadMore": "अधिक लोड करा",
-            "nav.insights": "माहिती",
-            "nav.settings": "सेटिंग्ज",
             "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
             "num.enterCode": "{phone} वर पाठवलेला कोड टाका",
             "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
             "ord.mark": "{s} म्हणून नोंदवा",
             "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
-            "ord.terminal": "हा ऑर्डर {s} आहे — पुढे कोणताही बदल नाही.",
-            "ostatus.cancelled": "रद्द",
-            "ref.noneYet": "अजून कोणतेही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
             "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
-            "ref.referredCount": "तुम्ही आतापर्यंत {n} जणांना रेफर केले आहे.",
-            "ref.shareLink": "लिंक शेअर करा",
             "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
             "ref.title": "निमंत्रण द्या आणि कमवा",
             "ref.type.owner": "दुकान मालक",
-            "set.customerNotifications": "ग्राहक नोटिफिकेशन",
-            "set.discovery": "डिस्कव्हरी (तुमचे दुकान यादीत टाका)",
-            "set.free": "फ्री",
-            "set.paymentSaved": "भरणा सेटिंग्ज सेव्ह झाल्या.",
-            "stmt.allShops": "सर्व दुकाने (एकत्रित)",
-            "stmt.closing": "अखेरची शिल्लक",
-            "stmt.loadError": "विवरण लोड होऊ शकले नाही.",
             "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
             "stmt.pickShop": "दुकान निवडा",
-            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी.",
-            "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीसाठी तारखेनुसार नोंदी, आणि अखेरची शिल्लक.",
-            "stmt.title": "खात्याचे विवरण"
+            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
           }
         },
         "app/consumer": {
           "mr": {
-            "account.genderFemale": "महिला",
-            "account.genderPreferNot": "सांगायचे नाही",
-            "account.genderUnset": "दिलेले नाही",
-            "account.phoneReadonly": "फोन हीच तुमची लॉगिन आयडी आहे, इथे बदलता येत नाही.",
-            "cart.empty": "तुमची टोपली रिकामी आहे.",
-            "orderdetail.deliverTo": "येथे पोहोचवा:",
-            "login.enterCode": "{phone} वर पाठवलेला कोड टाका",
             "shopdetail.loading": "यादी लोड होत आहे…",
-            "shops.noLocation": "लोकेशन नाही",
-            "shops.none": "कोणतीही दुकान मिळाली नाही. वेगळा शोध करा.",
-            "orderdetail.note": "सूचना:",
-            "cart.notePlaceholder": "उदा. पोहोचल्यावर कॉल करा",
-            "cart.payOnline": "ऑनलाइन भरणा",
-            "cart.placing": "ऑर्डर होत आहे…",
-            "shopdetail.size": "साइज",
-            "login.verify": "पडताळून पुढे जा",
-            "cart.title": "तुमची टोपली",
             "chelp.e2.a": "वरचा सर्च बार वापरा, किंवा श्रेणींमध्ये पाहा. बोलून शोधण्यासाठी 🎤 माइक दाबा आणि वस्तूचे नाव बोला.",
             "chelp.e3.a": "दुकान उघडा, हव्या त्या वस्तू कार्टमध्ये टाका, स्वतः घेऊन जाणे की डिलिव्हरी निवडा, आणि ऑर्डर करा दाबा. दुकानाला तुमची ऑर्डर मिळते आणि ते ती निश्चित करतात.",
             "chelp.e4.a": "स्वतः घेऊन जाणे म्हणजे तुम्ही ऑर्डर स्वतः दुकानातून आणता, मोफत. डिलिव्हरी म्हणजे दुकान तुमच्यापर्यंत पोहोचवते, कधी थोड्या शुल्कासह — बरीच दुकाने ठरलेल्या रकमेच्या वर मोफत डिलिव्हरी देतात.",
@@ -2713,60 +3470,368 @@
             "chelp.e5.q": "ऑर्डरचे पैसे कसे भरायचे?",
             "chelp.e6.a": "तुमचे खाते प्रत्येक दुकानातली तुमची उधारी एका ठिकाणी दाखवते. प्रत्येक खरेदी आणि भरणा नोंदला जातो, त्यामुळे तुमची शिल्लक नेहमी माहीत असते आणि तपशील पाहता किंवा डाउनलोड करता येतो.",
             "common.subtotal": "उप-बेरीज",
-            "ostatus.cancelled": "रद्द केले",
-            "cart.freeDelivery": "मोफत",
-            "chelp.title": "मदत आणि नेहमीचे प्रश्न",
-            "login.title": "साइन इन करा",
             "num.changed": "नंबर बदलला. सर्व दुकानांतले तुमचे खाते आता नवीन नंबरवर आहे.",
-            "ref.noneYet": "अजून कोणताही रेफरल नाही — सुरू करण्यासाठी तुमचा कोड शेअर करा.",
             "ref.referredByLabel": "तुम्हाला निमंत्रण दिले",
-            "ref.referredCount": "आतापर्यंत तुम्ही {n} जणांना रेफर केले आहे.",
-            "ref.shareLink": "शेअर लिंक",
             "ref.subtitle": "तुमचा कोड शेअर करा. कोणी त्याने जोडले गेले की इथे दिसेल.",
             "ref.title": "निमंत्रण द्या आणि कमवा",
             "ref.type.owner": "दुकान मालक",
-            "stmt.allShops": "सर्व दुकाने (एकत्र)",
-            "stmt.closing": "शेवटची शिल्लक",
-            "stmt.loadError": "तपशील लोड होऊ शकला नाही.",
             "stmt.noData": "या कालावधीत कोणतीही नोंद नाही.",
             "stmt.pickShop": "दुकान निवडा",
-            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी.",
-            "stmt.subtitle": "सुरुवातीची शिल्लक, कालावधीतील तारखेनुसार नोंदी, आणि शेवटची शिल्लक.",
-            "stmt.title": "खात्याचा तपशील"
+            "stmt.rangeError": "\"पासून\" तारीख \"पर्यंत\" तारखेच्या आधी किंवा तीच असावी."
           }
         },
         "app/owner": {
           "mr": {
             "cat.addFromCatalogue": "कॅटलॉगतून जोडा",
             "cat.addProduct": "वस्तू जोडा",
-            "cat.descPlaceholder": "तपशील (ऐच्छिक)",
             "cat.empty": "अजून कोणतीही वस्तू नाही. वर पहिली जोडा.",
-            "cat.loadMore": "अधिक पाहा",
-            "ord.note": "सूचना",
-            "addtx.note": "सूचना (ऐच्छिक)",
             "ins.outstanding": "उधारी",
-            "dash.totalOutstanding": "एकूण उधारी",
-            "dash.customersWithDues": "उधारी असलेले ग्राहक",
-            "ostatus.cancelled": "रद्द केले",
-            "title.family": "कुटुंब",
-            "famd.combinedOutstanding": "एकत्रित उधारी",
-            "famd.combinedStatement": "एकत्रित हिशेब",
-            "famd.removeConfirm": "{name} ला या कुटुंबातून काढायचे?",
-            "famd.sendReminder": "WhatsApp वर आठवण पाठवा",
             "ins.collectionRate": "वसुलीचा दर",
             "ins.outstandingByAge": "किती दिवसांची उधारी",
-            "title.insights": "विश्लेषण",
-            "title.settings": "सेटिंग",
             "ord.empty": "इथे अजून कोणताही ऑर्डर नाही.",
             "ord.mark": "{s} म्हणून नोंदवा",
-            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला.",
-            "ord.terminal": "हा ऑर्डर {s} — आता बदल नाही.",
-            "set.customerNotifications": "ग्राहकांचे नोटिफिकेशन",
-            "set.discovery": "शोध (तुमचे दुकान यादीत द्या)",
-            "set.paymentSaved": "भरणा सेटिंग सेव्ह झाले."
+            "ord.marked": "ऑर्डर {s} म्हणून नोंदवला."
           }
         }
-      }
+      },
+      "resolved_rows": [
+        {
+          "lang": "mr",
+          "web": "acc.genderFemale",
+          "app": "account.genderFemale",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "acc.genderPreferNot",
+          "app": "account.genderPreferNot",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "acc.genderUnset",
+          "app": "account.genderUnset",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "acc.phoneReadonly",
+          "app": "account.phoneReadonly",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.cartEmpty",
+          "app": "cart.empty",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.deliverTo",
+          "app": "orderdetail.deliverTo",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.enterCodeSentTo",
+          "app": "login.enterCode",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.locationNotSet",
+          "app": "shops.noLocation",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.noShops",
+          "app": "shops.none",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.noteColon",
+          "app": "orderdetail.note",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.notePlaceholderArrival",
+          "app": "cart.notePlaceholder",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.payOnline",
+          "app": "cart.payOnline",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.placing",
+          "app": "cart.placing",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.size",
+          "app": "shopdetail.size",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.verifyContinue",
+          "app": "login.verify",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "c.yourCart",
+          "app": "cart.title",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "cat.descOptional",
+          "app": "cat.descPlaceholder",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "cat.loadMore",
+          "app": "cat.loadMore",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "common.note",
+          "app": "ord.note",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "common.noteOptional",
+          "app": "addtx.note",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "common.totalOutstanding",
+          "app": "dash.totalOutstanding",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "dash.orderStatus.cancelled",
+          "app": "ostatus.cancelled",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "dash.revenue.family",
+          "app": "title.family",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "dash.revenue.free",
+          "app": "cart.freeDelivery",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "fam.combinedOutstanding",
+          "app": "famd.combinedOutstanding",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "fam.combinedStatement",
+          "app": "famd.combinedStatement",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "fam.removeConfirm",
+          "app": "famd.removeConfirm",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "fam.sendReminder",
+          "app": "famd.sendReminder",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "help.title",
+          "app": "chelp.title",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ins.customersWithDues",
+          "app": "dash.customersWithDues",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "log.signIn",
+          "app": "login.title",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "mod.loadMore",
+          "app": "cat.loadMore",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "nav.insights",
+          "app": "title.insights",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "nav.settings",
+          "app": "title.settings",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ord.terminal",
+          "app": "ord.terminal",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ostatus.cancelled",
+          "app": "ostatus.cancelled",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.noneYet",
+          "app": "ref.noneYet",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.referredCount",
+          "app": "ref.referredCount",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "ref.shareLink",
+          "app": "ref.shareLink",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "set.customerNotifications",
+          "app": "set.customerNotifications",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "set.discovery",
+          "app": "set.discovery",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "set.free",
+          "app": "cart.freeDelivery",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "set.paymentSaved",
+          "app": "set.paymentSaved",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.allShops",
+          "app": "stmt.allShops",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.closing",
+          "app": "stmt.closing",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.loadError",
+          "app": "stmt.loadError",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.subtitle",
+          "app": "stmt.subtitle",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        },
+        {
+          "lang": "mr",
+          "web": "stmt.title",
+          "app": "stmt.title",
+          "answered_by": "mr-native-review-1",
+          "answer": "app"
+        }
+      ]
     },
     "whatsapp-latin-urdu": {
       "type": "HOUSE-STYLE",
@@ -2973,7 +4038,7 @@
     "INTENTIONAL_DIVERGENCE": {
       "status": "INTENTIONAL_DIVERGENCE",
       "source": "scripts/keylevel-decisions.json decision=web, OR a decision in this file that declares the key intentionally app-specific (consumer-faq-app-variants)",
-      "count": 43,
+      "count": 14,
       "keys": {
         "bn": [
           "chelp.e1.a",
@@ -2982,47 +4047,18 @@
           "chelp.e9.q"
         ],
         "gu": [
-          "cat.loadMore",
           "chelp.e1.a",
           "chelp.e8.a",
           "chelp.e9.a",
           "chelp.e9.q",
-          "common.subtotal",
-          "ins.activeCustomers",
-          "ins.outstandingByAge",
-          "num.confirm",
-          "ord.terminal",
-          "ref.referredCount",
-          "ref.shareLink",
-          "set.customerNotifications",
-          "set.discovery",
-          "set.leaveBlank",
-          "set.paymentSaved",
-          "stmt.allShops",
-          "stmt.combined",
-          "stmt.rangeError",
-          "stmt.title"
+          "ord.cancelConfirm"
         ],
         "mr": [
           "cat.addFromCatalogue",
-          "cat.loadMore",
           "chelp.e1.a",
           "chelp.e8.a",
           "chelp.e9.a",
-          "chelp.e9.q",
-          "ord.terminal",
-          "ostatus.cancelled",
-          "ref.noneYet",
-          "ref.referredCount",
-          "ref.shareLink",
-          "set.customerNotifications",
-          "set.discovery",
-          "set.paymentSaved",
-          "stmt.allShops",
-          "stmt.closing",
-          "stmt.loadError",
-          "stmt.subtitle",
-          "stmt.title"
+          "chelp.e9.q"
         ],
         "kn": [],
         "ml": [],
@@ -3041,6 +4077,63 @@
             "open.tomorrowAt"
           ],
           "note": "A Bengali speaker read these three and gave one answer for both surfaces, so the difference they recorded no longer exists. Removed from the intentional set because the decision that made them intentional has been superseded by one that reads the strings."
+        },
+        {
+          "on": "2026-09-19",
+          "by": "gu-native-review-1",
+          "lang": "gu",
+          "keys": [
+            "cat.loadMore",
+            "common.subtotal",
+            "ins.activeCustomers",
+            "ins.outstandingByAge",
+            "num.confirm",
+            "ord.terminal",
+            "ref.referredCount",
+            "ref.shareLink",
+            "set.customerNotifications",
+            "set.discovery",
+            "set.leaveBlank",
+            "set.paymentSaved",
+            "stmt.allShops",
+            "stmt.combined",
+            "stmt.rangeError",
+            "stmt.title"
+          ],
+          "note": "Answered by taking the app string, so the difference these recorded no longer exists."
+        },
+        {
+          "on": "2026-09-19",
+          "by": "mr-native-review-1",
+          "lang": "mr",
+          "keys": [
+            "cat.loadMore",
+            "ord.terminal",
+            "ostatus.cancelled",
+            "ref.noneYet",
+            "ref.referredCount",
+            "ref.shareLink",
+            "set.customerNotifications",
+            "set.discovery",
+            "set.paymentSaved",
+            "stmt.allShops",
+            "stmt.closing",
+            "stmt.loadError",
+            "stmt.subtitle",
+            "stmt.title"
+          ],
+          "note": "Answered by taking the app string, so the difference these recorded no longer exists."
+        }
+      ],
+      "created": [
+        {
+          "on": "2026-09-19",
+          "by": "gu-native-review-1",
+          "lang": "gu",
+          "keys": [
+            "ord.cancelConfirm"
+          ],
+          "note": "Created, not resolved. The two surfaces agreed before because both carried a warning sentence; they differ now because their ENGLISH differs — the web key is \"Cancel this order?\" and the owner app key is \"Cancel this order? This cannot be undone.\" Taking the app string for the web row dropped a sentence the web English never authorised, and scoping it to the web kept the warning where the English does require it. The difference is the correct state, not drift."
         }
       ]
     },

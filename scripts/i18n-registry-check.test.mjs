@@ -145,10 +145,12 @@ const cases = [
    () => webSet('gu', 'status.accepted', 'સ્વીકાર્યું'), 'gu-status-form', null],
 
   ['INTENTIONAL_DIVERGENCE cannot be reconciled from the web side',
-   () => webSet('gu', 'stmt.title', 'ખાતાનું વિવરણ'), 'divergences', null],
+   // ord.cancelConfirm: the two surfaces differ because their ENGLISH differs —
+   // the owner app's says "This cannot be undone." and the web's does not.
+   () => webSet('gu', 'ord.cancelConfirm', 'આ ઑર્ડર રદ કરવો? આ પાછું નહીં આવે.'), 'divergences', null],
 
   ['INTENTIONAL_DIVERGENCE cannot be reconciled from the app side',
-   () => appSet(OWNER, 'gu', 'cat.loadMore', 'વધુ લોડ કરો'), 'divergences', null],
+   () => appSet(OWNER, 'mr', 'cat.addFromCatalogue', 'कॅटलॉगमधून जोडा'), 'divergences', null],
 
   ['UNDECIDED cannot be auto-reconciled',
    () => webSet('bn', 'ostatus.completed', 'সম্পূর্ণ'), 'divergences', null],
@@ -188,7 +190,7 @@ const cases = [
   ['a native-speaker-queue row cannot be resolved by a tool',
    // Gujarati, because Bengali's queue is answered: a Bengali speaker read all
    // six rows on 2026-09-18 and they are LOCKED now. The cases below cover that.
-   () => webSet('gu', 'acc.dob', 'જન્મ તારીખ'), 'native-speaker-queue-gu', 'web gu acc.dob'],
+   () => webSet('gu', 'acc.logout', 'બહાર નીકળો'), 'native-speaker-queue-gu', 'web gu acc.logout'],
 
   // --- a landed native review is LOCKED, and holds both key names -----------
   // This is what the queue was FOR. The answers arrived per surface — three
@@ -213,8 +215,8 @@ const cases = [
   // rectangle could not express that, so it pinned the web string of a question
   // and left the app string — the thing the question was actually about —
   // writable by anything. These four passed silently until 2026-09-18.
-  ['the same where the app key shares nothing with the web key (mr c.locationNotSet -> shops.noLocation)',
-   () => appSet(CONSUMER, 'mr', 'shops.noLocation', 'लोकेशन दिलेले नाही'), 'native-speaker-queue-mr', 'app/consumer'],
+  ['the same where the app key shares nothing with the web key (mr common.outstanding -> ins.outstanding)',
+   () => appSet(OWNER, 'mr', 'ins.outstanding', 'बाकी रक्कम'), 'native-speaker-queue-mr', 'app/owner mr ins.outstanding'],
 
   ['a row that has since CONVERGED is still protected — converging is not approval',
    // gu acc.logout / account.logout now reads the same on both surfaces, so no
@@ -385,8 +387,8 @@ if (!gate().ok) { console.error('\nthe copy did not restore cleanly'); fail++; }
     // acc.dob is queued in Gujarati and nowhere else — 60 of the open rows are
     // like that. Under the old rectangle every one of them was pinned in all
     // three languages, which is the shape this replaced.
-    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'acc.dob').length === 1],
-    ['and NOT in the other two', () => pinnedBy('bn', 'acc.dob').length === 0 && pinnedBy('mr', 'acc.dob').length === 0],
+    ['a queued question IS pinned in its own language', () => pinnedBy('gu', 'acc.logout').length === 1],
+    ['and NOT in the other two', () => pinnedBy('bn', 'acc.logout').length === 0 && pinnedBy('mr', 'acc.logout').length === 0],
     // What a landed review looks like from the registry's side.
     ['an answered queue holds no rows and keeps every answer as provenance', () => {
       const q = reg.decisions['native-speaker-queue-bn'];

@@ -1,6 +1,6 @@
 # Gujarati — strings waiting for you
 
-112 rows. Every one of them is a string a Gujarati speaker has not read.
+55 rows. Every one of them is a string a Gujarati speaker has not read.
 
 Each row shows the English it was translated from and what each surface says today.
 The web is khata.dadashaik.com; app/consumer is the shopper's phone app and app/owner
@@ -11,22 +11,21 @@ not the same thing. Say what each one should read.
 Write your answer on the **Your answer** line. "web is right", "app is right", or a better
 string — all three are useful answers. "I would not say this at all" is also an answer.
 
-## 6 questions, not 112 answers
+## 5 questions, not 55 answers
 
-The ledger says so itself — "112 rows resolve to about 6 decisions". Answer the
+The ledger says so itself — "55 rows resolve to about 5 decisions". Answer the
 question at the head of each section and every row under it follows. You do not have to
 rule on each line, though you can: a row you disagree with overrides its theme.
 
-- **`register_and_tense`** — 98 rows
+- **`register_and_tense`** — 45 rows
 - **`product_word`** — 5 rows
 - **`catalogue_word`** — 3 rows
-- **`cart_word`** — 3 rows
-- **`balance_vs_outstanding`** — 2 rows
-- **`ref.shareLink`** — 1 rows
+- **`balance_vs_outstanding`** — 1 rows
+- **`cart_word`** — 1 rows
 
-Closed since the ledger was written, with no rows left: `orthography_candra_o`.
+Closed since the ledger was written, with no rows left: `ref.shareLink`, `orthography_candra_o`.
 
-## `register_and_tense` — 98 rows
+## `register_and_tense` — 45 rows
 
 **The app tends to the continuous ('લોડ થઈ રહ્યું છે') where the web is plainer ('લોડ થાય છે'), and they differ on politeness in places.**
 
@@ -34,67 +33,14 @@ Neither is wrong. It is a voice decision for the product, and applying it string
 
 **Your answer for this whole theme:** 
 
-### The surfaces disagree — 57
+### The surfaces disagree — 4
 
 | key | English | web | app |
 |---|---|---|---|
-| `acc.dob` / `account.dob` | Date of birth | જન્મતારીખ | જન્મ તારીખ |
-| `acc.genderUnset` / `account.genderUnset` | Not set | સેટ નથી | આપ્યું નથી |
-| `acc.loadError` / `account.loadError` | Could not load your profile. | તમારી પ્રોફાઇલ લોડ થઈ શકી નહીં. | તમારી પ્રોફાઇલ લોડ થઈ શકી નથી. |
-| `acc.optional` / `account.optional` | optional | મરજિયાત | વૈકલ્પિક |
-| `acc.phoneReadonly` / `account.phoneReadonly` | Phone is your login ID and cannot be changed here. | ફોન એ તમારો લૉગિન આઈડી છે અને અહીં બદલી શકાતો નથી. | ફોન એ જ તમારું લૉગિન આઈડી છે, અહીં બદલી શકાતું નથી. |
-| `c.cancelling` / `orderdetail.cancelling` | Cancelling… | રદ થાય છે… | રદ થઈ રહ્યો છે… |
-| `c.enterCodeSentTo` / `login.enterCode` | Enter the code sent to {phone} | {phone} પર મોકલેલો કોડ લખો | {phone} પર મોકલેલો કોડ દાખલ કરો |
-| `c.loadingOrder` / `orderdetail.loading` | Loading order… | ઑર્ડર લોડ થાય છે… | ઑર્ડર લોડ થઈ રહ્યો છે… |
-| `c.loadingShops` / `shops.loading` | Loading shops… | દુકાનો લોડ થાય છે… | દુકાનો લોડ થઈ રહી છે… |
-| `c.locationNotSet` / `shops.noLocation` | Location not set | સ્થાન સેટ નથી | લોકેશન નથી |
-| `c.noShops` / `shops.none` | No shops found. Try a different search. | કોઈ દુકાન મળી નથી. બીજી રીતે શોધો. | કોઈ દુકાન મળી નહીં. બીજી શોધ કરો. |
-| `c.notePlaceholderArrival` / `cart.notePlaceholder` | e.g. call on arrival | દા.ત. પહોંચતાં ફોન કરો | દા.ત. પહોંચીને કોલ કરો |
-| `c.opening` / `khata.opening` | Opening… | ખૂલે છે… | ખૂલી રહ્યું છે… |
-| `c.payOnline` / `cart.payOnline` | Pay online | ઑનલાઇન ચૂકવો | ઑનલાઇન ચૂકવણી |
-| `c.placing` / `cart.placing` | Placing… | ઑર્ડર થાય છે… | ઑર્ડર થઈ રહ્યો છે… |
-| `c.sending` / `login.sending` | Sending… | મોકલાય છે… | મોકલાઈ રહ્યું છે… |
-| `c.verifyContinue` / `login.verify` | Verify & continue | ચકાસો અને આગળ વધો | ચકાસીને આગળ વધો |
-| `c.verifying` / `login.verifying` | Verifying… | ચકાસાય છે… | ચકાસાઈ રહ્યું છે… |
-| `cat.descOptional` / `cat.descPlaceholder` | Description (optional) | વર્ણન (મરજિયાત) | વર્ણન (વૈકલ્પિક) |
-| `cat.loadMore` | Load more | વધુ લોડ કરો | વધુ જુઓ |
 | `chelp.e5.a` | You can pay on khata (udhaar), pay online, or pay cash. If you pay on khata, the amount is added to your running balance at that shop, to settle later. | તમે ખાતા (ઉધાર) પર, ઑનલાઇન, કે રોકડમાં ચૂકવી શકો છો. ખાતા પર લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકતે કરી શકો. | તમે ખાતામાં (ઉધાર), ઑનલાઇન, કે રોકડ ચૂકવી શકો છો. ખાતામાં લો તો એ રકમ એ દુકાનમાં તમારા ચાલુ બાકીમાં ઉમેરાય છે, પછી ચૂકવી શકાય. |
 | `chelp.e6.a` | Your khata shows what you owe at each shop in one place. Every purchase and payment is listed, so you always know your balance and can view or download a statement. | તમારું ખાતું દરેક દુકાનમાં તમારી બાકી રકમ એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, તેથી તમને હંમેશાં તમારી બાકી ખબર રહે છે, અને વિગત જોઈ કે ડાઉનલોડ કરી શકો છો. | તમારું ખાતું દરેક દુકાનમાં તમારી બાકી એક જગ્યાએ બતાવે છે. દરેક ખરીદી અને ચૂકવણી નોંધાય છે, એટલે તમારું બેલેન્સ હંમેશાં ખબર રહે છે અને વિવરણ જોઈ કે ડાઉનલોડ કરી શકો છો. |
 | `chelp.e6.q` | How does my khata (udhaar) work? | મારું ખાતું (ઉધાર) કેવી રીતે કામ કરે છે? | મારું ખાતું (ઉધાર) કેવી રીતે ચાલે છે? |
-| `common.creditLimit` / `custd.creditLimit` | Credit limit | ઉધાર મર્યાદા | ઉધારની મર્યાદા |
-| `common.noteOptional` / `addtx.note` | Note (optional) | નોંધ (મરજિયાત) | નોંધ (વૈકલ્પિક) |
-| `common.subtotal` | Subtotal | પેટા-કુલ | ઉપ-કુલ |
-| `dash.revenue.family` / `title.family` | Family | ફેમિલી | પરિવાર |
-| `dash.revenue.free` / `cart.freeDelivery` | Free | ફ્રી | મફત |
-| `dl.customers` / `tab.customers` | Customers | ગ્રાહકો | ગ્રાહક |
-| `fam.combinedStatement` / `famd.combinedStatement` | Combined statement | સંયુક્ત સ્ટેટમેન્ટ | સંયુક્ત હિસાબ |
-| `fam.removeConfirm` / `famd.removeConfirm` | Remove {name} from this family? | {name}ને આ પરિવારમાંથી કાઢવા? | {name} ને આ પરિવારમાંથી દૂર કરવા? |
-| `fam.sendReminder` / `famd.sendReminder` | Send WhatsApp reminder | WhatsApp રિમાઇન્ડર મોકલો | WhatsApp પર યાદ કરાવો |
-| `ins.activeCustomers` | Active customers | સક્રિય ગ્રાહકો | સક્રિય ગ્રાહક |
-| `ins.customersWithDues` / `dash.customersWithDues` | Customers with dues | બાકીવાળા ગ્રાહકો | બાકી હોય તેવા ગ્રાહક |
-| `ins.outstandingByAge` | Outstanding by age | સમય પ્રમાણે બાકી | કેટલા દિવસની બાકી |
-| `log.signIn` / `login.title` | Sign in | સાઇન ઇન | સાઇન ઇન કરો |
-| `mod.loadMore` / `cat.loadMore` | Load more | વધુ લોડ કરો | વધુ જુઓ |
-| `nav.customers` / `tab.customers` | Customers | ગ્રાહકો | ગ્રાહક |
-| `nav.insights` / `title.insights` | Insights | માહિતી | વિશ્લેષણ |
-| `nav.settings` / `title.settings` | Settings | સેટિંગ્સ | સેટિંગ |
-| `num.confirm` | Confirm change | બદલાવ પાકો કરો | ફેરફારની ખાતરી કરો |
-| `ord.cancelConfirm` / `orderdetail.cancelConfirm` | Cancel this order? | આ ઑર્ડર રદ કરવો? આ પાછું નહીં આવે. | આ ઑર્ડર રદ કરવો? |
 | `ord.empty` | No orders in this view yet. | આ વ્યૂમાં હજી કોઈ ઑર્ડર નથી. | અહીં હજી કોઈ ઑર્ડર નથી. |
-| `ord.terminal` | This order is {s} — no further changes. | આ ઑર્ડર {s} છે — વધુ કોઈ ફેરફાર નહીં. | આ ઑર્ડર {s} — હવે કોઈ ફેરફાર નહીં. |
-| `pin.saving` / `account.saving` | Saving… | સેવ થાય છે… | સેવ થઈ રહ્યું છે… |
-| `ref.referredCount` | You have referred {n} so far. | તમે અત્યાર સુધી {n}ને રેફર કર્યા છે. | અત્યાર સુધી તમે {n} ને રેફર કર્યા છે. |
-| `set.customerNotifications` | Customer notifications | ગ્રાહક નોટિફિકેશન | ગ્રાહકનાં નોટિફિકેશન |
-| `set.discovery` | Discovery (list your shop) | ડિસ્કવરી (તમારી દુકાન યાદીમાં મૂકો) | શોધ (તમારી દુકાન યાદીમાં મૂકો) |
-| `set.free` / `cart.freeDelivery` | Free | ફ્રી | મફત |
-| `set.leaveBlank` | Leave blank to keep current | હાલનું રાખવા ખાલી છોડો | હાલનું રાખવા ખાલી રાખો |
-| `set.paymentSaved` | Payment settings saved. | ચૂકવણી સેટિંગ્સ સેવ થઈ. | ચૂકવણી સેટિંગ સેવ થયું. |
-| `staff.remove` / `cart.remove` | Remove | કાઢો | દૂર કરો |
-| `stmt.allShops` | All shops (combined) | બધી દુકાનો (સંયુક્ત) | બધી દુકાનો (સાથે) |
-| `stmt.combined` | Combined total | સંયુક્ત કુલ | બધું મળીને કુલ |
-| `stmt.rangeError` | The From date must be on or before the To date. | 'થી' તારીખ 'સુધી' તારીખની બરાબર કે પહેલાં હોવી જોઈએ. | "થી" તારીખ "સુધી" તારીખ પહેલાંની કે એ જ હોવી જોઈએ. |
-| `stmt.title` | Account statement | ખાતાનું સ્ટેટમેન્ટ | ખાતાનું વિવરણ |
-| `tx.empty` / `custd.noTransactions` | No transactions yet. | હજી કોઈ વ્યવહાર નથી. | હજી કોઈ લેવડદેવડ નથી. |
 
 ### Both surfaces already say this — 41
 
@@ -194,33 +140,13 @@ No choice to make between them. The question is only whether the wording is righ
 | `cat.addFromCatalogue` | Add from catalogue | કૅટલૉગમાંથી ઉમેરો |
 | `nav.catalog` / `tab.catalog` | Catalog | કૅટલૉગ |
 
-## `cart_word` — 3 rows
-
-**Is the cart કાર્ટ (web) or ટોપલી (app, 'basket')?**
-
-**Your answer for this whole theme:** 
-
-### The surfaces disagree — 3
-
-| key | English | web | app |
-|---|---|---|---|
-| `c.cartEmpty` / `cart.empty` | Your cart is empty. | તમારી કાર્ટ ખાલી છે. | તમારી ટોપલી ખાલી છે. |
-| `c.yourCart` / `cart.title` | Your cart | તમારી કાર્ટ | તમારી ટોપલી |
-| `chelp.e3.a` | Open a shop, add the items you want to your cart, choose pickup or delivery, and tap Place order. The shop gets your order and confirms it. | એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે. | દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે. |
-
-## `balance_vs_outstanding` — 2 rows
+## `balance_vs_outstanding` — 1 rows
 
 **common.balance and common.outstanding must be decided TOGETHER.**
 
 Web has balance=બાકી, outstanding=બાકી રકમ. App has balance=બેલેન્સ, outstanding=બાકી. Each is internally distinct, but taking one from each surface gives balance=બાકી AND outstanding=બાકી — two different English words rendering identically, on money. બાકી also asserts money is OWED, which 'Balance' does not: a balance can be an advance.
 
 **Your answer for this whole theme:** 
-
-### The surfaces disagree — 1
-
-| key | English | web | app |
-|---|---|---|---|
-| `common.outstanding` / `ins.outstanding` | Outstanding | બાકી રકમ | બાકી |
 
 ### Both surfaces already say this — 1
 
@@ -230,11 +156,9 @@ No choice to make between them. The question is only whether the wording is righ
 |---|---|---|
 | `common.balance` / `khata.balance` | Balance | બેલેન્સ |
 
-## `ref.shareLink` — 1 rows
+## `cart_word` — 1 rows
 
-**Share link — લિંક શેર કરો (web, imperative) or શેર લિંક (app, noun)?**
-
-It is a button. The same imperative-vs-noun question is open in Bengali for c.pay.
+**Is the cart કાર્ટ (web) or ટોપલી (app, 'basket')?**
 
 **Your answer for this whole theme:** 
 
@@ -242,5 +166,5 @@ It is a button. The same imperative-vs-noun question is open in Bengali for c.pa
 
 | key | English | web | app |
 |---|---|---|---|
-| `ref.shareLink` | Share link | લિંક શેર કરો | શેર લિંક |
+| `chelp.e3.a` | Open a shop, add the items you want to your cart, choose pickup or delivery, and tap Place order. The shop gets your order and confirms it. | એક દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં ઉમેરો, પિકઅપ કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે તેની પુષ્ટિ કરે છે. | દુકાન ખોલો, જોઈતી વસ્તુઓ કાર્ટમાં નાખો, જાતે લઈ જવું કે ડિલિવરી પસંદ કરો, અને ઑર્ડર કરો દબાવો. દુકાનને તમારો ઑર્ડર મળે છે અને તે પાકો કરે છે. |
 
